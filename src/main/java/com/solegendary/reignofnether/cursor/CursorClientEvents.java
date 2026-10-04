@@ -59,6 +59,17 @@ import java.util.List;
 import static com.solegendary.reignofnether.util.MiscUtil.fcs;
 import static net.minecraft.util.Mth.floor;
 import static net.minecraft.world.level.BlockGetter.traverseBlocks;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.level.material.Fluid;
+import com.solegendary.reignofnether.cursor.CursorClientEvents;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.AABB;
 
 /**
  * Handler that implements and manages screen-to-world translations of the cursor and block/entity selection
@@ -368,12 +379,20 @@ public class CursorClientEvents {
             return;
 
         if (leftClickDown && !Keybindings.altMod.isDown()) {
-            evt.getGuiGraphics().fill( // x1,y1, x2,y2,
-                    Math.round(cursorLeftClickDownPos.x),
-                    Math.round(cursorLeftClickDownPos.y),
-                    Math.round(cursorLeftClickDragPos.x),
-                    Math.round(cursorLeftClickDragPos.y),
-                    0x0341e868); //ARGB(hex); note that alpha ranges between ~0-16, not 0-255
+            // The original colour was 0x0341e868 with a note that "alpha ranges between ~0-16".
+            // GuiGraphics#fill has always taken a plain 0-255 ARGB here, so that alpha byte is 3 -
+            // about 1% opaque, which is why the rectangle was all but invisible. Same hue, alpha
+            // raised to ~55%, plus a solid edge so the drag area reads clearly against any terrain.
+            int x1 = Math.round(cursorLeftClickDownPos.x);
+            int y1 = Math.round(cursorLeftClickDownPos.y);
+            int x2 = Math.round(cursorLeftClickDragPos.x);
+            int y2 = Math.round(cursorLeftClickDragPos.y);
+            GuiGraphics graphics = evt.getGuiGraphics();
+            graphics.fill(x1, y1, x2, y2, 0x8C41E868);
+            graphics.fill(x1, y1, x2, y1 + 1, 0xFF41E868);
+            graphics.fill(x1, y2 - 1, x2, y2, 0xFF41E868);
+            graphics.fill(x1, y1, x1 + 1, y2, 0xFF41E868);
+            graphics.fill(x2 - 1, y1, x2, y2, 0xFF41E868);
         }
     }
 

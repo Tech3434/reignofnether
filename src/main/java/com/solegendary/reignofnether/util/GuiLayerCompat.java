@@ -18,8 +18,8 @@ public class GuiLayerCompat {
 	/** Last layer {@code Gui} renders, so anything drawn in it sits on top of the vanilla HUD. */
 	public static final ResourceLocation TOP_LAYER = VanillaGuiLayers.SAVING_INDICATOR;
 
-	/** True when the event belongs to {@link #TOP_LAYER}. */
-	public static boolean isTopLayer(RenderGuiLayerEvent event) {
-		return TOP_LAYER.equals(event.getName());
-	}
+    /** True when the event belongs to {@link #TOP_LAYER}. */
+    public static boolean isTopLayer(RenderGuiLayerEvent event) {
+        return TOP_LAYER.equals(event.getName());
+    }
 }

@@ -262,7 +262,7 @@ public class BuildingClientEvents {
         int maxY = -999999;
         int maxZ = -999999;
         ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
-        var vertexConsumer = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
+        var vertexConsumer = MC.renderBuffers().bufferSource().getBuffer(BUILDING_FILL);
         for (BuildingBlock block : blocks) {
             if (isBridge(buildingToPlace)
                     && MC.level != null && AbstractBridge.shouldCullBlock(originPos.offset(0, 1, 0), block, MC.level, true)) {
@@ -274,10 +274,15 @@ public class BuildingClientEvents {
             // ModelData modelData = renderer.getBlockModel(bs).getModelData(MC.level, bp, bs, ModelDataManager
             // .getModelData(MC.level, bp));
 
-            matrix.pushPose();
-            Entity cam = MC.cameraEntity;
-            matrix.translate( // bp is center of block whereas render is corner, so offset by 0.5
-                    bp.getX() - cam.getX(), bp.getY() - cam.getY() - 0.6, bp.getZ() - cam.getZ());
+matrix.pushPose();
+        Entity cam = MC.cameraEntity;
+        matrix.translate( // bp is center of block whereas render is corner, so offset by 0.5
+                // Use the camera's eye height, like every other line helper in MyRenderer does.
+                // Against cam.getY() (the feet) this lands about a block low, which reads as a
+                // sideways shift when the ortho camera looks up and to the right.
+                bp.getX() - cam.getX(),
+                bp.getY() - (cam.getY() + cam.getEyeHeight()) - 0.6,
+                bp.getZ() - cam.getZ());
 
             int overlayColour = isGreen ? OverlayTexture.pack(0, 0) : OverlayTexture.pack(0, 3);
             if (forceColour == 1) {
@@ -362,6 +367,17 @@ public class BuildingClientEvents {
     }
      */
 
+    /**
+     * Stable render type for the building overlays.
+     *
+     * <p>A RenderType instance is the buffer source's key, so building one per frame queues a batch
+     * that nothing ever flushes at that point; the leftovers are later drawn by an unrelated flush
+     * with whatever pose happens to be current, which is what left building outlines stuck on screen
+     * while the camera moved. One instance plus an explicit endBatch fixes it.
+     */
+    private static final RenderType BUILDING_FILL =
+            RenderType.entityTranslucent(ResourceLocation.parse("neoforge:textures/white.png"));
+
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent evt) throws NoSuchFieldException {
         if (evt.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
@@ -427,7 +443,7 @@ public class BuildingClientEvents {
 
         // draw rally points and lines
         ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
-        var vertexConsumerEntityTranslucent = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
+        var vertexConsumerEntityTranslucent = MC.renderBuffers().bufferSource().getBuffer(BUILDING_FILL);
         var vertexConsumerNoDepthLine = MC.renderBuffers().bufferSource().getBuffer(MyRenderer.LINES_NO_DEPTH_TEST);
         var vertexConsumerLine = MC.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
         for (BuildingPlacement selBuilding : selectedBuildings) {
@@ -465,6 +481,11 @@ public class BuildingClientEvents {
             }
         }
 
+        // Flush everything this stage queued. Without it the geometry lingers in a shared builder and
+        // is eventually drawn by an unrelated flush with the wrong pose.
+        MC.renderBuffers().bufferSource().endBatch(BUILDING_FILL);
+        MC.renderBuffers().bufferSource().endBatch(MyRenderer.LINES_NO_DEPTH_TEST);
+        MC.renderBuffers().bufferSource().endBatch(MyRenderer.LINES_UNDER_ENTITIES);
     }
 
     // on scroll rotate the building placement by 90deg by resorting the blocks list

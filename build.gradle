@@ -46,12 +46,12 @@ neoForge {
     version = neo_version
 
     runs {
-        client {
-            client()
-            // Injects -mixin.config so a dev run applies the mod's own mixins explicitly,
-            // which makes mixin failures readable instead of silent.
-            programArgument '-mixin.config=reignofnether.mixins.json'
-        }
+      client {
+        client()
+        // Injects -mixin.config so a dev run applies the mod's own mixins explicitly,
+        // which makes mixin failures readable instead of silent.
+        programArgument '-mixin.config=reignofnether.mixins.json'
+      }
         server {
             server()
         }

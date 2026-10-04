@@ -136,32 +136,30 @@ public class ClientLevelMixin {
         ci.cancel();
 
         long timeNow = minecraft.level.getDayTime();
-        long targetTime = TimeClientEvents.targetClientTime;
-        long targetTimePlusHalfDay = targetTime + 12000;
+        long targetTime = normaliseTime(TimeClientEvents.targetClientTime);
 
-        // transition through day faster if in orthoview and we aren't near dawn/dusk since you can't see the sky anyway
-        long timeDiff = 100L;
-        if (OrthoviewClientEvents.isEnabled() &&
-                ((timeNow > 2000 && timeNow <= 10000) || (timeNow > 14000 && timeNow <= 22000)))
-            timeDiff = 500L;
+        // Signed distance to the target on the 24000-tick day circle, so the shortest way round is
+        // taken instead of wrapping through the start of the day.
+        long diff = targetTime - timeNow;
+        if (diff > 12000) diff -= 24000;
+        else if (diff < -12000) diff += 24000;
 
-        targetTime = normaliseTime(targetTime);
-        targetTimePlusHalfDay = normaliseTime(targetTimePlusHalfDay);
+        // Approach the target monotonically and stop on arrival.
+        //
+        // The previous version took a fixed +/-100 step and flipped its sign whenever the day had
+        // passed the target. Since the server rewrites the target on every ClientboundSetTimePacket,
+        // the client kept overshooting and reversing: the sun would jump forward confidently, snap
+        // back through the wrap to the start of the day, then jitter for a couple of seconds before
+        // repeating. Clamping the step to the remaining distance makes overshoot impossible, so the
+        // motion is smooth in both directions and there is nothing to jitter.
+        long step = Math.min(Math.abs(diff), 1L);
+        long timeSet = normaliseTime(timeNow + (diff >= 0 ? step : -step));
 
-        if (targetTime < 12000 && (timeNow > targetTime && timeNow <= targetTimePlusHalfDay))
-            timeDiff *= -1;
-        else if (targetTime >= 12000 && (timeNow > targetTime || timeNow <= targetTimePlusHalfDay))
-            timeDiff *= -1;
-
-        long timeSet;
-        if (Math.abs(timeNow - targetTime) < Math.abs(timeDiff))
-            timeSet = targetTime;
-        else
-            timeSet = minecraft.level.getLevelData().getGameTime() + timeDiff;
-
-        timeSet = normaliseTime(timeSet);
-
-        this.setGameTime(timeSet);
+        // The day clock is the only one steered. The sky is drawn from the game clock (LevelRenderer
+        // calls RenderSystem.setShaderGameTime(this.level.getGameTime(), ...)), and moving that by
+        // the day's step - or reversing it - is what made the celestial bodies leap about the sky
+        // even though /time query, which reads the day clock, looked correct.
+        this.setGameTime(this.minecraft.level.getLevelData().getGameTime() + 1L);
         this.setDayTime(timeSet);
     }
 

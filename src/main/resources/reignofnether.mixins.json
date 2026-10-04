@@ -70,7 +70,6 @@
         "ResourceLoadStateTrackerMixin",
         "SplashRendererAccessor",
         "TitleScreenMixin",
-        "TopdownGuiMixin",
         "fogofwar.BiomeColorsMixin",
         "fogofwar.BlockColorsAccessor",
         "fogofwar.ClientChunkCacheMixin",

@@ -1354,10 +1354,8 @@ public class MinimapClientEvents {
             return;
         if (!OrthoviewClientEvents.isEnabled() || MC.isPaused() || !HudClientEvents.enabled
             || !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || MC.screen instanceof MatchStartScreen) {
-            return;
-        }
-
-        // toggle here to ensure it doesn't happen in the middle of the updates
+        return;
+    }
         if (shouldToggleSize) {
             shouldToggleSize = false;
             toggleMapSize();

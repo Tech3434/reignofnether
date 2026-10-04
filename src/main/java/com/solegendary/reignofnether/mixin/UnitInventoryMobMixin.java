@@ -71,6 +71,23 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
         return this.unitItems;
     }
 
+    /**
+     * 1.5.0 adds this to {@link UnitInventory}: it answers "is this unit holding that unit item,
+     * and is it switched on", which is how the bell of arms and similar actives are gated. The
+     * merge had the interface method but not its implementation, so every unit threw
+     * {@code AbstractMethodError} on the first tick.
+     */
+    @Override
+    public boolean isHoldingActive(UnitItem unitItem) {
+        for (ItemStack itemStack : getAllItems()) {
+            UnitItem heldUnitItem = ItemUtil.getUnitItem(itemStack);
+            if (heldUnitItem != null && heldUnitItem.descId.equals(unitItem.descId)
+                    && ItemUtil.isActive(itemStack))
+                return true;
+        }
+        return false;
+    }
+
     
     // 1.21.1 dropped Container#isFull, so this is the mod's own check now.
 	public boolean isFull() {
@@ -148,8 +165,14 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
     }
 
     
-    // 1.21.1 dropped UnitInventory#deleteUUID; the mod keeps its own.
-	public boolean deleteUUID(UUID uuid) {
+    /**
+     * 1.5.0 renamed this from {@code deleteUUID} to {@code deleteItem} and added the overloads below
+     * to match {@link UnitInventory}. The interface methods had arrived with the merge but not their
+     * implementations, and because this mixin is abstract javac did not complain - every unit threw
+     * {@code AbstractMethodError} on its first tick instead.
+     */
+    @Override
+    public boolean deleteItem(UUID uuid) {
         for (int i = 0; i < unitItems.size(); i++) {
             ItemStack stack = get(i);
             if (stack != null && ItemTagCompat.tag(stack) != null && stack.getItem() != Items.AIR) {
@@ -160,10 +183,44 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
                     }
                     ron$removeItemAttributes(stack);
                     this.unitItems.set(i, ItemStack.EMPTY);
+                    if (this instanceof com.solegendary.reignofnether.unit.interfaces.HeroUnit heroUnit)
+                        heroUnit.setStatsForLevel();
                     syncToClient();
                     return true;
                 }
             }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteItem(UnitItem unitItem) {
+        for (int i = 0; i < unitItems.size(); i++) {
+            ItemStack stack = get(i);
+            if (stack != null && ItemTagCompat.tag(stack) != null && stack.getItem() == unitItem.getItem()) {
+                if (!stack.isEmpty()) {
+                    if (EnchantmentUtil.hasBindingCurse(stack)) {
+                        return false;
+                    }
+                    ron$removeItemAttributes(stack);
+                    this.unitItems.set(i, ItemStack.EMPTY);
+                    if (this instanceof com.solegendary.reignofnether.unit.interfaces.HeroUnit heroUnit)
+                        heroUnit.setStatsForLevel();
+                    syncToClient();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** True when this inventory holds that unit item at all, switched on or not. */
+    @Override
+    public boolean isHolding(UnitItem unitItem) {
+        for (ItemStack itemStack : getAllItems()) {
+            UnitItem heldUnitItem = ItemUtil.getUnitItem(itemStack);
+            if (heldUnitItem != null && heldUnitItem.descId.equals(unitItem.descId))
+                return true;
         }
         return false;
     }
@@ -187,7 +244,7 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
         ItemStack itemStack = get(uuid);
         if (itemStack != null && !EnchantmentUtil.hasBindingCurse(itemStack)) {
             if (inv.tryAdding(get(uuid))) {
-                this.deleteUUID(uuid);
+                this.deleteItem(uuid);
                 ItemEntity itemEntity = this.spawnAtLocation(itemStack);
                 if (itemEntity != null) {
                     ((LivingEntity) inv).take(itemEntity, itemStack.getCount());
@@ -269,7 +326,7 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
         if (unitItem.consumeOnUse) {
             itemStack.setCount(itemStack.getCount() - 1);
             if (itemStack.isEmpty())
-                this.deleteUUID(uuid);
+                this.deleteItem(uuid);
         }
         if (this instanceof HeroUnit heroUnit && unitItem.manaCost > 0)
             heroUnit.setMana(heroUnit.getMana() - unitItem.manaCost);

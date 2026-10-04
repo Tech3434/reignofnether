@@ -110,16 +110,17 @@ public abstract class UnitItem implements RangeIndicator {
 
         this.item = builder.item;
         this.defaultStackCount = builder.defaultStackCount;
-        if (builder.descId == null || builder.descId.isBlank()) {
-            throw new IllegalArgumentException("UnitItemBuilder descId is null or blank!");
-        }
-        this.descId = builder.descId;
-        // 1.5.0 derives the icon texture and the description key from the id, so a new
-        // unit item only has to name itself.
+        // 1.5.0 gives each unit item a descId and derives the icon texture and description key
+        // from it. Not every construction path names itself though - MerchantEquipmentItem wraps a
+        // vanilla item without saying so - so fall back to the registry path rather than refusing
+        // to construct: a wrong-looking icon is recoverable, a static-initializer crash is not.
+        this.descId = (builder.descId == null || builder.descId.isBlank())
+                ? net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(builder.item).getPath()
+                : builder.descId;
         this.iconRl = builder.iconRl != null
                 ? builder.iconRl
                 : ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID,
-                        "textures/item/" + descId + ".png");
+                        "textures/item/" + this.descId + ".png");
         this.uuid = builder.uuid;
         this.type = builder.type;
         this.sellValue = builder.sellValue;

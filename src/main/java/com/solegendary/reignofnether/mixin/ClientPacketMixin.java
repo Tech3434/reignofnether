@@ -31,6 +31,18 @@ public class ClientPacketMixin {
             cancellable = true
     )
     private void handleSetTime(ClientboundSetTimePacket pPacket, CallbackInfo ci) {
+        // Bookkeeping only - the packet is deliberately NOT cancelled.
+        //
+        // Vanilla sends this once every 20 ticks and ClientLevel#tickTime is expected to apply it.
+        // Cancelling it left the client clock as a second, competing authority: every second the
+        // server's time replaced our target, and near a night-distortion source that target is
+        // pinned to midnight, so the client kept re-racing towards midnight and back - the sun
+        // jerking roughly once a second. The mod already moves the day on the server side
+        // (SurvivalServerEvents, PlayerServerEvents), so the server is the only authority the client
+        // needs to mirror.
+        TimeClientEvents.serverNormDayTime = TimeUtils.normaliseTime(pPacket.getDayTime());
+        TimeClientEvents.serverGameTime = pPacket.getGameTime();
+
         Vec3 pos;
         if (OrthoviewClientEvents.isEnabled())
             pos = MiscUtil.getOrthoviewCentreWorldPos(MINECRAFT);
@@ -39,15 +51,9 @@ public class ClientPacketMixin {
         else
             return;
 
-        ci.cancel();
-
-        TimeClientEvents.serverNormDayTime = TimeUtils.normaliseTime(pPacket.getDayTime());
-        TimeClientEvents.serverGameTime = pPacket.getGameTime();
-
         if (NightUtils.isInRangeOfNightSource(pos, true))
             TimeClientEvents.targetClientTime = 18000; // midnight
         else
             TimeClientEvents.targetClientTime = TimeClientEvents.serverNormDayTime;
-
     }
 }

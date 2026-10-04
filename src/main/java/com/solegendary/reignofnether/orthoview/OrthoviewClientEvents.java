@@ -1,6 +1,8 @@
 package com.solegendary.reignofnether.orthoview;
 
 import com.solegendary.reignofnether.util.GuiLayerCompat;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
@@ -295,6 +297,23 @@ public class OrthoviewClientEvents {
 
     public static void forceMoveCam(Vec3i pos, int cameraLockTicks) {
         forceMoveCam(pos.getX(), pos.getZ(), cameraLockTicks);
+    }
+
+    /**
+     * Hides the vanilla hotbar and crosshair while orthoview is on: they show the wrong player's
+     * state and a crosshair means nothing from a top-down camera.
+     *
+     * <p>This cancels the two <em>layers</em> rather than {@code Gui#render} itself. An earlier
+     * version of this port cancelled the whole render call, which took everything driven by
+     * {@code GuiLayerManager} with it - chat, the minimap, the drag-selection rectangle and the map
+     * button all stopped rendering for as long as orthoview was enabled.
+     */
+    @SubscribeEvent
+    public static void onRenderGuiLayer(RenderGuiLayerEvent.Pre evt) {
+        if (!OrthoviewClientEvents.isEnabled()) return;
+        ResourceLocation name = evt.getName();
+        if (VanillaGuiLayers.HOTBAR.equals(name) || VanillaGuiLayers.CROSSHAIR.equals(name))
+            evt.setCanceled(true);
     }
 
     @SubscribeEvent

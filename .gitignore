@@ -18,14 +18,9 @@ tools/
 errs*.txt
 *.err
 
-# Sources extracted from jars for reference during the port
-.jx/
-.jassets/
-.j1/
-.j2/
-.j3/
-.jdx/
-.jmc/
+# Sources extracted from jars for reference during the port. Any .j* directory is a scratch
+# extraction; add new ones here never again.
+.j*/
 .mdgx/
 .mdgsrc/
 .abstractprobe/
