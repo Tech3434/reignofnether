@@ -45,6 +45,12 @@ import java.util.Objects;
 import java.util.UUID;
 import com.solegendary.reignofnether.util.EnchantmentUtil;
 import com.solegendary.reignofnether.util.AttributeHelpers;
+import com.solegendary.reignofnether.items.UnitItems;
+import com.solegendary.reignofnether.items.UnitItem;
+import com.solegendary.reignofnether.mixin.UnitInventoryMobMixin;
+import com.solegendary.reignofnether.items.UnitInventory;
+import com.solegendary.reignofnether.items.ItemUtil;
+import com.solegendary.reignofnether.items.ItemClientboundPacket;
 
 @Mixin(Mob.class)
 public abstract class UnitInventoryMobMixin extends LivingEntity implements UnitInventory {
@@ -65,8 +71,9 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
         return this.unitItems;
     }
 
-    @Override
-    public boolean isFull() {
+    
+    // 1.21.1 dropped Container#isFull, so this is the mod's own check now.
+	public boolean isFull() {
         for (ItemStack itemStack : getAllItems())
             if (itemStack == ItemStack.EMPTY || itemStack.isEmpty())
                 return false;
@@ -140,8 +147,9 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
         return false;
     }
 
-    @Override
-    public boolean deleteUUID(UUID uuid) {
+    
+    // 1.21.1 dropped UnitInventory#deleteUUID; the mod keeps its own.
+	public boolean deleteUUID(UUID uuid) {
         for (int i = 0; i < unitItems.size(); i++) {
             ItemStack stack = get(i);
             if (stack != null && ItemTagCompat.tag(stack) != null && stack.getItem() != Items.AIR) {

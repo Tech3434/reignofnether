@@ -65,11 +65,12 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffectEvent;
+import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -102,6 +103,43 @@ import static com.solegendary.reignofnether.hud.HudClientEvents.hudSelectedEntit
 import static com.solegendary.reignofnether.unit.Checkpoint.CHECKPOINT_TICKS_FADE;
 import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS;
 import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES;
+import com.solegendary.reignofnether.unit.units.monsters.ZoglinUnit;
+import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.units.villagers.WitchUnit;
+import com.solegendary.reignofnether.unit.units.monsters.WardenUnit;
+import com.solegendary.reignofnether.unit.VirtualUnit;
+import com.solegendary.reignofnether.unit.units.villagers.VindicatorUnit;
+import com.solegendary.reignofnether.unit.units.villagers.VillagerUnitProfession;
+import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
+import com.solegendary.reignofnether.unit.UnitClientEvents;
+import com.solegendary.reignofnether.unit.UnitAnimationAction;
+import com.solegendary.reignofnether.unit.UnitActionItem;
+import com.solegendary.reignofnether.unit.UnitAction;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.units.monsters.SpiderUnit;
+import com.solegendary.reignofnether.unit.units.monsters.SlimeUnit;
+import com.solegendary.reignofnether.unit.units.villagers.ScoutDogUnit;
+import com.solegendary.reignofnether.unit.units.villagers.ScoutCatUnit;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import com.solegendary.reignofnether.mixin.RenderChunkRegionMixin;
+import com.solegendary.reignofnether.unit.Relationship;
+import com.solegendary.reignofnether.unit.units.villagers.RavagerUnit;
+import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
+import com.solegendary.reignofnether.unit.units.villagers.PillagerUnit;
+import com.solegendary.reignofnether.unit.NonUnitClientEvents;
+import com.solegendary.reignofnether.unit.units.villagers.MilitiaUnit;
+import com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal;
+import com.solegendary.reignofnether.unit.interfaces.KeyframeAnimated;
+import com.solegendary.reignofnether.unit.units.villagers.IronGolemUnit;
+import net.minecraft.core.IdMap;
+import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.FormationDragMove;
+import com.solegendary.reignofnether.unit.units.villagers.EvokerUnit;
+import com.solegendary.reignofnether.unit.units.monsters.CreeperUnit;
+import com.solegendary.reignofnether.unit.interfaces.ConvertableUnit;
+import com.solegendary.reignofnether.unit.Checkpoint;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 
 public class UnitClientEvents {
 
@@ -113,7 +151,7 @@ public class UnitClientEvents {
     public static final List<ArrayList<Vec3>> unitWindowVecs = Collections.synchronizedList(new ArrayList<>());
 
     /** Per-entity mob effect icons, filled on effect add/remove and read by the HUD. */
-    public static final Map<Integer, HashMap<MobEffect, MobEffectIcon>> mobEffectIcons = new ConcurrentHashMap<>();
+    public static final Map<Integer, HashMap<Holder<MobEffect>, MobEffectIcon>> mobEffectIcons = new ConcurrentHashMap<>();
     public static final List<BlockPos> windowPositions = Collections.synchronizedList(new ArrayList<>());
     public static int windowUpdateTicks = UnitClientEvents.WINDOW_UPDATE_TICKS_MAX;
 
@@ -1687,7 +1725,7 @@ public class UnitClientEvents {
         synchronized (mobEffectIcons) {
             mobEffectIcons
                     .computeIfAbsent(entity.getId(), id -> new HashMap<>())
-                    .put(mei.getEffect(), MobEffectIcons.getIcon(mei));
+                    .put(MobEffectHelpers.holder(mei.getEffect()), MobEffectIcons.getIcon(mei));
         }
     }
 
@@ -1697,7 +1735,7 @@ public class UnitClientEvents {
         if (!(entity instanceof Unit))
             return;
 
-        removeMobEffectIcon(entity.getId(), evt.getEffect());
+        removeMobEffectIcon(entity.getId(), MobEffectHelpers.holder(evt.getEffect()));
     }
 
     // Without this, icons stay behind when an effect simply runs out
@@ -1711,9 +1749,9 @@ public class UnitClientEvents {
         removeMobEffectIcon(entity.getId(), mei.getEffect());
     }
 
-    private static void removeMobEffectIcon(int entityId, MobEffect effect) {
+    private static void removeMobEffectIcon(int entityId, Holder<MobEffect> effect) {
         synchronized (mobEffectIcons) {
-            HashMap<MobEffect, MobEffectIcon> icons = mobEffectIcons.get(entityId);
+            HashMap<Holder<MobEffect>, MobEffectIcon> icons = mobEffectIcons.get(entityId);
             if (icons != null) {
                 icons.remove(effect);
                 if (icons.isEmpty())

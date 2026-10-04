@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.unit.units.monsters;
 
+import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.util.AttributeHelpers;
 import com.solegendary.reignofnether.util.MobCategoryCompat;
 import net.minecraft.world.entity.MobCategory;
@@ -56,6 +57,21 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
+import com.solegendary.reignofnether.unit.units.monsters.ZombieUnit;
+import com.solegendary.reignofnether.unit.goals.UsePortalGoal;
+import net.minecraft.world.entity.SpawnGroupData;
+import com.solegendary.reignofnether.unit.goals.SelectedTargetGoal;
+import com.solegendary.reignofnether.unit.goals.ReturnResourcesGoal;
+import com.solegendary.reignofnether.unit.goals.RandomLookAroundUnitGoal;
+import com.solegendary.reignofnether.unit.goals.MoveToTargetBlockGoal;
+import net.minecraft.world.entity.MobSpawnType;
+import com.solegendary.reignofnether.unit.goals.MeleeAttackUnitGoal;
+import com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal;
+import net.minecraft.world.entity.LivingEntity;
+import com.solegendary.reignofnether.unit.goals.GarrisonGoal;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EntityType;
+import com.solegendary.reignofnether.unit.goals.AbstractMeleeAttackUnitGoal;
 
 public class ZombieUnit extends Zombie implements Unit, AttackerUnit, ConvertableUnit {
     public static final Abilities ABILITIES = new Abilities();
@@ -230,7 +246,7 @@ public class ZombieUnit extends Zombie implements Unit, AttackerUnit, Convertabl
             AttackerUnit.tick(this);
 
             if (isSummoned() && !hasEffectWithDuration(MobEffectRegistrar.LIMITED_LIFESPAN.get()) && tickCount < RaiseDead.ZOMBIE_TICKS_BEFORE_DECAY) {
-                this.addEffect(new MobEffectInstance(MobEffectRegistrar.LIMITED_LIFESPAN.get(), RaiseDead.ZOMBIE_TICKS_BEFORE_DECAY, 0, true, false));
+                this.addEffect(new MobEffectInstance(MobEffectHelpers.holder(MobEffectRegistrar.LIMITED_LIFESPAN.get()), RaiseDead.ZOMBIE_TICKS_BEFORE_DECAY, 0, true, false));
             }
 
             if (tickCount % 20 == 0 && !level().isClientSide()) {

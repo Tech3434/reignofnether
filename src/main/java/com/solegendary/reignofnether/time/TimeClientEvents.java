@@ -44,6 +44,11 @@ public class TimeClientEvents {
     private static final Minecraft MC = Minecraft.getInstance();
 
     // setting this value causes the time of day to smoothly move towards it regardless of the server time
+    /** Monotonic wall clock in milliseconds, for timed UI animations. */
+    public static long getClientTime() {
+        return System.currentTimeMillis();
+    }
+
     public static long targetClientTime = 0;
     // actual time on the server
     public static long serverNormDayTime = 0;

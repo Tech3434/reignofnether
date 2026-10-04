@@ -109,26 +109,26 @@ public interface AttackerUnit {
     }
 
     public default float getCriticalChance() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeRegistrar.CRITICAL_HIT_CHANCE.get());
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.CRITICAL_HIT_CHANCE.get()));
         return (float) (attr != null ? attr.getValue() : AttributeRegistrar.CRITICAL_HIT_CHANCE.get().getDefaultValue());
     }
     public default float getExplosiveChance() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeRegistrar.EXPLOSIVE_HIT_CHANCE.get());
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.EXPLOSIVE_HIT_CHANCE.get()));
         return (float) (attr != null ? attr.getValue() : AttributeRegistrar.EXPLOSIVE_HIT_CHANCE.get().getDefaultValue());
     }
     public default float getBuildingDamageBonus() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeRegistrar.BUILDING_DAMAGE_BONUS.get());
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.BUILDING_DAMAGE_BONUS.get()));
         return (float) (attr != null ? (attr.getValue()) : (AttributeRegistrar.BUILDING_DAMAGE_BONUS.get().getDefaultValue()));
     }
     public default float getBuildingDamageMultiplier() {
         return getBuildingDamageBonus() + 1.0f;
     }
     public default float getLifeStealPercent() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeRegistrar.LIFESTEAL.get());
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.LIFESTEAL.get()));
         return (float) (attr != null ? attr.getValue() : AttributeRegistrar.LIFESTEAL.get().getDefaultValue());
     }
     public default float getManaOnHitPercent() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeRegistrar.MANA_ON_HIT.get());
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.MANA_ON_HIT.get()));
         return (float) (attr != null ? attr.getValue() : AttributeRegistrar.MANA_ON_HIT.get().getDefaultValue());
     }
 

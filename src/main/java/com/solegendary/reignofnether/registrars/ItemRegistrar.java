@@ -2,14 +2,18 @@ package com.solegendary.reignofnether.registrars;
 
 import java.util.function.Supplier;
 import com.solegendary.reignofnether.ReignOfNether;
+import com.solegendary.reignofnether.items.FoilableItem;
 import com.solegendary.reignofnether.items.HeroExperienceBottleItem;
-import com.solegendary.reignofnether.items.StaffOfLightning;
 import com.solegendary.reignofnether.items.ThrowableTnt;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.common.property.Properties;
+import com.solegendary.reignofnether.registrars.ItemRegistrar;
+import com.solegendary.reignofnether.registrars.EntityRegistrar;
 
 public class ItemRegistrar {
 
@@ -203,6 +207,10 @@ public class ItemRegistrar {
             ITEMS.register("llama_unit_spawn_egg", () -> new DeferredSpawnEggItem(EntityRegistrar.LLAMA_UNIT,
                     0xa6896c, 0x6e442e, new Item.Properties()));
 
+    public static final Supplier<DeferredSpawnEggItem> BEE_UNIT_SPAWN_EGG =
+            ITEMS.register("bee_unit_spawn_egg", () -> new DeferredSpawnEggItem(EntityRegistrar.BEE_UNIT,
+                    0xdbb544, 0x2a1711, new Item.Properties()));
+
     public static final Supplier<Item> THROWABLE_TNT =
             ITEMS.register("throwable_tnt", () -> new ThrowableTnt(new Item.Properties()));
 
@@ -210,7 +218,40 @@ public class ItemRegistrar {
             ITEMS.register("thrown_hero_experience_bottle", () -> new HeroExperienceBottleItem(new Item.Properties()));
 
     public static final Supplier<Item> STAFF_OF_LIGHTNING =
-            ITEMS.register("staff_of_lightning", () -> new StaffOfLightning(new Item.Properties()));
+            ITEMS.register("staff_of_lightning", () -> new FoilableItem(new Item.Properties().rarity(Rarity.EPIC)));
+
+
+    public static final Supplier<Item> HEART_MEDALLION = ITEMS.register("heart_medallion", () -> new FoilableItem(new Item.Properties()));
+    public static final Supplier<Item> AZURE_MEDALLION = ITEMS.register("azure_medallion", () -> new FoilableItem(new Item.Properties()));
+    public static final Supplier<Item> IRON_HIDE_AMULET = ITEMS.register("iron_hide_amulet", () -> new FoilableItem(new Item.Properties()));
+    public static final Supplier<Item> SOUL_COLLECTOR = ITEMS.register("soul_collector", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Supplier<Item> BROADSWORD = ITEMS.register("broadsword", () -> new FoilableItem(new Item.Properties()));
+    public static final Supplier<Item> KATANA = ITEMS.register("katana", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Supplier<Item> HEARTSTEALER = ITEMS.register("heartstealer", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Supplier<Item> RITUAL_DAGGER = ITEMS.register("ritual_dagger", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Supplier<Item> POWERSHAKER = ITEMS.register("powershaker", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Supplier<Item> GREAT_HAMMER = ITEMS.register("great_hammer", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Supplier<Item> SPARKLER = ITEMS.register("sparkler", () -> new FoilableItem(new Item.Properties()));
+    public static final Supplier<Item> LIGHT_FEATHER = ITEMS.register("light_feather", () -> new FoilableItem(new Item.Properties()));
+    public static final Supplier<Item> BOOTS_OF_SWIFTNESS = ITEMS.register("boots_of_swiftness", () -> new FoilableItem(new Item.Properties()));
+    public static final Supplier<Item> FROST_WALKER_BOOTS = ITEMS.register("frost_walker_boots", () -> new FoilableItem(new Item.Properties().rarity(Rarity.RARE)));
+    public static final Supplier<Item> MAGMA_WALKER_BOOTS = ITEMS.register("magma_walker_boots", () -> new FoilableItem(new Item.Properties().rarity(Rarity.RARE)));
+    public static final Supplier<Item> SATCHEL_OF_SNACKS = ITEMS.register("satchel_of_snacks", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Supplier<Item> BEENEST_ARMOUR = ITEMS.register("beenest_armour", () -> new FoilableItem(new Item.Properties().rarity(Rarity.RARE)));
+    public static final Supplier<Item> HEALTH_POTION = ITEMS.register("health_potion", () -> new FoilableItem(new Item.Properties()));
+    public static final Supplier<Item> MANA_POTION = ITEMS.register("mana_potion", () -> new FoilableItem(new Item.Properties()));
+    public static final Supplier<Item> GHOST_CLOAK = ITEMS.register("ghost_cloak", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Supplier<Item> GONG_OF_WEAKENING = ITEMS.register("gong_of_weakening", () -> new FoilableItem(new Item.Properties().rarity(Rarity.RARE)));
+    public static final Supplier<Item> ICE_WAND = ITEMS.register("ice_wand", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Supplier<Item> UPDRAFT_TOME = ITEMS.register("updraft_tome", () -> new FoilableItem(new Item.Properties().rarity(Rarity.RARE)));
+    public static final Supplier<Item> TOME_OF_DUPLICATION = ITEMS.register("tome_of_duplication", () -> new FoilableItem(new Item.Properties().rarity(Rarity.RARE)));
+    public static final Supplier<Item> SHADOW_SHIFTER = ITEMS.register("shadow_shifter", () -> new FoilableItem(new Item.Properties().rarity(Rarity.EPIC)));
+    public static final Supplier<Item> POCKET_PORTAL = ITEMS.register("pocket_portal", () -> new FoilableItem(new Item.Properties()));
+    public static final Supplier<Item> WAR_HORN = ITEMS.register("war_horn", () -> new FoilableItem(new Item.Properties().rarity(Rarity.RARE)));
+    public static final Supplier<Item> TOTEM_OF_REGENERATION = ITEMS.register("totem_of_regeneration", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Supplier<Item> TOTEM_OF_SHIELDING = ITEMS.register("totem_of_shielding", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Supplier<Item> TOTEM_OF_PROTECTION = ITEMS.register("totem_of_protection", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final Supplier<Item> TOTEM_OF_CASTING = ITEMS.register("totem_of_casting", () -> new FoilableItem(new Item.Properties().rarity(Rarity.UNCOMMON)));
 
     public static void init(ModContainer context) {
         ITEMS.register(context.getEventBus());

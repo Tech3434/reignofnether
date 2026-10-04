@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import com.solegendary.reignofnether.nether.NetherBlocks;
 
 // mappings of which overworld blocks will transform into which nether blocks when near a piglin base
 

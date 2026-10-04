@@ -408,9 +408,48 @@ public class EntityRegistrar {
                     .updateInterval(10)
                     .build(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "molten_bomb_projectile").toString()));
 
+    public static final Supplier<EntityType<BeeUnit>> BEE_UNIT = ENTITIES.register("bee_unit",
+            () -> EntityType.Builder.of(BeeUnit::new, MobCategory.CREATURE)
+                    .sized(EntityType.BEE.getWidth(), EntityType.BEE.getHeight())
+                    .clientTrackingRange(UNIT_CLIENT_TRACKING_RANGE)
+                    .build(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "bee_unit").toString()));
+    public static final Supplier<EntityType<TotemOfRegeneration>> TOTEM_OF_REGENERATION = ENTITIES.register("totem_of_regeneration",
+            () -> EntityType.Builder.of(TotemOfRegeneration::new, MobCategory.MISC)
+                    .fireImmune()
+                    .sized(0.75f, 1.25f)
+                    .clientTrackingRange(UNIT_CLIENT_TRACKING_RANGE)
+                    .updateInterval(10)
+                    .build(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "totem_of_regeneration").toString()));
+    public static final Supplier<EntityType<TotemOfCasting>> TOTEM_OF_CASTING = ENTITIES.register("totem_of_casting",
+            () -> EntityType.Builder.of(TotemOfCasting::new, MobCategory.MISC)
+                    .fireImmune()
+                    .sized(0.75f, 1.25f)
+                    .clientTrackingRange(UNIT_CLIENT_TRACKING_RANGE)
+                    .updateInterval(10)
+                    .build(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "totem_of_casting").toString()));
+    public static final Supplier<EntityType<TotemOfProtection>> TOTEM_OF_PROTECTION = ENTITIES.register("totem_of_protection",
+            () -> EntityType.Builder.of(TotemOfProtection::new, MobCategory.MISC)
+                    .fireImmune()
+                    .sized(0.75f, 1.25f)
+                    .clientTrackingRange(UNIT_CLIENT_TRACKING_RANGE)
+                    .updateInterval(10)
+                    .build(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "totem_of_protection").toString()));
+    public static final Supplier<EntityType<TotemOfShielding>> TOTEM_OF_SHIELDING = ENTITIES.register("totem_of_shielding",
+            () -> EntityType.Builder.of(TotemOfShielding::new, MobCategory.MISC)
+                    .fireImmune()
+                    .sized(0.75f, 1.25f)
+                    .clientTrackingRange(UNIT_CLIENT_TRACKING_RANGE)
+                    .updateInterval(10)
+                    .build(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "totem_of_shielding").toString()));
+
     /** Maps a production-item name onto the entity that item summons. */
     public static EntityType<? extends Mob> getEntityType(String id) {
         return switch (id) {
+            case "bee_unit" -> EntityRegistrar.BEE_UNIT.get();
+            case "totem_of_regeneration" -> EntityRegistrar.TOTEM_OF_REGENERATION.get();
+            case "totem_of_casting" -> EntityRegistrar.TOTEM_OF_CASTING.get();
+            case "totem_of_protection" -> EntityRegistrar.TOTEM_OF_PROTECTION.get();
+            case "totem_of_shielding" -> EntityRegistrar.TOTEM_OF_SHIELDING.get();
             case "Creeper" -> EntityRegistrar.CREEPER_UNIT.get();
             case "Skeleton" -> EntityRegistrar.SKELETON_UNIT.get();
             case "Zombie" -> EntityRegistrar.ZOMBIE_UNIT.get();

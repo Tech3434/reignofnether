@@ -17,11 +17,20 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import com.solegendary.reignofnether.items.UnitItemType;
+import com.solegendary.reignofnether.items.UnitItemBuilder;
+import com.solegendary.reignofnether.items.UnitItem;
+import mcp.client.Start;
+import com.solegendary.reignofnether.ReignOfNether;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 
 // items that can be held and used by RTS units, especially heroes
 // they are still registered as actual Minecraft items
@@ -40,7 +49,23 @@ public abstract class UnitItem implements RangeIndicator {
 
     public static final String RON$COOLDOWN_KEY = "reignofnether:CooldownEndTick";
 
+    public static final Map<Rarity, Integer> RARITY_VALUES = Map.of(
+            Rarity.COMMON, 16,
+            Rarity.UNCOMMON, 24,
+            Rarity.RARE, 32,
+            Rarity.EPIC, 48
+    );
+
+    public Rarity rarity;
+    public boolean toggleActiveOnUse;
+    public boolean showRadiusAtCursor;
+    public boolean doCastAnimation;
+    public boolean resetBehaviours;
+    public boolean forceAutocast;
+    public boolean canRandomDrop;
+    public int maxStackSize; // only affects units; players can stack any items
     protected final Item item;
+    public final String descId;
     public final int defaultStackCount;
     public final UUID uuid;
     public final ResourceLocation iconRl;
@@ -74,10 +99,28 @@ public abstract class UnitItem implements RangeIndicator {
     @Override public void setHighlightBps(Set<BlockPos> bps) { highlightBps = bps; }
 
     protected UnitItem(UnitItemBuilder builder) {
+        this.rarity = builder.rarity;
+        this.toggleActiveOnUse = builder.toggleActiveOnUse;
+        this.showRadiusAtCursor = builder.showRadiusAtCursor;
+        this.doCastAnimation = builder.doCastAnimation;
+        this.resetBehaviours = builder.resetBehaviours;
+        this.forceAutocast = builder.forceAutocast;
+        this.canRandomDrop = builder.canRandomDrop;
+        this.maxStackSize = builder.maxStackSize;
+
         this.item = builder.item;
         this.defaultStackCount = builder.defaultStackCount;
+        if (builder.descId == null || builder.descId.isBlank()) {
+            throw new IllegalArgumentException("UnitItemBuilder descId is null or blank!");
+        }
+        this.descId = builder.descId;
+        // 1.5.0 derives the icon texture and the description key from the id, so a new
+        // unit item only has to name itself.
+        this.iconRl = builder.iconRl != null
+                ? builder.iconRl
+                : ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID,
+                        "textures/item/" + descId + ".png");
         this.uuid = builder.uuid;
-        this.iconRl = builder.iconRl;
         this.type = builder.type;
         this.sellValue = builder.sellValue;
         this.buyCost = builder.buyCost;

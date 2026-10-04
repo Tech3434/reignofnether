@@ -95,6 +95,39 @@ import java.util.Random;
 import static com.ibm.icu.impl.ValidIdentifiers.Datatype.unit;
 import static com.solegendary.reignofnether.util.MiscUtil.fcs;
 import net.minecraft.core.Holder;
+import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.goals.UsePortalGoal;
+import com.solegendary.reignofnether.unit.UnitStatType;
+import com.solegendary.reignofnether.unit.UnitServerEvents;
+import com.solegendary.reignofnether.unit.goals.UnitItemGoal;
+import com.solegendary.reignofnether.unit.UnitClientEvents;
+import com.solegendary.reignofnether.unit.UnitAction;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.sounds.SoundClientboundPacket;
+import com.solegendary.reignofnether.sounds.SoundAction;
+import com.solegendary.reignofnether.unit.goals.SelectedTargetGoal;
+import com.solegendary.reignofnether.unit.goals.ReturnResourcesGoal;
+import com.solegendary.reignofnether.resources.Resources;
+import com.solegendary.reignofnether.resources.ResourceSources;
+import com.solegendary.reignofnether.resources.ResourceSource;
+import com.solegendary.reignofnether.resources.ResourceName;
+import com.solegendary.reignofnether.resources.ResourceCost;
+import com.solegendary.reignofnether.unit.Relationship;
+import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
+import com.solegendary.reignofnether.unit.goals.MoveToTargetBlockGoal;
+import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.goals.GenericUntargetedSpellGoal;
+import com.solegendary.reignofnether.unit.goals.GenericTargetedSpellGoal;
+import com.solegendary.reignofnether.unit.goals.GatherResourcesGoal;
+import com.solegendary.reignofnether.unit.goals.GarrisonGoal;
+import com.solegendary.reignofnether.unit.goals.FlyingUsePortalGoal;
+import com.solegendary.reignofnether.unit.goals.FlyingMoveToTargetGoal;
+import net.minecraft.world.level.material.Fluid;
+import com.solegendary.reignofnether.unit.units.monsters.DrownedUnit;
+import com.solegendary.reignofnether.unit.Checkpoint;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 
 // Defines method bodies for Units
 // workaround for trying to have units inherit from both their base vanilla Mob class and a Unit class
@@ -731,11 +764,69 @@ public interface Unit {
     // equipment only needs to be done serverside, but mod-specific fields need to be done clientside too
     default void setupEquipmentAndUpgradesClient() { }
 
+    /**
+     * Base attribute set every unit starts from; per-unit builders chain onto this.
+     *
+     * <p>1.5.0 added the crit/explosive/building-damage/lifesteal/mana-on-hit/scale attributes,
+     * so the base has to register them or the per-unit {@code .add(...)} calls will not compile.
+     */
+    static AttributeSupplier.Builder createDefaultAttributes() {
+        return Mob.createMobAttributes()
+                .add(Attributes.ATTACK_DAMAGE, 0)
+                .add(Attributes.MOVEMENT_SPEED, 0.25)
+                .add(Attributes.MAX_HEALTH, 1)
+                .add(Attributes.FOLLOW_RANGE, Unit.getFollowRange())
+                .add(Attributes.ARMOR, 0)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACKS_PER_SECOND.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_RANGE.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.AGGRO_RANGE.get()), 10)
+                .add(AttributeHelpers.holder(AttributeRegistrar.SIGHT_RANGE.get()), Unit.DEFAULT_SIGHT_RANGE)
+                .add(AttributeHelpers.holder(AttributeRegistrar.RANGED_DAMAGE_RESIST.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.EVASION_CHANCE.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.CRITICAL_HIT_CHANCE.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.EXPLOSIVE_HIT_CHANCE.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.BUILDING_DAMAGE_BONUS.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.LIFESTEAL.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.MANA_ON_HIT.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.SCALE.get()), 1.0f);
+    }
+
+    /**
+     * Movement multiplier from equipment and abilities; overridden per unit.
+     *
+     * <p>1.5.0 made this an instance method so goals can call it without unwrapping the mob. The
+     * static overload below predates that and is still used by the shield check.
+     */
+    default float getSpeedModifier() {
+        return 1.0f;
+    }
+
     static float getSpeedModifier(Unit unit) {
         if (unit instanceof BruteUnit brute && brute.isHoldingUpShield()) {
             return 0.5f;
         }
         return 1.0f;
+    }
+
+    public static void startEatingOrDrinking(Unit unit, ItemEntity itemEntity) {
+        if (ItemUtil.isEdibleDrink(itemEntity.getItem().getItem())) {
+            SoundClientboundPacket.playSoundAtPos(SoundAction.POTION_POP, ((LivingEntity) unit).blockPosition(), 1.5f);
+        }
+        ItemStack itemStack = itemEntity.getItem();
+        ((LivingEntity) unit).onItemPickup(itemEntity);
+        ((LivingEntity) unit).take(itemEntity, 1);
+        unit.getItems().add(new ItemStack(itemStack.getItem(), 1));
+        UnitAnimationClientboundPacket.sendEatFoodPacket(((LivingEntity) unit), BuiltInRegistries.ITEM.getId(itemStack.getItem()));
+        itemStack.setCount(itemStack.getCount() - 1);
+        if (itemStack.getCount() <= 0)
+            itemEntity.discard();
+    }
+
+        public default double getAttackerRangeBonus(Mob attacker) {
+        return 0f;
     }
 
     static Ability getAbility(Unit unit, UnitAction abilityAction) {
@@ -902,9 +993,9 @@ public interface Unit {
             }
         }
         synchronized (UnitClientEvents.mobEffectIcons) {
-            HashMap<MobEffect, MobEffectIcon> mobEffects = UnitClientEvents.mobEffectIcons.get(entity.getId());
+            HashMap<Holder<MobEffect>, MobEffectIcon> mobEffects = UnitClientEvents.mobEffectIcons.get(entity.getId());
             if (mobEffects != null) {
-                for (MobEffect effect : mobEffects.keySet()) {
+                for (Holder<MobEffect> effect : mobEffects.keySet()) {
                     if (mobEffects.get(effect) != null)
                         icons.add(mobEffects.get(effect));
                 }

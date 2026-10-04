@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import com.solegendary.reignofnether.util.SavedDataCompat;
+import com.solegendary.reignofnether.player.RTSPlayerScores;
+import com.solegendary.reignofnether.player.RTSPlayerSaveData;
+import com.solegendary.reignofnether.player.RTSPlayer;
 
 public class RTSPlayerSaveData extends SavedData {
 
@@ -54,14 +57,26 @@ public class RTSPlayerSaveData extends SavedData {
                 int scenarioRoleIndex = ptag.getInt("scenarioRoleIndex");
 
                 Map<TradeAction, Integer> tradeRates = new HashMap<>();
-                tradeRates.put(TradeAction.FOOD_FOR_WOOD, ptag.contains("foodWoodRate") ? ptag.getInt("foodWoodRate") : TradeResources.START_RATE);
-                tradeRates.put(TradeAction.FOOD_FOR_ORE, ptag.contains("foodOreRate") ? ptag.getInt("foodOreRate") : TradeResources.START_RATE);
-                tradeRates.put(TradeAction.WOOD_FOR_FOOD, ptag.contains("woodFoodRate") ? ptag.getInt("woodFoodRate") : TradeResources.START_RATE);
-                tradeRates.put(TradeAction.WOOD_FOR_ORE, ptag.contains("woodOreRate") ? ptag.getInt("woodOreRate") : TradeResources.START_RATE);
-                tradeRates.put(TradeAction.ORE_FOR_FOOD, ptag.contains("oreFoodRate") ? ptag.getInt("oreFoodRate") : TradeResources.START_RATE);
-                tradeRates.put(TradeAction.ORE_FOR_WOOD, ptag.contains("oreWoodRate") ? ptag.getInt("oreWoodRate") : TradeResources.START_RATE);
+                // 1.5.0 reworked the market: rates are now per-direction (buy vs sell), so the
+                // single START_RATE default became START_BUY_RATE / START_SELL_RATE and the
+                // persisted keys changed from <a>For<b>Rate to <a>Rate/<b>Rate pairs.
+                tradeRates.put(TradeAction.FOOD_FOR_EMERALD, ptag.contains("foodEmeraldRate") ? ptag.getInt("foodEmeraldRate") : TradeResources.START_SELL_RATE);
+                tradeRates.put(TradeAction.EMERALD_FOR_FOOD, ptag.contains("emeraldFoodRate") ? ptag.getInt("emeraldFoodRate") : TradeResources.START_BUY_RATE);
+                tradeRates.put(TradeAction.WOOD_FOR_EMERALD, ptag.contains("woodEmeraldRate") ? ptag.getInt("woodEmeraldRate") : TradeResources.START_SELL_RATE);
+                tradeRates.put(TradeAction.EMERALD_FOR_WOOD, ptag.contains("emeraldWoodRate") ? ptag.getInt("emeraldWoodRate") : TradeResources.START_BUY_RATE);
+                tradeRates.put(TradeAction.ORE_FOR_EMERALD, ptag.contains("oreEmeraldRate") ? ptag.getInt("oreEmeraldRate") : TradeResources.START_SELL_RATE);
+                tradeRates.put(TradeAction.EMERALD_FOR_ORE, ptag.contains("emeraldOreRate") ? ptag.getInt("emeraldOreRate") : TradeResources.START_BUY_RATE);
 
-                data.rtsPlayers.add(RTSPlayer.getFromSave(name, id, ticksWithoutCapitol, faction, beaconOwnerTicks, scores, scenarioRoleIndex, tradeRates));
+                // 1.5.0 persists a per-player item-drop seed and two counters alongside the trade rates
+        int creepScore = ptag.contains("creepScore") ? ptag.getInt("creepScore") : 0;
+        int itemsDropped = ptag.contains("itemsDropped") ? ptag.getInt("itemsDropped") : 0;
+        Long itemSeed = ptag.contains("itemSeed") ? ptag.getLong("itemSeed") : new java.util.Random().nextLong();
+
+        data.rtsPlayers.add(RTSPlayer.getFromSave(
+                name, id, ticksWithoutCapitol, faction,
+                beaconOwnerTicks, scores, scenarioRoleIndex,
+                tradeRates, creepScore, itemsDropped, itemSeed
+        ));
 
                 ReignOfNether.LOGGER.info("RTSPlayerSaveData.load: " + name + "|" + id + "|" + faction);
             }
@@ -83,12 +98,13 @@ public class RTSPlayerSaveData extends SavedData {
             cTag.putString("faction", p.faction.name());
             cTag.putIntArray("scores", p.scores.getScoreListAsArray());
             cTag.putInt("scenarioRoleIndex", p.scenarioRoleIndex);
-            cTag.putInt("foodWoodRate", p.tradeRates.get(TradeAction.FOOD_FOR_WOOD));
-            cTag.putInt("foodOreRate", p.tradeRates.get(TradeAction.FOOD_FOR_ORE));
-            cTag.putInt("woodFoodRate", p.tradeRates.get(TradeAction.WOOD_FOR_FOOD));
-            cTag.putInt("woodOreRate", p.tradeRates.get(TradeAction.WOOD_FOR_ORE));
-            cTag.putInt("oreFoodRate", p.tradeRates.get(TradeAction.ORE_FOR_FOOD));
-            cTag.putInt("oreWoodRate", p.tradeRates.get(TradeAction.ORE_FOR_WOOD));
+            // 1.5.0 made rates per-direction, so the persisted keys changed too
+            cTag.putInt("foodEmeraldRate", p.tradeRates.get(TradeAction.FOOD_FOR_EMERALD));
+            cTag.putInt("emeraldFoodRate", p.tradeRates.get(TradeAction.EMERALD_FOR_FOOD));
+            cTag.putInt("woodEmeraldRate", p.tradeRates.get(TradeAction.WOOD_FOR_EMERALD));
+            cTag.putInt("emeraldWoodRate", p.tradeRates.get(TradeAction.EMERALD_FOR_WOOD));
+            cTag.putInt("oreEmeraldRate", p.tradeRates.get(TradeAction.ORE_FOR_EMERALD));
+            cTag.putInt("emeraldOreRate", p.tradeRates.get(TradeAction.EMERALD_FOR_ORE));
             list.add(cTag);
 
             //ReignOfNether.LOGGER.info("RTSPlayerSaveData.save: " + p.name + "|" + p.id + "|" + p.faction);

@@ -26,6 +26,8 @@ import java.util.EnumSet;
 import java.util.Random;
 
 import static com.solegendary.reignofnether.unit.goals.UnitCrossbowAttackGoal.CrossbowState.*;
+import com.solegendary.reignofnether.unit.goals.UnitCrossbowAttackGoal;
+import com.solegendary.reignofnether.unit.goals.RangedAttackBuildingGoal;
 // - has an attack cooldown parameter in the constructor
 // - has no pathfinding delay
 // - stops when the target is dead

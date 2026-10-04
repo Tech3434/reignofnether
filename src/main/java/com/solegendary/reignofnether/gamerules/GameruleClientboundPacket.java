@@ -18,6 +18,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.function.Supplier;
+import net.neoforged.neoforge.network.PacketDistributor;
+import com.solegendary.reignofnether.gamerules.GameruleClientboundPacket;
+import com.solegendary.reignofnether.gamerules.GameruleClient;
+import com.solegendary.reignofnether.gamerules.GameruleAction;
 
 public class GameruleClientboundPacket  implements RTSSimplePayload {
 
@@ -106,7 +110,7 @@ public class GameruleClientboundPacket  implements RTSSimplePayload {
                 new GameruleClientboundPacket(GameruleAction.SET_ANIMAL_SPAWN_Y_DIFF, "", yDiff));
     }
     public static void setRandomItemDrops(long value) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new GameruleClientboundPacket(GameruleAction.SET_RANDOM_ITEM_DROPS, "", value));
     }
 

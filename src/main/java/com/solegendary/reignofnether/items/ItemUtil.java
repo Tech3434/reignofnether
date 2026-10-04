@@ -1,8 +1,16 @@
 package com.solegendary.reignofnether.items;
 
+import java.util.Random;
+import net.minecraft.world.item.Rarity;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import com.solegendary.reignofnether.util.ItemTagCompat;
 import com.mojang.datafixers.util.Pair;
 import com.solegendary.reignofnether.items.unititems.EdibleFoodItem;
+import com.solegendary.reignofnether.registrars.ItemRegistrar;
 import com.solegendary.reignofnether.time.TimeClientEvents;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,6 +27,9 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.Holder;
+import com.solegendary.reignofnether.items.UnitItems;
+import com.solegendary.reignofnether.items.UnitItem;
+import com.solegendary.reignofnether.items.ItemUtil;
 
 public class ItemUtil {
 
@@ -63,6 +74,14 @@ public class ItemUtil {
     }
 
     @Nullable
+    /** Looks a unit item up by its id; 1.5.0's shop and crafting packets refer to items that way. */
+    public static UnitItem getUnitItem(String descId) {
+        for (UnitItem unitItem : UnitItems.ITEMS)
+            if (unitItem.descId.equals(descId))
+                return unitItem;
+        return null;
+    }
+
     public static UnitItem getUnitItem(UUID uuid) {
         for (UnitItem unitItem : UnitItems.ITEMS)
             if (unitItem.uuid.equals(uuid))
@@ -109,7 +128,17 @@ public class ItemUtil {
      * {@link net.minecraft.core.component.DataComponents#FOOD} component, so an empty stack of the
      * item is the closest equivalent to the old per-item query.
      */
-    public static boolean isEdible(Item item) {
+        /** The mod's own drinkables; 1.5.0 plays a potion sound when a unit starts drinking one. */
+    public static final java.util.List<Item> edibleDrinks = java.util.List.of(
+            ItemRegistrar.MANA_POTION.get(),
+            ItemRegistrar.HEALTH_POTION.get()
+    );
+
+    public static boolean isEdibleDrink(Item item) {
+        return edibleDrinks.contains(item);
+    }
+
+public static boolean isEdible(Item item) {
         return new ItemStack(item).has(DataComponents.FOOD);
     }
 
@@ -132,4 +161,74 @@ public class ItemUtil {
             return nutrition * HEAL_PER_NUTRITION;
         }
     }
+
+    public static ArrayDeque<UnitItem> getRandomItemDropsList() {
+        return getRandomItemDropsList(new Random());
+    }
+
+    public static ArrayDeque<UnitItem> getRandomItemDropsList(long seed) {
+        return getRandomItemDropsList(new Random(seed));
+    }
+
+    private static ArrayDeque<UnitItem> getRandomItemDropsList(Random random) {
+        // 1. Collect eligible, de-duplicated items
+        List<UnitItem> candidates = new ArrayList<>();
+        for (UnitItem item : UnitItems.ITEMS) {
+            if (item == UnitItems.EMPTY || !item.canRandomDrop || candidates.contains(item))
+                continue;
+            candidates.add(item);
+        }
+
+        // 2. Noisy sort by rarity
+        final double JITTER = 1.5;
+        Map<UnitItem, Double> sortKeys = new HashMap<>();
+        for (UnitItem item : candidates) {
+            sortKeys.put(item, item.rarity.ordinal() + random.nextDouble() * JITTER);
+        }
+        candidates.sort(Comparator.comparingDouble(sortKeys::get));
+
+        // 3. Force 1st = common, 3rd = uncommon
+        UnitItem firstCommon = null;
+        UnitItem firstUncommon = null;
+        for (UnitItem item : candidates) {
+            if (firstCommon == null && item.rarity == Rarity.COMMON)
+                firstCommon = item;
+            else if (firstUncommon == null && item.rarity == Rarity.UNCOMMON)
+                firstUncommon = item;
+            if (firstCommon != null && firstUncommon != null)
+                break;
+        }
+        if (firstUncommon != null) {
+            candidates.remove(firstUncommon);
+            candidates.add(Math.min(2, candidates.size()), firstUncommon);
+        }
+        if (firstCommon != null) {
+            candidates.remove(firstCommon);
+            candidates.add(0, firstCommon);
+        }
+
+        // 4. Force 5th = rare (earliest rare in the list, so overall ordering stays rough)
+        UnitItem firstRare = null;
+        for (UnitItem item : candidates) {
+            if (item.rarity == Rarity.RARE) {
+                firstRare = item;
+                break;
+            }
+        }
+        if (firstRare != null) {
+            candidates.remove(firstRare);
+            candidates.add(Math.min(4, candidates.size()), firstRare);
+        }
+
+        return new ArrayDeque<>(candidates);
+    }
+
+
+    public static boolean isActive(ItemStack itemStack) {
+    // 1.21.1 removed ItemStack#getTag; ItemTagCompat is the port's bridge to the data component
+    // that replaced it. A stack with no tag reads as "not active", which is what the old null-NBT
+    // path returned.
+    CompoundTag tag = ItemTagCompat.tag(itemStack);
+    return tag != null && tag.getBoolean("active");
+}
 }

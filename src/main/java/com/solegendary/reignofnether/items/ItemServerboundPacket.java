@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.items;
 
+import com.solegendary.reignofnether.items.UnitItem;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.registrars.PacketHandler;
@@ -82,6 +83,15 @@ public class ItemServerboundPacket  implements RTSSimplePayload {
 
     public static void buy(int unitId, UUID itemUuid, BlockPos buildingPos) { // buys an item from a shop (UUID here is Item UUID, not inventory UUID)
         send(ItemAction.BUY, unitId, itemUuid, -1, buildingPos, -1, -1);
+    }
+
+    /**
+     * 1.5.0 addresses shop stock by item id rather than the per-stack UUID, so the HUD button
+     * does not have to track one. The UUID form above stays for the server-side paths.
+     */
+    public static void buy(int unitId, String descId, BlockPos buildingPos) {
+        UnitItem unitItem = ItemUtil.getUnitItem(descId);
+        send(ItemAction.BUY, unitId, unitItem != null ? unitItem.uuid : null, -1, buildingPos, -1, -1);
     }
 
     private static void send(

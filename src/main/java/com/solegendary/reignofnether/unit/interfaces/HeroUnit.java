@@ -35,6 +35,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
 
 public interface HeroUnit extends Unit {
 
@@ -53,12 +55,12 @@ public interface HeroUnit extends Unit {
 
     public static AttributeSupplier.Builder createDefaultAttributes() {
         return Unit.createDefaultAttributes()
-                .add(AttributeRegistrar.BASE_MAX_HEALTH.get(), 1)
-                .add(AttributeRegistrar.BASE_MAX_MANA.get(), 0)
-                .add(AttributeRegistrar.MANA_REGEN_PER_SECOND.get(), 0)
-                .add(AttributeRegistrar.MAX_MANA_BONUS_PER_LEVEL.get(), 0)
-                .add(AttributeRegistrar.MAX_HEALTH_BONUS_PER_LEVEL.get(), 0)
-                .add(AttributeRegistrar.ATTACK_DAMAGE_BONUS_PER_LEVEL.get(), 0);
+                .add((AttributeHelpers.holder(AttributeRegistrar.BASE_MAX_HEALTH.get())), 1)
+                .add((AttributeHelpers.holder(AttributeRegistrar.BASE_MAX_MANA.get())), 0)
+                .add((AttributeHelpers.holder(AttributeRegistrar.MANA_REGEN_PER_SECOND.get())), 0)
+                .add((AttributeHelpers.holder(AttributeRegistrar.MAX_MANA_BONUS_PER_LEVEL.get())), 0)
+                .add((AttributeHelpers.holder(AttributeRegistrar.MAX_HEALTH_BONUS_PER_LEVEL.get())), 0)
+                .add((AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE_BONUS_PER_LEVEL.get())), 0);
     }
 
     public boolean needsStatSync();

@@ -18,6 +18,15 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import com.solegendary.reignofnether.items.UnitItems;
+import com.solegendary.reignofnether.items.UnitItemType;
+import com.solegendary.reignofnether.items.UnitItemBuilder;
+import com.solegendary.reignofnether.items.UnitItem;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
+import com.solegendary.reignofnether.registrars.ItemRegistrar;
+import net.minecraft.client.resources.language.I18n;
 
 /**
  * Fluent builder for UnitItems.
@@ -48,6 +57,16 @@ public class UnitItemBuilder {
     final Item item;
     int defaultStackCount = 1;
     UUID uuid = UUID.randomUUID();
+    /** Stable id used for the default icon texture and the default description key. */
+    String descId;
+    Rarity rarity = Rarity.COMMON;
+    boolean toggleActiveOnUse = false;
+    boolean showRadiusAtCursor = false;
+    boolean doCastAnimation = false;
+    boolean resetBehaviours = true;
+    boolean forceAutocast = false;
+    boolean canRandomDrop = true;
+    int maxStackSize = 1;
     ResourceLocation iconRl = null;
     UnitItemType type = UnitItemType.PASSIVE;
     int sellValue = 0;
@@ -104,6 +123,57 @@ public class UnitItemBuilder {
     }
 
     /** Optional override icon; if null the button renders the ItemStack itself. */
+    /** Sets the item id; the icon and description key default to being derived from it. */
+    public UnitItemBuilder descId(String descId) {
+        this.descId = descId;
+        return this;
+    }
+
+    /** Caps how many of this item a player may hold; units ignore it. */
+    public UnitItemBuilder maxStackSize(int maxStackSize) {
+        this.maxStackSize = maxStackSize;
+        return this;
+    }
+
+    /** Sets the rarity and derives the emerald buy cost (and half of it as the sell value). */
+    public UnitItemBuilder rarity(Rarity rarity) {
+        this.rarity = rarity;
+        this.buyCost = UnitItem.RARITY_VALUES.get(rarity);
+        this.sellValue = UnitItem.RARITY_VALUES.get(rarity) / 2;
+        return this;
+    }
+
+    public UnitItemBuilder toggleActiveOnUse() {
+        this.toggleActiveOnUse = true;
+        return this;
+    }
+
+    public UnitItemBuilder showRadiusAtCursor() {
+        this.showRadiusAtCursor = true;
+        return this;
+    }
+
+    public UnitItemBuilder doCastAnimation() {
+        this.doCastAnimation = true;
+        return this;
+    }
+
+    /** Opts the unit out of the behaviour reset that normally happens on spawn. */
+    public UnitItemBuilder noBehaviourReset() {
+        this.resetBehaviours = false;
+        return this;
+    }
+
+    public UnitItemBuilder forceAutocast() {
+        this.forceAutocast = true;
+        return this;
+    }
+
+    public UnitItemBuilder noRandomDrop() {
+        this.canRandomDrop = false;
+        return this;
+    }
+
     public UnitItemBuilder icon(@Nullable ResourceLocation iconRl) {
         this.iconRl = iconRl;
         return this;
@@ -176,7 +246,25 @@ public class UnitItemBuilder {
         return this;
     }
 
-    /** Adds one bullet to the passive stat list; call once per bullet, in display order. */
+    /**
+     * Adds one bullet to the passive stat list.
+     *
+     * <p>1.5.0 passes format arguments for bullets that interpolate a count. This port keeps the
+     * list as plain localisation keys, so the key is stored and the arguments are dropped - the
+     * bullet still shows, without the interpolated number.
+     */
+    public UnitItemBuilder pointDesc(String i18nKey, Object... args) {
+        if (i18nKey != null && !i18nKey.isBlank())
+            this.pointDescs.add(i18nKey);
+        return this;
+    }
+
+    /** 1.5.0 uses this as a switch: no argument means "yes". */
+    public UnitItemBuilder suppressDefaultError() {
+        this.suppressDefaultError = true;
+        return this;
+    }
+
     public UnitItemBuilder pointDesc(String i18nKey) {
         if (i18nKey != null && !i18nKey.isBlank())
             this.pointDescs.add(i18nKey);
@@ -206,6 +294,16 @@ public class UnitItemBuilder {
     }
 
     /** Adds one attribute modifier applied while the item is held; call once per modifier. */
+    /**
+     * 1.21.1 exposes vanilla attributes as Holder<Attribute>, and the 1.5.0 unit items are
+     * written against that - the Holder overload keeps those call sites unchanged.
+     */
+    public UnitItemBuilder attribute(Holder<Attribute> attribute, double amount,
+                                      AttributeModifier.Operation operation) {
+        this.attributes.put(attribute.value(), new AttributeModifier(randomModifierId(), amount, operation));
+        return this;
+    }
+
     public UnitItemBuilder attribute(Attribute attribute, double amount, AttributeModifier.Operation operation) {
         this.attributes.put(attribute, new AttributeModifier(randomModifierId(), amount, operation));
         return this;

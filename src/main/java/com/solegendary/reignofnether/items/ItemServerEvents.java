@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.items;
 
+import java.util.Random;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
 import com.solegendary.reignofnether.building.BuildingUtils;
@@ -20,6 +21,9 @@ import java.util.List;
 import java.util.UUID;
 
 public class ItemServerEvents {
+
+    /** 1.5.0 makes unit item drops deterministic per server run. */
+    public static final Long RANDOM_UNIT_ITEM_DROPS_SEED = new Random().nextLong();
 
     public static final boolean ENABLED = UnitItem.ENABLED;
 

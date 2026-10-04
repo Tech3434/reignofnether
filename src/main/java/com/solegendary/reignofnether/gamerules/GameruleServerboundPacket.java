@@ -2,7 +2,7 @@ package com.solegendary.reignofnether.gamerules;
 
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
-import com.solegendary.reignofnether.registrars.PacketHandler;
+import net.neoforged.neoforge.network.PacketDistributor;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
@@ -15,6 +15,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.function.Supplier;
+import com.solegendary.reignofnether.gamerules.GameruleServerboundPacket;
+import com.solegendary.reignofnether.gamerules.GameruleClientboundPacket;
+import com.solegendary.reignofnether.gamerules.GameruleAction;
 
 public class GameruleServerboundPacket  implements RTSSimplePayload {
 
@@ -31,71 +34,71 @@ public class GameruleServerboundPacket  implements RTSSimplePayload {
     Long value;
 
     public static void setLogFalling(boolean logFalling) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
             new GameruleServerboundPacket(GameruleAction.SET_LOG_FALLING, "", logFalling ? 1L : 0L));
     }
     public static void setNeutralAggro(boolean neutralAggro) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_NEUTRAL_AGGRO, "", neutralAggro ? 1L : 0L));
     }
     public static void setMaxPopulation(long maxPopulation) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
             new GameruleServerboundPacket(GameruleAction.SET_MAX_POPULATION, "", maxPopulation));
     }
     public static void setUnitGriefing(boolean unitGriefing) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
             new GameruleServerboundPacket(GameruleAction.SET_UNIT_GRIEFING, "", unitGriefing ? 1L : 0L));
     }
     public static void setPlayerGriefing(boolean playerGriefing) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
             new GameruleServerboundPacket(GameruleAction.SET_PLAYER_GRIEFING, "", playerGriefing ? 1L : 0L));
     }
     public static void setGroundYLevel(long groundYLevel) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
             new GameruleServerboundPacket(GameruleAction.SET_GROUND_Y_LEVEL, "", groundYLevel));
     }
     public static void setFlyingMaxYLevel(long flyingMaxYLevel) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
             new GameruleServerboundPacket(GameruleAction.SET_FLYING_MAX_Y_LEVEL, "", flyingMaxYLevel));
     }
     public static void setAllowBeacons(boolean allowBeacons) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
             new GameruleServerboundPacket(GameruleAction.SET_ALLOW_BEACONS, "", allowBeacons ? 1L : 0L));
     }
     public static void setPvpModesOnly(boolean pvpModesOnly) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
             new GameruleServerboundPacket(GameruleAction.SET_PVP_MODES_ONLY, "", pvpModesOnly ? 1L : 0L));
     }
     public static void setBeaconWinMinutes(long beaconWinMinutes) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_BEACON_WIN_MINUTES, "", beaconWinMinutes));
     }
     public static void setSlantedBuilding(boolean slantedBuilding) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_SLANTED_BUILDING, "", slantedBuilding ? 1L : 0L));
     }
     public static void setAllowedHeroes(long allowedHeroes) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_ALLOWED_HEROES, "", allowedHeroes));
     }
     public static void setLockAlliances(boolean lockAlliances) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_LOCK_ALLIANCES, "", lockAlliances ? 1L : 0L));
     }
     public static void setCoopMode(boolean coopMode) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_COOP_MODE, "", coopMode ? 1L : 0L));
     }
     public static void setRtsPathfinding(boolean rtsPathfinding) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_RTS_PATHFINDING, "", rtsPathfinding ? 1L : 0L));
     }
     public static void setAnimalSpawnYDiff(long animalSpawnYDiff) {
-        PacketHandler.sendToServer(
+        PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_ANIMAL_SPAWN_Y_DIFF, "", animalSpawnYDiff));
     }
     public static void setRandomItemDrops(long randomItemDrops) {
-        PacketHandler.INSTANCE.sendToServer(
+        PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_RANDOM_ITEM_DROPS, "", randomItemDrops));
     }
 

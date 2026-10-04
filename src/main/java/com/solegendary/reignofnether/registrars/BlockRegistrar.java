@@ -309,6 +309,25 @@ public class BlockRegistrar {
 
     public static Map<ResourceKey<CreativeModeTab>, List<Item>> blockItems = new HashMap<>();
 
+    public static final Supplier<Block> TEMPORARY_WALKABLE_MAGMA_BLOCK = registerBlock("temporary_walkable_magma_block", () ->
+                    new TemporaryWalkableMagmaBlock(BlockBehaviour
+                            .Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.NETHER)
+                            .requiresCorrectToolForDrops()
+                            .lightLevel((p_50828_) -> 3)
+                            .randomTicks().strength(0.5F)
+                            .isValidSpawn((p_187421_, p_187422_, p_187423_, p_187424_) -> p_187424_.fireImmune())
+                            .hasPostProcess(BlockRegistrar::always).emissiveRendering(BlockRegistrar::always)),
+            CreativeModeTabs.BUILDING_BLOCKS);
+
+    public static final Supplier<Block> HORIZONTAL_PORTAL = registerBlock("horizontal_portal",
+            () -> new HorizontalPortalBlock(BlockBehaviour.Properties.of()
+                    .noCollission()
+                    .noOcclusion()
+                    .strength(-1F)
+                    .lightLevel(s -> 11)
+                    .sound(SoundType.GLASS)
+            ), CreativeModeTabs.BUILDING_BLOCKS);
+
     public static void init(ModContainer context) {
         BLOCKS.register(context.getEventBus());
     }

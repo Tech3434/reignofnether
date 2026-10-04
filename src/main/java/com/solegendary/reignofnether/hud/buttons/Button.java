@@ -36,6 +36,19 @@ public class Button {
     public static int DEFAULT_ICON_SIZE = 14;
     public static int DEFAULT_ICON_FRAME_SIZE = 22;
     public int tooltipOffsetY = 0;
+    /**
+     * Grows an icon out of its cell: the icon is drawn this many pixels larger on each side and
+     * pulled back by the same amount, so it overflows the frame instead of being centred in it.
+     *
+     * <p>1.5.0 uses this to make an ability icon on an enchanted item readable over the item icon.
+     */
+    public int innerIconSizeModifier = 0;
+
+    /** Optional caption drawn under the icon; 1.5.0 uses it for live counters. */
+    public java.util.function.Supplier<String> bottomLeftText = null;
+
+    public int bottomLeftTextColor = 0xFFFFFF;
+
     public int imageSize = DEFAULT_ICON_SIZE;
     public static final int itemIconSize = DEFAULT_ICON_SIZE;
     public boolean stretchIconToBorders = false;
@@ -75,8 +88,12 @@ public class Button {
     // @ 0.5, bottom half is greyed out
     // @ 1.0, whole button is greyed out
     public float greyPercent = 0.0f;
+    /** When set, replaces greyPercent every frame - used for timed fades. */
+    public java.util.function.Supplier<Float> getGreyPercent = null;
 
     public boolean greyWhenDisabled = true;
+    /** Fades from the bottom up instead of the top down (used by timed icons). */
+    public boolean greyInverted = false;
     public boolean showSelectedFrameWhenDisabled = false;
 
     protected Minecraft MC = Minecraft.getInstance();
@@ -169,14 +186,14 @@ public class Button {
                 iconX -= 1;
                 iconY -= 1;
             }
-            iconX += (DEFAULT_ICON_SIZE - imageSize) / 2;
-            iconY += (DEFAULT_ICON_SIZE - imageSize) / 2;
+            iconX += ((DEFAULT_ICON_SIZE - imageSize) / 2) - innerIconSizeModifier;
+            iconY += ((DEFAULT_ICON_SIZE - imageSize) / 2) - innerIconSizeModifier;
             MyRenderer.renderIcon(
                     guiGraphics,
                     bgIconResource,
                     iconX,
                     iconY,
-                    stretchIconToBorders ? imageSize + 2 : imageSize
+                    imageSize + (innerIconSizeModifier * 2)
             );
         }
 
@@ -188,14 +205,14 @@ public class Button {
                 iconX -= 1;
                 iconY -= 1;
             }
-            iconX += (DEFAULT_ICON_SIZE - imageSize) / 2;
-            iconY += (DEFAULT_ICON_SIZE - imageSize) / 2;
+            iconX += ((DEFAULT_ICON_SIZE - imageSize) / 2) - innerIconSizeModifier;
+            iconY += ((DEFAULT_ICON_SIZE - imageSize) / 2) - innerIconSizeModifier;
             guiGraphics.pose().translate(0,0,1);
             MyRenderer.renderIcon(
                     guiGraphics,
                     iconResource,
                     iconX, iconY,
-                    stretchIconToBorders ? imageSize + 2 : imageSize
+                    imageSize + (innerIconSizeModifier * 2)
             );
         }
         if (iconItem != null) {
@@ -224,6 +241,26 @@ public class Button {
         }
         renderHotkey(guiGraphics, x, y);
 
+        // Optional caption drawn under the icon, centred and shrunk; 1.5.0 uses it for live
+        // counters (souls held, remaining charges, and so on).
+        if (bottomLeftText != null) {
+            String blText = bottomLeftText.get();
+            int drawX = x + 4 + ((blText.length() - 1) * 2);
+            int drawY = y + iconSize;
+
+            drawX += (DEFAULT_ICON_SIZE - iconSize) / 2;
+            drawY += (DEFAULT_ICON_SIZE - iconSize) / 2;
+
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(drawX, drawY, 0);
+            guiGraphics.pose().scale(0.75f, 0.75f, 1.0f);
+            guiGraphics.pose().translate(-drawX, -drawY, 5);
+
+            guiGraphics.drawCenteredString(MC.font, blText, drawX, drawY, bottomLeftTextColor);
+
+            guiGraphics.pose().popPose();
+        }
+
         // light up on hover
         if (isEnabled.get() && isMouseOver(mouseX, mouseY) && lightUpOnHover) {
             guiGraphics.pose().translate(0,0,1);
@@ -234,6 +271,11 @@ public class Button {
                     0x32FFFFFF); //ARGB(hex); note that alpha ranges between ~0-16, not 0-255
         }
 
+        // 1.5.0 lets a button recompute its fade every frame (used by timed effect icons)
+        if (getGreyPercent != null) {
+            greyPercent = getGreyPercent.get();
+        }
+
         if (greyPercent > 0 || (!isEnabled.get() && greyWhenDisabled)) {
             int greyHeightPx = Math.round(greyPercent * iconFrameSize);
             if (!isEnabled.get())
@@ -242,9 +284,9 @@ public class Button {
             guiGraphics.pose().translate(0,0,1);
             guiGraphics.fill( // x1,y1, x2,y2,
                     x + xyDiff,
-                    y + xyDiff + greyHeightPx,
+                    y + xyDiff + (greyInverted ? 0 : greyHeightPx),
                     x + xyDiff + iconFrameSize,
-                    y + xyDiff + iconFrameSize,
+                    y + xyDiff + (greyInverted ? greyHeightPx : iconFrameSize),
                     0x99000000); //ARGB(hex); note that alpha ranges between ~0-16, not 0-255
         }
 

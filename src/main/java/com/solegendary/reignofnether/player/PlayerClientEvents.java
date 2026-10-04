@@ -46,6 +46,13 @@ import net.neoforged.bus.api.SubscribeEvent;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import com.solegendary.reignofnether.player.RTSPlayer;
+import com.solegendary.reignofnether.player.PlayerServerboundPacket;
+import com.solegendary.reignofnether.player.PlayerColors;
+import com.solegendary.reignofnether.player.PlayerClientEvents;
+import com.solegendary.reignofnether.util.MiscUtil;
+import net.minecraft.world.level.material.MapColor;
 
 public class PlayerClientEvents {
 
@@ -249,7 +256,7 @@ public class PlayerClientEvents {
 
     public static void addRTSPlayer(String playerName, Faction faction, Long id, int startPosColorId, boolean isDogPerson) {
         if (!isRTSPlayer(playerName)) {
-            rtsPlayers.add(RTSPlayer.getNewPlayer(playerName, faction, id.intValue(), startPosColorId, isDogPerson));
+            rtsPlayers.add(RTSPlayer.getNewPlayer(playerName, faction, id.intValue(), startPosColorId, isDogPerson, -1L));
             FogOfWarClientEvents.refreshLocalIsRTSPlayer();
             if (MC.player != null && MC.player.getName().getString().equals(playerName)) {
                 GameruleClient.gamerulesMenuOpen = false;
@@ -264,7 +271,7 @@ public class PlayerClientEvents {
 
     public static void addScenarioNPCRTSPlayer(String playerName, Faction faction, Long id, int scenarioRoleIndex) {
         if (!isRTSPlayer(playerName)) {
-            RTSPlayer rtsPlayer = RTSPlayer.getNewPlayer(playerName, faction, id.intValue(), 0, true);
+            RTSPlayer rtsPlayer = RTSPlayer.getNewPlayer(playerName, faction, id.intValue(), 0, true, -1L);
             rtsPlayer.scenarioRoleIndex = scenarioRoleIndex;
             rtsPlayers.add(rtsPlayer);
             FogOfWarClientEvents.refreshLocalIsRTSPlayer();

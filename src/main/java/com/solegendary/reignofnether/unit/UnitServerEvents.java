@@ -341,6 +341,11 @@ public class UnitServerEvents {
         return getUnitToEntityRelationship(unit, level.getEntity(unitId));
     }
 
+    /** Shorthand used by the 1.5.0 aura/shockwave code. */
+    public static Relationship getRl(Unit unit, Entity entity) {
+        return getUnitToEntityRelationship(unit, entity);
+    }
+
     public static Relationship getUnitToEntityRelationship(Unit unit, Entity entity) {
         String ownerName1 = unit.getOwnerName();
         String ownerName2 = "";
