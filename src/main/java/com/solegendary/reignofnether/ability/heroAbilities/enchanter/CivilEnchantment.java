@@ -97,7 +97,7 @@ public class CivilEnchantment extends AbstractEnchantment {
                 this,
                 hero
         );
-        button.stretchIconToBorders = true;
+        button.innerIconSizeModifier = 1;
         return button;
     }
 

@@ -16,8 +16,9 @@ import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.debug.RtsDebugClientEvents;
 import com.solegendary.reignofnether.debug.RtsDebugPathPreview;
 import com.solegendary.reignofnether.hud.buttons.Button;
-import com.solegendary.reignofnether.hud.passives.EnchantmentIcon;
-import com.solegendary.reignofnether.hud.passives.PassiveIcons;
+import com.solegendary.reignofnether.hud.effecticons.EnchantmentIcon;
+import com.solegendary.reignofnether.hud.effecticons.EnchantmentIcons;
+import com.solegendary.reignofnether.hud.effecticons.MobEffectIcon;
 import com.solegendary.reignofnether.items.ItemUtil;
 import com.solegendary.reignofnether.items.UnitItem;
 import com.solegendary.reignofnether.items.unititems.EdibleFoodItem;
@@ -86,6 +87,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -888,10 +890,10 @@ public interface Unit {
     }
     Object2ObjectArrayMap<Ability,Integer> getCharges();
 
-    default List<EnchantmentIcon> getPassiveIcons() {
-        ArrayList<EnchantmentIcon> icons = new ArrayList<>();
+    default List<Button> getPassiveIcons() {
+        ArrayList<Button> icons = new ArrayList<>();
         LivingEntity entity = (LivingEntity) this;
-        for (EnchantmentIcon enchantIcon : PassiveIcons.ENCHANTMENT_ICONS) {
+        for (EnchantmentIcon enchantIcon : EnchantmentIcons.ENCHANTMENT_ICONS) {
             ItemStack itemStack = entity.getItemBySlot(enchantIcon.slot);
             for (Holder<Enchantment> enchant : itemStack.getEnchantments().keySet()) {
                 if (enchant == enchantIcon.enchantment) {
@@ -899,11 +901,14 @@ public interface Unit {
                 }
             }
         }
-        if (((LivingEntity) this).hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.TEMPORARY_EFFICIENCY.get()))) {
-            icons.add(PassiveIcons.EFFICIENCY);
-        }
-        if (hasAnyEnchants() && entity.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.ENCHANTMENT_AMPLIFIER.get()))) {
-            icons.add(PassiveIcons.ENCHANTMENT_AMPLIFIER);
+        synchronized (UnitClientEvents.mobEffectIcons) {
+            HashMap<MobEffect, MobEffectIcon> mobEffects = UnitClientEvents.mobEffectIcons.get(entity.getId());
+            if (mobEffects != null) {
+                for (MobEffect effect : mobEffects.keySet()) {
+                    if (mobEffects.get(effect) != null)
+                        icons.add(mobEffects.get(effect));
+                }
+            }
         }
         return icons;
     }

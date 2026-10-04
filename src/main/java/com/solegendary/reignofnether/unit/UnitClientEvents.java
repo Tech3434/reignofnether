@@ -25,6 +25,8 @@ import com.solegendary.reignofnether.gamerules.GameruleClient;
 import com.solegendary.reignofnether.hero.HeroServerboundPacket;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.hud.TextInputClientEvents;
+import com.solegendary.reignofnether.hud.effecticons.MobEffectIcons;
+import com.solegendary.reignofnether.hud.effecticons.MobEffectIcon;
 import com.solegendary.reignofnether.items.ItemClientEvents;
 import com.solegendary.reignofnether.items.ItemServerboundPacket;
 import com.solegendary.reignofnether.items.ItemUtil;
@@ -67,6 +69,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffectEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -88,6 +91,7 @@ import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 import java.awt.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.*;
 import java.util.function.Predicate;
@@ -107,6 +111,9 @@ public class UnitClientEvents {
     private static final int WINDOW_RADIUS = 5; // size of area to hide leaves
     public static final int WINDOW_UPDATE_TICKS_MAX = 5; // size of area to hide leaves
     public static final List<ArrayList<Vec3>> unitWindowVecs = Collections.synchronizedList(new ArrayList<>());
+
+    /** Per-entity mob effect icons, filled on effect add/remove and read by the HUD. */
+    public static final Map<Integer, HashMap<MobEffect, MobEffectIcon>> mobEffectIcons = new ConcurrentHashMap<>();
     public static final List<BlockPos> windowPositions = Collections.synchronizedList(new ArrayList<>());
     public static int windowUpdateTicks = UnitClientEvents.WINDOW_UPDATE_TICKS_MAX;
 
@@ -1669,4 +1676,59 @@ public class UnitClientEvents {
         }
     }
      */
+    @SubscribeEvent
+    public static void onMobEffectAdded(MobEffectEvent.Added evt) {
+        LivingEntity entity = evt.getEntity();
+        if (!(entity instanceof Unit))
+            return;
+
+        MobEffectInstance mei = evt.getEffectInstance();
+
+        synchronized (mobEffectIcons) {
+            mobEffectIcons
+                    .computeIfAbsent(entity.getId(), id -> new HashMap<>())
+                    .put(mei.getEffect(), MobEffectIcons.getIcon(mei));
+        }
+    }
+
+    @SubscribeEvent
+    public static void onMobEffectRemoved(MobEffectEvent.Remove evt) {
+        LivingEntity entity = evt.getEntity();
+        if (!(entity instanceof Unit))
+            return;
+
+        removeMobEffectIcon(entity.getId(), evt.getEffect());
+    }
+
+    // Without this, icons stay behind when an effect simply runs out
+    @SubscribeEvent
+    public static void onMobEffectExpired(MobEffectEvent.Expired evt) {
+        LivingEntity entity = evt.getEntity();
+        MobEffectInstance mei = evt.getEffectInstance();
+        if (!(entity instanceof Unit) || mei == null)
+            return;
+
+        removeMobEffectIcon(entity.getId(), mei.getEffect());
+    }
+
+    private static void removeMobEffectIcon(int entityId, MobEffect effect) {
+        synchronized (mobEffectIcons) {
+            HashMap<MobEffect, MobEffectIcon> icons = mobEffectIcons.get(entityId);
+            if (icons != null) {
+                icons.remove(effect);
+                if (icons.isEmpty())
+                    mobEffectIcons.remove(entityId);
+            }
+        }
+    }
+
+    // Icons are keyed by entity id, which a client reuses after an entity is gone.
+    @SubscribeEvent
+    public static void onEntityLeaveLevel(EntityLeaveLevelEvent evt) {
+        if (evt.getEntity() instanceof Unit) {
+            synchronized (mobEffectIcons) {
+                mobEffectIcons.remove(evt.getEntity().getId());
+            }
+        }
+    }
 }

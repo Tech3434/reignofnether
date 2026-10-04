@@ -80,6 +80,7 @@ public class UnitSyncMobEffectsClientboundPacket  implements RTSSimplePayload {
         ctx.enqueueWork(() -> {
             DistHelper.unsafeRunWhenOn(Dist.CLIENT,
                 () -> () -> {
+                    // rest is handled by MobEffectEvent.Added event
                     UnitClientEvents.syncMobEffect(this.entityId, this.effectId, this.amplifier, this.duration);
                 });
         });

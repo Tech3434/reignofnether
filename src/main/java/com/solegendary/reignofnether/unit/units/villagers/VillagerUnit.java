@@ -16,6 +16,8 @@ import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.faction.FactionRegistries;
 import com.solegendary.reignofnether.hud.TooltipColours;
 import com.solegendary.reignofnether.hud.buttons.Button;
+import com.solegendary.reignofnether.items.UnitInventory;
+import com.solegendary.reignofnether.items.UnitItems;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.registrars.AttributeRegistrar;
 import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
@@ -27,6 +29,7 @@ import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.resources.ResourceCosts;
 import com.solegendary.reignofnether.unit.Checkpoint;
 import com.solegendary.reignofnether.unit.EnemySearchBehaviour;
+import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.goals.*;
 import com.solegendary.reignofnether.unit.interfaces.*;
 import com.solegendary.reignofnether.unit.packets.UnitConvertClientboundPacket;
@@ -337,7 +340,6 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
         List<BuildingPlaceButton> buttons = new ArrayList<>();
         buttons.addAll(FactionRegistries.VILLAGERS.getBuildingButtons());
 
-        //TODO Add to register
         CustomBuildingClientEvents.customBuildings.forEach(cb -> {
             if (cb.buildableByVillagers)
                 buttons.add(cb.getWorkerBuildButton(null));
@@ -361,7 +363,7 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
     public boolean removeWhenFarAway(double d) { return false; }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return Mob.createMobAttributes()
+        return Unit.createDefaultAttributes()
                 .add(Attributes.ATTACK_DAMAGE, VillagerUnit.attackDamage)
                 .add(Attributes.MOVEMENT_SPEED, VillagerUnit.movementSpeed)
                 .add(Attributes.MAX_HEALTH, VillagerUnit.maxHealth)
@@ -402,6 +404,20 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
                 if (getMainHandItem().getEnchantments().keySet().contains(EnchantmentRegistrar.vanilla(Enchantments.EFFICIENCY)) &&
                     !hasEffectWithDuration(MobEffectRegistrar.TEMPORARY_EFFICIENCY.get())) {
                     EnchantmentUtil.clearEnchantments(getMainHandItem());
+                }
+
+                boolean inRangeOfBellHolder = false;
+                for (LivingEntity le : UnitServerEvents.getAllUnits()) {
+                    if (le instanceof UnitInventory inv && inv.isHoldingActive(UnitItems.BELL_OF_ARMS)) {
+                        int range = UnitItems.BELL_OF_ARMS_RANGE;
+                        if (this.getEyePosition().distanceToSqr(le.position()) <= range * range) {
+                            inRangeOfBellHolder = true;
+                            break;
+                        }
+                    }
+                }
+                if (inRangeOfBellHolder) {
+                    convertToMilitia();
                 }
             }
         }

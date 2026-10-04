@@ -26,7 +26,7 @@ public class ItemShopClientboundPacket  implements RTSSimplePayload {
     }
 
     private final BlockPos buildingPos;
-    private final ArrayList<UUID> uuids;
+    private final ArrayList<String> descIds;
     private final ArrayList<Integer> buyCosts;
     private final ArrayList<Integer> maxStocks;
     private final ArrayList<Integer> stocks;
@@ -41,7 +41,7 @@ public class ItemShopClientboundPacket  implements RTSSimplePayload {
 
     public ItemShopClientboundPacket(BlockPos buildingPos, ArrayList<StockedShopItem> itemsAndStock) {
         this.buildingPos = buildingPos;
-        this.uuids = new ArrayList<>();
+        this.descIds = new ArrayList<>();
         this.buyCosts = new ArrayList<>();
         this.maxStocks = new ArrayList<>();
         this.stocks = new ArrayList<>();
@@ -49,7 +49,7 @@ public class ItemShopClientboundPacket  implements RTSSimplePayload {
         this.restockTicks = new ArrayList<>();
 
         for (StockedShopItem stock : itemsAndStock) {
-            uuids.add(stock.item.uuid);
+            descIds.add(stock.item.descId);
             buyCosts.add(stock.getBuyCost());
             maxStocks.add(stock.maxStock);
             stocks.add(stock.stock);
@@ -61,7 +61,7 @@ public class ItemShopClientboundPacket  implements RTSSimplePayload {
     public ItemShopClientboundPacket(RegistryFriendlyByteBuf buffer) {
         this.buildingPos = buffer.readBlockPos();
         int size = buffer.readInt();
-        this.uuids = new ArrayList<>();
+        this.descIds = new ArrayList<>();
         this.buyCosts = new ArrayList<>();
         this.maxStocks = new ArrayList<>();
         this.stocks = new ArrayList<>();
@@ -69,7 +69,7 @@ public class ItemShopClientboundPacket  implements RTSSimplePayload {
         this.restockTicks = new ArrayList<>();
 
         for (int i = 0; i < size; i++) {
-            uuids.add(buffer.readUUID());
+            descIds.add(buffer.readUtf());
             buyCosts.add(buffer.readInt());
             maxStocks.add(buffer.readInt());
             stocks.add(buffer.readInt());
@@ -80,9 +80,9 @@ public class ItemShopClientboundPacket  implements RTSSimplePayload {
 
     public void encode(RegistryFriendlyByteBuf buffer) {
         buffer.writeBlockPos(buildingPos);
-        buffer.writeInt(uuids.size());
-        for (int i = 0; i < uuids.size(); i++) {
-            buffer.writeUUID(uuids.get(i));
+        buffer.writeInt(descIds.size());
+        for (int i = 0; i < descIds.size(); i++) {
+            buffer.writeUtf(descIds.get(i));
             buffer.writeInt(buyCosts.get(i));
             buffer.writeInt(maxStocks.get(i));
             buffer.writeInt(stocks.get(i));
@@ -98,8 +98,8 @@ public class ItemShopClientboundPacket  implements RTSSimplePayload {
             DistHelper.unsafeRunWhenOn(Dist.CLIENT,
                     () -> () -> {
                         ArrayList<StockedShopItem> itemsAndStock = new ArrayList<>();
-                        for (int i = 0; i < uuids.size(); i++) {
-                            UnitItem unitItem = ItemUtil.getUnitItem(uuids.get(i));
+                        for (int i = 0; i < descIds.size(); i++) {
+                            UnitItem unitItem = ItemUtil.getUnitItem(descIds.get(i));
                             if (unitItem == null)
                                 continue;
                             itemsAndStock.add(new StockedShopItem(
