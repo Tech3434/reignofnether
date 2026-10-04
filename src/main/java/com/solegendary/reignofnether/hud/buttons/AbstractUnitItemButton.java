@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 import static com.solegendary.reignofnether.util.MiscUtil.fcs;
+import net.minecraft.core.Holder;
 
 // Shared base for UnitItemInventoryButton and UnitItemShopButton.
 public abstract class AbstractUnitItemButton extends Button {
@@ -102,7 +103,7 @@ public abstract class AbstractUnitItemButton extends Button {
 
         if (hotkey != null && hotkey.getKey() == key) {
             if (MC.player != null)
-                MC.player.playSound(SoundEvents.UI_BUTTON_CLICK.get(), 0.2f, 1.0f);
+                MC.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.2f, 1.0f);
             this.onLeftClickRelease.run();
         }
     }
@@ -289,8 +290,8 @@ public abstract class AbstractUnitItemButton extends Button {
     // "Sharpness V", "Unbreaking III", ... in NBT order
     protected static List<String> getEnchantmentDescs(ItemStack itemStack) {
         List<String> descs = new ArrayList<>();
-        for (Map.Entry<Enchantment, Integer> entry : EnchantmentHelper.getEnchantments(itemStack).entrySet())
-            descs.add(entry.getKey().getFullname(entry.getValue()).getString());
+        for (Map.Entry<Holder<Enchantment>, Integer> entry : itemStack.getEnchantments().entrySet())
+            descs.add(Enchantment.getFullname(entry.getKey(), entry.getValue()).getString());
         return descs;
     }
 
@@ -306,9 +307,9 @@ public abstract class AbstractUnitItemButton extends Button {
                 descId = "attribute.reignofnether.tooltip.movement_speed";
             }
             String attrName = Component.translatable(descId).getString();
-            String valueStr = switch (modifier.getOperation()) {
-                case ADDITION -> formatSigned(isMoveSpeed ? modifier.getAmount() * 100 : modifier.getAmount());
-                case MULTIPLY_BASE, MULTIPLY_TOTAL -> formatSigned(modifier.getAmount() * 100) + "%";
+            String valueStr = switch (modifier.operation()) {
+                case ADD_VALUE -> formatSigned(isMoveSpeed ? modifier.amount() * 100 : modifier.amount());
+                case ADD_MULTIPLIED_BASE, ADD_MULTIPLIED_TOTAL -> formatSigned(modifier.amount() * 100) + "%";
             };
             descs.add(valueStr + " " + attrName);
         }

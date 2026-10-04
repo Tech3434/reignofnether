@@ -16,6 +16,7 @@ import com.solegendary.reignofnether.survival.SurvivalClientEvents;
 import com.solegendary.reignofnether.tutorial.TutorialClientEvents;
 import com.solegendary.reignofnether.tutorial.TutorialStage;
 import com.solegendary.reignofnether.util.MyRenderer;
+import com.solegendary.reignofnether.util.GuiLayerCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
@@ -24,9 +25,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -109,7 +110,9 @@ public class TimeClientEvents {
 
     // render directly above the minimap
     @SubscribeEvent
-    public static void renderOverlay(RenderGuiOverlayEvent.Post evt) {
+    public static void renderOverlay(RenderGuiLayerEvent.Post evt) {
+        if (!GuiLayerCompat.isTopLayer(evt))
+            return;
         if (!OrthoviewClientEvents.isEnabled() || MC.isPaused() || !HudClientEvents.enabled
             || !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || MC.screen instanceof MatchStartScreen) {
             return;
@@ -176,7 +179,7 @@ public class TimeClientEvents {
     }
 
     @SubscribeEvent
-    public static void onDrawScreen(ScreenEvent.Render evt) {
+    public static void onDrawClockTooltip(ScreenEvent.Render.Post evt) {
         if (!TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) ||
             !(MC.screen instanceof TopdownGui) || !HudClientEvents.enabled) {
             return;
@@ -237,17 +240,4 @@ public class TimeClientEvents {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 

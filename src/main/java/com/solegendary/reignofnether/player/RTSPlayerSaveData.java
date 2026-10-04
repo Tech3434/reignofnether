@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.player;
 
+import net.minecraft.core.HolderLookup;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.ability.TradeAction;
 import com.solegendary.reignofnether.ability.abilities.TradeResources;
@@ -15,6 +16,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import com.solegendary.reignofnether.util.SavedDataCompat;
 
 public class RTSPlayerSaveData extends SavedData {
 
@@ -30,9 +32,7 @@ public class RTSPlayerSaveData extends SavedData {
         if (server == null) {
             return create();
         }
-        return server.overworld()
-            .getDataStorage()
-            .computeIfAbsent(RTSPlayerSaveData::load, RTSPlayerSaveData::create, "saved-rtsplayer-data");
+        return SavedDataCompat.computeIfAbsent(server, "saved-rtsplayer-data", RTSPlayerSaveData::create, RTSPlayerSaveData::load);
     }
 
     public static RTSPlayerSaveData load(CompoundTag tag) {
@@ -70,7 +70,7 @@ public class RTSPlayerSaveData extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag) {
+    public CompoundTag save(CompoundTag tag, HolderLookup.Provider provider) {
         //ReignOfNether.LOGGER.info("RTSPlayerSaveData.save");
 
         ListTag list = new ListTag();

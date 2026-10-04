@@ -148,13 +148,3 @@ public class Beacon extends ProductionBuilding {
     }
 }
 
-
-
-
-
-
-
-
-
-
-

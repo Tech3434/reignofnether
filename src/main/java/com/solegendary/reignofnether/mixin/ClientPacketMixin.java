@@ -15,13 +15,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-
 // prevent syncing time from serverside under some conditions
 
 @Mixin(ClientPacketListener.class)
 public class ClientPacketMixin {
 
-    @Shadow Minecraft minecraft;
+    // 1.21.1 moved the Minecraft field up to ClientCommonPacketListenerImpl, so the shadow no longer
+    // resolves from this target. It was only ever read, and Minecraft.getInstance() is the same
+    // object, so the field is not needed at all.
+    private static final Minecraft MINECRAFT = Minecraft.getInstance();
 
     @Inject(
             method = "handleSetTime",
@@ -31,9 +33,9 @@ public class ClientPacketMixin {
     private void handleSetTime(ClientboundSetTimePacket pPacket, CallbackInfo ci) {
         Vec3 pos;
         if (OrthoviewClientEvents.isEnabled())
-            pos = MiscUtil.getOrthoviewCentreWorldPos(this.minecraft);
-        else if (this.minecraft.player != null && this.minecraft.level != null)
-            pos = this.minecraft.player.position();
+            pos = MiscUtil.getOrthoviewCentreWorldPos(MINECRAFT);
+        else if (MINECRAFT.player != null && MINECRAFT.level != null)
+            pos = MINECRAFT.player.position();
         else
             return;
 

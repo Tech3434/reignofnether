@@ -1,5 +1,7 @@
 package com.solegendary.reignofnether.unit;
 
+import com.solegendary.reignofnether.util.MobEffectHelpers;
+import com.solegendary.reignofnether.util.GuiLayerCompat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.ability.Ability;
@@ -57,6 +59,7 @@ import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyMath;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -74,13 +77,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
-import net.minecraftforge.event.entity.EntityMountEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityMountEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import org.joml.Vector3d;
 import org.lwjgl.glfw.GLFW;
 
@@ -94,9 +96,8 @@ import static com.solegendary.reignofnether.building.BuildingClientEvents.getPla
 import static com.solegendary.reignofnether.cursor.CursorClientEvents.getPreselectedBlockPos;
 import static com.solegendary.reignofnether.hud.HudClientEvents.hudSelectedEntity;
 import static com.solegendary.reignofnether.unit.Checkpoint.CHECKPOINT_TICKS_FADE;
-import static net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS;
-import static net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES;
-
+import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS;
+import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES;
 
 public class UnitClientEvents {
 
@@ -135,8 +136,6 @@ public class UnitClientEvents {
     private static void markSelectedUnitsChanged() {
         sortedSelectedUnitsChanged = true;
     }
-
-
 
     public static ArrayList<LivingEntity> getSortedSelectedUnits() {
         if (!sortedSelectedUnitsChanged) {
@@ -292,7 +291,7 @@ public class UnitClientEvents {
                 lastClientUAIActioned = actionItem;
             }
 
-            PacketHandler.INSTANCE.sendToServer(new UnitActionServerboundPacket(
+            PacketHandler.sendToServer(new UnitActionServerboundPacket(
                 MC.player.getName().getString(),
                 action, unitId, unitIds,
                 preselectedBlockPos,
@@ -316,7 +315,7 @@ public class UnitClientEvents {
                 actionItem.action(MC.level);
             }
             if (serverside) {
-                PacketHandler.INSTANCE.sendToServer(new UnitActionServerboundPacket(
+                PacketHandler.sendToServer(new UnitActionServerboundPacket(
                         MC.player.getName().getString(),
                         action, unitId, unitIds,
                         preselectedBlockPos,
@@ -382,7 +381,7 @@ public class UnitClientEvents {
             );
             actionItem.action(MC.level);
 
-            PacketHandler.INSTANCE.sendToServer(new UnitActionServerboundPacket(
+            PacketHandler.sendToServer(new UnitActionServerboundPacket(
                 playerName,
                 action,
                 targetEntityId,
@@ -551,10 +550,8 @@ public class UnitClientEvents {
     private static final int VIS_CHECK_TICKS_MAX = 10;
     private static int ticksToNextVisCheck = VIS_CHECK_TICKS_MAX;
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent evt) {
-        if (evt.phase != TickEvent.Phase.END)
-            return;
-
+    public static void onClientTick(ClientTickEvent.Post evt) {
+        
         ticksToNextVisCheck -= 1;
 
         if (ticksToNextVisCheck <= 0) {
@@ -961,7 +958,7 @@ public class UnitClientEvents {
                     MiscUtil.addUnitCheckpoint(unit, targetBp, true);
                 }
 
-                PacketHandler.INSTANCE.sendToServer(new UnitActionServerboundPacket(
+                PacketHandler.sendToServer(new UnitActionServerboundPacket(
                     playerName,
                     UnitAction.MOVE, -1, singleUnitId,
                     targetBp,
@@ -971,7 +968,6 @@ public class UnitClientEvents {
             }
         }
     }
-
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent evt) {
@@ -986,7 +982,6 @@ public class UnitClientEvents {
             unitsToDraw.addAll(selectedUnits);
             unitsToDraw.addAll(preselectedUnits);
 
-            var vcNoDepthTest = MC.renderBuffers().bufferSource().getBuffer(MyRenderer.LINES_NO_DEPTH_TEST);
 
             if (evt.getStage() == AFTER_ENTITIES) {
                 // draw outlines on all (pre)selected units but only draw once per unit based on conditions
@@ -1015,11 +1010,17 @@ public class UnitClientEvents {
                         boolean isSelected = selectedUnits.contains(entity);
 
                         if (isPreselected && isLeftClickAttack && !targetingSelf && !isMouseOverAnyButtonOrHud)
-                            MyRenderer.drawLineBoxOutlineOnly(evt.getPoseStack(), vcNoDepthTest, entityAABB, 1.0f, 0.3f, 0.3f, 1.0f, false);
+                            MyRenderer.drawLineBoxOutlineOnly(evt.getPoseStack(),
+                                    MC.renderBuffers().bufferSource().getBuffer(MyRenderer.LINES_NO_DEPTH_TEST),
+                                    entityAABB, 1.0f, 0.3f, 0.3f, 1.0f, false);
                         else if (isSelected)
-                            MyRenderer.drawLineBoxOutlineOnly(evt.getPoseStack(), vcNoDepthTest, entityAABB, 1.0f, 1.0f, 1.0f, 1.0f, false);
+                            MyRenderer.drawLineBoxOutlineOnly(evt.getPoseStack(),
+                                    MC.renderBuffers().bufferSource().getBuffer(MyRenderer.LINES_NO_DEPTH_TEST),
+                                    entityAABB, 1.0f, 1.0f, 1.0f, 1.0f, false);
                         else if (isPreselected && !isMouseOverAnyButtonOrHud)
-                            MyRenderer.drawLineBoxOutlineOnly(evt.getPoseStack(), vcNoDepthTest, entityAABB, 1.0f, 1.0f, 1.0f, isRightClickDown ? 1.0f : 0.5f, false);
+                            MyRenderer.drawLineBoxOutlineOnly(evt.getPoseStack(),
+                                    MC.renderBuffers().bufferSource().getBuffer(MyRenderer.LINES_NO_DEPTH_TEST),
+                                    entityAABB, 1.0f, 1.0f, 1.0f, isRightClickDown ? 1.0f : 0.5f, false);
                     }
                 }
             } else if (evt.getStage() == AFTER_CUTOUT_BLOCKS) {
@@ -1029,7 +1030,6 @@ public class UnitClientEvents {
                         Integer id = selectedUnit.getId();
                         selectedEntityIds.add(id);
                     }
-                    var vc = MC.renderBuffers().bufferSource().getBuffer(MyRenderer.LINES_UNDER_ENTITIES);
 
                     for (LivingEntity entity : allUnits) {
                         if (!FogOfWarClientEvents.isInBrightChunk(entity) ||
@@ -1063,29 +1063,39 @@ public class UnitClientEvents {
                         float g = colorHex.getGreen() / 255.0f;
                         float b = colorHex.getBlue() / 255.0f;
 
-                        // always-shown highlights to indicate unit relationships
-                        if (OrthoviewClientEvents.isEnabled()) {
-                            MyRenderer.drawLineBoxOutlineOnly(evt.getPoseStack(), vcNoDepthTest, entityAABB, 1.0f, 1.0f, 1.0f, alpha, excludeMaxY);
-                        }
+                        MyRenderer.drawBoxBottom(evt.getPoseStack(), entityAABB,
+                                MC.renderBuffers().bufferSource().getBuffer(MyRenderer.LINES_UNDER_ENTITIES),
+                                r, g, b, 0.5f);
 
-                        MyRenderer.drawBoxBottom(evt.getPoseStack(), entityAABB, vc, r, g, b, 0.5f);
+                        // 1.21.1's BufferSource keeps ONE shared ByteBufferBuilder for every RenderType
+                        // that has no fixed buffer of its own, plus a `lastSharedType` slot: asking
+                        // for a second such RenderType ends the previous one's batch and the consumer
+                        // it handed out stops accepting vertices ("Not building!"). Both line RenderTypes
+                        // here are mod-owned and therefore share that one builder, so a consumer has to
+                        // be fetched immediately before each use rather than hoisted out of the loop.
+                        if (excludeMaxY) {
+                            MyRenderer.drawLineBoxOutlineOnly(evt.getPoseStack(),
+                                    MC.renderBuffers().bufferSource().getBuffer(MyRenderer.LINES_NO_DEPTH_TEST),
+                                    entityAABB, 1.0f, 1.0f, 1.0f, alpha, excludeMaxY);
+                        }
                     }
-                    MinimapClientEvents.highlightNeutralFogUnits(evt.getPoseStack(), vc);
+                    MinimapClientEvents.highlightNeutralFogUnits(evt.getPoseStack(),
+                            MC.renderBuffers().bufferSource().getBuffer(MyRenderer.LINES_UNDER_ENTITIES));
                     MC.renderBuffers().bufferSource().endBatch(MyRenderer.LINES_UNDER_ENTITIES);
+                    MC.renderBuffers().bufferSource().endBatch(MyRenderer.LINES_NO_DEPTH_TEST);
                 }
             }
-
             // render items in front of face for eating units
             for (LivingEntity entity : getAllUnits()) {
                 if (entity instanceof Unit unit && unit.isEatingFood()) {
-                    MyRenderer.renderItemInFrontOfEntityFace(evt.getPoseStack(), entity, evt.getPartialTick(), new ItemStack(unit.getFoodBeingEaten()));
+                    MyRenderer.renderItemInFrontOfEntityFace(evt.getPoseStack(), entity, evt.getPartialTick().getGameTimeDeltaPartialTick(false), new ItemStack(unit.getFoodBeingEaten()));
                 }
             }
         }
 
         if (OrthoviewClientEvents.isEnabled() && evt.getStage() == AFTER_ENTITIES) {
             VertexConsumer vertexConsumerLine = MC.renderBuffers().bufferSource().getBuffer(RenderType.LINE_STRIP);
-            ResourceLocation rl = ResourceLocation.parse("forge:textures/white.png");
+            ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
             VertexConsumer vertexConsumerEntityTranslucent = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
             // draw unit checkpoints
             for (LivingEntity entity : getSelectedUnits()) {
@@ -1114,7 +1124,7 @@ public class UnitClientEvents {
                                         cp.isGreen ? 1 : 0,
                                         0,
                                         a,
-                                        ResourceLocation.parse("forge:textures/white.png")
+                                        ResourceLocation.parse("neoforge:textures/white.png")
                                 );
                             } else {
                                 MyRenderer.drawBlockFace(evt.getPoseStack(), vertexConsumerEntityTranslucent, Direction.UP, cp.bp, cp.isGreen ? 0 : 1, cp.isGreen ? 1 : 0, 0, a);
@@ -1139,7 +1149,7 @@ public class UnitClientEvents {
                                     aabb,
                                     Direction.UP,
                                     1, 1, 0, a,
-                                    ResourceLocation.parse("forge:textures/white.png")
+                                    ResourceLocation.parse("neoforge:textures/white.png")
                             );
                         } else {
                             MyRenderer.drawBlockFace(evt.getPoseStack(), vertexConsumerEntityTranslucent, Direction.UP, ap, 1, 1, 0, a);
@@ -1168,7 +1178,7 @@ public class UnitClientEvents {
                                         aabb,
                                         Direction.UP,
                                         1, 0, 0, MiscUtil.getOscillatingFloat(0.25f, 0.75f),
-                                        ResourceLocation.parse("forge:textures/white.png")
+                                        ResourceLocation.parse("neoforge:textures/white.png")
                                 );
                             }  else {
                                 MyRenderer.drawBlockFace(evt.getPoseStack(), vertexConsumerEntityTranslucent, Direction.UP, blockTarget, 1, 0, 0, a);
@@ -1180,7 +1190,7 @@ public class UnitClientEvents {
 
             if (FormationDragMove.isDragging()) {
                 VertexConsumer vertexConsumerLineFd = MC.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
-                VertexConsumer vertexConsumerEntityTranslucentFd = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(ResourceLocation.parse("forge:textures/white.png")));
+                VertexConsumer vertexConsumerEntityTranslucentFd = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(ResourceLocation.parse("neoforge:textures/white.png")));
                 float a = 0.5f;
 
                 Vec3 lineStart = FormationDragMove.getLineStart();
@@ -1200,7 +1210,7 @@ public class UnitClientEvents {
                                 1,
                                 0,
                                 a,
-                                ResourceLocation.parse("forge:textures/white.png")
+                                ResourceLocation.parse("neoforge:textures/white.png")
                         );
                     } else {
                         MyRenderer.drawBlockFace(evt.getPoseStack(), vertexConsumerEntityTranslucentFd, Direction.UP, bp, 0, 1, 0, a);
@@ -1219,7 +1229,7 @@ public class UnitClientEvents {
             LivingEntity entity = hudSelectedEntity;
             if ((entity != null && getPlayerToEntityRelationship(entity) == Relationship.OWNED || isSandboxPlayer) &&
                     !(entity instanceof CreeperUnit)) {
-                if (entity != null && !entity.hasEffect(MobEffectRegistrar.PARTIALLY_POSSESSED.get())) {
+                if (entity != null && !entity.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.PARTIALLY_POSSESSED.get()))) {
                     sendUnitCommand(UnitAction.DELETE);
                 }
             }
@@ -1513,12 +1523,13 @@ public class UnitClientEvents {
 
     public static void syncMobEffect(int entityId, int effectId, int amplifier, int duration) {
         for (LivingEntity entity : getAllUnits()) {
-            MobEffect effect = MobEffect.byId(effectId);
+            // 1.21.1 removed MobEffect#byId; the numeric id lives on the registry's IdMap.
+            MobEffect effect = BuiltInRegistries.MOB_EFFECT.byId(effectId);
             if (effect != null && entityId == entity.getId() && entity instanceof Unit) {
                 if (duration > 0) {
-                    entity.addEffect(new MobEffectInstance(effect, duration, amplifier));
-                } else if (entity.getEffect(effect) != null) {
-                    entity.removeEffect(effect);
+                    entity.addEffect(MobEffectHelpers.instance(effect, duration, amplifier));
+                } else if (entity.getEffect(MobEffectHelpers.holder(effect)) != null) {
+                    entity.removeEffect(MobEffectHelpers.holder(effect));
                 }
             }
         }
@@ -1555,7 +1566,9 @@ public class UnitClientEvents {
     }
 
     @SubscribeEvent
-    public static void onRenderOverLay(RenderGuiOverlayEvent.Pre evt) {
+    public static void onRenderOverLay(RenderGuiLayerEvent.Pre evt) {
+        if (!GuiLayerCompat.isTopLayer(evt))
+            return;
         MiscUtil.drawDebugStrings(evt.getGuiGraphics(), MC.font, new String[] {
             "stage: " + stage.toString(),
         });
@@ -1579,14 +1592,15 @@ public class UnitClientEvents {
     }
 
     @SubscribeEvent
-    public static void onRenderOverLay(RenderGuiOverlayEvent.Pre evt) {
+    public static void onRenderOverLay(RenderGuiLayerEvent.Pre evt) {
+        if (!GuiLayerCompat.isTopLayer(evt))
+            return;
         MiscUtil.drawDebugStrings(evt.getGuiGraphics(), MC.font, new String[] {
                 "yOffset: " +  yOffset,
                 "scale: " + scale,
         });
     }
      */
-
 
     /*
     @SubscribeEvent
@@ -1604,10 +1618,9 @@ public class UnitClientEvents {
             }
         }*/
 
-
         /*
         if (Keybindings.altMod.isDown() && evt.getKeyCode() == GLFW.GLFW_KEY_SPACE && !getAllUnits().isEmpty()) {
-            PacketHandler.INSTANCE.sendToServer(new UnitActionServerboundPacket(
+            PacketHandler.sendToServer(new UnitActionServerboundPacket(
                     "",
                     UnitAction.DEBUG1, 0, new int[]{0},
                     new BlockPos(0,0,0),
@@ -1615,14 +1628,13 @@ public class UnitClientEvents {
             ));
         }
         if (Keybindings.ctrlMod.isDown() && evt.getKeyCode() == GLFW.GLFW_KEY_SPACE && !getAllUnits().isEmpty()) {
-            PacketHandler.INSTANCE.sendToServer(new UnitActionServerboundPacket(
+            PacketHandler.sendToServer(new UnitActionServerboundPacket(
                     "",
                     UnitAction.DEBUG2, 0, new int[]{0},
                     new BlockPos(0,0,0),
                     new BlockPos(0,0,0)
             ));
         }
-
 
     }*/
 
@@ -1645,7 +1657,9 @@ public class UnitClientEvents {
      */
     /*
     @SubscribeEvent
-    public static void onRenderOverLay(RenderGuiOverlayEvent.Pre evt) {
+    public static void onRenderOverLay(RenderGuiLayerEvent.Pre evt) {
+        if (!GuiLayerCompat.isTopLayer(evt))
+            return;
         if (!getSelectedUnits().isEmpty() && getSelectedUnits().get(0) instanceof SlimeUnit slime) {
             MiscUtil.drawDebugStrings(evt.getGuiGraphics(), MC.font, new String[]{
                     "rollAngle: " + slime.rollAngle,

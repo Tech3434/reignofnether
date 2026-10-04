@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import com.solegendary.reignofnether.util.EnchantmentUtil;
 
 @Mixin(MagmaBlock.class)
 public abstract class MagmaBlockMixin {
@@ -34,7 +35,7 @@ public abstract class MagmaBlockMixin {
         if (!pEntity.isSteppingCarefully() &&
             pEntity instanceof LivingEntity &&
             !(pEntity instanceof GruntUnit) &&
-            !EnchantmentHelper.hasFrostWalker((LivingEntity)pEntity) &&
+            !EnchantmentUtil.hasFrostWalker((LivingEntity)pEntity) &&
             !piglinImmunity && isDamageTick) {
             pEntity.hurt(pEntity.damageSources().hotFloor(), WalkableMagmaBlock.DAMAGE);
         }

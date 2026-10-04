@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.player;
 
+import com.solegendary.reignofnether.util.GuiLayerCompat;
 import com.solegendary.reignofnether.ability.TradeAction;
 import com.solegendary.reignofnether.alliance.AlliancesClient;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
@@ -29,19 +30,19 @@ import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.faction.Faction;
 import net.minecraft.client.Minecraft;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.RegisterClientCommandsEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -330,8 +331,8 @@ public class PlayerClientEvents {
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent evt) {
-        if (evt.phase == TickEvent.Phase.END) {
+    public static void onClientTick(ClientTickEvent.Post evt) {
+        {
             rtsGameTicks += 1;
         }
     }
@@ -348,7 +349,7 @@ public class PlayerClientEvents {
 
     // allow tab player list menu on the orthoview screen
     @SubscribeEvent
-    public static void onScreenRender(ScreenEvent.Render evt) {
+    public static void onScreenRender(ScreenEvent.Render.Post evt) {
         if (OrthoviewClientEvents.isEnabled() && Keybindings.tab.isDown() && MC.level != null) {
             if (!MC.isLocalServer()) {
                 MC.gui.getTabList().setVisible(true);
@@ -480,14 +481,15 @@ public class PlayerClientEvents {
 
     /*
     @SubscribeEvent
-    public static void onRenderOverLay(RenderGuiOverlayEvent.Pre evt) {
+    public static void onRenderOverLay(RenderGuiLayerEvent.Pre evt) {
+        if (!GuiLayerCompat.isTopLayer(evt))
+            return;
         MiscUtil.drawDebugStrings(evt.getGuiGraphics(), MC.font, new String[] {
                 "red: " + red,
                 "green: " + green,
                 "blue: " + blue,
         });
     }
-
 
     public static int titleX = -56;
     public static int titleY = 5;

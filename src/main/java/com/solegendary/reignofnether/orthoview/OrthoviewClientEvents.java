@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.orthoview;
 
+import com.solegendary.reignofnether.util.GuiLayerCompat;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
@@ -25,6 +26,7 @@ import com.solegendary.reignofnether.util.MyMath;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Minecraft;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.core.BlockPos;
@@ -40,9 +42,8 @@ import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.*;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.*;
+import net.neoforged.bus.api.SubscribeEvent;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
@@ -297,10 +298,7 @@ public class OrthoviewClientEvents {
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent evt) {
-        if (evt.phase != TickEvent.Phase.END) {
-            return;
-        }
+    public static void onClientTick(ClientTickEvent.Post evt) {
 
         long windowHandle = MC.getWindow().getWindow();
         int cursorMode;
@@ -560,17 +558,17 @@ public class OrthoviewClientEvents {
     }
 
     @SubscribeEvent
-    public static void onMouseScroll(ScreenEvent.MouseScrolled evt) {
+    public static void onMouseScroll(ScreenEvent.MouseScrolled.Post evt) {
         if (!enabled || isCameraLocked()) {
             return;
         }
         if (Keybindings.altMod.isDown()) {
-            zoomCam((float) sign(evt.getScrollDelta()) * -ZOOM_STEP_SCROLL);
+            zoomCam((float) sign(evt.getScrollDeltaY()) * -ZOOM_STEP_SCROLL);
         }
     }
 
     @SubscribeEvent
-    public static void onDrawScreen(ScreenEvent.Render evt) {
+    public static void onDrawScreen(ScreenEvent.Render.Post evt) {
         if (!enabled || !(evt.getScreen() instanceof TopdownGui)) {
             return;
         }
@@ -675,7 +673,7 @@ public class OrthoviewClientEvents {
     }
 
     @SubscribeEvent
-    public static void onMouseRelease(ScreenEvent.MouseButtonReleased evt) {
+    public static void onMouseRelease(ScreenEvent.MouseButtonReleased.Post evt) {
         if (!enabled || isCameraLocked()) {
             return;
         }
@@ -693,7 +691,7 @@ public class OrthoviewClientEvents {
     }
 
     @SubscribeEvent
-    public static void onMouseDrag(ScreenEvent.MouseDragged evt) {
+    public static void onMouseDrag(ScreenEvent.MouseDragged.Post evt) {
         if (!enabled || isCameraLocked()) {
             return;
         }
@@ -702,8 +700,10 @@ public class OrthoviewClientEvents {
             || evt.getMouseButton() == GLFW.GLFW_MOUSE_BUTTON_3) {
             cameraMovingByMouse = true;
 
-            // Normalize drag delta by frame time to prevent drift when Vsync is off
-            float frameTimeNormalizer = Math.min((float) MC.getDeltaFrameTime(), 5.0f);
+            // Normalize drag delta by frame time to prevent drift when Vsync is off.
+            // 1.21.1 replaced Minecraft#getDeltaFrameTime with DeltaTracker#getRealtimeDeltaTicks,
+            // which reports seconds; the old accessor reported ticks, hence the x20.
+            float frameTimeNormalizer = Math.min(MC.getTimer().getRealtimeDeltaTicks() * 20.0f, 5.0f);
             if (frameTimeNormalizer <= 0) frameTimeNormalizer = 1.0f;
             float normalizedX = (float) evt.getDragX() / frameTimeNormalizer;
             float normalizedZ = (float) evt.getDragY() / frameTimeNormalizer;
@@ -742,7 +742,9 @@ public class OrthoviewClientEvents {
 
     /*
     @SubscribeEvent
-    public static void onRenderOverLay(RenderGuiOverlayEvent.Pre evt) {
+    public static void onRenderOverLay(RenderGuiLayerEvent.Pre evt) {
+        if (!GuiLayerCompat.isTopLayer(evt))
+            return;
         MiscUtil.drawDebugStrings(evt.getGuiGraphics(), MC.font, new String[] {
                 "rotX: " + getCamRotX()
         });

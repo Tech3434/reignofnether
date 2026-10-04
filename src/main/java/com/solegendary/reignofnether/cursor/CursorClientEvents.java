@@ -26,6 +26,7 @@ import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyMath;
 import com.solegendary.reignofnether.util.MyRenderer;
+import com.solegendary.reignofnether.util.GuiLayerCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
@@ -41,12 +42,13 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.*;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.event.RenderHighlightEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.RenderHighlightEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import org.joml.Vector3d;
 import org.lwjgl.glfw.GLFW;
 
@@ -160,7 +162,7 @@ public class CursorClientEvents {
     private static final ResourceLocation TEXTURE_SHOVEL = ResourceLocation.fromNamespaceAndPath("reignofnether", "textures/cursors/customcursor_shovel.png");
 
     @SubscribeEvent
-    public static void onDrawScreen(ScreenEvent.Render evt) {
+    public static void onDrawScreen(ScreenEvent.Render.Post evt) {
         long window = MC.getWindow().getWindow();
 
         if (!OrthoviewClientEvents.isEnabled() || !(evt.getScreen() instanceof TopdownGui)) {
@@ -352,7 +354,6 @@ public class CursorClientEvents {
         }
     }
 
-
     public static boolean isBoxSelecting() {
         return cursorLeftClickDownPos.x >= 0 &&
                 cursorLeftClickDownPos.y >= 0 &&
@@ -362,7 +363,9 @@ public class CursorClientEvents {
 
     // draw box selection rectangle
     @SubscribeEvent
-    public static void renderOverlay(RenderGuiOverlayEvent.Post evt) {
+    public static void renderOverlay(RenderGuiLayerEvent.Post evt) {
+        if (!GuiLayerCompat.isTopLayer(evt))
+            return;
 
         if (leftClickDown && !Keybindings.altMod.isDown()) {
             evt.getGuiGraphics().fill( // x1,y1, x2,y2,
@@ -518,12 +521,12 @@ public class CursorClientEvents {
                     ItemClientEvents.getPreselectedItems().isEmpty() &&
                     !buildingTargetedByWorker && !buildingTargetedByAttacker) || isLeftClickActionStartRTS || getLeftClickSandboxAction() != null) {
 
-                ResourceLocation rl = ResourceLocation.parse("forge:textures/white.png");
+                ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
                 var vertexConsumer = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
                 if (MiscUtil.isSnowLayerBlock(MC.level.getBlockState(getPreselectedBlockPos().offset(0, 1, 0)).getBlock())) {
                     AABB aabb = new AABB(preselectedBlockPos);
                     aabb = aabb.setMaxY(aabb.maxY + 0.13f);
-                    MyRenderer.drawSolidBox(evt.getPoseStack(), vertexConsumer, aabb, null, 1, 1, 1, rightClickDown ? 0.3f : 0.15f, ResourceLocation.parse("forge:textures/white.png"));
+                    MyRenderer.drawSolidBox(evt.getPoseStack(), vertexConsumer, aabb, null, 1, 1, 1, rightClickDown ? 0.3f : 0.15f, ResourceLocation.parse("neoforge:textures/white.png"));
                     aabb = new AABB(preselectedBlockPos).move(0, 0.13, 0);
                     MyRenderer.drawLineBox(evt.getPoseStack(), aabb, 1.0f, 1.0f, 1.0f, rightClickDown ? 1.0f : 0.5f);
                 } else {
@@ -542,7 +545,9 @@ public class CursorClientEvents {
         // clip() returns the point of clip, not the clipped block giving off-by-one errors so move slightly to compensate
         HitResult hitResult = null;
         if (MC.level != null) {
-            hitResult = clip(MC.level, new ClipContext(vectorNear, vectorFar, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, null));
+            // ClipContext needs a real CollisionContext: 1.21.1's ClipContext#getBlockShape delegates to
+            // it, so the null that 1.20.1 tolerated now throws on the first shape query.
+            hitResult = clip(MC.level, new ClipContext(vectorNear, vectorFar, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, CollisionContext.empty()));
         }
 
         if (hitResult != null)
@@ -643,5 +648,4 @@ public class CursorClientEvents {
         return bestBp;
     }
 }
-
 

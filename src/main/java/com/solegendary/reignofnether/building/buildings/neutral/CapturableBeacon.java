@@ -88,13 +88,3 @@ public class CapturableBeacon extends Beacon {
     }
 }
 
-
-
-
-
-
-
-
-
-
-

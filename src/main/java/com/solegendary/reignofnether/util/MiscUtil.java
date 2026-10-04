@@ -1,6 +1,7 @@
 package com.solegendary.reignofnether.util;
 
-
+import com.solegendary.reignofnether.util.ItemTagCompat;
+import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.mojang.datafixers.util.Pair;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.ability.heroAbilities.enchanter.ProtectiveEnchantment;
@@ -97,7 +98,6 @@ import static com.solegendary.reignofnether.blocks.BlockUtils.isLogBlock;
 import static net.minecraft.util.Mth.cos;
 import static net.minecraft.util.Mth.sin;
 
-
 public class MiscUtil {
 
     private static final Random RANDOM = new Random();
@@ -122,7 +122,7 @@ public class MiscUtil {
         CompoundTag fireworks = new CompoundTag();
         fireworks.put("Fireworks", explosionsAndFlight);
         ItemStack itemStack = new ItemStack(Items.FIREWORK_ROCKET);
-        itemStack.setTag(fireworks);
+        ItemTagCompat.setTag(itemStack, fireworks);
         FireworkRocketEntity entity = new FireworkRocketEntity(level, null, vec3.x, vec3.y(), vec3.z, itemStack);
         level.addFreshEntity(entity);
         entity.moveTo(vec3);
@@ -142,7 +142,7 @@ public class MiscUtil {
         CompoundTag fireworks = new CompoundTag();
         fireworks.put("Fireworks", explosionsAndFlight);
         ItemStack itemStack = new ItemStack(Items.FIREWORK_ROCKET);
-        itemStack.setTag(fireworks);
+        ItemTagCompat.setTag(itemStack, fireworks);
         FireworkRocketEntity entity = new FireworkRocketEntity(level, null, vec3.x, vec3.y(), vec3.z, itemStack);
         level.addFreshEntity(entity);
         entity.moveTo(vec3);
@@ -359,7 +359,7 @@ public class MiscUtil {
         if (unitMob instanceof BoggedUnit) {
             priorityFilter = e -> !e.hasEffect(MobEffects.POISON);
         } else if (unitMob instanceof WraithUnit) {
-            priorityFilter = e -> !e.hasEffect(MobEffectRegistrar.FEARFUL.get());
+            priorityFilter = e -> !e.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.FEARFUL.get()));
         } else if (unitMob instanceof WitherSkeletonUnit) {
             priorityFilter = e -> e.hasEffect(MobEffects.WITHER);
         } else if (unitMob instanceof WindcallerUnit) {
@@ -424,8 +424,6 @@ public class MiscUtil {
         boolean isPassiveNonUnit = !(targetEntity instanceof Unit) &&
                 (targetEntity instanceof Animal || targetEntity instanceof AbstractFish || targetEntity instanceof Villager);
 
-
-
         // Checks if neutral units can be attacked based on neutralAggro flag and other conditions
         boolean canAttackNeutral =
                 rs == Relationship.NEUTRAL && neutralAggro &&
@@ -437,7 +435,6 @@ public class MiscUtil {
         return (rs == Relationship.HOSTILE || canAttackNeutral) &&
                 targetEntity.getId() != unitMob.getId();
     }
-
 
     public static BuildingPlacement findClosestAttackableBuilding(Mob unitMob, float range) {
         List<BuildingPlacement> buildings = unitMob.level().isClientSide() ?
@@ -482,7 +479,6 @@ public class MiscUtil {
 
         return relationship == Relationship.HOSTILE;
     }
-
 
     private static boolean hasLineOfSightForAttacks(Mob mob, LivingEntity targetEntity) {
         return mob.hasLineOfSight(targetEntity) || mob instanceof GhastUnit ||
@@ -530,7 +526,6 @@ public class MiscUtil {
         } else
             return new ArrayList<>();
     }
-
 
     // accepts a list of strings to draw at the top left to track debug data
     //MiscUtil.drawDebugStrings(evt.getMatrixStack(), MC.font, new String[] {
@@ -951,7 +946,6 @@ public class MiscUtil {
             );
         }
     }
-
 
     public static ResourceLocation getTextureForBlock(@NotNull Block block) {
         if (block == Blocks.COMMAND_BLOCK)

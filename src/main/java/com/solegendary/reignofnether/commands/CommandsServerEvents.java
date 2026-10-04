@@ -19,6 +19,7 @@ import com.solegendary.reignofnether.commands.rtsapi.RTSApiCommands;
 import com.solegendary.reignofnether.player.PlayerClientboundPacket;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.player.RTSPlayer;
+import com.solegendary.reignofnether.registrars.CommandArgumentRegistrar;
 import com.solegendary.reignofnether.research.ResearchServerEvents;
 import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.resources.Resources;
@@ -54,14 +55,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import org.apache.commons.lang3.text.WordUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class CommandsServerEvents {
 	
@@ -74,7 +75,7 @@ public class CommandsServerEvents {
 	
 	@SubscribeEvent
 	public static void onRegisterCommands(RegisterCommandsEvent event) {
-		CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
+        CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
 		RTSApiCommands.register(dispatcher);
 		
 		dispatcher.register(Commands.literal("rtsapi-place-building")
@@ -253,7 +254,8 @@ public class CommandsServerEvents {
 			.then(Commands.argument("ownerName", StringArgumentType.string())
 				.then(Commands.argument("entity", ResourceLocationArgument.id())
 					.suggests((ctx, builder) -> SharedSuggestionProvider.suggestResource(
-						ForgeRegistries.ENTITY_TYPES.getKeys().stream(), builder))
+						BuiltInRegistries.ENTITY_TYPE.registryKeySet().stream()
+							.map(key -> key.location()), builder))
 					.executes(ctx -> summonEntity(
 						ctx,
 						StringArgumentType.getString(ctx, "ownerName"),
@@ -1040,7 +1042,6 @@ public class CommandsServerEvents {
 		}
 		return 1;
 	}
-
 
 	private static ResourceName resolveResource(String name) throws CommandSyntaxException {
 		try {

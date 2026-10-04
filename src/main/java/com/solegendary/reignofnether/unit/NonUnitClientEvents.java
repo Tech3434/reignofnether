@@ -19,10 +19,10 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
-import static net.minecraftforge.client.event.RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS;
+import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS;
 
 public class NonUnitClientEvents {
 
@@ -57,7 +57,7 @@ public class NonUnitClientEvents {
         // AFTER_CUTOUT_BLOCKS lets us see checkpoints through leaves
         if (OrthoviewClientEvents.isEnabled() && evt.getStage() == AFTER_CUTOUT_BLOCKS) {
             VertexConsumer vertexConsumerLine = MC.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
-            ResourceLocation rl = ResourceLocation.parse("forge:textures/white.png");
+            ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
             VertexConsumer vertexConsumerEntityTranslucent = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
             for (LivingEntity le : UnitClientEvents.getSelectedUnits()) {
                 if (le instanceof PathfinderMob mob && !(le instanceof Unit) && le.isAlive() && !le.isRemoved()) {
@@ -89,7 +89,7 @@ public class NonUnitClientEvents {
                                         isMoveCheckpointGreen ? 1 : 0,
                                         0,
                                         a * 0.5f,
-                                        ResourceLocation.parse("forge:textures/white.png")
+                                        ResourceLocation.parse("neoforge:textures/white.png")
                                 );
                             } else {
                                 MyRenderer.drawBlockFace(evt.getPoseStack(), vertexConsumerEntityTranslucent, Direction.UP, bp, isMoveCheckpointGreen ? 0 : 1, isMoveCheckpointGreen ? 1 : 0, 0, a * 0.5f);

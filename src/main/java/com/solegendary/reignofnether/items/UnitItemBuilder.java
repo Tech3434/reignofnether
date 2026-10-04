@@ -1,5 +1,7 @@
 package com.solegendary.reignofnether.items;
 
+import com.solegendary.reignofnether.ReignOfNether;
+import net.minecraft.core.Holder;
 import com.mojang.datafixers.util.Pair;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.keybinds.Keybinding;
@@ -53,9 +55,16 @@ public class UnitItemBuilder {
     String desc = "";
     Keybinding hotkey = null;
     boolean enableTooltip = true;
-    final List<Pair<Enchantment, Integer>> enchantments = new ArrayList<>();
+    final List<Pair<Holder<Enchantment>, Integer>> enchantments = new ArrayList<>();
     final List<String> pointDescs = new ArrayList<>();
     final HashMap<Attribute, AttributeModifier> attributes = new HashMap<>();
+
+    // AttributeModifier ids are ResourceLocations in 1.21.1; these are throwaway per-item
+    // modifiers, so a random namespace-and-path pair is the right analogue of the old random UUID.
+    private static ResourceLocation randomModifierId() {
+        return ResourceLocation.fromNamespaceAndPath(
+                ReignOfNether.MOD_ID, UUID.randomUUID().toString());
+    }
     BiPredicate<Unit, BlockPos> onUseGround = null;
     BiPredicate<Unit, LivingEntity> onUseEntity = null;
     BiPredicate<Unit, BuildingPlacement> onUseBuilding = null;
@@ -185,7 +194,7 @@ public class UnitItemBuilder {
         return this;
     }
 
-    public UnitItemBuilder enchant(Enchantment enchantment, int level) {
+    public UnitItemBuilder enchant(Holder<Enchantment> enchantment, int level) {
         this.enchantments.add(Pair.of(enchantment, level));
         return this;
     }
@@ -198,12 +207,12 @@ public class UnitItemBuilder {
 
     /** Adds one attribute modifier applied while the item is held; call once per modifier. */
     public UnitItemBuilder attribute(Attribute attribute, double amount, AttributeModifier.Operation operation) {
-        this.attributes.put(attribute, new AttributeModifier(UUID.randomUUID().toString(), amount, operation));
+        this.attributes.put(attribute, new AttributeModifier(randomModifierId(), amount, operation));
         return this;
     }
 
     public UnitItemBuilder attribute(Attribute attribute, double amount) {
-        this.attributes.put(attribute, new AttributeModifier(UUID.randomUUID().toString(), amount, AttributeModifier.Operation.ADDITION));
+        this.attributes.put(attribute, new AttributeModifier(randomModifierId(), amount, AttributeModifier.Operation.ADD_VALUE));
         return this;
     }
 
@@ -261,7 +270,6 @@ public class UnitItemBuilder {
         this.showRangeCircle = true;
         return this;
     }
-
 
     public UnitItem build() {
         return new BuiltUnitItem(this);

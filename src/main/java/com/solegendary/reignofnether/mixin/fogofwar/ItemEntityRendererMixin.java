@@ -37,7 +37,15 @@ public abstract class ItemEntityRendererMixin {
 
     @Final @Shadow private ItemRenderer itemRenderer;
     @Final @Shadow private RandomSource random = RandomSource.create();
-    @Shadow protected int getRenderAmount(ItemStack pStack) { return 0; }
+    // 1.21.1 replaced ItemEntityRenderer#getRenderAmount(ItemStack) with a count-based
+    // getRenderedAmount(int), which is where the stack-size-to-visual-count table moved.
+    @Unique
+    private static int reignofnether$getRenderAmount(ItemStack pStack) {
+        int count = pStack.getCount();
+        if (count <= 1) return 1;
+        if (count <= 16) return 2;
+        return count / 8 + 1;
+    }
 
     private final float LARGE_ITEM_SCALE = 2.25f;
 
@@ -80,7 +88,7 @@ public abstract class ItemEntityRendererMixin {
             this.random.setSeed(i);
             BakedModel bakedmodel = this.itemRenderer.getModel(itemstack, pEntity.level(), null, pEntity.getId());
             boolean flag = bakedmodel.isGui3d();
-            int j = this.getRenderAmount(itemstack);
+            int j = reignofnether$getRenderAmount(itemstack);
             float f = 0.25F;
             float f1 = Mth.sin(((float)pEntity.getAge() + pPartialTicks) / 10.0F + pEntity.bobOffs) * 0.1F + 0.1F;
             float f2 = bakedmodel.getTransforms().getTransform(ItemDisplayContext.GROUND).scale.y();

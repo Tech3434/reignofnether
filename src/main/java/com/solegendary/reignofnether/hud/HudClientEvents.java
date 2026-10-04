@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.hud;
 
+import com.solegendary.reignofnether.util.GuiLayerCompat;
 import com.mojang.datafixers.util.Pair;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.ability.Ability;
@@ -70,6 +71,7 @@ import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.resources.language.I18n;
@@ -85,9 +87,8 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
-import net.minecraftforge.client.event.*;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.*;
+import net.neoforged.bus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
@@ -583,7 +584,6 @@ public class HudClientEvents {
                 }
             }
 
-
             // ---------------------------
             // Building production buttons
             // ---------------------------
@@ -718,7 +718,6 @@ public class HudClientEvents {
                 blitX += portraitRendererUnit.statsWidth;
 
                 int totalRes = Resources.getTotalResourcesFromItems(unit.getItems()).getTotalValue();
-
 
                 if (ItemClientEvents.ENABLED && unit instanceof UnitInventory inv && ItemClientEvents.shouldRenderUnitInventory(unit)) {
                     hudZones.add(ItemClientEvents.renderUnitInventory(evt.getGuiGraphics(), blitX, blitY - 6, mouseX, mouseY, inv));
@@ -892,7 +891,6 @@ public class HudClientEvents {
                 buttonsRendered += 1;
             }
         }
-
 
         // ---------------------------
         // Unit sandbox buttons
@@ -1977,8 +1975,6 @@ public class HudClientEvents {
         }
     }
 
-
-
     // for some reason some bound vanilla keys like Q and E don't trigger KeyPressed but still trigger keyReleased
     @SubscribeEvent
     public static void onKeyRelease(ScreenEvent.KeyReleased.KeyReleased.Post evt) {
@@ -1993,10 +1989,7 @@ public class HudClientEvents {
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent evt) {
-        if (evt.phase != TickEvent.Phase.END) {
-            return;
-        }
+    public static void onClientTick(ClientTickEvent.Post evt) {
         if (OrthoviewClientEvents.isEnabled()) {
             portraitRendererUnit.tickAnimation();
         }
@@ -2229,7 +2222,9 @@ public class HudClientEvents {
     }
 
     @SubscribeEvent
-    public static void onRenderOverLay(RenderGuiOverlayEvent.Pre evt) {
+    public static void onRenderOverLay(RenderGuiLayerEvent.Pre evt) {
+        if (!GuiLayerCompat.isTopLayer(evt))
+            return;
         if (MC.screen != null && MC.level != null && SandboxClientEvents.isSandboxPlayer() && showPreselectedBlockInfo) {
             int y = 5;
             for (ControlGroup controlGroup : controlGroups) {

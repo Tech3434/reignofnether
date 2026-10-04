@@ -12,7 +12,6 @@ import com.solegendary.reignofnether.gamemode.GameModeServerEvents;
 import com.solegendary.reignofnether.gamerules.GameruleServerEvents;
 import com.solegendary.reignofnether.hero.HeroServerEvents;
 import com.solegendary.reignofnether.hud.custombutton.CustomButtonServerEvents;
-import com.solegendary.reignofnether.items.ItemServerEvents;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.research.ResearchServerEvents;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
@@ -25,8 +24,8 @@ import com.solegendary.reignofnether.debug.RtsDebugServerEvents;
 import com.solegendary.reignofnether.unit.NonUnitServerEvents;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.worldborder.WorldBorderServerEvents;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.bus.api.IEventBus;
 
 /*
     This class is required to make sure that we don't accidentally try to load any client-side-only classes
@@ -35,7 +34,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
  */
 
 public class ServerEventRegistrar {
-    private final IEventBus vanillaEventBus = MinecraftForge.EVENT_BUS;
+    private final IEventBus vanillaEventBus = NeoForge.EVENT_BUS;
 
     public ServerEventRegistrar() { }
 
@@ -68,6 +67,5 @@ public class ServerEventRegistrar {
         vanillaEventBus.register(ScenarioServerEvents.class);
         vanillaEventBus.register(WorldBorderServerEvents.class);
         vanillaEventBus.register(CustomButtonServerEvents.class);
-        vanillaEventBus.register(ItemServerEvents.class);
     }
 }

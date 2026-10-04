@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.unit;
 
+import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.mojang.datafixers.util.Pair;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.HeroAbility;
@@ -168,11 +169,11 @@ public class UnitActionItem {
         actionableUnitsLoop:
         for (Unit unit : actionableUnits) {
 
-            if (((LivingEntity) unit).getEffect(MobEffectRegistrar.STUN.get()) != null ||
-                ((LivingEntity) unit).getEffect(MobEffectRegistrar.FREEZE.get()) != null) {
+            if (((LivingEntity) unit).getEffect(MobEffectHelpers.holder(MobEffectRegistrar.STUN.get())) != null ||
+                ((LivingEntity) unit).getEffect(MobEffectHelpers.holder(MobEffectRegistrar.FREEZE.get())) != null) {
                 Unit.fullResetBehaviours(unit);
                 continue;
-            } else if (((LivingEntity) unit).getEffect(MobEffectRegistrar.UNCONTROLLABLE.get()) != null) {
+            } else if (((LivingEntity) unit).getEffect(MobEffectHelpers.holder(MobEffectRegistrar.UNCONTROLLABLE.get())) != null) {
                 continue;
             } else if (unit.ignoreNonStopCommands() && action != UnitAction.STOP)
                 continue;

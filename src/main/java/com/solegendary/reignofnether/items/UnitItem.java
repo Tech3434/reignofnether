@@ -1,11 +1,13 @@
 package com.solegendary.reignofnether.items;
 
+import net.minecraft.core.Holder;
 import com.mojang.datafixers.util.Pair;
 import com.solegendary.reignofnether.blocks.RangeIndicator;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.hud.buttons.UnitItemInventoryButton;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.util.ItemTagCompat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -48,7 +50,7 @@ public abstract class UnitItem implements RangeIndicator {
     public final String desc;
     public final Keybinding hotkey;
     public boolean enableTooltip;
-    protected final List<Pair<Enchantment, Integer>> enchantments;
+    protected final List<Pair<Holder<Enchantment>, Integer>> enchantments;
     protected final List<String> pointDescs;
     public final HashMap<Attribute, AttributeModifier> attributes;
     public BiPredicate<Unit, BlockPos> onUseGround;
@@ -107,10 +109,10 @@ public abstract class UnitItem implements RangeIndicator {
 
     public ItemStack getNewItemStack() {
         ItemStack itemStack = new ItemStack(item);
-        for (Pair<Enchantment, Integer> pair : enchantments) {
+        for (Pair<Holder<Enchantment>, Integer> pair : enchantments) {
             itemStack.enchant(pair.getFirst(), pair.getSecond());
         }
-        itemStack.getOrCreateTag().putUUID("uuid", UUID.randomUUID());
+        ItemTagCompat.getOrCreateTag(itemStack).putUUID("uuid", UUID.randomUUID());
         itemStack.setCount(defaultStackCount);
         return itemStack;
     }

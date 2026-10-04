@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.unit.units.monsters;
 
+import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.abilities.SpinWebs;
 import com.solegendary.reignofnether.hud.TooltipColours;
@@ -33,7 +34,7 @@ public class PoisonSpiderUnit extends SpiderUnit implements Unit, AttackerUnit {
     // removes vanilla spider jockey spawn and random effects
     @Override
     @Nullable
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @Nullable SpawnGroupData pSpawnData, @Nullable CompoundTag pDataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @Nullable SpawnGroupData pSpawnData) {
         return pSpawnData;
     }
 
@@ -41,7 +42,7 @@ public class PoisonSpiderUnit extends SpiderUnit implements Unit, AttackerUnit {
     public boolean doHurtTarget(@NotNull Entity pEntity) {
         if (super.doHurtTarget(pEntity)) {
             if (pEntity instanceof LivingEntity)
-                ((LivingEntity)pEntity).addEffect(new MobEffectInstance(MobEffects.POISON, POISON_DAMAGE * 27, 0), this);
+                ((LivingEntity)pEntity).addEffect(MobEffectHelpers.instance(MobEffects.POISON, POISON_DAMAGE * 27, 0), this);
             for (Ability ability : abilities.get())
                 if (ability instanceof SpinWebs spinWebs && spinWebs.isAutocasting(this) && spinWebs.isOffCooldown(this))
                     spinWebs.use(this.level(), this, pEntity.getOnPos());

@@ -21,6 +21,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BubbleColumnBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.enchantment.Enchantments;
+import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
 
 public class WalkableMagmaBlock extends Block {
     public static final int DAMAGE_DELAY = 20; // higher == damage less often
@@ -37,7 +40,9 @@ public class WalkableMagmaBlock extends Block {
         if (!pEntity.isSteppingCarefully() &&
                 pEntity instanceof LivingEntity &&
                 !(pEntity instanceof GruntUnit) &&
-                !EnchantmentHelper.hasFrostWalker((LivingEntity)pEntity) &&
+                EnchantmentHelper.getItemEnchantmentLevel(
+                        EnchantmentRegistrar.vanilla(Enchantments.FROST_WALKER),
+                        ((LivingEntity) pEntity).getItemBySlot(EquipmentSlot.FEET)) == 0 &&
                 !isPiglinFaction && isDamageTick) {
             pEntity.hurt(pEntity.damageSources().hotFloor(), DAMAGE);
         }

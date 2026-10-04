@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.entities;
 
+import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.ability.heroAbilities.wildfire.MoltenBomb;
 import com.solegendary.reignofnether.blocks.BlockServerEvents;
 import com.solegendary.reignofnether.registrars.BlockRegistrar;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +42,9 @@ public class MoltenBombProjectile extends Fireball {
     }
 
     public MoltenBombProjectile(Level pLevel, LivingEntity pShooter, double offsetX, double offsetY, double offsetZ) {
-        super(EntityRegistrar.MOLTEN_BOMB_PROJECTILE.get(), pShooter, offsetX, offsetY, offsetZ, pLevel);
+        // 1.21.1 replaced ThrowableItemProjectile's (type, shooter, dx, dy, dz, level) constructor
+        // with Fireball's (type, shooter, Vec3 motion, level); the offsets are the initial movement.
+        super(EntityRegistrar.MOLTEN_BOMB_PROJECTILE.get(), pShooter, new Vec3(offsetX, offsetY, offsetZ), pLevel);
         if (!(getOwner() instanceof WildfireUnit))
             return;
         MoltenBomb moltenBomb = ((WildfireUnit) getOwner()).getMoltenBomb();
@@ -68,8 +72,9 @@ public class MoltenBombProjectile extends Fireball {
             detonate();
     }
 
+    // 1.21.1 passes the exploding Explosion in, so the projectile can tell what is damaging it.
     @Override
-    public boolean ignoreExplosion() {
+    public boolean ignoreExplosion(net.minecraft.world.level.Explosion explosion) {
         return true;
     }
 
@@ -92,7 +97,7 @@ public class MoltenBombProjectile extends Fireball {
         for (BlockPos bp : bpAndDists.keySet()) {
             if (random.nextFloat() > bpAndDists.get(bp)) {
                 BlockState fireState = Blocks.FIRE.defaultBlockState();
-                if (getOwner() instanceof Blaze blaze && blaze.hasEffect(MobEffectRegistrar.SOULS_AFLAME.get())) {
+                if (getOwner() instanceof Blaze blaze && blaze.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.SOULS_AFLAME.get()))) {
                     fireState = BlockRegistrar.UNEXTINGUISHABLE_SOUL_FIRE.get().defaultBlockState();
                 }
                 BlockServerEvents.addTempBlock(
@@ -110,9 +115,9 @@ public class MoltenBombProjectile extends Fireball {
         for (Mob mob : mobs) {
             mob.hurt(damageSources().mobProjectile(this, (LivingEntity) this.getOwner()), 0.5f);
             if (random.nextBoolean())
-                mob.setSecondsOnFire(5);
-            if (this.getOwner() instanceof LivingEntity le && le.hasEffect(MobEffectRegistrar.SOULS_AFLAME.get())) {
-                mob.addEffect(new MobEffectInstance(MobEffectRegistrar.SOULS_AFLAME.get(), 120, 0, false, false));
+                mob.setRemainingFireTicks(5);
+            if (this.getOwner() instanceof LivingEntity le && le.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.SOULS_AFLAME.get()))) {
+                mob.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.SOULS_AFLAME.get(), 120, 0, false, false));
             }
         }
         MiscUtil.addParticleExplosion(ParticleTypes.LAVA, explosionRadius * 3, level(), position());

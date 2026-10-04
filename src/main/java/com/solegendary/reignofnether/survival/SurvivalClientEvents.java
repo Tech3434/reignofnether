@@ -302,16 +302,3 @@ public class SurvivalClientEvents {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-

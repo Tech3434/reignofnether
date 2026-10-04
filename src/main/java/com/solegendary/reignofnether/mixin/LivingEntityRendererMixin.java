@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.mixin;
 
+import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.registrars.BlockRegistrar;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -21,7 +22,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity> {
             T entity,
             CallbackInfoReturnable<Boolean> cir
     ) {
-        if (entity.hasEffect(MobEffectRegistrar.ATTACK_SLOWDOWN.get()) &&
+        if (entity.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.ATTACK_SLOWDOWN.get())) &&
             entity.level().getBlockState(entity.getOnPos().above()).getBlock() == BlockRegistrar.WRAITH_SNOW_LAYER.get()) {
             cir.setReturnValue(true);
         }

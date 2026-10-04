@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.unit.units.villagers;
 
+import com.solegendary.reignofnether.util.AttributeHelpers;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.hud.TooltipColours;
@@ -57,7 +58,6 @@ public class IronGolemUnit extends IronGolem implements Unit, AttackerUnit {
     @Override public Object2ObjectArrayMap<Ability, Integer> getCharges() { return charges; }
 
     Ability autocast;
-
 
     private int eatingTicksLeft = 0;
     public void setEatingTicksLeft(int amount) { eatingTicksLeft = amount; }
@@ -123,11 +123,11 @@ public class IronGolemUnit extends IronGolem implements Unit, AttackerUnit {
         SynchedEntityData.defineId(IronGolemUnit.class, EntityDataSerializers.STRING);
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-                this.entityData.define(ownerDataAccessor, "");
-        this.entityData.define(scenarioRoleDataAccessor, -1);
-        this.entityData.define(onDeathCommandDataAccessor, "");
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+                builder.define(ownerDataAccessor, "");
+        builder.define(scenarioRoleDataAccessor, -1);
+        builder.define(onDeathCommandDataAccessor, "");
     }
 
     // combat stats
@@ -184,13 +184,13 @@ public class IronGolemUnit extends IronGolem implements Unit, AttackerUnit {
                 .add(Attributes.MAX_HEALTH, IronGolemUnit.maxHealth)
                 .add(Attributes.FOLLOW_RANGE, Unit.getFollowRange())
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
-                .add(AttributeRegistrar.ATTACK_DAMAGE.get(), attackDamage)
-                .add(AttributeRegistrar.ATTACKS_PER_SECOND.get(), attacksPerSecond)
-                .add(AttributeRegistrar.ATTACK_RANGE.get(), attackRange)
-                .add(AttributeRegistrar.AGGRO_RANGE.get(), aggroRange)
-                .add(AttributeRegistrar.SIGHT_RANGE.get(), Unit.DEFAULT_SIGHT_RANGE)
-                .add(AttributeRegistrar.RANGED_DAMAGE_RESIST.get(), rangedDamageResist)
-                .add(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get(), 0);
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE.get()), attackDamage)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACKS_PER_SECOND.get()), attacksPerSecond)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_RANGE.get()), attackRange)
+                .add(AttributeHelpers.holder(AttributeRegistrar.AGGRO_RANGE.get()), aggroRange)
+                .add(AttributeHelpers.holder(AttributeRegistrar.SIGHT_RANGE.get()), Unit.DEFAULT_SIGHT_RANGE)
+                .add(AttributeHelpers.holder(AttributeRegistrar.RANGED_DAMAGE_RESIST.get()), rangedDamageResist)
+                .add(AttributeHelpers.holder(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get()), 0);
     }
 
     private LivingEntity lastTarget = null;
@@ -272,8 +272,5 @@ public class IronGolemUnit extends IronGolem implements Unit, AttackerUnit {
     public int getDamageTooltipColour() {
         return TooltipColours.GREEN;
     }
-
-
-
 
 }

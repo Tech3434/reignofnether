@@ -7,10 +7,6 @@ import com.solegendary.reignofnether.building.buildings.placements.BeaconPlaceme
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.extensions.IForgeBlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -32,28 +28,12 @@ public class FrustumMixin {
         }
     }
 
-    // see IForgeBlockEntity.getRenderBoundingBox()
-    @Inject(
-            method = "isVisible(Lnet/minecraft/world/phys/AABB;)Z",
-            at = @At("HEAD"),
-            cancellable = true
-    )
-    public void isVisible(AABB aabb, CallbackInfoReturnable<Boolean> cir) {
-        // aabb is infinite only for some block entities: structure, beacon, end portal
-        boolean infAABB = aabb.equals(IForgeBlockEntity.INFINITE_EXTENT_AABB);
-
-        Player player = Minecraft.getInstance().player;
-        float zoom = Math.max(30, OrthoviewClientEvents.getZoom()) * 2;
-
-        if (player != null && OrthoviewClientEvents.isEnabled() && infAABB) {
-            for (BuildingPlacement building : BuildingClientEvents.getBuildings()) {
-                if (building instanceof BeaconPlacement ||
-                    building.getBuilding() instanceof EndPortal) {
-                    BlockPos equalYBp = new BlockPos(player.getOnPos().getX(), building.centrePos.getY(), player.getOnPos().getZ());
-                    if (building.centrePos.distSqr(equalYBp) < (zoom * zoom))
-                        cir.setReturnValue(true);
-                }
-            }
-        }
-    }
+    /*
+     * The beacon/end-portal frustum exemption this mixin used to carry is gone with the API it
+     * keyed on. 1.21.1 removed IBlockEntityExtension#getRenderBoundingBox (and with it
+     * INFINITE_EXTENT_AABB), so no block entity reports a world-sized AABB to Frustum#isVisible
+     * any more - block entities are culled per render section instead. The hook below therefore
+     * could never fire, and reviving it would need a different injection point:
+     * BlockEntityRenderer#shouldRender(T, Vec3).
+     */
 }

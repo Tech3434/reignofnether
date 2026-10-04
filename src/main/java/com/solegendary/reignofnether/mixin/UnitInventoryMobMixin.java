@@ -1,5 +1,7 @@
 package com.solegendary.reignofnether.mixin;
 
+import com.solegendary.reignofnether.ReignOfNether;
+import com.solegendary.reignofnether.util.ItemTagCompat;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.hud.HudClientboundPacket;
@@ -13,6 +15,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -39,6 +43,8 @@ import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.UUID;
+import com.solegendary.reignofnether.util.EnchantmentUtil;
+import com.solegendary.reignofnether.util.AttributeHelpers;
 
 @Mixin(Mob.class)
 public abstract class UnitInventoryMobMixin extends LivingEntity implements UnitInventory {
@@ -76,9 +82,9 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
     @Nullable
     public ItemStack get(UUID uuid) {
         for (ItemStack itemStack : this.unitItems) {
-            if (itemStack.getTag() != null &&
-                itemStack.getTag().hasUUID("uuid") &&
-                itemStack.getTag().getUUID("uuid").equals(uuid)) {
+            if (ItemTagCompat.tag(itemStack) != null &&
+                ItemTagCompat.tag(itemStack).hasUUID("uuid") &&
+                ItemTagCompat.tag(itemStack).getUUID("uuid").equals(uuid)) {
                 return itemStack;
             }
         }
@@ -90,7 +96,7 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
         ItemStack old = this.unitItems.get(index);
         if (!old.isEmpty()) ron$removeItemAttributes(old);
         if (stack != null) {
-            CompoundTag tag = stack.getOrCreateTag();
+            CompoundTag tag = ItemTagCompat.getOrCreateTag(stack);
             if (!tag.hasUUID("uuid"))
                 tag.putUUID("uuid", UUID.randomUUID());
         }
@@ -115,10 +121,10 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
     public boolean dropUUID(UUID uuid, BlockPos bp) {
         for (int i = 0; i < unitItems.size(); i++) {
             ItemStack stack = get(i);
-            if (stack != null && stack.getTag() != null && stack.getItem() != Items.AIR) {
-                UUID stackuuid = stack.getTag().getUUID("uuid");
+            if (stack != null && ItemTagCompat.tag(stack) != null && stack.getItem() != Items.AIR) {
+                UUID stackuuid = ItemTagCompat.tag(stack).getUUID("uuid");
                 if (stackuuid.equals(uuid) && !stack.isEmpty()) {
-                    if (!stack.isEmpty() && EnchantmentHelper.hasBindingCurse(stack)) {
+                    if (!stack.isEmpty() && EnchantmentUtil.hasBindingCurse(stack)) {
                         return false;
                     }
                     if (!stack.isEmpty()) {
@@ -138,10 +144,10 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
     public boolean deleteUUID(UUID uuid) {
         for (int i = 0; i < unitItems.size(); i++) {
             ItemStack stack = get(i);
-            if (stack != null && stack.getTag() != null && stack.getItem() != Items.AIR) {
-                UUID stackuuid = stack.getTag().getUUID("uuid");
+            if (stack != null && ItemTagCompat.tag(stack) != null && stack.getItem() != Items.AIR) {
+                UUID stackuuid = ItemTagCompat.tag(stack).getUUID("uuid");
                 if (stackuuid.equals(uuid) && !stack.isEmpty()) {
-                    if (EnchantmentHelper.hasBindingCurse(stack)) {
+                    if (EnchantmentUtil.hasBindingCurse(stack)) {
                         return false;
                     }
                     ron$removeItemAttributes(stack);
@@ -171,7 +177,7 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
     @Override
     public void giveTo(UUID uuid, UnitInventory inv) {
         ItemStack itemStack = get(uuid);
-        if (itemStack != null && !EnchantmentHelper.hasBindingCurse(itemStack)) {
+        if (itemStack != null && !EnchantmentUtil.hasBindingCurse(itemStack)) {
             if (inv.tryAdding(get(uuid))) {
                 this.deleteUUID(uuid);
                 ItemEntity itemEntity = this.spawnAtLocation(itemStack);
@@ -260,7 +266,7 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
         if (this instanceof HeroUnit heroUnit && unitItem.manaCost > 0)
             heroUnit.setMana(heroUnit.getMana() - unitItem.manaCost);
         if (unitItem.cooldownTicksMax > 0)
-            itemStack.getOrCreateTag().putLong(UnitItem.RON$COOLDOWN_KEY, this.level().getGameTime() + unitItem.cooldownTicksMax);
+            ItemTagCompat.getOrCreateTag(itemStack).putLong(UnitItem.RON$COOLDOWN_KEY, this.level().getGameTime() + unitItem.cooldownTicksMax);
         syncToClient();
     }
 
@@ -293,23 +299,24 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
         UnitItem unitItem = ItemUtil.getUnitItem(stack);
         if (unitItem == null || unitItem.attributes.isEmpty()) return;
 
-        UUID itemUuid = stack.getOrCreateTag().getUUID("uuid");
+        CompoundTag itemTag = ItemTagCompat.tag(stack);
+        if (itemTag == null || !itemTag.hasUUID("uuid")) return;
+        UUID itemUuid = itemTag.getUUID("uuid");
         int i = 0;
         for (Attribute attr : unitItem.attributes.keySet()) {
             AttributeModifier modifier = unitItem.attributes.get(attr);
-            AttributeInstance instance = this.getAttribute(attr);
+            AttributeInstance instance = this.getAttribute(AttributeHelpers.holder(attr));
             if (instance != null) {
                 boolean hasMovespeedMod = false;
                 for (AttributeModifier mod : instance.getModifiers())
-                    if (mod.getName().startsWith("reignofnether:item:"))
+                    if (mod.id().getNamespace().equals(ReignOfNether.MOD_ID))
                         hasMovespeedMod = true;
 
                 if (attr != Attributes.MOVEMENT_SPEED || !hasMovespeedMod) {
-                    UUID modUuid = ron$deriveModifierUUID(itemUuid, i);
-                    if (instance.getModifier(modUuid) == null) { // idempotency guard
+                    ResourceLocation modId = ron$deriveModifierId(itemUuid, i);
+                    if (instance.getModifier(modId) == null) { // idempotency guard
                         instance.addTransientModifier(new AttributeModifier(
-                                modUuid, "reignofnether:item:" + i,
-                                modifier.getAmount(), modifier.getOperation()));
+                                modId, modifier.amount(), modifier.operation()));
                     }
                 }
             }
@@ -321,22 +328,24 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
     private void ron$removeItemAttributes(ItemStack stack) {
         if (this.level().isClientSide() || stack.isEmpty()) return;
         UnitItem unitItem = ItemUtil.getUnitItem(stack);
-        CompoundTag tag = stack.getTag();
+        CompoundTag tag = ItemTagCompat.tag(stack);
         if (unitItem == null || tag == null || !tag.hasUUID("uuid")) return;
 
         UUID itemUuid = tag.getUUID("uuid");
         int i = 0;
         for (Attribute attribute : unitItem.attributes.keySet()) {
-            AttributeInstance instance = this.getAttribute(attribute);
+            AttributeInstance instance = this.getAttribute(AttributeHelpers.holder(attribute));
             if (instance != null)
-                instance.removeModifier(ron$deriveModifierUUID(itemUuid, i));
+                instance.removeModifier(ron$deriveModifierId(itemUuid, i));
             i++;
         }
     }
 
     @Unique
-    private static UUID ron$deriveModifierUUID(UUID itemUuid, int modifierIndex) {
-        return UUID.nameUUIDFromBytes((itemUuid + "#" + modifierIndex).getBytes(StandardCharsets.UTF_8));
+    // 1.21.1 identifies attribute modifiers by ResourceLocation rather than UUID; the id still
+    // has to be derived from the item so that re-equipping the same item does not stack them.
+    private static ResourceLocation ron$deriveModifierId(UUID itemUuid, int modifierIndex) {
+        return ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "item_" + modifierIndex + "_" + itemUuid);
     }
 
     private boolean canAffordManaCost(UnitItem unitItem) {
@@ -348,7 +357,7 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
     private boolean isOffCooldown(UnitItem unitItem, ItemStack itemStack) {
         if (unitItem.cooldownTicksMax <= 0)
             return true;
-        CompoundTag tag = itemStack.getTag();
+        CompoundTag tag = ItemTagCompat.tag(itemStack);
         if (tag == null || !tag.contains(UnitItem.RON$COOLDOWN_KEY))
             return true;
         long gameTime = this.level().isClientSide() ? TimeClientEvents.serverGameTime : this.level().getGameTime();
@@ -366,7 +375,7 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
         for (ItemStack stack : this.unitItems) {
             CompoundTag itemTag = new CompoundTag();
             if (!stack.isEmpty()) {
-                stack.save(itemTag);
+                stack.save(this.level().registryAccess(), itemTag);
             }
             list.add(itemTag);
         }
@@ -378,14 +387,15 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
         if (!tag.contains(RON$UNIT_ITEMS_KEY, Tag.TAG_LIST)) return;
         ListTag list = tag.getList(RON$UNIT_ITEMS_KEY, Tag.TAG_COMPOUND);
         for (int i = 0; i < this.unitItems.size(); i++) {
-            ItemStack stack = i < list.size() ? ItemStack.of(list.getCompound(i)) : ItemStack.EMPTY;
+            ItemStack stack = i < list.size() ? ItemStack.parseOptional(this.level().registryAccess(), list.getCompound(i)) : ItemStack.EMPTY;
             this.unitItems.set(i, stack);
             if (!stack.isEmpty()) ron$applyItemAttributes(stack);
         }
     }
 
     @Inject(method = "dropCustomDeathLoot", at = @At("RETURN"))
-    private void ron$dropUnitItemsOnDeath(DamageSource source, int looting, boolean recentlyHit, CallbackInfo ci) {
+    // 1.21.1 passes the ServerLevel instead of the looting level.
+    private void ron$dropUnitItemsOnDeath(ServerLevel pLevel, DamageSource source, boolean recentlyHit, CallbackInfo ci) {
         if ((Object) this instanceof HeroUnit) return; // heroes keep their gear
 
         for (int i = 0; i < this.unitItems.size(); i++) {

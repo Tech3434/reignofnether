@@ -1,5 +1,7 @@
 package com.solegendary.reignofnether.unit.units.monsters;
 
+import com.solegendary.reignofnether.util.AttributeHelpers;
+import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.abilities.MountSpider;
@@ -51,6 +53,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
 
 public class StrayUnit extends Stray implements Unit, AttackerUnit, RangedAttackerUnit {
     public static final Abilities ABILITIES = new Abilities();
@@ -71,7 +74,6 @@ public class StrayUnit extends Stray implements Unit, AttackerUnit, RangedAttack
     @Override public Object2ObjectArrayMap<Ability, Integer> getCharges() { return charges; }
 
     Ability autocast;
-
 
     private int eatingTicksLeft = 0;
     public void setEatingTicksLeft(int amount) { eatingTicksLeft = amount; }
@@ -140,11 +142,11 @@ public class StrayUnit extends Stray implements Unit, AttackerUnit, RangedAttack
         SynchedEntityData.defineId(StrayUnit.class, EntityDataSerializers.STRING);
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ownerDataAccessor, "");
-        this.entityData.define(scenarioRoleDataAccessor, -1);
-        this.entityData.define(onDeathCommandDataAccessor, "");
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ownerDataAccessor, "");
+        builder.define(scenarioRoleDataAccessor, -1);
+        builder.define(onDeathCommandDataAccessor, "");
     }
 
     // combat stats
@@ -202,13 +204,13 @@ public class StrayUnit extends Stray implements Unit, AttackerUnit, RangedAttack
                 .add(Attributes.MAX_HEALTH, StrayUnit.maxHealth)
                 .add(Attributes.FOLLOW_RANGE, Unit.getFollowRange())
                 .add(Attributes.ARMOR, StrayUnit.armorValue)
-                .add(AttributeRegistrar.ATTACK_DAMAGE.get(), attackDamage)
-                .add(AttributeRegistrar.ATTACKS_PER_SECOND.get(), attacksPerSecond)
-                .add(AttributeRegistrar.ATTACK_RANGE.get(), attackRange)
-                .add(AttributeRegistrar.AGGRO_RANGE.get(), aggroRange)
-                .add(AttributeRegistrar.SIGHT_RANGE.get(), Unit.DEFAULT_SIGHT_RANGE)
-                .add(AttributeRegistrar.RANGED_DAMAGE_RESIST.get(), 0)
-                .add(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get(), 0);
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE.get()), attackDamage)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACKS_PER_SECOND.get()), attacksPerSecond)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_RANGE.get()), attackRange)
+                .add(AttributeHelpers.holder(AttributeRegistrar.AGGRO_RANGE.get()), aggroRange)
+                .add(AttributeHelpers.holder(AttributeRegistrar.SIGHT_RANGE.get()), Unit.DEFAULT_SIGHT_RANGE)
+                .add(AttributeHelpers.holder(AttributeRegistrar.RANGED_DAMAGE_RESIST.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get()), 0);
     }
 
     public void tick() {
@@ -302,10 +304,10 @@ public class StrayUnit extends Stray implements Unit, AttackerUnit, RangedAttack
     public static final int SLOW_SECONDS = 5;
 
     @Override
-    protected @NotNull AbstractArrow getArrow(@NotNull ItemStack pArrowStack, float pDistanceFactor) {
-        AbstractArrow arrow = super.getArrow(pArrowStack, pDistanceFactor);
+    protected @NotNull AbstractArrow getArrow(@NotNull ItemStack pArrowStack, float pDistanceFactor, ItemStack pShootingItem) {
+        AbstractArrow arrow = super.getArrow(pArrowStack, pDistanceFactor, pShootingItem);
         if (arrow instanceof Arrow)
-            ((Arrow)arrow).addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, SLOW_SECONDS * 20));
+            ((Arrow)arrow).addEffect(MobEffectHelpers.instance(MobEffects.MOVEMENT_SLOWDOWN, SLOW_SECONDS * 20));
         return arrow;
     }
 
@@ -320,10 +322,7 @@ public class StrayUnit extends Stray implements Unit, AttackerUnit, RangedAttack
         ItemStack itemstack = this.getProjectile(this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this,
                 (item) -> item instanceof BowItem
         )));
-        AbstractArrow abstractarrow = this.getArrow(itemstack, velocity);
-        if (this.getMainHandItem().getItem() instanceof BowItem) {
-            abstractarrow = ((BowItem)this.getMainHandItem().getItem()).customArrow(abstractarrow);
-        }
+        AbstractArrow abstractarrow = this.getArrow(itemstack, velocity, ItemStack.EMPTY);
         double d0 = pTarget.getX() - this.getX();
         double d1 = pTarget.getY(0.3333333333333333) - abstractarrow.getY();
         double d2 = pTarget.getZ() - this.getZ();
@@ -342,13 +341,13 @@ public class StrayUnit extends Stray implements Unit, AttackerUnit, RangedAttack
 
     @Override
     @Nullable
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @Nullable SpawnGroupData pSpawnData, @Nullable CompoundTag pDataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @Nullable SpawnGroupData pSpawnData) {
         return pSpawnData;
     }
 
     public int getPowerLevel() {
         ItemStack itemStack = this.getItemBySlot(EquipmentSlot.MAINHAND);
-        return itemStack.getEnchantmentLevel(Enchantments.POWER_ARROWS);
+        return itemStack.getEnchantmentLevel(EnchantmentRegistrar.vanilla(Enchantments.POWER));
     }
 
     @Override

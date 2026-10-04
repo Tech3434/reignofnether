@@ -9,6 +9,7 @@ import com.solegendary.reignofnether.faction.Faction;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.client.Minecraft;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
@@ -17,8 +18,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -47,10 +47,7 @@ public class SoundClientEvents {
     public static final float SOUND_RANGE = 96; // all sounds have this max range
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent evt) {
-        if (evt.phase != TickEvent.Phase.END) {
-            return;
-        }
+    public static void onClientTick(ClientTickEvent.Post evt) {
         if (songTicksLeft > 0) {
             songTicksLeft -= 1;
             if (customSong != null && songTicksLeft <= 0)
@@ -220,7 +217,7 @@ public class SoundClientEvents {
     // sounds which shouldn't follow the ClientLevelMixin rules of being changed to the location of what is selected
     // and is always audible while in orthoview mode
     public static List<SoundEvent> STATIC_SOUNDS = List.of(
-            SoundEvents.AMBIENT_CAVE.get(),
+            SoundEvents.AMBIENT_CAVE.value(),
             SoundRegistrar.ALLY.get(),
             SoundRegistrar.CHAT.get(),
             SoundRegistrar.ENEMY.get()
@@ -230,7 +227,7 @@ public class SoundClientEvents {
 
     static {
         SOUND_MAP.put(SoundAction.USE_PORTAL, SoundEvents.ENDERMAN_TELEPORT);
-        SOUND_MAP.put(SoundAction.RANDOM_CAVE_AMBIENCE, SoundEvents.AMBIENT_CAVE.get());
+        SOUND_MAP.put(SoundAction.RANDOM_CAVE_AMBIENCE, SoundEvents.AMBIENT_CAVE.value());
         SOUND_MAP.put(SoundAction.ALLY, SoundRegistrar.ALLY.get());
         SOUND_MAP.put(SoundAction.CHAT, SoundRegistrar.CHAT.get());
         SOUND_MAP.put(SoundAction.ENEMY, SoundRegistrar.ENEMY.get());

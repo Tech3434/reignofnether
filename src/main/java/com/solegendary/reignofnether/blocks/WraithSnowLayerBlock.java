@@ -1,11 +1,13 @@
 package com.solegendary.reignofnether.blocks;
 
+import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.registrars.BlockEntityRegistrar;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.units.monsters.WretchedWraithUnit;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -44,6 +46,13 @@ public class WraithSnowLayerBlock extends BaseEntityBlock {
     private static final int DMG_TAKEN_INCREASE_AMP_PER_LAYER = 2;
     private static final int ATTACK_SLOWDOWN_AMP_PER_LAYER = 2;
 
+    public static final MapCodec<WraithSnowLayerBlock> CODEC = simpleCodec(WraithSnowLayerBlock::new);
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
+
     public WraithSnowLayerBlock(BlockBehaviour.Properties pProperties) {
         super(pProperties);
         this.registerDefaultState(
@@ -78,7 +87,7 @@ public class WraithSnowLayerBlock extends BaseEntityBlock {
     }
 
     @Override
-    public boolean isPathfindable(BlockState pState, BlockGetter pLevel, BlockPos pPos, PathComputationType pType) {
+    protected boolean isPathfindable(BlockState pState, PathComputationType pType) {
         return true;
     }
 
@@ -102,17 +111,17 @@ public class WraithSnowLayerBlock extends BaseEntityBlock {
                 rs = UnitServerEvents.getUnitToEntityRelationship(unit, pLevel, snowBe.getOwnerId());
             }
             if (rs != Relationship.FRIENDLY && rs != Relationship.OWNED) {
-                MobEffectInstance existingMovementSlowdown = livingEntity.getEffect(MobEffectRegistrar.MINOR_MOVEMENT_SLOWDOWN.get());
+                MobEffectInstance existingMovementSlowdown = livingEntity.getEffect(MobEffectHelpers.holder(MobEffectRegistrar.MINOR_MOVEMENT_SLOWDOWN.get()));
                 if (existingMovementSlowdown == null || existingMovementSlowdown.getAmplifier() < movementSlowdownAmp) {
-                    livingEntity.addEffect(new MobEffectInstance(MobEffectRegistrar.MINOR_MOVEMENT_SLOWDOWN.get(), 10, movementSlowdownAmp, true, false));
+                    livingEntity.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.MINOR_MOVEMENT_SLOWDOWN.get(), 10, movementSlowdownAmp, true, false));
                 }
-                MobEffectInstance existingDamageIncrease = livingEntity.getEffect(MobEffectRegistrar.DAMAGE_TAKEN_INCREASE.get());
+                MobEffectInstance existingDamageIncrease = livingEntity.getEffect(MobEffectHelpers.holder(MobEffectRegistrar.DAMAGE_TAKEN_INCREASE.get()));
                 if (existingDamageIncrease == null || existingDamageIncrease.getAmplifier() < dmgIncreaseAmp) {
-                    livingEntity.addEffect(new MobEffectInstance(MobEffectRegistrar.DAMAGE_TAKEN_INCREASE.get(), 10, dmgIncreaseAmp, true, false));
+                    livingEntity.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.DAMAGE_TAKEN_INCREASE.get(), 10, dmgIncreaseAmp, true, false));
                 }
-                MobEffectInstance existingAttackSlowdown = livingEntity.getEffect(MobEffectRegistrar.ATTACK_SLOWDOWN.get());
+                MobEffectInstance existingAttackSlowdown = livingEntity.getEffect(MobEffectHelpers.holder(MobEffectRegistrar.ATTACK_SLOWDOWN.get()));
                 if (existingAttackSlowdown == null || existingAttackSlowdown.getAmplifier() < attackSlowdownAmp) {
-                    livingEntity.addEffect(new MobEffectInstance(MobEffectRegistrar.ATTACK_SLOWDOWN.get(), 10, attackSlowdownAmp, true, false));
+                    livingEntity.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.ATTACK_SLOWDOWN.get(), 10, attackSlowdownAmp, true, false));
                 }
             }
         }

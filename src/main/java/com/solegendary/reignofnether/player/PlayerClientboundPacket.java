@@ -5,16 +5,26 @@ import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.registrars.PacketHandler;
 import com.solegendary.reignofnether.faction.Faction;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.PacketDistributor;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.neoforged.api.distmarker.Dist;
+import com.solegendary.reignofnether.util.DistHelper;
+import com.solegendary.reignofnether.ReignOfNether;
+import com.solegendary.reignofnether.network.RTSSimplePayload;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-public class PlayerClientboundPacket {
+public class PlayerClientboundPacket  implements RTSSimplePayload {
+
+    public static final CustomPacketPayload.Type<PlayerClientboundPacket> TYPE =
+            new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "player_clientbound"));
+
+    @Override
+    public CustomPacketPayload.Type<PlayerClientboundPacket> type() {
+        return TYPE;
+    }
 
     PlayerAction playerAction;
     String playerName;
@@ -26,87 +36,87 @@ public class PlayerClientboundPacket {
     boolean isDogPerson;
 
     public static void addRTSPlayer(String playerName, Faction faction, Long id, int startPosColorId, boolean isDogPerson) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.ADD_RTS_PLAYER, playerName, id, startPosColorId, faction, isDogPerson));
     }
 
     public static void addScenarioNPCRTSPlayer(String playerName, Faction faction, Long id, int scenarioRoleIndex) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.ADD_SCENARIO_NPC_RTS_PLAYER, playerName, id, scenarioRoleIndex, faction, true));
     }
 
     public static void removeRTSPlayer(String playerName) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.REMOVE_RTS_PLAYER, playerName, 0L));
     }
 
     public static void defeat(String playerName) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.DEFEAT, playerName, 0L));
     }
 
     public static void victory(String playerName) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.VICTORY, playerName, 0L));
     }
 
     public static void resetRTS(boolean hard) {
         if (hard) {
-            PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+            PacketHandler.send(PacketHandler.allPlayers(),
                     new PlayerClientboundPacket(PlayerAction.RESET_RTS_HARD, "", 0L));
         } else {
-            PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+            PacketHandler.send(PacketHandler.allPlayers(),
                     new PlayerClientboundPacket(PlayerAction.RESET_RTS, "", 0L));
         }
     }
 
     public static void publishScenarioMap() {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.PUBLISH_SCENARIO_MAP, "", 0L));
     }
 
     public static void syncRtsGameTime(Long rtsGameTicks) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.SYNC_RTS_GAME_TIME, "", rtsGameTicks));
     }
 
     public static void lockRTS(String playerName) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.LOCK_RTS, playerName, 0L));
     }
 
     public static void unlockRTS(String playerName) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.UNLOCK_RTS, playerName, 0L));
     }
 
     // prevent one particular player from joining the match
     public static void disableStartRTS(String playerName) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.DISABLE_START_RTS, playerName, 0L));
     }
     public static void enableStartRTS(String playerName) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.ENABLE_START_RTS, playerName, 0L));
     }
 
     public static void syncBeaconOwnerTicks(String playerName, long ticks) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.SYNC_BEACON_OWNER_TICKS, playerName, ticks));
     }
 
     public static void setRTSCamera(String playerName, boolean value) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.SET_RTS_CAMERA, playerName, (long) (value ? 1 : 0)));
     }
 
     public static void setMarketRate(TradeAction tradeAction, String playerName, int value) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(tradeAction, playerName, (long) value));
     }
 
     public static void teleport(String playerName, BlockPos pos) {
-        PacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(),
+        PacketHandler.send(PacketHandler.allPlayers(),
                 new PlayerClientboundPacket(PlayerAction.TELEPORT, playerName, pos));
     }
 
@@ -154,7 +164,7 @@ public class PlayerClientboundPacket {
         this.isDogPerson = true;
     }
 
-    public PlayerClientboundPacket(FriendlyByteBuf buffer) {
+    public PlayerClientboundPacket(RegistryFriendlyByteBuf buffer) {
         this.playerAction = buffer.readEnum(PlayerAction.class);
         this.playerName = buffer.readUtf();
         this.value1 = buffer.readLong();
@@ -165,7 +175,7 @@ public class PlayerClientboundPacket {
         this.isDogPerson = buffer.readBoolean();
     }
 
-    public void encode(FriendlyByteBuf buffer) {
+    public void encode(RegistryFriendlyByteBuf buffer) {
         buffer.writeEnum(this.playerAction);
         buffer.writeUtf(this.playerName);
         buffer.writeLong(this.value1);
@@ -177,11 +187,10 @@ public class PlayerClientboundPacket {
     }
 
     // server-side packet-consuming functions
-    public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        final var success = new AtomicBoolean(false);
+    public void handle(IPayloadContext ctx) {
 
-        ctx.get().enqueueWork(() -> {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
+        ctx.enqueueWork(() -> {
+            DistHelper.unsafeRunWhenOn(Dist.CLIENT,
                     () -> () -> {
                         switch (playerAction) {
                             case TELEPORT -> OrthoviewClientEvents.centreCameraOnPosForPlayer(playerName, pos);
@@ -202,10 +211,8 @@ public class PlayerClientboundPacket {
                             case SET_RTS_CAMERA -> OrthoviewClientEvents.tryToSetCamera(playerName, value1 == 1L);
                             case SET_MARKET_RATE -> PlayerClientEvents.setMarketRate(tradeAction, playerName, Math.toIntExact(value1));
                         }
-                        success.set(true);
                     });
         });
-        ctx.get().setPacketHandled(true);
-        return success.get();
+        return;
     }
 }

@@ -21,24 +21,40 @@ import com.solegendary.reignofnether.resources.*;
 import com.solegendary.reignofnether.faction.Faction;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.MiscUtil;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.*;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.text.WordUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -194,14 +210,17 @@ public class CustomBuilding extends ProductionBuilding implements GarrisonableBu
                     CompoundTag itemTag = (CompoundTag) tag;
                     ResourceLocation itemId = ResourceLocation.tryParse(itemTag.getString("id"));
 
-                    Item item = ForgeRegistries.ITEMS.getValue(itemId);
+                    Item item = BuiltInRegistries.ITEM.get(itemId);
                     if (!(item instanceof SpawnEggItem spawnEgg)) continue;
 
                     CompoundTag stackNbt = itemTag.contains("tag", Tag.TAG_COMPOUND)
                             ? itemTag.getCompound("tag")
                             : null;
 
-                    EntityType<?> type = spawnEgg.getType(stackNbt);
+                    // 1.21.1 reads the mob type from the EntityType data component of the stack
+                    // rather than an "EntityType" entry inside its NBT, and RON's spawn eggs are
+                    // always the vanilla SpawnEggItem we already have the registry entry for.
+                    EntityType<?> type = spawnEgg.getType(ItemStack.EMPTY);
 
                     if (type.getDescriptionId().contains("reignofnether") && type.getDescriptionId().contains("_unit")) {
                         ProductionItem originalProdItem = ProductionItems.getProductionItem((EntityType<? extends Mob>) type);

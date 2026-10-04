@@ -1,3 +1,35 @@
+# Gradle / ModDevGradle
+# build.gradle is deliberately NOT ignored: it is the build script and is tracked.
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Dev-run game directory (worlds, logs, crash reports, options)
+run/
+run/
+
+# Port tooling and scratch output - local only, not part of the mod.
+# tools/ holds the throwaway analysis and migration scripts; *.log / *.txt / *.err are
+# compiler and runtime transcripts plus one-off scratch files.
+tools/
+*.log
+errs*.txt
+*.err
+
+# Sources extracted from jars for reference during the port
+.jx/
+.jassets/
+.j1/
+.j2/
+.j3/
+.jdx/
+.jmc/
+.mdgx/
+.mdgsrc/
+.abstractprobe/
+
 ### IntelliJ IDEA ###
 out/
 !**/src/main/**/out/
@@ -6,13 +38,6 @@ out/
 *.iws
 *.iml
 .idea
-run
-run/
-
-# gradle
-build
-.gradle
-build.gradle
 
 ### Eclipse ###
 .apt_generated
@@ -37,4 +62,5 @@ bin/
 .vscode/
 
 ### Mac OS ###
-.DS_Store*.launch
+.DS_Store
+*.launch

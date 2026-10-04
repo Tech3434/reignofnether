@@ -15,8 +15,8 @@ import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.Ghast;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class BatUnitRenderer extends MobRenderer<BatUnit, BatUnitModel> {
@@ -34,9 +34,10 @@ public class BatUnitRenderer extends MobRenderer<BatUnit, BatUnitModel> {
         pPoseStack.scale(0.7F, 0.7F, 0.7F);
     }
 
-    protected void setupRotations(BatUnit pEntityLiving, PoseStack pPoseStack, float pAgeInTicks, float pRotationYaw, float pPartialTicks) {
+    // 1.21.1 added a trailing Entity#getScale() parameter to setupRotations.
+    protected void setupRotations(BatUnit pEntityLiving, PoseStack pPoseStack, float pAgeInTicks, float pRotationYaw, float pPartialTicks, float pScale) {
         pPoseStack.translate(0.0F, Mth.cos(pAgeInTicks * 0.3F) * 0.1F, 0.0F);
-        super.setupRotations(pEntityLiving, pPoseStack, pAgeInTicks, pRotationYaw, pPartialTicks);
+        super.setupRotations(pEntityLiving, pPoseStack, pAgeInTicks, pRotationYaw, pPartialTicks, pScale);
         pPoseStack.translate(0.0D, -0.3D, -0.2D);
     }
 

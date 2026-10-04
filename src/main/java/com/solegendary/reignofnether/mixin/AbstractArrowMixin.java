@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.mixin;
 
+import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.google.common.collect.Lists;
 import com.solegendary.reignofnether.alliance.AlliancesClient;
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
@@ -139,11 +140,12 @@ public abstract class AbstractArrowMixin extends Projectile {
     @Shadow private double baseDamage;
     @Shadow public boolean isCritArrow() { return false; }
     @Shadow public AbstractArrow.Pickup pickup;
-    @Shadow private int knockback;
     @Shadow protected abstract ItemStack getPickupItem();
     @Shadow protected void doPostHurtEffects(LivingEntity pTarget) { }
     @Shadow public boolean shotFromCrossbow() { return false; }
-    @Shadow(remap = false) @Final private IntOpenHashSet ignoredEntities;
+    // 1.20.1's AbstractArrow#ignoredEntities (the set of entities this arrow already hit) has no
+    // counterpart here: vanilla 1.21.1 dedupes pierce victims through piercingIgnoreEntityIds and
+    // piercedAndKilledEntities, and its own canHitEntity is exactly the super call plus that set.
 
     @Unique
     private boolean reignofnether$collidedWithUntargetedAlly(Entity entity) {
@@ -173,7 +175,6 @@ public abstract class AbstractArrowMixin extends Projectile {
     protected boolean canHitEntity(Entity entity) {
         return super.canHitEntity(entity) &&
                 (this.piercingIgnoreEntityIds == null || !this.piercingIgnoreEntityIds.contains(entity.getId())) &&
-                !this.ignoredEntities.contains(entity.getId()) &&
                 !reignofnether$collidedWithUntargetedAlly(entity) &&
                 !reignofnether$boggedArrowCollidedWithPoisonedEnemy(entity);
     }
@@ -213,10 +214,13 @@ public abstract class AbstractArrowMixin extends Projectile {
 
         Entity entity1 = this.getOwner();
         DamageSource damagesource;
+        // Inside a mixin `this` is the mixin class; the target instance is the AbstractArrow.
+        AbstractArrow self = (AbstractArrow) (Object) this;
         if (entity1 == null) {
-            damagesource = damageSources().arrow(new Arrow(this.level(), this.xo, this.yo, this.zo), this);//DamageSource.arrow(this, this);
+            // Vanilla's own shape for a direct hit: the arrow is both projectile and owner.
+            damagesource = damageSources().arrow(self, self);
         } else {
-            damagesource = damageSources().arrow(new Arrow(this.level(), this.xo, this.yo, this.zo), entity1);
+            damagesource = damageSources().arrow(self, entity1);
             if (entity1 instanceof LivingEntity) {
                 ((LivingEntity)entity1).setLastHurtMob(entity);
             }
@@ -225,7 +229,7 @@ public abstract class AbstractArrowMixin extends Projectile {
         boolean flag = entity.getType() == EntityType.ENDERMAN;
         int k = entity.getRemainingFireTicks();
         if (this.isOnFire() && !flag) {
-            entity.setSecondsOnFire(5);
+            entity.setRemainingFireTicks(5);
         }
 
         if (entity.hurt(damagesource, (float)i)) {
@@ -239,19 +243,14 @@ public abstract class AbstractArrowMixin extends Projectile {
                     livingentity.setArrowCount(livingentity.getArrowCount() + 1);
                 }
 
-                if (this.knockback > 0) {
-                    double d0 = Math.max(0.0, 1.0 - livingentity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-                    Vec3 vec3 = this.getDeltaMovement().multiply(1.0, 0.0, 1.0).normalize().scale((double)this.knockback * 0.6 * d0);
-                    if (vec3.lengthSqr() > 0.0) {
-                        livingentity.push(vec3.x, 0.1, vec3.z);
-                    }
-                }
+                // 1.21.1 removed AbstractArrow#knockback: the arrow no longer stores the value, and
+                // vanilla now applies it itself from the shooting item's knockback attribute
+                // modifier (AbstractArrow#doKnockback, called just before doPostHurtEffects). The
+                // hand-rolled push below therefore went away with the field it read.
 
-                if (!this.level().isClientSide && entity1 instanceof LivingEntity) {
-                    EnchantmentHelper.doPostHurtEffects(livingentity, entity1);
-                    EnchantmentHelper.doPostDamageEffects((LivingEntity)entity1, livingentity);
-                }
-
+                // 1.21.1 moved the Thorns / post-damage enchantment hooks out of
+                // EnchantmentHelper into LivingEntity#hurt, so the two calls the 1.20.1 arrow
+                // made here have no equivalent and are simply gone.
                 this.doPostHurtEffects(livingentity);
                 if (entity1 != null && livingentity != entity1 && livingentity instanceof Player && entity1 instanceof ServerPlayer && !this.isSilent()) {
                     ((ServerPlayer)entity1).connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.ARROW_HIT_PLAYER, 0.0F));

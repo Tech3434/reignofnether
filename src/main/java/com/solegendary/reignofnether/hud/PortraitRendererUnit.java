@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.hud;
 
+import com.solegendary.reignofnether.util.AttributeHelpers;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -54,6 +55,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.text.WordUtils;
+import org.joml.Matrix4fStack;
 import org.joml.Quaternionf;
 
 import java.text.DecimalFormat;
@@ -62,6 +64,9 @@ import java.util.List;
 
 import static com.solegendary.reignofnether.hud.TooltipColours.*;
 import static com.solegendary.reignofnether.util.MiscUtil.fcs;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 
 // Renders a Unit's portrait including its animated head, name, healthbar, list of stats and UI frames for these
 
@@ -322,8 +327,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
         // need to render like this instead of GuiComponent.drawCenteredString, so it's layered above the portrait entity
         Minecraft MC = Minecraft.getInstance();
         MultiBufferSource.BufferSource multibuffersource$buffersource =
-                MultiBufferSource.immediate(Tesselator.getInstance()
-                        .getBuilder());
+                MultiBufferSource.immediate(new ByteBufferBuilder(256));
 
         for (int i = 0; i < texts.size(); i++) {
             FormattedCharSequence pTooltips = FormattedCharSequence.forward(texts.get(i), Style.EMPTY);
@@ -599,7 +603,6 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
         return RectZone.getZoneByLW(x, y-2, width, height+4);
     }
 
-
     public RectZone renderResourcesHeld(GuiGraphics guiGraphics, int x, int y, Unit unit) {
         Resources resources = Resources.getTotalResourcesFromItems(unit.getItems());
         return renderResourcesHeld(guiGraphics, x, y, resources, Unit.atMaxResources(unit));
@@ -655,9 +658,11 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
     private void drawEntityOnScreen(PoseStack poseStack, LivingEntity entity, int x, int y, int size) {
         float f = (float) Math.atan(-lookX / 40F);
         float g = (float) Math.atan(-lookY / 40F);
-        PoseStack poseStackModel = RenderSystem.getModelViewStack();
-        poseStackModel.pushPose();
-        poseStackModel.translate(x, y, 1050.0D);
+        // 1.21.1's RenderSystem#getModelViewStack hands back a JOML Matrix4fStack rather than a
+        // PoseStack, so the model-view half of this transform uses pushMatrix/scale directly.
+        Matrix4fStack poseStackModel = RenderSystem.getModelViewStack();
+        poseStackModel.pushMatrix();
+        poseStackModel.translate(x, y, 1050.0F);
         poseStackModel.scale(1.0F, 1.0F, -1.0F);
         RenderSystem.applyModelViewMatrix();
         poseStack.pushPose();
@@ -705,7 +710,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
             entity.yHeadRotO = k;
             entity.yHeadRot = l;
         }
-        poseStackModel.popPose();
+        poseStackModel.popMatrix();
         poseStack.popPose();
         RenderSystem.applyModelViewMatrix();
         Lighting.setupFor3DItems();

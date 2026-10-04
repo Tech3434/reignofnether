@@ -10,7 +10,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -50,7 +49,7 @@ public class EdibleFoodItem extends UnitItem {
     }
 
     public static UUID getFoodUUID(Item item) {
-        ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
         return UUID.nameUUIDFromBytes(("edible_food_item:" + id).getBytes(StandardCharsets.UTF_8));
     }
 

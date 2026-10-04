@@ -4,14 +4,25 @@ import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.registrars.PacketHandler;
 import com.solegendary.reignofnether.faction.Faction;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
+import com.solegendary.reignofnether.ReignOfNether;
+import com.solegendary.reignofnether.network.RTSSimplePayload;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-public class StartPosServerboundPacket {
+public class StartPosServerboundPacket  implements RTSSimplePayload {
+
+    public static final CustomPacketPayload.Type<StartPosServerboundPacket> TYPE =
+            new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "start_pos_serverbound"));
+
+    @Override
+    public CustomPacketPayload.Type<StartPosServerboundPacket> type() {
+        return TYPE;
+    }
 
     StartPosAction action;
     BlockPos blockPos;
@@ -19,27 +30,27 @@ public class StartPosServerboundPacket {
     String playerName;
 
     public static void reservePos(BlockPos pos, Faction faction, String playerName) {
-        PacketHandler.INSTANCE.sendToServer(new StartPosServerboundPacket(StartPosAction.RESERVE, pos, faction, playerName));
+        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.RESERVE, pos, faction, playerName));
     }
 
     public static void unreservePos(BlockPos pos) {
-        PacketHandler.INSTANCE.sendToServer(new StartPosServerboundPacket(StartPosAction.UNRESERVE, pos, Faction.NONE, ""));
+        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.UNRESERVE, pos, Faction.NONE, ""));
     }
 
     public static void readyPlayer(String playerName) {
-        PacketHandler.INSTANCE.sendToServer(new StartPosServerboundPacket(StartPosAction.PLAYER_READY, new BlockPos(0,0,0), Faction.NONE, playerName));
+        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.PLAYER_READY, new BlockPos(0,0,0), Faction.NONE, playerName));
     }
 
     public static void unreadyPlayer(String playerName) {
-        PacketHandler.INSTANCE.sendToServer(new StartPosServerboundPacket(StartPosAction.PLAYER_UNREADY, new BlockPos(0,0,0), Faction.NONE, playerName));
+        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.PLAYER_UNREADY, new BlockPos(0,0,0), Faction.NONE, playerName));
     }
 
     public static void enablePos(BlockPos pos) {
-        PacketHandler.INSTANCE.sendToServer(new StartPosServerboundPacket(StartPosAction.ENABLE, pos, Faction.NONE, ""));
+        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.ENABLE, pos, Faction.NONE, ""));
     }
 
     public static void disablePos(BlockPos pos) {
-        PacketHandler.INSTANCE.sendToServer(new StartPosServerboundPacket(StartPosAction.DISABLE, pos, Faction.NONE, ""));
+        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.DISABLE, pos, Faction.NONE, ""));
     }
 
     public StartPosServerboundPacket(StartPosAction action, BlockPos pos, Faction faction, String playerName) {
@@ -49,14 +60,14 @@ public class StartPosServerboundPacket {
         this.playerName = playerName;
     }
 
-    public StartPosServerboundPacket(FriendlyByteBuf buffer) {
+    public StartPosServerboundPacket(RegistryFriendlyByteBuf buffer) {
         this.action = buffer.readEnum(StartPosAction.class);
         this.blockPos = buffer.readBlockPos();
         this.faction = buffer.readEnum(Faction.class);
         this.playerName = buffer.readUtf();
     }
 
-    public void encode(FriendlyByteBuf buffer) {
+    public void encode(RegistryFriendlyByteBuf buffer) {
         buffer.writeEnum(this.action);
         buffer.writeBlockPos(this.blockPos);
         buffer.writeEnum(this.faction);
@@ -64,20 +75,17 @@ public class StartPosServerboundPacket {
     }
 
     // server-side packet-consuming functions
-    public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        final var success = new AtomicBoolean(false);
-        ctx.get().enqueueWork(() -> {
+    public void handle(IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
 
-            ServerPlayer player = ctx.get().getSender();
+            ServerPlayer player = (ServerPlayer) ctx.player();
             if (player == null) {
                 ReignOfNether.LOGGER.warn("GameruleServerboundPacket: Sender was null");
-                success.set(false);
                 return;
             }
             else if ((action == StartPosAction.ENABLE || action == StartPosAction.DISABLE) &&
                     !player.hasPermissions(4)) {
                 ReignOfNether.LOGGER.warn("GameruleServerboundPacket: Tried to process packet from " + player.getName() + " with insufficient permissions");
-                success.set(false);
                 return;
             }
 
@@ -114,9 +122,7 @@ public class StartPosServerboundPacket {
                 case ENABLE -> StartPosServerEvents.setPosEnabled(blockPos, true);
                 case DISABLE -> StartPosServerEvents.setPosEnabled(blockPos, false);
             }
-            success.set(true);
         });
-        ctx.get().setPacketHandled(true);
-        return success.get();
+        return;
     }
 }

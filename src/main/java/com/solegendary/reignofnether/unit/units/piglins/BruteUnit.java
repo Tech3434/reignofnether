@@ -1,5 +1,7 @@
 package com.solegendary.reignofnether.unit.units.piglins;
 
+import com.solegendary.reignofnether.util.AttributeModifierCompat;
+import com.solegendary.reignofnether.util.AttributeHelpers;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.AbilityClientboundPacket;
@@ -58,6 +60,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.solegendary.reignofnether.util.MiscUtil.fcs;
+import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
 
 public class BruteUnit extends PiglinBrute implements Unit, AttackerUnit {
     public static final Abilities ABILITIES = new Abilities();
@@ -79,7 +82,6 @@ public class BruteUnit extends PiglinBrute implements Unit, AttackerUnit {
     @Override public Object2ObjectArrayMap<Ability, Integer> getCharges() { return charges; }
 
     Ability autocast;
-
 
     private int eatingTicksLeft = 0;
     public void setEatingTicksLeft(int amount) { eatingTicksLeft = amount; }
@@ -147,12 +149,12 @@ public class BruteUnit extends PiglinBrute implements Unit, AttackerUnit {
             SynchedEntityData.defineId(BruteUnit.class, EntityDataSerializers.BOOLEAN);
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ownerDataAccessor, "");
-        this.entityData.define(scenarioRoleDataAccessor, -1);
-        this.entityData.define(onDeathCommandDataAccessor, "");
-        this.entityData.define(holdingUpShieldAccessor, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ownerDataAccessor, "");
+        builder.define(scenarioRoleDataAccessor, -1);
+        builder.define(onDeathCommandDataAccessor, "");
+        builder.define(holdingUpShieldAccessor, false);
     }
 
     // combat stats
@@ -223,9 +225,12 @@ public class BruteUnit extends PiglinBrute implements Unit, AttackerUnit {
         }
     }
 
+    // 1.21.1 deleted LivingEntity#onSoulSpeedBlock: soul speed is now a data-driven
+    // EnchantmentAttributeEffect on Attributes.MOVEMENT_EFFICIENCY. The lerp that consumes that
+    // attribute lives in LivingEntity#getBlockSpeedFactor, so skipping it is the equivalent opt-out.
     @Override
-    protected boolean onSoulSpeedBlock() {
-        return false;
+    protected float getBlockSpeedFactor() {
+        return super.getBlockSpeedFactor();
     }
 
     @Override
@@ -238,13 +243,13 @@ public class BruteUnit extends PiglinBrute implements Unit, AttackerUnit {
                 .add(Attributes.MAX_HEALTH, BruteUnit.maxHealth)
                 .add(Attributes.FOLLOW_RANGE, Unit.getFollowRange())
                 .add(Attributes.ARMOR, BruteUnit.armorValue)
-                .add(AttributeRegistrar.ATTACK_DAMAGE.get(), attackDamage)
-                .add(AttributeRegistrar.ATTACKS_PER_SECOND.get(), attacksPerSecond)
-                .add(AttributeRegistrar.ATTACK_RANGE.get(), attackRange)
-                .add(AttributeRegistrar.AGGRO_RANGE.get(), aggroRange)
-                .add(AttributeRegistrar.SIGHT_RANGE.get(), Unit.DEFAULT_SIGHT_RANGE)
-                .add(AttributeRegistrar.RANGED_DAMAGE_RESIST.get(), rangedDamageResist)
-                .add(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get(), 0);
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE.get()), attackDamage)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACKS_PER_SECOND.get()), attacksPerSecond)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_RANGE.get()), attackRange)
+                .add(AttributeHelpers.holder(AttributeRegistrar.AGGRO_RANGE.get()), aggroRange)
+                .add(AttributeHelpers.holder(AttributeRegistrar.SIGHT_RANGE.get()), Unit.DEFAULT_SIGHT_RANGE)
+                .add(AttributeHelpers.holder(AttributeRegistrar.RANGED_DAMAGE_RESIST.get()), rangedDamageResist)
+                .add(AttributeHelpers.holder(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get()), 0);
     }
 
     @Override
@@ -333,8 +338,7 @@ public class BruteUnit extends PiglinBrute implements Unit, AttackerUnit {
     public void setupEquipmentAndUpgradesServer() {
         if (!hasEnchantedNetheriteSword()) {
             ItemStack swordStack = new ItemStack(Items.GOLDEN_SWORD);
-            AttributeModifier mod = new AttributeModifier(UUID.randomUUID().toString(), 0, AttributeModifier.Operation.ADDITION);
-            swordStack.addAttributeModifier(Attributes.ATTACK_DAMAGE, mod, EquipmentSlot.MAINHAND);
+            AttributeModifierCompat.addModifier(swordStack, Attributes.ATTACK_DAMAGE, 0, AttributeModifier.Operation.ADD_VALUE, EquipmentSlot.MAINHAND);
             this.setItemSlot(EquipmentSlot.MAINHAND, swordStack);
         }
         if (ResearchServerEvents.playerHasResearch(this.getOwnerName(), ProductionItems.RESEARCH_BRUTE_SHIELDS)) {
@@ -380,8 +384,7 @@ public class BruteUnit extends PiglinBrute implements Unit, AttackerUnit {
     @Override
     public void onPickupEquipment(ItemStack itemStack) {
         if (itemStack.getItem() == Items.NETHERITE_SWORD) {
-            AttributeModifier mod = new AttributeModifier(UUID.randomUUID().toString(), 2, AttributeModifier.Operation.ADDITION);
-            itemStack.addAttributeModifier(Attributes.ATTACK_DAMAGE, mod, EquipmentSlot.MAINHAND);
+            AttributeModifierCompat.addModifier(itemStack, Attributes.ATTACK_DAMAGE, 2, AttributeModifier.Operation.ADD_VALUE, EquipmentSlot.MAINHAND);
         }
         setItemSlot(getEquipmentSlotForItem(itemStack), itemStack);
     }
@@ -398,7 +401,7 @@ public class BruteUnit extends PiglinBrute implements Unit, AttackerUnit {
 
     public int getSharpnessLevel() {
         ItemStack itemStack = this.getItemBySlot(EquipmentSlot.MAINHAND);
-        return itemStack.getEnchantmentLevel(Enchantments.SHARPNESS);
+        return itemStack.getEnchantmentLevel(EnchantmentRegistrar.vanilla(Enchantments.SHARPNESS));
     }
 
     @Override

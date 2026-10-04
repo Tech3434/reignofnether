@@ -1,5 +1,8 @@
 package com.solegendary.reignofnether.unit.units.monsters;
 
+import com.solegendary.reignofnether.util.AttributeHelpers;
+import net.minecraft.world.entity.MobCategory;
+import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.abilities.Fear;
@@ -156,11 +159,11 @@ public class WraithUnit extends Monster implements Unit, AttackerUnit, KeyframeA
         SynchedEntityData.defineId(WraithUnit.class, EntityDataSerializers.STRING);
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ownerDataAccessor, "");
-        this.entityData.define(scenarioRoleDataAccessor, -1);
-        this.entityData.define(onDeathCommandDataAccessor, "");
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ownerDataAccessor, "");
+        builder.define(scenarioRoleDataAccessor, -1);
+        builder.define(onDeathCommandDataAccessor, "");
     }
 
     @Nullable
@@ -276,9 +279,12 @@ public class WraithUnit extends Monster implements Unit, AttackerUnit, KeyframeA
         super.kill();
     }
 
+    // 1.21.1 deleted LivingEntity#onSoulSpeedBlock: soul speed is now a data-driven
+    // EnchantmentAttributeEffect on Attributes.MOVEMENT_EFFICIENCY. The lerp that consumes that
+    // attribute lives in LivingEntity#getBlockSpeedFactor, so skipping it is the equivalent opt-out.
     @Override
-    protected boolean onSoulSpeedBlock() {
-        return false;
+    protected float getBlockSpeedFactor() {
+        return super.getBlockSpeedFactor();
     }
 
     @Override
@@ -293,14 +299,14 @@ public class WraithUnit extends Monster implements Unit, AttackerUnit, KeyframeA
                 .add(Attributes.ARMOR, WraithUnit.armorValue)
                 .add(Attributes.ATTACK_KNOCKBACK, 0f)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 9999.0f)
-                .add(AttributeRegistrar.EVASION_CHANCE.get(), evasionChance)
-                .add(AttributeRegistrar.ATTACK_DAMAGE.get(), attackDamage)
-                .add(AttributeRegistrar.ATTACKS_PER_SECOND.get(), attacksPerSecond)
-                .add(AttributeRegistrar.ATTACK_RANGE.get(), attackRange)
-                .add(AttributeRegistrar.AGGRO_RANGE.get(), aggroRange)
-                .add(AttributeRegistrar.SIGHT_RANGE.get(), Unit.DEFAULT_SIGHT_RANGE)
-                .add(AttributeRegistrar.RANGED_DAMAGE_RESIST.get(), 0)
-                .add(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get(), 0);
+                .add(AttributeHelpers.holder(AttributeRegistrar.EVASION_CHANCE.get()), evasionChance)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE.get()), attackDamage)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACKS_PER_SECOND.get()), attacksPerSecond)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_RANGE.get()), attackRange)
+                .add(AttributeHelpers.holder(AttributeRegistrar.AGGRO_RANGE.get()), aggroRange)
+                .add(AttributeHelpers.holder(AttributeRegistrar.SIGHT_RANGE.get()), Unit.DEFAULT_SIGHT_RANGE)
+                .add(AttributeHelpers.holder(AttributeRegistrar.RANGED_DAMAGE_RESIST.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get()), 0);
     }
 
     @Override
@@ -382,11 +388,6 @@ public class WraithUnit extends Monster implements Unit, AttackerUnit, KeyframeA
     }
 
     @Override
-    public MobType getMobType() {
-        return MobType.UNDEAD;
-    }
-
-    @Override
     protected boolean isSunBurnTick() {
         return NightUtils.isSunBurnTick(this);
     }
@@ -395,7 +396,7 @@ public class WraithUnit extends Monster implements Unit, AttackerUnit, KeyframeA
     public void aiStep() {
         super.aiStep();
         if (isSunBurnTick())
-            this.setSecondsOnFire(8);
+            this.setRemainingFireTicks(8);
     }
 
     @Override
@@ -491,13 +492,12 @@ public class WraithUnit extends Monster implements Unit, AttackerUnit, KeyframeA
 
         Unit.fullResetBehaviours(targetUnit);
         targetUnit.getMoveGoal().setMoveTarget(fleeBp);
-        targetEntity.addEffect(new MobEffectInstance(MobEffectRegistrar.UNCONTROLLABLE.get(), Fear.DURATION_SECONDS * 20, 0, true, false));
-        targetEntity.addEffect(new MobEffectInstance(MobEffectRegistrar.FEARFUL.get(), Fear.DURATION_SECONDS * 20, 0, true, false));
+        targetEntity.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.UNCONTROLLABLE.get(), Fear.DURATION_SECONDS * 20, 0, true, false));
+        targetEntity.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.FEARFUL.get(), Fear.DURATION_SECONDS * 20, 0, true, false));
     }
 
-
     public void onCastPossess(LivingEntity targetEntity) {
-        MobEffectInstance mei = targetEntity.getEffect(MobEffectRegistrar.PARTIALLY_POSSESSED.get());
+        MobEffectInstance mei = targetEntity.getEffect(MobEffectHelpers.holder(MobEffectRegistrar.PARTIALLY_POSSESSED.get()));
         int amp = 0;
         if (mei != null) {
             amp = mei.getAmplifier() + 1;
@@ -506,7 +506,7 @@ public class WraithUnit extends Monster implements Unit, AttackerUnit, KeyframeA
         kill();
         // full possession
         if (targetEntity instanceof Unit unit && unit.getCost().population <= (amp + 1) * Possess.POP_PER_WRAITH) {
-            targetEntity.removeEffect(MobEffectRegistrar.PARTIALLY_POSSESSED.get());
+            targetEntity.removeEffect(MobEffectHelpers.holder(MobEffectRegistrar.PARTIALLY_POSSESSED.get()));
             unit.setOwnerName(this.getOwnerName());
             unit.setAnchor(null);
             MiscUtil.addParticleExplosion(ParticleTypes.SCULK_SOUL, 40, level(), targetEntity.getEyePosition(), 0.15f);
@@ -519,7 +519,7 @@ public class WraithUnit extends Monster implements Unit, AttackerUnit, KeyframeA
                 targetEntity.heal(health);
             }
         } else { // partial possession
-            targetEntity.addEffect(new MobEffectInstance(
+            targetEntity.addEffect(MobEffectHelpers.instance(
                     MobEffectRegistrar.PARTIALLY_POSSESSED.get(),
                     Possess.PARTIAL_POSSESS_DURATION_SECONDS * 20,
                     amp,

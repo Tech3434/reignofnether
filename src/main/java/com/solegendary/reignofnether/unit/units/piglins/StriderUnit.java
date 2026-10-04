@@ -1,5 +1,7 @@
 package com.solegendary.reignofnether.unit.units.piglins;
 
+import com.solegendary.reignofnether.util.AttributeHelpers;
+import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.abilities.PromoteIllager;
@@ -15,6 +17,8 @@ import com.solegendary.reignofnether.unit.units.monsters.BatUnit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import com.solegendary.reignofnether.ReignOfNether;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -115,11 +119,11 @@ public class StriderUnit extends Strider implements Unit {
             SynchedEntityData.defineId(StriderUnit.class, EntityDataSerializers.STRING);
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ownerDataAccessor, "");
-        this.entityData.define(scenarioRoleDataAccessor, -1);
-        this.entityData.define(onDeathCommandDataAccessor, "");
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ownerDataAccessor, "");
+        builder.define(scenarioRoleDataAccessor, -1);
+        builder.define(onDeathCommandDataAccessor, "");
     }
 
     @Nullable
@@ -157,9 +161,9 @@ public class StriderUnit extends Strider implements Unit {
                 .add(Attributes.MAX_HEALTH, StriderUnit.maxHealth)
                 .add(Attributes.FOLLOW_RANGE, Unit.getFollowRange())
                 .add(Attributes.ARMOR, StriderUnit.armorValue)
-                .add(AttributeRegistrar.SIGHT_RANGE.get(), 20)
-                .add(AttributeRegistrar.RANGED_DAMAGE_RESIST.get(), 0)
-                .add(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get(), 0);
+                .add(AttributeHelpers.holder(AttributeRegistrar.SIGHT_RANGE.get()), 20)
+                .add(AttributeHelpers.holder(AttributeRegistrar.RANGED_DAMAGE_RESIST.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get()), 0);
     }
 
     public void tick() {
@@ -170,10 +174,10 @@ public class StriderUnit extends Strider implements Unit {
         setSuffocating(!hasEffectWithDuration(MobEffectRegistrar.WARM.get()));
 
         if (MiscUtil.isOnNetherTerrain(this))
-            this.addEffect(new MobEffectInstance(MobEffectRegistrar.WARM.get(), 15, 1, true, false));
+            this.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.WARM.get(), 15, 1, true, false));
 
         if (isSuffocating() && isInWater()) {
-            this.addEffect(new MobEffectInstance(MobEffectRegistrar.MINOR_MOVEMENT_SLOWDOWN.get(), 15, 1));
+            this.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.MINOR_MOVEMENT_SLOWDOWN.get(), 15, 1));
         }
         if (isInWater()) {
             ticksInWater += 1;
@@ -185,16 +189,18 @@ public class StriderUnit extends Strider implements Unit {
         }
     }
 
-    private static final UUID SUFFOCATING_MODIFIER_UUID = UUID.fromString("9e362924-01de-4ddd-a2b2-d0f7a405a175");
-    private static final AttributeModifier SUFFOCATING_MODIFIER = new AttributeModifier(SUFFOCATING_MODIFIER_UUID,
-            "Strider Unit suffocating modifier", -0.10, AttributeModifier.Operation.MULTIPLY_BASE);
+    // 1.21.1 identified attribute modifiers by ResourceLocation instead of UUID.
+    private static final ResourceLocation SUFFOCATING_MODIFIER_ID =
+            ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "strider_unit_suffocating");
+    private static final AttributeModifier SUFFOCATING_MODIFIER =
+            new AttributeModifier(SUFFOCATING_MODIFIER_ID, -0.10, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
 
     @Override
     public void setSuffocating(boolean pSuffocating) {
         this.entityData.set(DATA_SUFFOCATING, pSuffocating);
         AttributeInstance $$1 = this.getAttribute(Attributes.MOVEMENT_SPEED);
         if ($$1 != null) {
-            $$1.removeModifier(SUFFOCATING_MODIFIER_UUID);
+            $$1.removeModifier(SUFFOCATING_MODIFIER);
             if (pSuffocating) {
                 $$1.addTransientModifier(SUFFOCATING_MODIFIER);
             }
@@ -233,7 +239,7 @@ public class StriderUnit extends Strider implements Unit {
 
     @Override
     @Nullable
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @Nullable SpawnGroupData pSpawnData, @Nullable CompoundTag pDataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @Nullable SpawnGroupData pSpawnData) {
         return pSpawnData;
     }
 

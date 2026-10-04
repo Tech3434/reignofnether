@@ -368,7 +368,6 @@ public class PlayerCommands {
 						)
 					)
 
-
 					.then(Commands.argument("value", BoolArgumentType.bool())
 					.then(Commands.argument("player", PlayerNameArgument.player())
 						.executes(ctx -> {
@@ -440,7 +439,6 @@ public class PlayerCommands {
 		);
 		return 1;
 	}
-
 
 	private static int changeResources(
 		CommandContext<CommandSourceStack> ctx,

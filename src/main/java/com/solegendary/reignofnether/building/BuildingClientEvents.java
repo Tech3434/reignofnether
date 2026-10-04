@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.building;
 
+import com.solegendary.reignofnether.util.GuiLayerCompat;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -36,6 +37,7 @@ import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.minecraft.client.gui.screens.inventory.BeaconScreen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.renderer.RenderType;
@@ -44,6 +46,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
@@ -56,10 +59,9 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
@@ -153,7 +155,6 @@ public class BuildingClientEvents {
         }));
         UnitClientEvents.clearSelectedUnits();
     }
-
 
     // switch to the building with the least production, so we can spread out production items
     public static void switchHudToIdlestBuilding() {
@@ -260,7 +261,7 @@ public class BuildingClientEvents {
         int maxX = -999999;
         int maxY = -999999;
         int maxZ = -999999;
-        ResourceLocation rl = ResourceLocation.parse("forge:textures/white.png");
+        ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
         var vertexConsumer = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
         for (BuildingBlock block : blocks) {
             if (isBridge(buildingToPlace)
@@ -291,7 +292,7 @@ public class BuildingClientEvents {
                     15728880,
                     // red if invalid, else green
                     overlayColour,
-                    net.minecraftforge.client.model.data.ModelData.EMPTY,
+                    net.neoforged.neoforge.client.model.data.ModelData.EMPTY,
                     null
             );
 
@@ -349,16 +350,17 @@ public class BuildingClientEvents {
 
     /*
     @SubscribeEvent
-    public static void onRenderOverLay(RenderGuiOverlayEvent.Pre evt) {
+    public static void onRenderOverLay(RenderGuiLayerEvent.Pre evt) {
+        if (!GuiLayerCompat.isTopLayer(evt))
+            return;
         if (MC.level == null)
             return;
 
-        MiscUtil.drawDebugStrings(evt.getPoseStack(), MC.font, new String[] {
+        MiscUtil.drawDebugStrings(evt.getGuiGraphics().pose(), MC.font, new String[] {
                 "dist to border: " + MC.level.getWorldBorder().getDistanceToBorder(cursorPos.getX(), cursorPos.getZ()),
         });
     }
      */
-
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent evt) throws NoSuchFieldException {
@@ -397,7 +399,7 @@ public class BuildingClientEvents {
             boolean isInBrightChunk = FogOfWarClientEvents.isBuildingInBrightChunk(building);
             boolean inWorldBorderOrInSandbox = SandboxClientEvents.isSandboxPlayer() || !building.isOutsideWorldBorder();
 
-            AABB aabb = new AABB(building.minCorner, building.maxCorner.offset(1, 1, 1));
+            AABB aabb = new AABB(building.minCorner.getCenter(), building.maxCorner.offset(1, 1, 1).getCenter());
 
             var colorHex = new Color(PlayerColors.getPlayerDisplayColorHex(building.ownerName));
             float r = colorHex.getRed() / 255.0f;
@@ -424,7 +426,7 @@ public class BuildingClientEvents {
         }
 
         // draw rally points and lines
-        ResourceLocation rl = ResourceLocation.parse("forge:textures/white.png");
+        ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
         var vertexConsumerEntityTranslucent = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
         var vertexConsumerNoDepthLine = MC.renderBuffers().bufferSource().getBuffer(MyRenderer.LINES_NO_DEPTH_TEST);
         var vertexConsumerLine = MC.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
@@ -463,7 +465,6 @@ public class BuildingClientEvents {
             }
         }
 
-
     }
 
     // on scroll rotate the building placement by 90deg by resorting the blocks list
@@ -481,7 +482,7 @@ public class BuildingClientEvents {
     public static void onMouseScroll(ScreenEvent.MouseScrolled.Post evt) {
         if (buildingToPlace != null) {
             if (buildingToPlace instanceof AbstractBridge bridge) {
-                bridgePlaceState += evt.getScrollDelta() > 0 ? 1 : -1;
+                bridgePlaceState += evt.getScrollDeltaY() > 0 ? 1 : -1;
                 if (bridgePlaceState < 0) {
                     bridgePlaceState = 3;
                 } else if (bridgePlaceState > 3) {
@@ -503,7 +504,7 @@ public class BuildingClientEvents {
                 blocksToDraw.replaceAll(buildingBlock -> buildingBlock.rotate(MC.level, rotationDelta));
             } else {
                 Rotation rotationDelta =
-                    evt.getScrollDelta() > 0 ? Rotation.CLOCKWISE_90 : Rotation.COUNTERCLOCKWISE_90;
+                    evt.getScrollDeltaY() > 0 ? Rotation.CLOCKWISE_90 : Rotation.COUNTERCLOCKWISE_90;
                 buildingRotation = buildingRotation.getRotated(rotationDelta);
                 blocksToDraw.replaceAll(buildingBlock -> buildingBlock.rotate(MC.level, rotationDelta));
             }
@@ -764,10 +765,7 @@ public class BuildingClientEvents {
     private static int ticksToNextVisCheck = VIS_CHECK_TICKS_MAX;
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent evt) {
-        if (evt.phase != TickEvent.Phase.END) {
-            return;
-        }
+    public static void onClientTick(ClientTickEvent.Post evt) {
 
         if (!SandboxClientEvents.isSandboxPlayer())
             selectedBuildings.removeIf(BuildingPlacement::isOutsideWorldBorder);
@@ -969,7 +967,7 @@ public class BuildingClientEvents {
             return;
 
         if (activate) {
-            MobEffect effect = BeaconPlacement.getMobEffectForAction(action);
+            Holder<MobEffect> effect = BeaconPlacement.getMobEffectForAction(action);
             if (effect != null)
                 beacon.activate(effect);
         } else {

@@ -7,16 +7,27 @@ import com.solegendary.reignofnether.sandbox.SandboxServer;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.network.NetworkEvent;
+import com.solegendary.reignofnether.ReignOfNether;
+import com.solegendary.reignofnether.network.RTSSimplePayload;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-public class ItemServerboundPacket {
+public class ItemServerboundPacket  implements RTSSimplePayload {
+
+    public static final CustomPacketPayload.Type<ItemServerboundPacket> TYPE =
+            new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "item_serverbound"));
+
+    @Override
+    public CustomPacketPayload.Type<ItemServerboundPacket> type() {
+        return TYPE;
+    }
 
     private static final int NO_INDEX = -1;
 
@@ -92,7 +103,7 @@ public class ItemServerboundPacket {
             int invIndex1,
             int invIndex2
     ) {
-        PacketHandler.INSTANCE.sendToServer(new ItemServerboundPacket(
+        PacketHandler.sendToServer(new ItemServerboundPacket(
                 action, unitId, itemUuid, targetId, targetPos, invIndex1, invIndex2
         ));
     }
@@ -115,7 +126,7 @@ public class ItemServerboundPacket {
         this.invIndex2 = invIndex2;
     }
 
-    public ItemServerboundPacket(FriendlyByteBuf buffer) {
+    public ItemServerboundPacket(RegistryFriendlyByteBuf buffer) {
         this.action = buffer.readEnum(ItemAction.class);
         this.unitId = buffer.readInt();
         this.itemUuid = buffer.readBoolean() ? buffer.readUUID() : null;
@@ -131,7 +142,7 @@ public class ItemServerboundPacket {
         }
     }
 
-    public void encode(FriendlyByteBuf buffer) {
+    public void encode(RegistryFriendlyByteBuf buffer) {
         buffer.writeEnum(this.action);
         buffer.writeInt(this.unitId);
         buffer.writeBoolean(this.itemUuid != null);
@@ -150,10 +161,9 @@ public class ItemServerboundPacket {
     }
 
     // server-side packet-consuming functions
-    public boolean handle(Supplier<NetworkEvent.Context> ctx) {
-        final var success = new AtomicBoolean(false);
-        ctx.get().enqueueWork(() -> {
-            ServerPlayer player = ctx.get().getSender();
+    public void handle(IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = (ServerPlayer) ctx.player();
             Unit actionableUnit = null;
             for (LivingEntity le : UnitServerEvents.getAllUnits()) {
                 if (le.getId() == unitId && le instanceof Unit unit) {
@@ -164,17 +174,14 @@ public class ItemServerboundPacket {
 
             if (player == null) {
                 ReignOfNether.LOGGER.warn("Sender for item action packet was null");
-                success.set(false);
             }
             else if (actionableUnit == null) {
                 ReignOfNether.LOGGER.warn("Unit for item action packet was null");
-                success.set(false);
             }
             else if (!player.getName().getString().equals(actionableUnit.getOwnerName()) &&
                     !SandboxServer.isSandboxPlayer(actionableUnit.getOwnerName()) &&
                     !AlliancesServerEvents.canControlAlly(player.getName().getString(), actionableUnit.getOwnerName())) {
                 ReignOfNether.LOGGER.warn("ItemServerboundPacket: Tried to process packet from " + player.getName() + " for " + actionableUnit.getOwnerName());
-                success.set(false);
             }
             else {
                 if (this.action == ItemAction.BUY) {
@@ -190,10 +197,8 @@ public class ItemServerboundPacket {
                             this.targetPos
                     );
                 }
-                success.set(true);
             }
         });
-        ctx.get().setPacketHandled(true);
-        return success.get();
+        return;
     }
 }

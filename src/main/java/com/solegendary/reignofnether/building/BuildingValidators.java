@@ -154,7 +154,6 @@ public class BuildingValidators {
         return ((float) netherBlocksBelow / (float) blocksBelow) > MIN_NETHER_BLOCKS_PERCENT;
     }
 
-
     // 90% all solid blocks at the base of the building must be on top of solid non-barrier blocks to be placeable
     // excluding those under blocks which aren't solid anyway
     private static boolean isBuildingPlacementInAirOrOnIllegalBlocks(Level level, Building building, List<BuildingBlock> blocks) {
@@ -220,7 +219,6 @@ public class BuildingValidators {
                 level.getWorldBorder().isWithinBounds(maxPos.getX(), minPos.getZ()) &&
                 level.getWorldBorder().isWithinBounds(minPos.getX(), maxPos.getZ());
     }
-
 
     // bridges should be connected to land or another bridge and be touching water
     private static boolean isNonBridgeOrValidBridge(Level level, Building building, BlockPos originPos, List<BuildingBlock> blocks) {

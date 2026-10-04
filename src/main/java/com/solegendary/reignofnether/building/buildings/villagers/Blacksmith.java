@@ -58,7 +58,6 @@ public class Blacksmith extends ProductionBuilding implements RangeIndicatorAddo
         return nbt;
     });
 
-
     public final static String buildingName = "Blacksmith";
     public final static String structureName = "blacksmith";
     public final static String upgradedStructureName = "blacksmith_superior";

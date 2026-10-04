@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.*;
+import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
 
 public class UnitItems {
 
@@ -31,15 +32,15 @@ public class UnitItems {
             .uuid("f44bbd1f-cd29-4a08-849e-fa9e6a64eba8")
             .icon(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/item/trident.png"))
             .desc(descStr("item.reignofnether.merchant_trident.desc"))
-            .enchant(Enchantments.FLAMING_ARROWS, 1)
-            .enchant(Enchantments.MOB_LOOTING, 1),
+            .enchant(EnchantmentRegistrar.vanilla(Enchantments.FLAME), 1)
+            .enchant(EnchantmentRegistrar.vanilla(Enchantments.LOOTING), 1),
             le -> le instanceof HeadhunterUnit headhunterUnit && !headhunterUnit.hasFlameTrident());
 
     public static final UnitItem MERCHANT_SWORD = new MerchantEquipmentItem(UnitItemBuilder.of(Items.NETHERITE_SWORD)
             .uuid("e8be3e96-97a5-416c-b4f4-16664a79951d")
             .icon(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/item/netherite_sword.png"))
             .desc(descStr("item.reignofnether.merchant_sword.desc"))
-            .enchant(Enchantments.FIRE_ASPECT, 1),
+            .enchant(EnchantmentRegistrar.vanilla(Enchantments.FIRE_ASPECT), 1),
             le -> le instanceof BruteUnit bruteUnit && !bruteUnit.hasEnchantedNetheriteSword());
 
     public static final UnitItem MERCHANT_CHESTPLATE = new MerchantEquipmentItem(UnitItemBuilder.of(Items.NETHERITE_CHESTPLATE)
@@ -97,7 +98,6 @@ public class UnitItems {
                 return false;
             }))
             .build();
-
 
     public static String descStr(String descKey, Object... pArgs) {
         return Component.translatable(descKey, pArgs).getString();

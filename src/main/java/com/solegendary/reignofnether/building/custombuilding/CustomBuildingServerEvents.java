@@ -19,9 +19,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -46,7 +46,6 @@ public class CustomBuildingServerEvents {
         BuildingServerEvents.getBuildings().removeIf(b -> b.getBuilding().name.equals(buildingName));
         saveCustomBuildings(BuildingServerEvents.getServerLevel());
     }
-
 
     // registers and places a new custom building on server and client
     public static boolean createAndRegisterNewCustomBuilding(ResourceLocation structureRL, String structureName, ServerLevel level,

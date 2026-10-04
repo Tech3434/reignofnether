@@ -1,5 +1,7 @@
 package com.solegendary.reignofnether.unit.interfaces;
 
+import com.solegendary.reignofnether.util.AttributeHelpers;
+import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.heroAbilities.enchanter.ProtectiveEnchantment;
@@ -63,6 +65,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import com.solegendary.reignofnether.mixin.LivingEntityAccessor;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -89,6 +92,7 @@ import java.util.Random;
 
 import static com.ibm.icu.impl.ValidIdentifiers.Datatype.unit;
 import static com.solegendary.reignofnether.util.MiscUtil.fcs;
+import net.minecraft.core.Holder;
 
 // Defines method bodies for Units
 // workaround for trying to have units inherit from both their base vanilla Mob class and a Unit class
@@ -161,13 +165,17 @@ public interface Unit {
 
     public default float getBaseMovementSpeed() {
         AttributeInstance attr = ((LivingEntity) this).getAttribute(Attributes.MOVEMENT_SPEED);
-        return (float) (attr != null ?  attr.getBaseValue() : Attributes.MOVEMENT_SPEED.getDefaultValue());
+        return (float) (attr != null ?  attr.getBaseValue() : Attributes.MOVEMENT_SPEED.value().getDefaultValue());
     }
     public default float getMovementSpeed() {
         AttributeInstance attr = ((LivingEntity) this).getAttribute(Attributes.MOVEMENT_SPEED);
-        float ms = (float) (attr != null ?  attr.getValue() : Attributes.MOVEMENT_SPEED.getDefaultValue());
+        float ms = (float) (attr != null ?  attr.getValue() : Attributes.MOVEMENT_SPEED.value().getDefaultValue());
         boolean isInWater = ((LivingEntity) this).isInWater();
-        float waterSlowdown = ((LivingEntity) this).getWaterSlowDown() * ((LivingEntity) this).getWaterSlowDown();
+        // 1.21.1 made LivingEntity#getWaterSlowDown protected; the invoker reads the value the
+        // unit may have overridden (StriderUnit/DrownedUnit/etc. do).
+        LivingEntity self = (LivingEntity) this;
+        float slowdown = ((LivingEntityAccessor) self).reignOfNether$getWaterSlowDown();
+        float waterSlowdown = slowdown * slowdown;
         return ms * (isInWater ? waterSlowdown : 1f);
     }
     public default float getUnitMaxHealth() {
@@ -176,10 +184,10 @@ public interface Unit {
             bonus = heroUnit.getHealthBonusPerLevel() * heroUnit.getHeroLevel();
         }
         AttributeInstance attr = ((LivingEntity) this).getAttribute(Attributes.MAX_HEALTH);
-        return (float) (attr != null ?  attr.getValue() : Attributes.MAX_HEALTH.getDefaultValue()) + bonus;
+        return (float) (attr != null ?  attr.getValue() : Attributes.MAX_HEALTH.value().getDefaultValue()) + bonus;
     }
     public default int getSightRange() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeRegistrar.SIGHT_RANGE.get());
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.SIGHT_RANGE.get()));
         return (int) Math.round(attr != null ?  attr.getValue() : AttributeRegistrar.SIGHT_RANGE.get().getDefaultValue());
     }
 
@@ -199,7 +207,7 @@ public interface Unit {
     void setOnDeathCommand(String command);
 
     default double getDamageTakenIncrease() {
-        MobEffectInstance mei = ((LivingEntity) this).getEffect(MobEffectRegistrar.DAMAGE_TAKEN_INCREASE.get());
+        MobEffectInstance mei = ((LivingEntity) this).getEffect(MobEffectHelpers.holder(MobEffectRegistrar.DAMAGE_TAKEN_INCREASE.get()));
         double value = mei == null ? 0 : (mei.getAmplifier() + 1) * 0.05d;
         return Math.round(value / 0.05d) * 0.05d;
     }
@@ -207,25 +215,28 @@ public interface Unit {
     // SOURCE: armour attribute, armour items and the damage amplifier debuff
     default double getUnitPhysicalArmorPercentage() {
         Mob mob = (Mob) this;
-        double dmgAfterAbsorb = CombatRules.getDamageAfterAbsorb(1, (float)mob.getArmorValue(), (float)mob.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
+        // 1.21.1's CombatRules needs the hurt entity and the damage source; a generic source carries no
+        // weapon, so it matches the old 1.20.1 arithmetic (no enchantment-based armour reduction).
+        double dmgAfterAbsorb = CombatRules.getDamageAfterAbsorb(mob, 1f, mob.damageSources().generic(),
+                mob.getArmorValue(), (float)mob.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
         dmgAfterAbsorb += getDamageTakenIncrease();
         return Math.round((1 - dmgAfterAbsorb)/ 0.01d) * 0.01d;
     }
 
     // SOURCE: inherent unit stats and abilities
     default double getUnitRangedArmorPercentage() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeRegistrar.RANGED_DAMAGE_RESIST.get());
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.RANGED_DAMAGE_RESIST.get()));
         return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.RANGED_DAMAGE_RESIST.get().getDefaultValue());
     }
 
     // SOURCE: inherent unit stats and vanilla mechanics (like resistance)
     default double getUnitMagicArmorPercentage() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get());
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get()));
         return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.MAGIC_DAMAGE_RESIST.get().getDefaultValue());
     }
 
     public default float getEvasionChance() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeRegistrar.EVASION_CHANCE.get());
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.EVASION_CHANCE.get()));
         return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.EVASION_CHANCE.get().getDefaultValue());
     }
 
@@ -354,9 +365,9 @@ public interface Unit {
                     !ResearchServerEvents.playerHasCheat(unit.getOwnerName(), "slipslopslap")) {
 
                 if (unit.getSunlightEffect() == SunlightEffect.SLOWNESS_MINOR) {
-                    unitMob.addEffect(new MobEffectInstance(MobEffectRegistrar.MINOR_MOVEMENT_SLOWDOWN.get(), 15, 1));
+                    unitMob.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.MINOR_MOVEMENT_SLOWDOWN.get(), 15, 1));
                 } else {
-                    unitMob.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 15,
+                    unitMob.addEffect(MobEffectHelpers.instance(MobEffects.MOVEMENT_SLOWDOWN, 15,
                             unit.getSunlightEffect() == SunlightEffect.SLOWNESS_I ? 0 : 1
                     ));
                 }
@@ -383,11 +394,11 @@ public interface Unit {
                         );
                         if (itemStack.getItem() == Items.GOLDEN_APPLE) {
                             int absorb = EdibleFoodItem.GOLDEN_APPLE_ABSORB;
-                            unitMob.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 999999, (absorb / 4) - 1));
+                            unitMob.addEffect(MobEffectHelpers.instance(MobEffects.ABSORPTION, 999999, (absorb / 4) - 1));
                             unitMob.setAbsorptionAmount(absorb);
                         } else if (itemStack.getItem() == Items.ENCHANTED_GOLDEN_APPLE) {
                             int absorb = EdibleFoodItem.ENCHANTED_GOLDEN_APPLE_ABSORB;
-                            unitMob.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 999999, (absorb / 4) - 1));
+                            unitMob.addEffect(MobEffectHelpers.instance(MobEffects.ABSORPTION, 999999, (absorb / 4) - 1));
                             unitMob.setAbsorptionAmount(absorb);
                         } else {
                             unitMob.heal(ItemUtil.getFoodHealAmount(itemStack));
@@ -417,13 +428,13 @@ public interface Unit {
             !(unit instanceof WorkerUnit) &&
             unit.getFaction() == Faction.PIGLINS &&
             MiscUtil.isOnNetherTerrain(unitMob)) {
-            unitMob.addEffect(new MobEffectInstance(MobEffectRegistrar.MINOR_MOVEMENT_SPEED.get(), 15, 1, true, false));
+            unitMob.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.MINOR_MOVEMENT_SPEED.get(), 15, 1, true, false));
         }
         if (unitMob.tickCount % 10 == 0 &&
             !(unit instanceof WorkerUnit) &&
             unit.getFaction() == Faction.MONSTERS &&
             NightUtils.isInRangeOfNightSource(unitMob.getEyePosition(), unitMob.level().isClientSide)) {
-            unitMob.addEffect(new MobEffectInstance(MobEffectRegistrar.MINOR_MOVEMENT_SPEED.get(), 15, 1, true, false));
+            unitMob.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.MINOR_MOVEMENT_SPEED.get(), 15, 1, true, false));
         }
 
         if (unitMob.tickCount % 80 == 0) {
@@ -433,7 +444,7 @@ public interface Unit {
                 unitMob.setAbsorptionAmount(absorbHp + 1);
         }
 
-        if (unitMob.tickCount % 4 == 0 && unitMob.hasEffect(MobEffectRegistrar.SCORCHING_FIRE.get()) &&
+        if (unitMob.tickCount % 4 == 0 && unitMob.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.SCORCHING_FIRE.get())) &&
             unitMob.onGround() && !unitMob.level().isClientSide()) {
             BlockState bsOn = unitMob.level().getBlockState(unitMob.getOnPos());
             BlockState bsMagma = BlockRegistrar.WALKABLE_MAGMA_BLOCK.get().defaultBlockState();
@@ -443,7 +454,7 @@ public interface Unit {
             }
             MiscUtil.addParticleExplosion(ParticleTypes.LAVA, 1, unitMob.level(), unitMob.position());
             if (!unitMob.isOnFire()) {
-                int ticks = unitMob.getEffect(MobEffectRegistrar.SCORCHING_FIRE.get()).getDuration();
+                int ticks = unitMob.getEffect(MobEffectHelpers.holder(MobEffectRegistrar.SCORCHING_FIRE.get())).getDuration();
                 unitMob.setRemainingFireTicks(ticks);
             }
         }
@@ -581,7 +592,7 @@ public interface Unit {
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemStack itemStack = ((LivingEntity) this).getItemBySlot(slot);
             if (itemStack.getItem() != Items.AIR)
-                pCompound.put(slot.name() + "Item", itemStack.serializeNBT());
+                pCompound.put(slot.name() + "Item", itemStack.save(((LivingEntity) this).level().registryAccess()));
         }
         pCompound.putString("onDeathCommand", getOnDeathCommand());
     }
@@ -606,7 +617,7 @@ public interface Unit {
             if (pCompound.contains(keyName)) {
                 CompoundTag itemNbt = (CompoundTag) pCompound.get(keyName);
                 if (itemNbt != null) {
-                    ((LivingEntity) this).setItemSlot(slot, ItemStack.of(itemNbt));
+                    ((LivingEntity) this).setItemSlot(slot, ItemStack.parseOptional(((LivingEntity) this).level().registryAccess(), itemNbt));
                 }
             }
         }
@@ -808,7 +819,7 @@ public interface Unit {
     }
 
     public default List<FormattedCharSequence> getAttackSpeedStatTooltip() {
-        if (this instanceof GhastUnit ghastUnit && ghastUnit.hasEffect(MobEffectRegistrar.DISARM.get())) {
+        if (this instanceof GhastUnit ghastUnit && ghastUnit.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.DISARM.get()))) {
             return List.of(
                     fcs(I18n.get("unitstats.reignofnether.attack_speed"), true),
                     fcs(I18n.get("unitstats.reignofnether.ghast_disarmed"))
@@ -882,16 +893,16 @@ public interface Unit {
         LivingEntity entity = (LivingEntity) this;
         for (EnchantmentIcon enchantIcon : PassiveIcons.ENCHANTMENT_ICONS) {
             ItemStack itemStack = entity.getItemBySlot(enchantIcon.slot);
-            for (Enchantment enchant : itemStack.getAllEnchantments().keySet()) {
+            for (Holder<Enchantment> enchant : itemStack.getEnchantments().keySet()) {
                 if (enchant == enchantIcon.enchantment) {
                     icons.add(enchantIcon);
                 }
             }
         }
-        if (((LivingEntity) this).hasEffect(MobEffectRegistrar.TEMPORARY_EFFICIENCY.get())) {
+        if (((LivingEntity) this).hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.TEMPORARY_EFFICIENCY.get()))) {
             icons.add(PassiveIcons.EFFICIENCY);
         }
-        if (hasAnyEnchants() && entity.hasEffect(MobEffectRegistrar.ENCHANTMENT_AMPLIFIER.get())) {
+        if (hasAnyEnchants() && entity.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.ENCHANTMENT_AMPLIFIER.get()))) {
             icons.add(PassiveIcons.ENCHANTMENT_AMPLIFIER);
         }
         return icons;
@@ -902,7 +913,7 @@ public interface Unit {
     }
 
     default boolean hasEffectWithDuration(MobEffect mobEffect) {
-        MobEffectInstance mei = ((LivingEntity) this).getEffect(mobEffect);
+        MobEffectInstance mei = ((LivingEntity) this).getEffect(MobEffectHelpers.holder(mobEffect));
         return mei != null && mei.getDuration() > 0;
     }
 
@@ -911,8 +922,8 @@ public interface Unit {
     }
 
     default boolean hasAnyEnchants() {
-        return !(((LivingEntity) this).getMainHandItem().getAllEnchantments().isEmpty()) ||
-               !(((LivingEntity) this).getItemBySlot(EquipmentSlot.CHEST).getAllEnchantments().isEmpty());
+        return !(((LivingEntity) this).getMainHandItem().getEnchantments().isEmpty()) ||
+               !(((LivingEntity) this).getItemBySlot(EquipmentSlot.CHEST).getEnchantments().isEmpty());
     }
 
     default boolean uninterruptable() {

@@ -1,5 +1,7 @@
 package com.solegendary.reignofnether.unit.units.villagers;
 
+import com.solegendary.reignofnether.util.AttributeModifierCompat;
+import com.solegendary.reignofnether.util.AttributeHelpers;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.abilities.BackToWorkUnit;
@@ -72,6 +74,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.solegendary.reignofnether.survival.SurvivalServerEvents.ENEMY_OWNER_NAME;
+import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
 
 public class MilitiaUnit extends Vindicator implements Unit, AttackerUnit, RangedAttackerUnit, VillagerDataHolder, ConvertableUnit {
     public static final Abilities ABILITIES = new Abilities();
@@ -242,12 +245,11 @@ public class MilitiaUnit extends Vindicator implements Unit, AttackerUnit, Range
         int damageMod = 0;
         ItemStack weaponStack = new ItemStack(weapon);
         if (weapon == Items.STONE_SWORD && swordEnchanted) {
-            weaponStack.enchant(Enchantments.SHARPNESS, 1);
+            weaponStack.enchant(EnchantmentRegistrar.vanilla(Enchantments.SHARPNESS), 1);
         } else if (weapon == Items.BOW && bowEnchanted) {
-            weaponStack.enchant(Enchantments.POWER_ARROWS, 1);
+            weaponStack.enchant(EnchantmentRegistrar.vanilla(Enchantments.POWER), 1);
         }
-        AttributeModifier mod = new AttributeModifier(UUID.randomUUID().toString(), damageMod, AttributeModifier.Operation.ADDITION);
-        weaponStack.addAttributeModifier(Attributes.ATTACK_DAMAGE, mod, EquipmentSlot.MAINHAND);
+        AttributeModifierCompat.addModifier(weaponStack, Attributes.ATTACK_DAMAGE, damageMod, AttributeModifier.Operation.ADD_VALUE, EquipmentSlot.MAINHAND);
         this.setItemSlot(EquipmentSlot.MAINHAND, weaponStack);
         AttributeInstance ai2 = getAttribute(Attributes.MOVEMENT_SPEED);
         if (ai2 != null)
@@ -300,13 +302,13 @@ public class MilitiaUnit extends Vindicator implements Unit, AttackerUnit, Range
                 .add(Attributes.MAX_HEALTH, MilitiaUnit.maxHealth)
                 .add(Attributes.FOLLOW_RANGE, Unit.getFollowRange())
                 .add(Attributes.ARMOR, MilitiaUnit.armorValue)
-                .add(AttributeRegistrar.ATTACK_DAMAGE.get(), attackDamage)
-                .add(AttributeRegistrar.ATTACKS_PER_SECOND.get(), attacksPerSecond)
-                .add(AttributeRegistrar.ATTACK_RANGE.get(), attackRange)
-                .add(AttributeRegistrar.AGGRO_RANGE.get(), aggroRange)
-                .add(AttributeRegistrar.SIGHT_RANGE.get(), Unit.DEFAULT_SIGHT_RANGE)
-                .add(AttributeRegistrar.RANGED_DAMAGE_RESIST.get(), 0)
-                .add(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get(), 0);
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE.get()), attackDamage)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACKS_PER_SECOND.get()), attacksPerSecond)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_RANGE.get()), attackRange)
+                .add(AttributeHelpers.holder(AttributeRegistrar.AGGRO_RANGE.get()), aggroRange)
+                .add(AttributeHelpers.holder(AttributeRegistrar.SIGHT_RANGE.get()), Unit.DEFAULT_SIGHT_RANGE)
+                .add(AttributeHelpers.holder(AttributeRegistrar.RANGED_DAMAGE_RESIST.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get()), 0);
     }
 
     @Override
@@ -425,8 +427,10 @@ public class MilitiaUnit extends Vindicator implements Unit, AttackerUnit, Range
         swapWeapons(isUsingBow());
     }
 
-    protected AbstractArrow getArrow(ItemStack pArrowStack, float pVelocity) {
-        return ProjectileUtil.getMobArrow(this, pArrowStack, pVelocity);
+    protected AbstractArrow getArrow(ItemStack pArrowStack, float pVelocity, ItemStack pShootingItem) {
+        // ProjectileUtil#getMobArrow and AbstractSkeleton#getArrow both gained a third argument in
+        // 1.21.1: the item actually held, alongside the ammo stack.
+        return ProjectileUtil.getMobArrow(this, pArrowStack, pVelocity, pShootingItem);
     }
 
     @Override
@@ -434,10 +438,7 @@ public class MilitiaUnit extends Vindicator implements Unit, AttackerUnit, Range
         ItemStack itemstack = this.getProjectile(this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this,
                 (item) -> item instanceof BowItem
         )));
-        AbstractArrow abstractarrow = this.getArrow(itemstack, velocity);
-        if (this.getMainHandItem().getItem() instanceof BowItem) {
-            abstractarrow = ((BowItem)this.getMainHandItem().getItem()).customArrow(abstractarrow);
-        }
+        AbstractArrow abstractarrow = this.getArrow(itemstack, velocity, ItemStack.EMPTY);
         double d0 = pTarget.getX() - this.getX();
         double d1 = pTarget.getY(0.3333333333333333) - abstractarrow.getY();
         double d2 = pTarget.getZ() - this.getZ();
@@ -456,19 +457,19 @@ public class MilitiaUnit extends Vindicator implements Unit, AttackerUnit, Range
 
     @Override
     @Nullable
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @Nullable SpawnGroupData pSpawnData, @Nullable CompoundTag pDataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @Nullable SpawnGroupData pSpawnData) {
         return pSpawnData;
     }
 
     private static final EntityDataAccessor<VillagerData> VILLAGER_DATA;
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ownerDataAccessor, "");
-        this.entityData.define(scenarioRoleDataAccessor, -1);
-        this.entityData.define(onDeathCommandDataAccessor, "");
-        this.entityData.define(VILLAGER_DATA, new VillagerData(VillagerType.PLAINS, VillagerProfession.ARMORER, 1));
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ownerDataAccessor, "");
+        builder.define(scenarioRoleDataAccessor, -1);
+        builder.define(onDeathCommandDataAccessor, "");
+        builder.define(VILLAGER_DATA, new VillagerData(VillagerType.PLAINS, VillagerProfession.ARMORER, 1));
     }
 
     @Override
@@ -488,12 +489,12 @@ public class MilitiaUnit extends Vindicator implements Unit, AttackerUnit, Range
 
     public int getSharpnessLevel() {
         ItemStack itemStack = this.getItemBySlot(EquipmentSlot.MAINHAND);
-        return itemStack.getEnchantmentLevel(Enchantments.SHARPNESS);
+        return itemStack.getEnchantmentLevel(EnchantmentRegistrar.vanilla(Enchantments.SHARPNESS));
     }
 
     public int getPowerLevel() {
         ItemStack itemStack = this.getItemBySlot(EquipmentSlot.MAINHAND);
-        return itemStack.getEnchantmentLevel(Enchantments.POWER_ARROWS);
+        return itemStack.getEnchantmentLevel(EnchantmentRegistrar.vanilla(Enchantments.POWER));
     }
 
     @Override

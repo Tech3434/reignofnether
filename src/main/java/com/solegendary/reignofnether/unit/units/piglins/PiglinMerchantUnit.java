@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.unit.units.piglins;
 
+import com.solegendary.reignofnether.util.AttributeHelpers;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.AbilityClientboundPacket;
@@ -103,7 +104,6 @@ public class PiglinMerchantUnit extends Piglin implements Unit, AttackerUnit, He
 
     Ability autocast;
 
-
     private int eatingTicksLeft = 0;
     public void setEatingTicksLeft(int amount) { eatingTicksLeft = amount; }
     public int getEatingTicksLeft() { return eatingTicksLeft; }
@@ -179,11 +179,11 @@ public class PiglinMerchantUnit extends Piglin implements Unit, AttackerUnit, He
         SynchedEntityData.defineId(PiglinMerchantUnit.class, EntityDataSerializers.STRING);
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(ownerDataAccessor, "");
-        this.entityData.define(scenarioRoleDataAccessor, -1);
-        this.entityData.define(onDeathCommandDataAccessor, "");
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ownerDataAccessor, "");
+        builder.define(scenarioRoleDataAccessor, -1);
+        builder.define(onDeathCommandDataAccessor, "");
     }
 
     @Nullable
@@ -332,19 +332,19 @@ public class PiglinMerchantUnit extends Piglin implements Unit, AttackerUnit, He
                 .add(Attributes.MAX_HEALTH, PiglinMerchantUnit.maxHealth)
                 .add(Attributes.FOLLOW_RANGE, Unit.getFollowRange())
                 .add(Attributes.ARMOR, PiglinMerchantUnit.armorValue)
-                .add(AttributeRegistrar.BASE_MAX_HEALTH.get(), PiglinMerchantUnit.maxHealth)
-                .add(AttributeRegistrar.ATTACK_DAMAGE.get(), attackDamage)
-                .add(AttributeRegistrar.ATTACKS_PER_SECOND.get(), attacksPerSecond)
-                .add(AttributeRegistrar.ATTACK_RANGE.get(), attackRange)
-                .add(AttributeRegistrar.AGGRO_RANGE.get(), aggroRange)
-                .add(AttributeRegistrar.SIGHT_RANGE.get(), HeroUnit.DEFAULT_SIGHT_RANGE)
-                .add(AttributeRegistrar.RANGED_DAMAGE_RESIST.get(), 0)
-                .add(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get(), magicDamageResist)
-                .add(AttributeRegistrar.BASE_MAX_MANA.get(), baseMaxMana)
-                .add(AttributeRegistrar.MANA_REGEN_PER_SECOND.get(), manaRegenPerSecond)
-                .add(AttributeRegistrar.MAX_MANA_BONUS_PER_LEVEL.get(), manaBonusPerLevel)
-                .add(AttributeRegistrar.MAX_HEALTH_BONUS_PER_LEVEL.get(), maxHealthBonusPerLevel)
-                .add(AttributeRegistrar.ATTACK_DAMAGE_BONUS_PER_LEVEL.get(), attackBonusPerLevel);
+                .add(AttributeHelpers.holder(AttributeRegistrar.BASE_MAX_HEALTH.get()), PiglinMerchantUnit.maxHealth)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE.get()), attackDamage)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACKS_PER_SECOND.get()), attacksPerSecond)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_RANGE.get()), attackRange)
+                .add(AttributeHelpers.holder(AttributeRegistrar.AGGRO_RANGE.get()), aggroRange)
+                .add(AttributeHelpers.holder(AttributeRegistrar.SIGHT_RANGE.get()), HeroUnit.DEFAULT_SIGHT_RANGE)
+                .add(AttributeHelpers.holder(AttributeRegistrar.RANGED_DAMAGE_RESIST.get()), 0)
+                .add(AttributeHelpers.holder(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get()), magicDamageResist)
+                .add(AttributeHelpers.holder(AttributeRegistrar.BASE_MAX_MANA.get()), baseMaxMana)
+                .add(AttributeHelpers.holder(AttributeRegistrar.MANA_REGEN_PER_SECOND.get()), manaRegenPerSecond)
+                .add(AttributeHelpers.holder(AttributeRegistrar.MAX_MANA_BONUS_PER_LEVEL.get()), manaBonusPerLevel)
+                .add(AttributeHelpers.holder(AttributeRegistrar.MAX_HEALTH_BONUS_PER_LEVEL.get()), maxHealthBonusPerLevel)
+                .add(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE_BONUS_PER_LEVEL.get()), attackBonusPerLevel);
     }
 
     @Override // prevent vanilla logic for picking up items
@@ -499,7 +499,7 @@ public class PiglinMerchantUnit extends Piglin implements Unit, AttackerUnit, He
 
     @Override
     @Nullable
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @Nullable SpawnGroupData pSpawnData, @Nullable CompoundTag pDataTag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor pLevel, DifficultyInstance pDifficulty, MobSpawnType pReason, @Nullable SpawnGroupData pSpawnData) {
         return pSpawnData;
     }
 
@@ -578,7 +578,7 @@ public class PiglinMerchantUnit extends Piglin implements Unit, AttackerUnit, He
 
         for (int i = 0; i < numItems; i++) {
             ItemEntity foodEntity = new ItemEntity(level(), pos.x, pos.y, pos.z, new ItemStack(getFancyFeast().getFoodItem(this)));
-            foodEntity.setThrower(getUUID());
+            foodEntity.setThrower(this);
             Vec3 dMove = Vec3.atCenterOf(targetBp).subtract(pos)
                     .multiply(1,0,1)
                     .scale(0.04)
@@ -668,7 +668,7 @@ public class PiglinMerchantUnit extends Piglin implements Unit, AttackerUnit, He
 
         for (ItemStack itemStack : items) {
             ItemEntity item = new ItemEntity(level(), pos.x, pos.y, pos.z, itemStack);
-            item.setThrower(getUUID());
+            item.setThrower(this);
             Vec3 dMove = new Vec3(
                     (random.nextFloat() - 0.5f) / 2,
                     0.5,

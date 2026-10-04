@@ -1,6 +1,5 @@
 package com.solegendary.reignofnether.blocks;
 
-
 import com.mojang.datafixers.util.Pair;
 import com.solegendary.reignofnether.building.*;
 import com.solegendary.reignofnether.building.addon.NightSourceAddon;
@@ -18,15 +17,15 @@ import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -40,7 +39,7 @@ public class BlockClientEvents {
     // deals with block rendering jobs like range indicators
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent evt) {
-        ResourceLocation rl = ResourceLocation.parse("forge:textures/white.png");
+        ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
         var vertexConsumer = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
         if (evt.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             return;
@@ -112,10 +111,8 @@ public class BlockClientEvents {
     public static final int VISIBLE_BORDER_ADJ = 2; // shrink a bit so borderlines themselves are safe to walk on
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent evt) {
-        if (evt.phase != TickEvent.Phase.END)
-            return;
-
+    public static void onClientTick(ClientTickEvent.Post evt) {
+        
         nightSourcesUpdateTicks -= 1;
 
         NightSourceAddon nsa0 = null;
