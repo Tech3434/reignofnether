@@ -2,7 +2,6 @@ package com.solegendary.reignofnether.debug;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import com.solegendary.reignofnether.debug.RtsDebugClientEvents.DebugDisplayMode;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;

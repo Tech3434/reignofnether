@@ -10,11 +10,8 @@ import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
-import com.solegendary.reignofnether.building.buildings.placements.GraveyardPlacement;
-import com.solegendary.reignofnether.building.buildings.placements.ItemShopPlacement;
 import com.solegendary.reignofnether.building.buildings.placements.ProductionPlacement;
 
-import com.solegendary.reignofnether.building.buildings.villagers.IronGolemBuilding;
 import com.solegendary.reignofnether.building.production.ActiveProduction;
 import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
@@ -36,7 +33,6 @@ import com.solegendary.reignofnether.player.PlayerServerboundPacket;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import com.solegendary.reignofnether.resources.ResourceSources;
 import com.solegendary.reignofnether.registrars.PacketHandler;
-import com.solegendary.reignofnether.research.ResearchClient;
 import com.solegendary.reignofnether.resources.ResourceCosts;
 import com.solegendary.reignofnether.resources.ResourceName;
 
@@ -99,7 +95,6 @@ import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AF
 import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES;
 
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
-import com.solegendary.reignofnether.unit.units.villagers.WitchUnit;
 
 import com.solegendary.reignofnether.unit.VirtualUnit;
 import com.solegendary.reignofnether.unit.units.villagers.VindicatorUnit;
@@ -111,23 +106,16 @@ import com.solegendary.reignofnether.unit.UnitActionItem;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
-import com.solegendary.reignofnether.unit.units.villagers.ScoutDogUnit;
-import com.solegendary.reignofnether.unit.units.villagers.ScoutCatUnit;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import com.solegendary.reignofnether.mixin.RenderChunkRegionMixin;
 import com.solegendary.reignofnether.unit.Relationship;
-import com.solegendary.reignofnether.unit.units.villagers.RavagerUnit;
 import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
-import com.solegendary.reignofnether.unit.units.villagers.PillagerUnit;
 import com.solegendary.reignofnether.unit.NonUnitClientEvents;
-import com.solegendary.reignofnether.unit.units.villagers.MilitiaUnit;
 import com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal;
 import com.solegendary.reignofnether.unit.interfaces.KeyframeAnimated;
-import com.solegendary.reignofnether.unit.units.villagers.IronGolemUnit;
 import net.minecraft.core.IdMap;
 import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
 import com.solegendary.reignofnether.unit.FormationDragMove;
-import com.solegendary.reignofnether.unit.units.villagers.EvokerUnit;
 
 import com.solegendary.reignofnether.unit.interfaces.ConvertableUnit;
 import com.solegendary.reignofnether.unit.Checkpoint;

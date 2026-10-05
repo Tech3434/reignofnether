@@ -1,7 +1,6 @@
 package com.solegendary.reignofnether.matchstart;
 
 import com.solegendary.reignofnether.ReignOfNether;
-import com.solegendary.reignofnether.player.MatchStatsClientboundPacket.MatchStatRow;
 import com.solegendary.reignofnether.player.RTSPlayerScoresEnum;
 import com.solegendary.reignofnether.time.TimeUtils;
 import com.solegendary.reignofnether.util.MiscUtil;

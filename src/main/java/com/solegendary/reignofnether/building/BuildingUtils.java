@@ -4,11 +4,7 @@ package com.solegendary.reignofnether.building;
 
 import com.solegendary.reignofnether.building.addon.NetherConvertingAddon;
 
-import com.solegendary.reignofnether.building.buildings.placements.BeaconPlacement;
-import com.solegendary.reignofnether.building.buildings.placements.FarmPlacement;
-import com.solegendary.reignofnether.building.buildings.placements.SculkCatalystPlacement;
 
-import com.solegendary.reignofnether.building.buildings.villagers.Castle;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -92,9 +88,7 @@ public class BuildingUtils {
         for (BuildingPlacement building : buildings) {
             if (ownerName.equals(building.ownerName) &&
                 building.isBuilt &&
-                (building.getBuilding() instanceof Castle ||
-                building.getBuilding() instanceof Fortress ||
-                building.getBuilding() instanceof Stronghold)) {
+                building.getBuilding().isCapitol) {
                 return true;
             }
         }
@@ -147,12 +141,7 @@ public class BuildingUtils {
     }
 
     public static BuildingPlacement getNewBuildingPlacement(Building building, Level level, BlockPos pos, Rotation rotation, String ownerName, boolean isDiagonalBridge) {
-        BuildingPlacement buildingPlacement;
-        if (building instanceof AbstractBridge bridge) {
-            buildingPlacement = bridge.createBuildingPlacement(level, pos, rotation, ownerName, isDiagonalBridge);
-        } else {
-            buildingPlacement = building.createBuildingPlacement(level, pos, rotation, ownerName);
-        }
+        BuildingPlacement buildingPlacement = building.createBuildingPlacement(level, pos, rotation, ownerName);
 
         if (buildingPlacement != null) {
             buildingPlacement.updateButtons();
@@ -346,35 +335,11 @@ public class BuildingUtils {
         return false;
     }
 
-    public static boolean isWithinRangeOfMaxedCatalyst(LivingEntity entity) {
-        List<BuildingPlacement> buildings = getBuildingsList(entity.level().isClientSide());
-
-        double maxCatalystRangeSquared = SculkCatalyst.ESTIMATED_RANGE * SculkCatalyst.ESTIMATED_RANGE;
-
-        for (BuildingPlacement building : buildings) {
-            if (building instanceof SculkCatalystPlacement sc) {
-                if (entity.distanceToSqr(Vec3.atCenterOf(sc.centrePos)) < maxCatalystRangeSquared &&
-                        sc.getUncappedNightRange() >= SculkCatalyst.MAX_NIGHT_RANGE * 1.5f) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     // Helper method to get the buildings list based on client or server side.
     public static List<BuildingPlacement> getBuildingsList(boolean isClientSide) {
         return isClientSide
                 ? BuildingClientEvents.getBuildings()
                 : BuildingServerEvents.getBuildings();
-    }
-
-    public static BeaconPlacement getBeacon(boolean isClientSide) {
-        List<BuildingPlacement> buildings = getBuildingsList(isClientSide);
-        for (BuildingPlacement building : buildings)
-            if (building instanceof BeaconPlacement beacon)
-                return beacon;
-        return null;
     }
 
     public static void clearBuildingArea(BuildingPlacement building) {

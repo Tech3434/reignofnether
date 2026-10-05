@@ -1,6 +1,5 @@
 package com.solegendary.reignofnether.matchstart;
 
-import com.solegendary.reignofnether.player.MatchStatsClientboundPacket.MatchStatRow;
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;

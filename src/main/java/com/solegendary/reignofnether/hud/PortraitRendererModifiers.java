@@ -4,10 +4,6 @@ import com.mojang.datafixers.util.Pair;
 
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 
-import com.solegendary.reignofnether.unit.units.villagers.EnchanterUnit;
-import com.solegendary.reignofnether.unit.units.villagers.RoyalGuardUnit;
-import com.solegendary.reignofnether.unit.units.villagers.ScoutCatProd;
-import com.solegendary.reignofnether.unit.units.villagers.ScoutCatUnit;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.*;
@@ -57,17 +53,14 @@ public class PortraitRendererModifiers {
             scale = 15;
         } else if (entity instanceof Chicken) {
             yOffset = 14;
-        } else if (entity instanceof Blaze && !(entity instanceof WildfireUnit)) {
+        } else if (entity instanceof Blaze) {
             yOffset = -10;
             scale = -5;
         } else if (entity instanceof MushroomCow) {
             scale = -5;
         } else if (entity instanceof Donkey || entity instanceof Mule) {
             scale = -5;
-        }  else if (entity instanceof ScoutCatUnit) {
-            yOffset = 22;
-            scale = -2;
-        } else if (entity instanceof Ocelot || entity instanceof Cat) {
+        }  else if (entity instanceof Ocelot || entity instanceof Cat) {
             yOffset = 7;
         } else if (entity instanceof Fox) {
             yOffset = 20;
@@ -102,51 +95,9 @@ public class PortraitRendererModifiers {
         } else if (entity instanceof Ghast) {
             yOffset = -118;
             scale = -37;
-        } else if (entity instanceof NecromancerUnit) {
-            yOffset = -11;
-            scale = -9;
-        } else if (entity instanceof PiglinMerchantUnit) {
-            yOffset = -35;
-            scale = -27;
-        } else if (entity instanceof RoyalGuardUnit royalGuardUnit) {
-            yOffset = -14;
-            scale = -16;
-            float avatarPercent = (float) royalGuardUnit.getAvatarScaleTicks() / royalGuardUnit.AVATAR_SCALE_TICKS_MAX;
-            yOffset -= (26 * avatarPercent);
-        } else if (entity instanceof GruntUnit ||
-                entity instanceof BruteUnit ||
-                entity instanceof HeadhunterUnit) {
-            yOffset = -6;
-        } else if (entity instanceof WretchedWraithUnit) {
-            yOffset = -6;
-            scale = -24;
-        } else if (entity instanceof WildfireUnit) {
-            yOffset = -30;
-            scale = -32;
-        } else if (entity instanceof EnchanterUnit) {
-            yOffset = -12;
-            scale = -16;
-        } else if (entity instanceof MarauderUnit) {
-            yOffset = -34;
-            scale = -22;
         } else if (entity instanceof Strider) {
             yOffset = -24;
             scale = -16;
-        } else if (entity instanceof BatUnit) {
-            yOffset = -2;
-            scale = -10;
-        } else if (entity instanceof TotemOfRegeneration) {
-            yOffset = -7;
-            scale = -7;
-        } else if (entity instanceof TotemOfShielding) {
-            yOffset = -8;
-            scale =-7;
-        } else if (entity instanceof TotemOfProtection) {
-            yOffset = -14;
-            scale = -7;
-        } else if (entity instanceof TotemOfCasting) {
-            yOffset = -6;
-            scale = -7;
         }
 
         /*

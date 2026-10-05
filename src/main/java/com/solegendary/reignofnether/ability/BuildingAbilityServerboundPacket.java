@@ -4,24 +4,18 @@ import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
-import com.solegendary.reignofnether.building.buildings.placements.GraveyardPlacement;
-import com.solegendary.reignofnether.building.buildings.villagers.Blacksmith;
-import com.solegendary.reignofnether.building.buildings.villagers.Library;
 import com.solegendary.reignofnether.registrars.PacketHandler;
 import com.solegendary.reignofnether.unit.UnitAction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.network.RTSSimplePayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
-
-public class BuildingAbilityServerboundPacket  implements RTSSimplePayload {
+public class BuildingAbilityServerboundPacket implements RTSSimplePayload {
 
     public static final CustomPacketPayload.Type<BuildingAbilityServerboundPacket> TYPE =
             new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "building_ability_serverbound"));
@@ -47,6 +41,24 @@ public class BuildingAbilityServerboundPacket  implements RTSSimplePayload {
                             PacketHandler.sendToServer(new BuildingAbilityServerboundPacket(ability, bpl.originPos));
             }
         }
+    }
+
+    /**
+     * Toggles an ability's "keep auto-casting" flag on a building.
+     *
+     * <p>It used to be one branch per building - the library's auto-enchant, the blacksmith's
+     * auto-equip, the graveyard's auto-release - each keying the building's data storage with its own
+     * constant. Those buildings are gone, so the flag is keyed by the ability's own class name instead
+     * and any building with an ability gets auto-cast toggling for free.
+     */
+    public static void toggleAutoCast(BuildingPlacement building, Ability ability) {
+        String key = autoCastKey(ability);
+        building.getDataStorage().setData(key,
+                building.getDataStorage().getData(key) == ability ? null : ability);
+    }
+
+    public static String autoCastKey(Ability ability) {
+        return "autocast:" + ability.getClass().getSimpleName();
     }
 
     // packet-handler functions
@@ -75,46 +87,18 @@ public class BuildingAbilityServerboundPacket  implements RTSSimplePayload {
                 return;
             }
             BuildingPlacement building = BuildingUtils.findBuilding(false, buildingPos);
-            if (building != null) {
-                if (!player.getName().getString().equals(building.ownerName)) {
-                    ReignOfNether.LOGGER.warn("BuildingAbilityServerboundPacket: Tried to process packet from " + player.getName() + " for: " + building.ownerName);
-                    return;
-                }
-                ReignOfNether.LOGGER.info("[BuildingAbility] {} performed {} at {}", player.getName(), abilityAction, buildingPos);
+            if (building == null)
+                return;
 
-                if (building.getBuilding() instanceof Library) {
-                    Ability ability = null;
-                    for (Ability abl : building.getAbilities())
-                        if (abl.action == abilityAction)
-                            ability = abl;
-                    if (ability instanceof EnchantAbility enchantAbility) {
-                        if (building.getDataStorage().getData(Library.AUTO_CAST_ENCHANT) == enchantAbility)
-                            building.getDataStorage().setData(Library.AUTO_CAST_ENCHANT, null);
-                        else
-                            building.getDataStorage().setData(Library.AUTO_CAST_ENCHANT, enchantAbility);
-                    }
-                }
-                else if (building.getBuilding() instanceof Blacksmith) {
-                    Ability ability = null;
-                    for (Ability abl : building.getAbilities())
-                        if (abl.action == abilityAction)
-                            ability = abl;
-                    if (ability instanceof EquipAbility equipAbility) {
-                        if (building.getDataStorage().getData(Blacksmith.AUTO_CAST_EQUIP) == equipAbility)
-                            building.getDataStorage().setData(Blacksmith.AUTO_CAST_EQUIP, null);
-                        else
-                            building.getDataStorage().setData(Blacksmith.AUTO_CAST_EQUIP, equipAbility);
-                    }
-                }
-                else if (building instanceof GraveyardPlacement gy) {
-                    if (abilityAction == UnitAction.SET_GRAVEYARD_RELEASE_ON)
-                        gy.autoRelease = true;
-                    else if (abilityAction == UnitAction.SET_GRAVEYARD_RELEASE_OFF)
-                        gy.autoRelease = false;
-                    BuildingAbilityClientboundPacket.doAbility(abilityAction, buildingPos);
-                }
+            if (!player.getName().getString().equals(building.ownerName)) {
+                ReignOfNether.LOGGER.warn("BuildingAbilityServerboundPacket: Tried to process packet from " + player.getName() + " for: " + building.ownerName);
+                return;
             }
+            ReignOfNether.LOGGER.info("[BuildingAbility] {} performed {} at {}", player.getName(), abilityAction, buildingPos);
+
+            for (Ability abl : building.getAbilities())
+                if (abl.action == abilityAction)
+                    toggleAutoCast(building, abl);
         });
-        return;
     }
 }

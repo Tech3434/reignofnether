@@ -8,8 +8,6 @@ package com.solegendary.reignofnether.unit.goals;
 import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
-import com.solegendary.reignofnether.unit.units.villagers.ScoutCatUnit;
-import com.solegendary.reignofnether.unit.units.villagers.ScoutDogUnit;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
 

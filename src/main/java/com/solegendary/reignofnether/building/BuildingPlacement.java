@@ -17,8 +17,6 @@ import com.solegendary.reignofnether.attackwarnings.AttackWarningClientboundPack
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
 import com.solegendary.reignofnether.building.addon.NetherConvertingAddon;
 
-import com.solegendary.reignofnether.building.buildings.placements.BeaconPlacement;
-import com.solegendary.reignofnether.building.buildings.placements.PortalPlacement;
 
 import com.solegendary.reignofnether.building.custombuilding.CustomBuilding;
 import com.solegendary.reignofnether.building.data.DataStorage;
@@ -36,7 +34,6 @@ import com.solegendary.reignofnether.registrars.BlockRegistrar;
 import com.solegendary.reignofnether.registrars.EntityRegistrar;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
-import com.solegendary.reignofnether.research.ResearchServerEvents;
 
 import com.solegendary.reignofnether.blocks.BlockUtils;
 import com.solegendary.reignofnether.resources.ResourceCost;

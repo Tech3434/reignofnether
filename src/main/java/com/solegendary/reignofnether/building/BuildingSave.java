@@ -1,6 +1,5 @@
 package com.solegendary.reignofnether.building;
 
-import com.solegendary.reignofnether.building.buildings.placements.PortalPlacement;
 import com.solegendary.reignofnether.building.data.DataStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.ListTag;
