@@ -53,7 +53,7 @@
 | Атрибуты | `registrars/AttributeRegistrar` | 20 атрибутов, работают на любой сущности |
 | Эффекты | `registrars/MobEffectRegistrar` | 28 эффектов |
 | Частицы | `registrars/ParticleRegistrar` | 6 типов |
-| Чары | `registrars/EnchantmentRegistrar` + `data/reignofnether/enchantment/*.json` | датапак-чары |
+| ~~Чары~~ | ~~`registrars/EnchantmentRegistrar`~~ | **удаляются по решению владельца**, см. §7 E.1 |
 | Реестры | `api/ReignOfNetherRegistries` (`BUILDING`, `PRODUCTION_ITEM`, `DATA_TYPE`) | точка регистрации |
 | Камера и UI | `orthoview/**`, `guiscreen/TopdownGui*`, `minimap/**`, `hud/**` | рабочий инструмент ГМа |
 | Команды | `commands/**` | `/rtsapi`, `execute rts-related`, аргумент-селекторы |
@@ -71,6 +71,7 @@
 | Юниты | `unit/units/**` — 54 класса + `*Prod` | `docs/reference/units.md` |
 | Здания | `building/buildings/**` — 51 + абстрактные базы | `docs/reference/buildings.md` |
 | Способности | `ability/abilities/**`, `ability/heroAbilities/**` — 93 | `docs/reference/abilities.md` |
+| Чары | `registrars/EnchantmentRegistrar`, `data/reignofnether/enchantment/*.json` — 7 | `docs/reference/enchantments.md` |
 | Исследования | `research/researchItems/**` — 51 | `docs/reference/research.md` |
 | Экономика | `resources/{ResourceSources,ResourceIndex,ResourceChunk,ResourcesServerEvents}` | `docs/reference/economy.md` |
 | Предметы юнитов | `items/{UnitItem,UnitItemBuilder,UnitItems,unititems/**}` | `docs/reference/items.md` |
@@ -126,19 +127,36 @@
 ☐ B.3.2 Убрать отмену рендера живых сущностей за границей —
 `FogOfWarClientEvents.java:272-281`.
 ☐ B.3.3 Убрать скрытие предметов за границей — `fogofwar/ItemEntityRendererMixin.java:72`.
-☐ B.3.4 Решить судьбу `WorldBorderRenderMixin`. **Требует решения владельца:** стена границы
-полезна в РТС-режиме, но «никогда не рисовать» — это подмена ваниллы.
-☐ B.3.5 Решить, остаются ли `ClientModEvents.onBlockColourEvent` (обёртка `FogTintingBlockColor`
-на каждый блок) и `ModelEvent.ModifyBakingResult` (обёртка каждой модели с `tintIndex 0`).
+☐ B.3.4 **Стена границы мира должна рисоваться** (решение владельца). Удалить
+`mixin/fogofwar/WorldBorderRenderMixin.java`: он отменяет `LevelRenderer.renderWorldBorder`,
+и без него ванилла рисует стену как обычно. Удаление миксина предпочтительнее инверсии
+условия — это возвращает ровно ванильное поведение.
+☐ B.3.5 Обёртки блоков и моделей. Решение владельца: оставить только если они реально
+нужны. `ModelEvent.ModifyBakingResult` (обёртка каждой модели с `tintIndex 0`) тривиально
+делается условным — вернуть модель как есть, когда туман выключен. Обёртка блоков
+(`ClientModEvents.onBlockColourEvent` + `mixin/fogofwar/BlockColorsAccessor`) регистрируется
+в статической карте `BlockColors` один раз и не снимается, поэтому её можно либо
+регистрировать лениво при первом включении тумана, либо удалить вместе с туманом.
+См. §12, пункт 2.
 
 ### B.4 Дефолты геймрулов
+
+**Решение владельца:** поведение должно совпадать с ванильным.
+
 ☐ B.4.1 `doNetherConversion` → `false` (сейчас порталы зданий переписывают террейн).
 ☐ B.4.2 `buildingsOutsideBorder` → `false`.
 ☐ B.4.3 `neutralAggro` → `false`.
-☐ B.4.4 `doUnitGriefing`: сейчас `false` означает «взрывы не разрушают ничего, кроме листвы и
-TNT». Пересмотреть.
-☐ B.4.5 `doLogFalling` → `false`.
-☐ B.4.6 `doPlayerGriefing` → `false` (сейчас ломание любого блока вне зданий отменяется).
+☐ B.4.4 **`doPlayerGriefing` → `false`.** Это ванильный геймрул, и мод регистрирует его с
+дефолтом `true`, то есть меняет ванильное поведение (в ванилле ломание блоков выключено по
+умолчанию). Возврат `false` — это и есть «как в ванильной игре».
+☐ B.4.5 `doLogFalling` → `false` (ломание бревна превращает соседние в модовые блоки).
+☐ B.4.6 **`doUnitGriefing` — геймрула в ванилле нет.** Сейчас при `false`
+`BuildingServerEvents.onExplosion:958-964` срезает урон взрывов по блокам до листвы и TNT,
+то есть криперы и TNT в мире не разрушают ничего — это не ванильное поведение. Варианты:
+(a) удалить геймрул и перехватывать только тот урон, что попадает по
+`BuildingPlacement`, оставив всё остальное ванилле; (b) оставить геймрул, но дефолт `true`.
+Рекомендация — (a): геймрул без ванильного аналога в общем пространстве имён только
+конфликтует. См. §12, пункт 4.
 
 ### B.5 Безусловные миксины
 ☐ B.5.1 `fire/FireBlockMixin` — вернуть ванильную таблицу горючести, горение до age 15, убрать
@@ -243,9 +261,9 @@ TNT». Пересмотреть.
 `unit/interfaces`, `unit/goals`, `unit/pathfinding`, `unit/controls` и четырёх
 `*ServerEvents`/`*ClientEvents`).
 ☐ D.11 Удалить `building/buildings/**`.
-☐ D.12 Удалить `ability/abilities/**`, `ability/heroAbilities/**`. В `ability/UnitAction`
-удалить константы способностей, оставив те, что нужны механике (проверить по
-`UnitActionItem` и `Ability`).
+☐ D.12 Удалить `ability/abilities/**`, `ability/heroAbilities/**` (решение владельца: в
+документацию). В `ability/UnitAction` удалить константы способностей, оставив те, что нужны
+механике (проверить по `UnitActionItem` и `Ability`).
 ☐ D.13 Удалить `research/researchItems/**`. Проверить `ResearchSaveData` — оставить как
 инфраструктуру флагов.
 ☐ D.14 Удалить `resources/{ResourceSources,ResourceIndex,ResourceChunk,ResourcesSaveData,
@@ -276,10 +294,12 @@ ResourcesServerEvents}`. Решить судьбу `ResourceCost`/`ResourceCosts
 Обнаруживаются только когда контента нет. Каждый пункт — либо починить, либо осознанно
 оставить с записью.
 
-☐ E.1 **Чары теряют читателей.** 5 из 7 (`zeal`, `longshot`, `maiming`, `gust`, `vigor`)
-читаются внутри классов удаляемых юнитов и станут инертными. Либо перенести чтение в
-`UnitServerEvents`/`AttackerUnit` (как уже сделано для `breaching` в
-`UnitServerEvents.java:1000`), либо удалить эти чары.
+☐ E.1 **Чары удаляются целиком** (решение владельца). Семь чар датапака вместе с
+`registrars/EnchantmentRegistrar` и `data/reignofnether/enchantment/*.json` уходят в
+`docs/reference/enchantments.md` и удаляются. Удалить и читателей в каркасе: `breaching`
+(`unit/UnitServerEvents.java:1000`), `fortifying` (`unit/interfaces/Unit.java:476`,
+`util/MiscUtil.getMaxAbsorptionAmount`). Снять локализацию `enchantment.reignofnether.*`
+и `hud.enchant.reignofnether.*`.
 ☐ E.2 **Атрибуты без потребителей.** Шесть (`critical_hit_chance`, `explosive_hit_chance`,
 `lifesteal`, `mana_on_hit`, `scale`, `building_damage_bonus`) имели геттеры без вызовов в пути
 атаки. Частицы `floating_crit`, `floating_heart`, `mana` написаны — не хватает вызова. Либо
@@ -322,8 +342,10 @@ ResourcesServerEvents}`. Решить судьбу `ResourceCost`/`ResourceCosts
 `buildableByVillagers/Monsters/Piglags` в NBT заменить одним булевым. **Сигнатура NBT
 несовместима**, см. F.6.
 ☐ F.5 `util/MiscUtil.java:993-1014` — иконка и имя фракции.
-☐ F.6 Миграция миров: `RTSPlayerSaveData.java:55, 98` вызывает `Faction.valueOf(name())`.
-**Требует решения владельца:** миграция или объявление старых миров несовместимыми.
+☐ F.6 Миграция миров не нужна (решение владельца: мод для нового сервера). Старый тег
+`faction` в `RTSPlayerSaveData` просто перестаёт читаться — важно, чтобы код не вызывал
+`Faction.valueOf()` на старом NBT и не падал. Проверить, что `ResearchSaveData` и
+`BuildingSaveData` тоже не содержат вызовов удаляемого перечисления.
 ☐ F.7 Локализация `hud.faction.reignofnether.*` — удалить из 22 файлов.
 
 ⚠ **Не делать** `FactionDefinition`. Это отдельная фича для нескольких играбельных рас, и
@@ -403,12 +425,22 @@ border армия будет вымирать.
 
 ## 12. Что потребует отдельного решения владельца
 
-1. `WorldBorderRenderMixin` — рисовать ли стену границы в РТС-режиме (B.3.4).
-2. `ClientModEvents.onBlockColourEvent` и `ModifyBakingResult` — оставлять ли обёртку каждого
-   блока и каждой модели (B.3.5).
-3. Девфолты `doUnitGriefing`, `doLogFalling`, `doPlayerGriefing` (B.4.4–B.4.6).
-4. `doUnitGriefing` и `doPlayerGriefing` — это ванильные геймрулы с ванильными именами;
-   менять их дефолты мод не должен. Вариант — не регистрировать вовсе, если свой геймрул не нужен.
-5. Миграция миров после удаления `Faction` (F.6).
-6. `ResourceCost` — оставить плоскую валюту или убрать стоимости совсем (D.14, E.4).
-7. Пять чар, теряющих читателей, — переносить чтение в каркас или удалять (E.1).
+Закрыто на 2026-10-05:
+
+* **Стена границы мира рисуется** (B.3.4) — миксин удаляется, остаётся ванильное поведение.
+* **`doPlayerGriefing` и `doUnitGriefing` — как в ванилле** (B.4.4, B.4.6). Для
+  `doPlayerGriefing` это дефолт `false`. У `doUnitGriefing` ванильного аналога нет, поэтому
+  «как в ванилле» означает отказ от срезания урона взрывов по блокам; рекомендация —
+  удалить геймрул и перехватывать только урон по зданиям.
+* **Миграция старых миров не нужна** (F.6) — старые теги просто игнорируются, вызовов
+  `Faction.valueOf()` на старом NBT остаться не должно.
+* **Чары и способности — в документацию и удаляются** (D.12, E.1), вместе с читателями в
+  каркасе.
+
+Осталось открытым:
+
+1. Обёртка каждого блока в `ClientModEvents.onBlockColourEvent` — регистрировать лениво при
+   первом включении тумана, или удалить вместе с туманом (B.3.5).
+2. `ResourceCost` — оставить плоскую валюту или убрать стоимости совсем (D.14, E.4).
+3. Пять из 28 эффектов, использовавшихся только удаляемым контентом (E.3).
+4. Шесть атрибутов без потребителей — реализовать вызов или удалить (E.2).
