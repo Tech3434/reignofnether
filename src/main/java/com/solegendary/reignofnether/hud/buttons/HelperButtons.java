@@ -4,15 +4,13 @@ import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.building.*;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
 
-import com.solegendary.reignofnether.building.buildings.placements.BeaconPlacement;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.player.PlayerClientEvents;
-import com.solegendary.reignofnether.player.RTSPlayer;
+import com.solegendary.reignofnether.player.PlayerServerboundPacket;
 import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
-import com.solegendary.reignofnether.time.TimeUtils;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
@@ -152,7 +150,6 @@ public class HelperButtons {
                         for (LivingEntity u : UnitClientEvents.getAllUnits()) {
                             if (u instanceof Unit unit &&
                                 !(u instanceof WorkerUnit) &&
-                                !(unit.isScout()) &&
                                 GarrisonableBuildingAddon.getGarrison(unit) == null &&
                                 getPlayerToEntityRelationship(u) == Relationship.OWNED) {
                                 militaryUnits.add(u);
@@ -173,73 +170,35 @@ public class HelperButtons {
     }
 
     private static ResourceLocation getIdleWorkerIcon() {
-        return switch (PlayerClientEvents.getFaction()) {
-            case MONSTERS -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/zombie_villager.png");
-            case PIGLINS -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/grunt.png");
-            default -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/villager.png");
-        };
+        return ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/villager.png");
     }
 
-    private static List<FormattedCharSequence> getBeaconButtonTooltip(String ownerName) {
-        ArrayList<FormattedCharSequence> fcsList = new ArrayList<>();
-        BeaconPlacement beacon = BuildingUtils.getBeacon(true);
-        if (beacon == null)
-            return fcsList;
-
-        fcsList.add(fcs(I18n.get("hud.helperbuttons.reignofnether.beacon.beacon_level_title",
-                beacon.getUpgradeLevel(), Beacon.MAX_UPGRADE_LEVEL)));
-
-        if (beacon.getUpgradeLevel() < Beacon.MAX_UPGRADE_LEVEL) {
-            fcsList.add(fcs(I18n.get("hud.helperbuttons.reignofnether.beacon.player_controls", ownerName), true));
-        } else {
-            boolean noController = true;
-            for (RTSPlayer rtsPlayer : PlayerClientEvents.rtsPlayers) {
-                if (rtsPlayer.beaconOwnerTicks > 0) {
-                    noController = false;
-                    break;
-                }
-            }
-            if (noController) {
-                fcsList.add(fcs(I18n.get("hud.helperbuttons.reignofnether.beacon.no_controller")));
-            } else {
-                for (RTSPlayer rtsPlayer : PlayerClientEvents.rtsPlayers) {
-                    long ticksToWin = Math.max(0, Beacon.getTicksToWin(beacon.getLevel()) - rtsPlayer.beaconOwnerTicks);
-                    String timeToWin = TimeUtils.getTimeStrFromTicks(ticksToWin);
-                    fcsList.add(fcs(I18n.get("hud.helperbuttons.reignofnether.beacon.player_wins_in",
-                            rtsPlayer.name, timeToWin), ownerName.equals(rtsPlayer.name)));
-                }
-            }
-        }
-
-        fcsList.add(fcs(I18n.get("hud.helperbuttons.reignofnether.beacon.click_to_centre")));
-        return fcsList;
-    }
-
-    // button that tracks all beacons in the game, including how long each player has owned a beacon for
-    // clicking the button should make
-    public static Button getBeaconButton(String ownerName) {
+    /**
+     * The one button that puts the player into the match.
+     *
+     * <p>It replaces the per-faction start buttons: with the default factions gone there is one match
+     * and one start, so the button just starts it where the player is standing. It stays hidden in
+     * sandbox, where a match is already running.
+     */
+    public static Button getStartButton() {
         return new Button(
-                "Beacon",
-                14,
-                ResourceLocation.fromNamespaceAndPath("minecraft", "textures/item/nether_star.png"),
+                "Start RTS",
+                ICON_SIZE,
+                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/blocks/command_block_side.png"),
                 (Keybinding) null,
                 () -> false,
-                () -> BuildingUtils.getBeacon(true) == null,
+                () -> SandboxClientEvents.isSandboxPlayer() || PlayerClientEvents.rtsLocked,
                 () -> true,
                 () -> {
-                    List<BuildingPlacement> beacons = new ArrayList<>();
-                    for (BuildingPlacement b : BuildingClientEvents.getBuildings()) {
-                        if (b instanceof BeaconPlacement) {
-                            beacons.add(b);
-                        }
-                    }
-                    if (!beacons.isEmpty()) {
-                        BlockPos bp = beacons.get(0).centrePos;
-                        OrthoviewClientEvents.centreCameraOnPos(bp);
-                    }
+                    if (MC.player == null)
+                        return;
+                    var pos = MC.player.getOnPos();
+                    PlayerServerboundPacket.startRTS((double) pos.getX(), (double) pos.getY(), (double) pos.getZ());
                 },
                 null,
-                getBeaconButtonTooltip(ownerName)
+                List.of(
+                        fcs(I18n.get("hud.helperbuttons.reignofnether.start"), Style.EMPTY)
+                )
         );
     }
 

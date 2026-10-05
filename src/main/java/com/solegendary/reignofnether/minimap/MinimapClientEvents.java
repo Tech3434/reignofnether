@@ -344,7 +344,7 @@ public class MinimapClientEvents {
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/icon_frame.png"),
                 Keybindings.minimapToggle,
                 () -> false,
-                () -> !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK),
+                () -> false,
                 () -> true,
                 () -> shouldToggleSize = true,
                 null,
@@ -378,7 +378,7 @@ public class MinimapClientEvents {
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/icon_frame.png"),
                 null,
                 () -> false,
-                () -> !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || !largeMap,
+                () -> false,
                 () -> true,
                 () -> OrthoviewClientEvents.adjustPanSensitivityMult(true),
                 () -> OrthoviewClientEvents.adjustPanSensitivityMult(false),
@@ -397,7 +397,7 @@ public class MinimapClientEvents {
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/icon_frame.png"),
                 null,
                 () -> false,
-                () -> !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || !largeMap,
+                () -> false,
                 () -> true,
                 () -> {
                     if (nightCircleMode == NightCircleMode.ALL) {
@@ -431,7 +431,7 @@ public class MinimapClientEvents {
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/icon_frame.png"),
                 null,
                 () -> false,
-                () -> !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || !largeMap,
+                () -> false,
                 () -> true,
                 () -> {
                     lockedMap = !lockedMap;
@@ -455,7 +455,7 @@ public class MinimapClientEvents {
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/icon_frame.png"),
                 null,
                 () -> false,
-                () -> !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || !largeMap,
+                () -> false,
                 () -> true,
                 () -> {
                     highlightAnimals = !highlightAnimals;
@@ -477,7 +477,7 @@ public class MinimapClientEvents {
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/icon_frame.png"),
                 null,
                 () -> false,
-                () -> !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || !largeMap,
+                () -> false,
                 () -> true,
                 () -> underlineUnitsAndBuildings = !underlineUnitsAndBuildings,
                 null,
@@ -787,7 +787,7 @@ public class MinimapClientEvents {
         // draw buildings
         for (BuildingPlacement building : BuildingClientEvents.getBuildings()) {
 
-            if (!building.isExploredClientside || building.getBuilding() instanceof AbstractBridge)
+            if (!building.isExploredClientside)
                 continue;
 
             int buildingRadius = getBuildingRadius(building);
@@ -803,12 +803,6 @@ public class MinimapClientEvents {
                 }
                 drawBuildingOnMap(xc, zc, rgb, buildingRadius, buildingThickness);
             }
-        }
-        // draw starting locations
-        if (MC.level != null && StartPosClientEvents.isEnabled() &&
-                !StartPosClientEvents.isStarting &&
-                !PlayerClientEvents.rtsLocked) {
-            drawStartingPosesOnMap();
         }
 
         // draw players
@@ -941,39 +935,6 @@ public class MinimapClientEvents {
         }
     }
 
-    private static void drawStartingPosesOnMap() {
-        if (MC.player == null)
-            return;
-
-        for (StartPos startPos : StartPosClientEvents.startPoses) {
-            int xc = startPos.pos.getX();
-            int zc = startPos.pos.getZ();
-
-            for (int x = xc - START_POS_RADIUS; x < xc + START_POS_RADIUS; x++) {
-                for (int z = zc - START_POS_RADIUS; z < zc + START_POS_RADIUS; z++) {
-                    if (isWorldXZinsideMap(x, z)) {
-                        int x0 = x - xc + START_POS_RADIUS;
-                        int z0 = z - zc + START_POS_RADIUS;
-                        int rgb = 0x000000;
-
-                        // if pixel is on the edge of the square keep it coloured black
-                        if (!(x0 < START_POS_THICKNESS || x0 >= (START_POS_RADIUS * 2) - START_POS_THICKNESS ||
-                                z0 < START_POS_THICKNESS || z0 >= (START_POS_RADIUS * 2) - START_POS_THICKNESS
-                        )) {
-                            //rgb = PlayerColors.getPlayerDisplayColorHex(startPos.playerName);
-                            //if (startPos.faction == Faction.NONE)
-                            //    rgb = 0xFFFF00;
-                            rgb = startPos.getHexColor();
-                        }
-                        int xN = x - xc_world + (mapGuiRadius * 2);
-                        int zN = z - zc_world + (mapGuiRadius * 2);
-
-                        mapColoursOverlays[xN][zN] = MiscUtil.reverseHexRGB(rgb) | (0xFF << 24);
-                    }
-                }
-            }
-        }
-    }
 
     /** Converts a world XZ coordinate to a minimap screen XY position (centre of that pixel). */
     public static Vec2 worldPosToMinimapScreen(int worldX, int worldZ) {
@@ -1258,11 +1219,8 @@ public class MinimapClientEvents {
         boolean altDown = Keybindings.altMod.isDown();
 
         // when clicking on map move player there
-        Button startPosButton = getMousedOverStartPosButton();
-        if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_1 && (!isMouseOverAnyButton() || startPosButton != null)) {
-            BlockPos moveTo = startPosButton != null ?
-                    getWorldPosOnMinimap((float) startPosButton.x + 11, startPosButton.y + 11, true) :
-                    getWorldPosOnMinimap((float) evt.getMouseX(), (float) evt.getMouseY(), true);
+        if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_1 && !isMouseOverAnyButton()) {
+            BlockPos moveTo = getWorldPosOnMinimap((float) evt.getMouseX(), (float) evt.getMouseY(), true);
 
             if (MC.player != null && moveTo != null) {
                 if (markerMode) {
@@ -1270,14 +1228,14 @@ public class MinimapClientEvents {
                 } else if (!altDown && Keybindings.shiftMod.isDown()) {
                     setMapCentre(moveTo.getX(), moveTo.getZ());
                     forceUpdateAllPartitions = true;
-                    TutorialClientEvents.clickedMinimap = true;
+
                     PlayerServerboundPacket.teleportPlayer(
                         (double) moveTo.getX(),
                         MC.player.getY(),
                         (double) moveTo.getZ()
                     );
                 } else if (!altDown) {
-                    TutorialClientEvents.clickedMinimap = true;
+
                     PlayerServerboundPacket.teleportPlayer(
                         (double) moveTo.getX(),
                         MC.player.getY(),
@@ -1350,7 +1308,7 @@ public class MinimapClientEvents {
         if (!GuiLayerCompat.isTopLayer(evt))
             return;
         if (!OrthoviewClientEvents.isEnabled() || MC.isPaused() || !HudClientEvents.enabled
-            || !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || MC.screen instanceof MatchStartScreen) {
+) {
         return;
     }
         if (shouldToggleSize) {

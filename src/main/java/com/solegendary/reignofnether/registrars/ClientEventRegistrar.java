@@ -33,7 +33,6 @@ import com.solegendary.reignofnether.orthoview.CameraFadeClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.player.PlayerClientEvents;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
-import com.solegendary.reignofnether.research.ResearchServerEvents;
 import com.solegendary.reignofnether.resources.ResourcesClientEvents;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
 
@@ -79,15 +78,11 @@ public class ClientEventRegistrar {
         vanillaEventBus.register(BlockClientEvents.class);
         vanillaEventBus.register(ResourcesClientEvents.class);
         vanillaEventBus.register(PlayerClientEvents.class);
-        vanillaEventBus.register(TutorialClientEvents.class);
-        vanillaEventBus.register(StartPosClientEvents.class);
-        vanillaEventBus.register(MatchStartClientEvents.class);
-        vanillaEventBus.register(MatchEndClientEvents.class);
+        vanillaEventBus.register(com.solegendary.reignofnether.matchstart.MatchEndClientEvents.class);
         vanillaEventBus.register(NonUnitClientEvents.class);
         vanillaEventBus.register(CustomBuildingClientEvents.class);
         vanillaEventBus.register(SoundClientEvents.class);
         vanillaEventBus.register(PlayerDisplayClientEvents.class);
-        vanillaEventBus.register(ScenarioClientEvents.class);
         vanillaEventBus.register(TextInputClientEvents.class);
         vanillaEventBus.register(RtsDebugClientEvents.class);
         vanillaEventBus.register(RtsDebugNavmesh.class);
@@ -98,7 +93,6 @@ public class ClientEventRegistrar {
         // to allow singleplayer integrated server to work
         vanillaEventBus.register(GameruleServerEvents.class);
         vanillaEventBus.register(BlockServerEvents.class);
-        vanillaEventBus.register(TutorialServerEvents.class);
         vanillaEventBus.register(PlayerServerEvents.class);
         vanillaEventBus.register(ConfigVanillaServerEvents.class);
         vanillaEventBus.register(UnitServerEvents.class);
@@ -106,18 +100,12 @@ public class ClientEventRegistrar {
         vanillaEventBus.register(AttackWarningServerEvents.class);
         vanillaEventBus.register(ResourcesServerEvents.class);
         vanillaEventBus.register(RtsDebugServerEvents.class);
-        vanillaEventBus.register(ResearchServerEvents.class);
-        vanillaEventBus.register(SurvivalServerEvents.class);
         vanillaEventBus.register(GameModeServerEvents.class);
-        vanillaEventBus.register(RTSMapInfoServerEvents.class);
-        vanillaEventBus.register(StartPosServerEvents.class);
         vanillaEventBus.register(AlliancesServerEvents.class);
-        vanillaEventBus.register(HeroServerEvents.class);
         vanillaEventBus.register(NonUnitServerEvents.class);
         vanillaEventBus.register(TimeServerEvents.class);
         vanillaEventBus.register(CustomBuildingServerEvents.class);
         vanillaEventBus.register(CommandsServerEvents.class);
-        vanillaEventBus.register(ScenarioServerEvents.class);
         vanillaEventBus.register(WorldBorderServerEvents.class);
         vanillaEventBus.register(CustomButtonServerEvents.class);
     }

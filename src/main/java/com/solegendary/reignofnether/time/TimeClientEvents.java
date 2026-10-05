@@ -117,7 +117,7 @@ public class TimeClientEvents {
         if (!GuiLayerCompat.isTopLayer(evt))
             return;
         if (!OrthoviewClientEvents.isEnabled() || MC.isPaused() || !HudClientEvents.enabled
-            || !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || MC.screen instanceof MatchStartScreen) {
+) {
             return;
         }
 
@@ -153,7 +153,7 @@ public class TimeClientEvents {
     @SubscribeEvent
     public static void onDrawScreen(ScreenEvent.Render.Post evt) {
         if (!OrthoviewClientEvents.isEnabled() || MC.isPaused() || !HudClientEvents.enabled
-            || !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || MC.screen instanceof MatchStartScreen) {
+) {
             return;
         }
 
@@ -183,7 +183,7 @@ public class TimeClientEvents {
 
     @SubscribeEvent
     public static void onDrawClockTooltip(ScreenEvent.Render.Post evt) {
-        if (!TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) ||
+if (
             !(MC.screen instanceof TopdownGui) || !HudClientEvents.enabled) {
             return;
         }
@@ -222,13 +222,7 @@ public class TimeClientEvents {
             }
             tooltip.add(timeUntilStr);
 
-            if (SurvivalClientEvents.isEnabled) {
-                long timeOffset = -getWaveSurvivalTimeModifier(SurvivalClientEvents.difficulty);
-                tooltip.add(FormattedCharSequence.forward(I18n.get("time.reignofnether.time_until_next_wave",
-                        getTimeUntilStrWithOffset(serverNormDayTime, DUSK, isDay ? 0 : timeOffset)), Style.EMPTY));
-            }
-
-            if (PlayerClientEvents.isRTSPlayer() && !SurvivalClientEvents.isEnabled) {
+            if (PlayerClientEvents.isRTSPlayer()) {
                 FormattedCharSequence gameLengthStr = FormattedCharSequence.forward(
                         I18n.get("time.reignofnether.game_time", getTimeStrFromTicks(PlayerClientEvents.rtsGameTicks)),
                         Style.EMPTY

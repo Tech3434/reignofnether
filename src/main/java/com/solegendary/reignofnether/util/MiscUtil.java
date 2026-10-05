@@ -32,7 +32,6 @@ import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 import com.solegendary.reignofnether.unit.units.villagers.VillagerUnitProfession;
-import com.solegendary.reignofnether.unit.units.villagers.WindcallerUnit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -343,23 +342,16 @@ public class MiscUtil {
             e -> {
                 double dist = e.position().distanceTo(pos); // deprioritise over actual enemy units
                 boolean isMeleeAgainstFlyer = isMelee && e instanceof Unit unit && unit.isFlyingUnit();
-                if (e instanceof PhantomSummon || (e instanceof Unit unit && unit.isScout()) || isMeleeAgainstFlyer)
+                if (isMeleeAgainstFlyer)
                     dist += 100;
                 return dist;
             }
         ));
 
-        // Determine priority effect filter for specific unit types
+        // Per-unit-type target priority. None of the four units that used to be listed here survived the
+        // default-faction deletion, so the priority pass is gone and the base filter runs on its own; the
+        // two-pass structure stays so a new unit type can hook in here.
         Predicate<LivingEntity> priorityFilter = null;
-        if (unitMob instanceof BoggedUnit) {
-            priorityFilter = e -> !e.hasEffect(MobEffects.POISON);
-        } else if (unitMob instanceof WraithUnit) {
-            priorityFilter = e -> !e.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.FEARFUL.get()));
-        } else if (unitMob instanceof WitherSkeletonUnit) {
-            priorityFilter = e -> e.hasEffect(MobEffects.WITHER);
-        } else if (unitMob instanceof WindcallerUnit) {
-            priorityFilter = e -> !e.hasEffect(MobEffects.LEVITATION);
-        }
 
         Vec3 unitVec = new Vec3(unitPosition.x, unitPosition.y, unitPosition.z);
 
@@ -390,16 +382,6 @@ public class MiscUtil {
         Relationship rs = Relationship.NEUTRAL;
         if (unitMob instanceof Unit) {
             rs = UnitServerEvents.getUnitToEntityRelationship((Unit) unitMob, targetEntity);
-
-            // don't aggro against blood moon enemies as a ghast so that buildings don't get friendly fired
-            if (targetEntity instanceof Unit targetUnit &&
-                    targetUnit.getOwnerName().equals(BloodMoon.ENEMY_NAME) &&
-                    unitMob instanceof GhastUnit)
-                return false;
-
-            // don't target vanilla units of the same faction
-            if (!(targetEntity instanceof Unit) && NonUnitServerEvents.getNonUnitFaction(targetEntity) == ((Unit) unitMob).getFaction())
-                return false;
         }
 
         if (targetEntity instanceof Player player && (player.isCreative() || player.isSpectator()))
@@ -424,7 +406,6 @@ public class MiscUtil {
                 rs == Relationship.NEUTRAL && neutralAggro &&
                         !(targetEntity instanceof Vex) &&
                         !(targetEntity instanceof ArmorStand) &&
-                        !(targetEntity instanceof PhantomSummon) &&
                         !isPassiveNonUnit;
 
         return (rs == Relationship.HOSTILE || canAttackNeutral) &&
@@ -440,7 +421,7 @@ public class MiscUtil {
 
         for (BuildingPlacement building : buildings) {
             // Check if the building is attackable, taking into account the relationship
-            if (isBuildingAutoAttackable(unitMob, building) && !(building.getBuilding() instanceof AbstractBridge)) {
+            if (isBuildingAutoAttackable(unitMob, building)) {
                 BlockPos attackPos = building.getClosestGroundPos(unitMob.blockPosition(), 1);
                 double dist = Math.sqrt(unitMob.blockPosition().distSqr(attackPos));
                 if (dist < closestDist) {
@@ -476,7 +457,7 @@ public class MiscUtil {
     }
 
     private static boolean hasLineOfSightForAttacks(Mob mob, LivingEntity targetEntity) {
-        return mob.hasLineOfSight(targetEntity) || mob instanceof GhastUnit ||
+        return mob.hasLineOfSight(targetEntity) ||
                 (mob instanceof Unit unit && GarrisonableBuildingAddon.getGarrison((Unit) mob) != null);
     }
 
@@ -822,10 +803,6 @@ public class MiscUtil {
     }
 
     public static float getMaxAbsorptionAmount(LivingEntity entity) {
-        int fortifyingLvl = entity.getItemBySlot(EquipmentSlot.CHEST).getEnchantmentLevel(EnchantmentRegistrar.FORTYIFYING.get());
-        if (fortifyingLvl > 0) {
-            return fortifyingLvl * ProtectiveEnchantment.MAX_ABSORB_HP_PER_FORTIFYING_LEVEL;
-        }
         MobEffectInstance mei = entity.getEffect(MobEffects.ABSORPTION);
         if (mei != null) {
             return (mei.getAmplifier() + 1) * 4.0f;
@@ -844,9 +821,6 @@ public class MiscUtil {
 
     // eg. Zombie
     public static String getSimpleEntityName(Entity entity) {
-        if (entity instanceof PhantomSummon)
-            return "Phantom";
-
         if (entity instanceof Unit) {
             if (entity.hasCustomName()) {
                 return entity.getType()
@@ -970,16 +944,6 @@ public class MiscUtil {
                 (calendar.get(Calendar.MONTH) + 1 == 1 && calendar.get(Calendar.DATE) == 1);
     }
 
-    public static ResourceLocation getFactionIcon(Faction faction) {
-        return switch (faction) {
-            case VILLAGERS -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/villager.png");
-            case MONSTERS -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/creeper.png");
-            case PIGLINS -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/grunt.png");
-            case RANDOM -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/question_mark_bg.png");
-            default -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/sheep.png");
-        };
-    }
-
     public static boolean isConnected() {
         return Minecraft.getInstance().getConnection() != null;
     }
@@ -989,55 +953,4 @@ public class MiscUtil {
                 block instanceof SnowLayerBlock;
     }
 
-    public static String getFactionName(Faction faction) {
-        return I18n.get(String.format("hud.faction.reignofnether.%s", faction.toString().toLowerCase()));
-    }
-
-    private record ColorEntry(int mapColorId, int hex, String englishName) {}
-
-    private static final ColorEntry[] COLOR_ENTRIES = {
-        // default
-        new ColorEntry(MapColor.SNOW.id,                0xE9ECEC, "white"),
-
-        new ColorEntry(MapColor.COLOR_BLACK.id,         0x141519, "black"),
-        new ColorEntry(MapColor.COLOR_BLUE.id,          0x35399D, "blue"),
-        new ColorEntry(MapColor.COLOR_BROWN.id,         0x724728, "brown"),
-        new ColorEntry(MapColor.COLOR_CYAN.id,          0x158991, "cyan"),
-        new ColorEntry(MapColor.COLOR_GRAY.id,          0x3E4447, "gray"),
-        new ColorEntry(MapColor.COLOR_GREEN.id,         0x546D1B, "green"),
-        new ColorEntry(MapColor.COLOR_LIGHT_BLUE.id,    0x3AAFD9, "light_blue"),
-        new ColorEntry(MapColor.COLOR_LIGHT_GRAY.id,    0x8E8E86, "light_gray"),
-        new ColorEntry(MapColor.COLOR_LIGHT_GREEN.id,   0x70B919, "lime"),
-        new ColorEntry(MapColor.COLOR_MAGENTA.id,       0xBD44B3, "magenta"),
-        new ColorEntry(MapColor.COLOR_ORANGE.id,        0xF07613, "orange"),
-        new ColorEntry(MapColor.COLOR_PINK.id,          0xED8DAC, "pink"),
-        new ColorEntry(MapColor.COLOR_PURPLE.id,        0x792AAC, "purple"),
-        new ColorEntry(MapColor.COLOR_RED.id,           0xA12722, "red"),
-        new ColorEntry(MapColor.COLOR_YELLOW.id,        0xF8C627, "yellow"),
-    };
-
-    private static final Map<Integer, ColorEntry> COLOR_MAP = new HashMap<>() {};
-
-    static {
-        for (ColorEntry e : COLOR_ENTRIES) {
-            COLOR_MAP.put(e.mapColorId, e);
-            COLOR_MAP.put(e.hex, e);
-        }
-    }
-
-    public static String getColorName(int colorIdOrHex, boolean english) {
-        ColorEntry entry = COLOR_MAP.getOrDefault(colorIdOrHex, COLOR_ENTRIES[0]);
-        return english ? entry.englishName : I18n.get(String.format("color.reignofnether.%s", entry.englishName));
-    }
-
-    public static boolean isMagicDamage(DamageSource source) {
-        return source.is(DamageTypeTags.WITCH_RESISTANT_TO) || source.is(DamageTypes.ON_FIRE);
-    }
-
-    public static <T> T getRandomItem(List<T> list) {
-        if (list == null || list.isEmpty()) {
-            throw new IllegalArgumentException("List must not be null or empty");
-        }
-        return list.get(RANDOM.nextInt(list.size()));
-    }
 }
