@@ -552,10 +552,29 @@ public class BuildingServerEvents {
         // Place scaffolding from the lowest point back to the original block's level
         for (int y = yBelow + 1; y < 0; y++) {
             BlockPos scaffoldPos = basePos.offset(0, y, 0);
-            BuildingBlock scaffold = new BuildingBlock(scaffoldPos, Blocks.SCAFFOLDING.defaultBlockState());
+            BuildingBlock scaffold = new BuildingBlock(scaffoldPos, scaffoldStateFor(newBuilding, scaffoldPos));
             newBuilding.getScaffoldBlocks().add(scaffold);
             newBuilding.addToBlockPlaceQueue(scaffold);
         }
+    }
+
+    /**
+     * The filler block dropped under a foundation. A building picks one of three modes:
+     * a single block for everything, the mod's own scaffolding, or a surface-aware pair where the top
+     * layer is grass and everything under it is dirt, so a base cut into a hillside does not leave a
+     * row of grey scaffolding along the surface.
+     */
+    private static BlockState scaffoldStateFor(BuildingPlacement placement, BlockPos pos) {
+        Building.ScaffoldFill fill = placement.getBuilding().scaffoldFill;
+        Level level = placement.level;
+        if (fill == Building.ScaffoldFill.BIOME_AWARE) {
+            boolean topLayer = level.getBlockState(pos.above()).isAir();
+            return (topLayer ? Blocks.GRASS_BLOCK : Blocks.DIRT).defaultBlockState();
+        }
+        if (fill == Building.ScaffoldFill.CUSTOM && placement.getBuilding().scaffoldBlock != null) {
+            return placement.getBuilding().scaffoldBlock.defaultBlockState();
+        }
+        return Blocks.SCAFFOLDING.defaultBlockState();
     }
 
     private static void assignBuilderUnits(int[] builderUnitIds, boolean queue, BuildingPlacement newBuilding) {

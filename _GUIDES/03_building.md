@@ -132,9 +132,26 @@ this.productions.add(ProductionItems.X_UNIT, Keybindings.abilitySlot1);
 
 ## 6. Блок лесов
 
-`B.8.10` плана добавляет поле `scaffoldingBlock`. Оно используется в
-`BuildingServerEvents.placeScaffoldingUnder`. Если нужно «по биому», определить две
-разновидности и переключать по `level.getBiome(pos)`.
+Когда под фундаментом пропасть глубже пары блоков, мод заполняет её. Поведение задаётся
+двумя полями на `Building`:
+
+```java
+public ScaffoldFill scaffoldFill = ScaffoldFill.SCAFFOLDING;  // по умолчанию
+public Block scaffoldBlock = null;                            // только для CUSTOM
+```
+
+| `ScaffoldFill` | Что ставится |
+|---|---|
+| `SCAFFOLDING` | блок самого мода (прежнее поведение, по умолчанию) |
+| `CUSTOM` | один выбранный блок на всю колонну, берётся из `scaffoldBlock` |
+| `BIOME_AWARE` | трава в верхнем заполненном слое, земля во всех нижельных — чтобы срез в склоне не оставлял серую полосу лесов по поверхности |
+
+Заполнение выполняется в `BuildingServerEvents.placeScaffoldingUnder` в момент размещения,
+глубина ограничена `MAX_SCAFFOLD_DEPTH = 5`. На ровной земле не срабатывает никогда.
+При сносе здания леса убираются вместе с остальными блоками.
+
+Тот же параметр нужно завести в `CustomBuildingAction`, если кастомные строения должны его
+поддерживать.
 
 ## 7. Кастомные строения вместо своего класса
 

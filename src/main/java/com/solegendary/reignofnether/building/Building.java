@@ -71,6 +71,24 @@ public abstract class Building {
 
     public int foundationYLayers = 1; // how many Y layers from the bottom are part of the foundation
 
+    /** How the gap under a foundation is filled. See {@link ScaffoldFill}. */
+    public ScaffoldFill scaffoldFill = ScaffoldFill.SCAFFOLDING;
+    /** Only used when {@link #scaffoldFill} is {@link ScaffoldFill#CUSTOM}. */
+    public Block scaffoldBlock = null;
+
+    /**
+     * What gets placed between a foundation and the ground under it, when the ground is more than a
+     * couple of blocks down. A building on flat ground never triggers it at all.
+     */
+    public enum ScaffoldFill {
+        /** The mod's own scaffolding block - the previous behaviour, and the default. */
+        SCAFFOLDING,
+        /** One chosen block for the whole column. */
+        CUSTOM,
+        /** Grass on the topmost filled layer, dirt everywhere below, so the fill blends into a hillside. */
+        BIOME_AWARE
+    }
+
     protected final Abilities abilities = new Abilities();
 
     private Map<Class<BuildingAddon>, BuildingAddon> activeAddons = new HashMap<>();
