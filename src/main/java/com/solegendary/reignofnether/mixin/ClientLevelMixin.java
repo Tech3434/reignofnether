@@ -133,6 +133,13 @@ public class ClientLevelMixin {
         if (minecraft.level == null)
             return;
 
+        // Only take the clock over when this mod is actually steering it, i.e. while the player is
+        // near a source of night distortion and the target has been pinned to midnight. Otherwise
+        // targetClientTime is just the server's day time, and letting vanilla advance the clock is both
+        // correct and one less thing to disagree with another mod about.
+        if (normaliseTime(TimeClientEvents.targetClientTime) == normaliseTime(TimeClientEvents.serverNormDayTime))
+            return;
+
         ci.cancel();
 
         long timeNow = minecraft.level.getDayTime();

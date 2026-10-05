@@ -52,19 +52,9 @@ public abstract class EntityMixin {
         cir.setReturnValue(pDistance < d0 * d0);
     }
 
-    // use this mixin if you want a mob to avoid damage and not even register a damage animation
-    @Inject(
-            method = "isInvulnerableTo",
-            at = @At("HEAD"),
-            cancellable=true
-    )
-    private void isInvulnerableTo(DamageSource pSource, CallbackInfoReturnable<Boolean> cir) {
-        if (pSource == damageSources().inWall())
-            cir.setReturnValue(true);
-    }
-
-    @Shadow public int getTicksRequiredToFreeze() { return 140; }
-    @Shadow public int getTicksFrozen() { return 0; }
+    // Nothing here overrides vanilla damage rules any more. There used to be blanket immunity to
+    // suffocation and a 50% cap on freezing applied to every entity in the world, which is not a
+    // mod's business to decide. A unit that needs fire immunity now gets it from Mob#fireImmune.
 
     @Shadow public abstract DamageSources damageSources();
     @Shadow public abstract Component getName();
@@ -74,17 +64,6 @@ public abstract class EntityMixin {
     @Shadow public abstract Level level();
 
     @Shadow private Level level;
-
-    @Inject(
-            method = "getPercentFrozen",
-            at = @At("HEAD"),
-            cancellable = true
-    )
-    protected void getPercentFrozen(CallbackInfoReturnable<Float> cir) {
-        int i = this.getTicksRequiredToFreeze();
-        float percent = (float)Math.min(this.getTicksFrozen(), 140) / (float)i;
-        cir.setReturnValue(Math.min(percent, 0.5f));
-    }
 
     @Inject(
             method = "extinguishFire()V",

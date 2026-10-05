@@ -39,6 +39,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -172,6 +173,10 @@ public abstract class AbstractArrowMixin extends Projectile {
                 !(boggedUnit.getTargetGoal().forced && boggedUnit.getTargetGoal().getTarget() == entity);
     }
 
+    // Overwrites AbstractArrow#canHitEntity to add the unit-specific exclusions. Mixin merges an
+    // unannotated method of a matching signature as an implicit overwrite, which is fragile and
+    // invisible; declare it so a rename upstream fails loudly instead of silently.
+    @Overwrite
     protected boolean canHitEntity(Entity entity) {
         return super.canHitEntity(entity) &&
                 (this.piercingIgnoreEntityIds == null || !this.piercingIgnoreEntityIds.contains(entity.getId())) &&
@@ -189,8 +194,9 @@ public abstract class AbstractArrowMixin extends Projectile {
         ci.cancel();
         Entity entity = pResult.getEntity();
 
-        super.onHitEntity(pResult);
-
+        // Vanilla's onHitEntity is deliberately NOT called here. The block below is a copy of it,
+        // extended with the pierce bookkeeping unit arrows need. Calling super as well applied the
+        // damage twice for anything without vanilla's 0.5s hurt cooldown.
         float f = (float)this.getDeltaMovement().length();
         int i = Mth.ceil(Mth.clamp((double)f * this.baseDamage, 0.0, 2.147483647E9));
         if (this.getPierceLevel() > 0) {
