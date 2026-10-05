@@ -6,7 +6,7 @@ import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.abilities.AttackGround;
 import com.solegendary.reignofnether.entities.GhastUnitFireball;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
+
 import com.solegendary.reignofnether.hud.TooltipColours;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.registrars.AttributeRegistrar;
@@ -187,10 +187,6 @@ public class GhastUnit extends Ghast implements Unit, AttackerUnit, RangedAttack
     final static public float armorValue = 0.0f;
     final static public float movementSpeed = 0.22f;
     public int maxResources = 100;
-
-    public int fogRevealDuration = 0; // set > 0 for the client who is attacked by this unit
-    public int getFogRevealDuration() { return fogRevealDuration; }
-    public void setFogRevealDuration(int duration) { fogRevealDuration = duration; }
 
     private Abilities abilities = ABILITIES.clone();
     private final List<ItemStack> items = new ArrayList<>();
@@ -381,8 +377,6 @@ public class GhastUnit extends Ghast implements Unit, AttackerUnit, RangedAttack
         double z = pTarget.getZ();
         performUnitRangedAttack(x, y, z, velocity);
 
-        if (!level().isClientSide() && pTarget instanceof Unit unit)
-            FogOfWarClientboundPacket.revealRangedUnit(unit.getOwnerName(), this.getId());
     }
 
     @Override

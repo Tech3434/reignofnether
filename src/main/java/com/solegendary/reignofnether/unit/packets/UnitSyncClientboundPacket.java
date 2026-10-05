@@ -1,6 +1,5 @@
 package com.solegendary.reignofnether.unit.packets;
 
-import com.solegendary.reignofnether.fogofwar.FogOfWarServerEvents;
 import com.solegendary.reignofnether.registrars.PacketHandler;
 import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.resources.Resources;
@@ -75,7 +74,7 @@ public class UnitSyncClientboundPacket  implements RTSSimplePayload {
             owner = unit.getOwnerName();
 
         for (ServerPlayer player : players) {
-            if (FogOfWarServerEvents.isBlockVisibleFor(player, entity.getOnPos().getX(), entity.getOnPos().getZ())) {
+            if (true) {
                 PacketHandler.send(PacketHandler.toPlayer(() -> player),
                         new UnitSyncClientboundPacket(UnitSyncAction.SYNC_STATS,
                                 entity.getId(), 0,

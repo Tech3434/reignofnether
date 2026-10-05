@@ -151,10 +151,6 @@ public class LlamaUnit extends Llama implements Unit, AttackerUnit, RangedAttack
     final static public float movementSpeed = 0.30f;
     public int maxResources = 100;
 
-    public int fogRevealDuration = 0; // set > 0 for the client who is attacked by this unit
-    public int getFogRevealDuration() { return fogRevealDuration; }
-    public void setFogRevealDuration(int duration) { fogRevealDuration = duration; }
-
     private Abilities abilities = ABILITIES.clone();
     private final List<ItemStack> items = new ArrayList<>();
 

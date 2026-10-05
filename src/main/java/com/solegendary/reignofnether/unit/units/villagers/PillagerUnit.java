@@ -6,7 +6,7 @@ import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.abilities.MountRavager;
 import com.solegendary.reignofnether.ability.abilities.PromoteIllager;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
+
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.registrars.AttributeRegistrar;
 import com.solegendary.reignofnether.resources.ResourceCost;
@@ -193,16 +193,6 @@ public class PillagerUnit extends Pillager implements Unit, AttackerUnit, Ranged
     final static public boolean aggressiveWhenIdle = true;
 
     public int maxResources = 100;
-
-    public int fogRevealDuration = 0; // set > 0 for the client who is attacked by this unit
-
-    public int getFogRevealDuration() {
-        return fogRevealDuration;
-    }
-
-    public void setFogRevealDuration(int duration) {
-        fogRevealDuration = duration;
-    }
 
     private UnitCrossbowAttackGoal<? extends LivingEntity> attackGoal;
     private RangedAttackBuildingGoal<?> attackBuildingGoal;
@@ -398,8 +388,6 @@ public class PillagerUnit extends Pillager implements Unit, AttackerUnit, Ranged
         pProjectile.shoot(vector3f.x(), vector3f.y(), vector3f.z(), pVelocity, 0);
         pUser.playSound(SoundEvents.CROSSBOW_SHOOT, 1.0F, 1.0F / (pUser.getRandom().nextFloat() * 0.4F + 0.8F));
 
-        if (!level().isClientSide() && pTarget instanceof Unit unit)
-            FogOfWarClientboundPacket.revealRangedUnit(unit.getOwnerName(), this.getId());
     }
 
     private void shootCrossbowProjectileAtBuilding(LivingEntity pUser, RangedAttackBuildingGoal<?> rabg, Projectile pProjectile, float pProjectileAngle, float pVelocity) {
@@ -410,8 +398,6 @@ public class PillagerUnit extends Pillager implements Unit, AttackerUnit, Ranged
         pProjectile.shoot(vector3f.x(), vector3f.y(), vector3f.z(), pVelocity, 0);
         pUser.playSound(SoundEvents.CROSSBOW_SHOOT, 1.0F, 1.0F / (pUser.getRandom().nextFloat() * 0.4F + 0.8F));
 
-        if (!level().isClientSide())
-            FogOfWarClientboundPacket.revealRangedUnit(rabg.getBuildingTarget().ownerName, this.getId());
     }
 
     private void shootCrossbowProjectileAtGround(LivingEntity pUser, RangedAttackGroundGoal<?> ragg, Projectile pProjectile, float pProjectileAngle, float pVelocity) {

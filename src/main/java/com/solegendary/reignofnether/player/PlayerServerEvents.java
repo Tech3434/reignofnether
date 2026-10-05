@@ -10,8 +10,7 @@ import com.solegendary.reignofnether.building.*;
 import com.solegendary.reignofnether.building.buildings.neutral.Beacon;
 import com.solegendary.reignofnether.building.buildings.placements.CustomBuildingPlacement;
 import com.solegendary.reignofnether.building.buildings.placements.ProductionPlacement;
-import com.solegendary.reignofnether.fogofwar.FogChunkSnapshot;
-import com.solegendary.reignofnether.fogofwar.FogOfWarServerEvents;
+
 import com.solegendary.reignofnether.gamemode.GameMode;
 import com.solegendary.reignofnether.gamemode.GameModeClientboundPacket;
 import com.solegendary.reignofnether.gamerules.GameruleClientboundPacket;
@@ -168,7 +167,7 @@ public class PlayerServerEvents {
 
             rtsPlayers.clear();
             rtsPlayers.addAll(data.rtsPlayers);
-            FogOfWarServerEvents.invalidateRtsCache();
+            
 
             for (RTSPlayer rtsPlayer : rtsPlayers) {
                 if (rtsPlayer.faction == Faction.NONE) {
@@ -244,8 +243,8 @@ public class PlayerServerEvents {
     public static void onServerTick(ServerTickEvent.Post evt) {
         serverLevel = evt.getServer().getLevel(Level.OVERWORLD);
 
-        if (FogChunkSnapshot.shouldRecapture) {
-            FogChunkSnapshot.captureFogChunks(serverLevel);
+        if (false) {
+            
         }
 
         synchronized (rtsPlayers) {
@@ -470,11 +469,11 @@ public class PlayerServerEvents {
                 default -> null;
             };
             // first RTS join into a fresh game: snapshot the playable area for late joiners
-            if (rtsPlayers.isEmpty() && !FogChunkSnapshot.hasAny() && WorldBorderServerEvents.isRtsOptimisedMap(serverLevel)) {
-                FogChunkSnapshot.captureFogChunks((ServerLevel) serverPlayer.level());
+            if (rtsPlayers.isEmpty() && !false && WorldBorderServerEvents.isRtsOptimisedMap(serverLevel)) {
+                
             }
             if (rtsPlayers.isEmpty()) {
-                FogOfWarServerEvents.captureNeutralFogUnits();
+                
             }
             RandomItemDropRule randomItemDropRule = RandomItemDropRule.fromValue(
                     serverPlayer.level().getGameRules().getRule(GameRuleRegistrar.RANDOM_ITEM_DROPS).get()
@@ -492,7 +491,7 @@ public class PlayerServerEvents {
                     isDogPerson,
                     itemDropSeed
             ));
-            FogOfWarServerEvents.invalidateRtsCache();
+            
             String playerName = serverPlayer.getName().getString();
             ResourcesServerEvents.assignResources(playerName);
             PlayerClientboundPacket.addRTSPlayer(playerName, faction, (long) serverPlayer.getId(), startPosColorId, isDogPerson);
@@ -522,7 +521,7 @@ public class PlayerServerEvents {
                 }
             }
             boolean isBat = scoutEntityType == EntityRegistrar.BAT_UNIT.get();
-            if (FogOfWarServerEvents.isEnabled()) {
+            if (false) {
                 BlockPos nonReadiedScoutBp = new BlockPos((int) pos.x - 1, 0,(int) pos.z - 1);
                 Entity scoutEntity = scoutEntityType != null ? scoutEntityType.create(level) : null;
                 if (scoutEntity != null) {
@@ -641,7 +640,7 @@ public class PlayerServerEvents {
             };
             RTSPlayer bot = RTSPlayer.getNewBot(name, faction);
             rtsPlayers.add(bot);
-            FogOfWarServerEvents.invalidateRtsCache();
+            
             ResourcesServerEvents.assignResources(bot.name);
 
             for (int i = -1; i <= 1; i++) {
@@ -712,7 +711,7 @@ public class PlayerServerEvents {
                     roleIndex
             );
             rtsPlayers.add(rtsPlayer);
-            FogOfWarServerEvents.invalidateRtsCache();
+            
             String playerName = serverPlayer.getName().getString();
             ResourcesServerEvents.assignScenarioResources(rtsPlayer);
             PlayerClientboundPacket.addRTSPlayer(playerName, role.faction, (long) serverPlayer.getId(), 0, true);
@@ -747,7 +746,7 @@ public class PlayerServerEvents {
                             scenarioRole.index
                     );
                     rtsPlayers.add(npcRtsPlayer);
-                    FogOfWarServerEvents.invalidateRtsCache();
+                    
                     ResourcesServerEvents.assignScenarioResources(npcRtsPlayer);
                     PlayerClientboundPacket.addScenarioNPCRTSPlayer(scenarioRole.name, scenarioRole.faction, (long) id, scenarioRole.index);
                     id -= 1;
@@ -886,8 +885,7 @@ public class PlayerServerEvents {
         ServerPlayer leaving = getPlayerById(id);
         orthoviewPlayers.removeIf(p -> p.getId() == id);
         if (leaving != null) {
-            // drop fog bookkeeping so normal view-distance behavior resumes
-            com.solegendary.reignofnether.fogofwar.FogOfWarServerEvents.onPlayerExitOrthoview(leaving);
+            // nothing to do on leaving orthoview now that fog of war is gone
         }
     }
 
@@ -1077,12 +1075,12 @@ public class PlayerServerEvents {
 
         synchronized (rtsPlayers) {
             // Remove the defeated player from the list
-            FogOfWarServerEvents.invalidateRtsCache();
+            
 
             CompletableFuture.delayedExecutor(3000, TimeUnit.MILLISECONDS).execute(() -> {
                 for (ServerPlayer sp : players) {
                     if (sp.getName().getString().equals(playerName)) {
-                        FogOfWarServerEvents.resendAllTrackedChunks(sp);
+                        
                         break;
                     }
                 }
@@ -1255,13 +1253,13 @@ public class PlayerServerEvents {
     public static int resetRTS(boolean hardReset) {
         ReignOfNether.LOGGER.info("[Player] resetRTS: hardReset={}", hardReset);
         StartPosServerEvents.cancelStartGameCountdown(true);
-        FogChunkSnapshot.clear();
+        
 
         boolean isSandboxOrScenario = SandboxServer.isAnyoneASandboxPlayer() || serverLevel.getGameRules().getRule(GameRuleRegistrar.SCENARIO_MODE).get();
 
         synchronized (rtsPlayers) {
             rtsPlayers.clear();
-            FogOfWarServerEvents.invalidateRtsCache();
+            
 
             for (LivingEntity entity : UnitServerEvents.getAllUnits())
                 if (hardReset || (entity instanceof Unit unit && !Unit.hasAnchor(unit) && !isSandboxOrScenario))
@@ -1344,7 +1342,7 @@ public class PlayerServerEvents {
 
         synchronized (rtsPlayers) {
             rtsPlayers.clear();
-            FogOfWarServerEvents.invalidateRtsCache();
+            
 
             for (BuildingPlacement building : BuildingServerEvents.getBuildings()) {
                 if (building instanceof ProductionPlacement productionBuilding)

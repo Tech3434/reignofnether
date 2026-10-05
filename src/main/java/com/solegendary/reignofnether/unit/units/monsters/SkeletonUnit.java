@@ -5,7 +5,7 @@ import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.abilities.MountSpider;
 import com.solegendary.reignofnether.ability.heroAbilities.necromancer.BloodMoon;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
+
 import com.solegendary.reignofnether.hud.TooltipColours;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.registrars.AttributeRegistrar;
@@ -178,10 +178,6 @@ public class SkeletonUnit extends Skeleton implements Unit, AttackerUnit, Ranged
     final static public boolean aggressiveWhenIdle = true;
     public int maxResources = 100;
 
-    public int fogRevealDuration = 0; // set > 0 for the client who is attacked by this unit
-    public int getFogRevealDuration() { return fogRevealDuration; }
-    public void setFogRevealDuration(int duration) { fogRevealDuration = duration; }
-
     private UnitBowAttackGoal<? extends LivingEntity> attackGoal;
     private MeleeAttackBuildingGoal attackBuildingGoal;
 
@@ -339,7 +335,6 @@ public class SkeletonUnit extends Skeleton implements Unit, AttackerUnit, Ranged
         this.level().addFreshEntity(abstractarrow);
 
         if (!level().isClientSide() && pTarget instanceof Unit unit)
-            FogOfWarClientboundPacket.revealRangedUnit(unit.getOwnerName(), this.getId());
         getMainHandItem().setDamageValue(0);
     }
 

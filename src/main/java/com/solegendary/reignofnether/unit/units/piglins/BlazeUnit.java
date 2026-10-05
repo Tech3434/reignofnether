@@ -7,7 +7,7 @@ import com.solegendary.reignofnether.ability.abilities.FirewallShot;
 import com.solegendary.reignofnether.blocks.RangeIndicator;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
 import com.solegendary.reignofnether.entities.BlazeUnitFireball;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
+
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.hud.TooltipColours;
 import com.solegendary.reignofnether.keybinds.Keybindings;
@@ -175,10 +175,6 @@ public class BlazeUnit extends Blaze implements Unit, AttackerUnit, RangedAttack
     final static public float movementSpeed = 0.25f;
     public int maxResources = 100;
 
-    public int fogRevealDuration = 0; // set > 0 for the client who is attacked by this unit
-    public int getFogRevealDuration() { return fogRevealDuration; }
-    public void setFogRevealDuration(int duration) { fogRevealDuration = duration; }
-
     private Abilities abilities = ABILITIES.clone();
     private final List<ItemStack> items = new ArrayList<>();
 
@@ -315,8 +311,6 @@ public class BlazeUnit extends Blaze implements Unit, AttackerUnit, RangedAttack
             this.playSound(SoundEvents.BLAZE_SHOOT, 3.0F, 1.0F);
             this.level().addFreshEntity(fireball);
 
-            if (!level().isClientSide() && target instanceof Unit unit)
-                FogOfWarClientboundPacket.revealRangedUnit(unit.getOwnerName(), this.getId());
         }
     }
 

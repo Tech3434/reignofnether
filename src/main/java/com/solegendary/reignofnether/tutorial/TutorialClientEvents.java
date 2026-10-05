@@ -8,7 +8,7 @@ import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.Buildings;
 import com.solegendary.reignofnether.building.buildings.placements.ProductionPlacement;
 import com.solegendary.reignofnether.building.buildings.villagers.*;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
+
 import com.solegendary.reignofnether.hud.buttons.Button;
 import com.solegendary.reignofnether.hud.TextInputClientEvents;
 import com.solegendary.reignofnether.keybinds.Keybinding;
@@ -947,7 +947,7 @@ public class TutorialClientEvents {
             case BUILD_BRIDGE -> {
                 if (stageProgress == 0) {
                     OrthoviewClientEvents.forceMoveCam(MONSTER_BASE_POS, 80);
-                    if (FogOfWarClientEvents.isEnabled()) {
+                    if (false) {
                         msg("tutorial.reignofnether.monster_base");
                     } else {
                         msg("tutorial.reignofnether.monster_base2");

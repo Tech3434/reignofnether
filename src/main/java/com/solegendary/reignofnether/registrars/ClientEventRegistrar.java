@@ -16,9 +16,7 @@ import com.solegendary.reignofnether.debug.RtsDebugPathPreview;
 import com.solegendary.reignofnether.config.ConfigClientEvents;
 import com.solegendary.reignofnether.config.ConfigVanillaServerEvents;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
-import com.solegendary.reignofnether.fogofwar.FogOfWarServerEvents;
-import com.solegendary.reignofnether.fogofwar.PlayerChunksClientEvents;
+
 import com.solegendary.reignofnether.gamemode.GameModeServerEvents;
 import com.solegendary.reignofnether.gamerules.GameruleServerEvents;
 import com.solegendary.reignofnether.guiscreen.TopdownGuiClientEvents;
@@ -56,7 +54,6 @@ import com.solegendary.reignofnether.unit.NonUnitClientEvents;
 import com.solegendary.reignofnether.unit.NonUnitServerEvents;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
-import com.solegendary.reignofnether.worldborder.WorldBorderClientEvents;
 import com.solegendary.reignofnether.worldborder.WorldBorderServerEvents;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.bus.api.IEventBus;
@@ -85,11 +82,9 @@ public class ClientEventRegistrar {
         vanillaEventBus.register(MinimapClientEvents.class);
         vanillaEventBus.register(TimeClientEvents.class);
         vanillaEventBus.register(BlockClientEvents.class);
-        vanillaEventBus.register(FogOfWarClientEvents.class);
         vanillaEventBus.register(ResourcesClientEvents.class);
         vanillaEventBus.register(PlayerClientEvents.class);
         vanillaEventBus.register(TutorialClientEvents.class);
-        vanillaEventBus.register(WorldBorderClientEvents.class);
         vanillaEventBus.register(StartPosClientEvents.class);
         vanillaEventBus.register(MatchStartClientEvents.class);
         vanillaEventBus.register(MatchEndClientEvents.class);
@@ -102,7 +97,6 @@ public class ClientEventRegistrar {
         vanillaEventBus.register(RtsDebugClientEvents.class);
         vanillaEventBus.register(RtsDebugNavmesh.class);
         vanillaEventBus.register(RtsDebugPathPreview.class);
-        vanillaEventBus.register(PlayerChunksClientEvents.class);
         vanillaEventBus.register(CameraFadeClientEvents.class);
         vanillaEventBus.register(ItemClientEvents.class);
 
@@ -117,7 +111,6 @@ public class ClientEventRegistrar {
         vanillaEventBus.register(AttackWarningServerEvents.class);
         vanillaEventBus.register(ResourcesServerEvents.class);
         vanillaEventBus.register(RtsDebugServerEvents.class);
-        vanillaEventBus.register(FogOfWarServerEvents.class);
         vanillaEventBus.register(ResearchServerEvents.class);
         vanillaEventBus.register(SurvivalServerEvents.class);
         vanillaEventBus.register(GameModeServerEvents.class);

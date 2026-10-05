@@ -8,9 +8,7 @@ import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.building.buildings.placements.PortalPlacement;
 import com.solegendary.reignofnether.entities.models.MagicProjectileModel;
 import com.solegendary.reignofnether.entities.renderers.*;
-import com.solegendary.reignofnether.fogofwar.FogTintingBakedModel;
-import com.solegendary.reignofnether.fogofwar.FogTintingBlockColor;
-import com.solegendary.reignofnether.mixin.fogofwar.BlockColorsAccessor;
+
 import com.solegendary.reignofnether.guiscreen.TopdownGui;
 import com.solegendary.reignofnether.particles.*;
 import com.solegendary.reignofnether.registrars.*;
@@ -47,21 +45,13 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import java.util.HashSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 
-@EventBusSubscriber(modid = ReignOfNether.MOD_ID, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = ReignOfNether.MOD_ID, value = Dist.CLIENT)
 public class ClientModEvents {
 
-    // wrap every baked model so the fog tint applies to untinted quads
+    // Only the mod's own blocks get a forced colour. Nothing wraps vanilla providers any more:
+    // fog of war needed every block and every baked model wrapped so it could tint them, and with
+    // fog gone that was pure per-frame overhead on the whole game.
     @SubscribeEvent
-    @OnlyIn(Dist.CLIENT)
-    public static void onModifyBakingResult(ModelEvent.ModifyBakingResult evt) {
-        var models = evt.getModels();
-        for (var entry : models.entrySet()) {
-            entry.setValue(new FogTintingBakedModel(entry.getValue()));
-        }
-    }
-
-    // LOWEST so we wrap after vanilla and other mods
-    @SubscribeEvent(priority = EventPriority.LOWEST)
     @OnlyIn(Dist.CLIENT)
     public static void onBlockColourEvent(RegisterColorHandlersEvent.Block evt) {
         evt.register((bs, blockAndTintGetter, bp, tintIndex) -> {
@@ -83,23 +73,6 @@ public class ClientModEvents {
                 (state, level, pos, tintIndex) -> 0xE0E0E0,
                 BlockRegistrar.WRAITH_SNOW_LAYER.get()
         );
-
-        // wrap every block's provider with the fog multiplier; skip biome-tinted (BiomeColorsMixin handles those)
-        java.util.Set<Block> biomeTinted = java.util.Set.of(
-                Blocks.GRASS_BLOCK, Blocks.FERN, Blocks.SHORT_GRASS, Blocks.POTTED_FERN,
-                Blocks.PINK_PETALS, Blocks.SUGAR_CANE, Blocks.LARGE_FERN, Blocks.TALL_GRASS,
-                Blocks.OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.ACACIA_LEAVES,
-                Blocks.DARK_OAK_LEAVES, Blocks.VINE, Blocks.MANGROVE_LEAVES,
-                Blocks.WATER, Blocks.BUBBLE_COLUMN
-        );
-        BlockColors blockColors = evt.getBlockColors();
-        java.util.Map<Holder.Reference<Block>, BlockColor> map =
-                ((BlockColorsAccessor) (Object) blockColors).getBlockColors();
-        for (Block block : BuiltInRegistries.BLOCK) {
-            if (biomeTinted.contains(block)) continue;
-            BlockColor existing = map.get(BuiltInRegistries.BLOCK.wrapAsHolder(block));
-            evt.register(new FogTintingBlockColor(existing), block);
-        }
     }
 
     @SubscribeEvent

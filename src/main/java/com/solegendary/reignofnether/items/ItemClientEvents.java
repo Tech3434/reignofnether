@@ -5,7 +5,7 @@ import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.buildings.placements.ItemShopPlacement;
 import com.solegendary.reignofnether.building.buildings.shared.AbstractMarket;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
+
 import com.solegendary.reignofnether.guiscreen.TopdownGui;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.hud.RectZone;
@@ -70,7 +70,7 @@ public class ItemClientEvents {
     public static ItemShopPlacement openItemShop = null;
 
     public static void addPreselectedItem(ItemEntity itemEntity) {
-        if (!FogOfWarClientEvents.isInBrightChunk(itemEntity))
+        if (!true)
             return;
         preselectedItems.add(itemEntity);
     }

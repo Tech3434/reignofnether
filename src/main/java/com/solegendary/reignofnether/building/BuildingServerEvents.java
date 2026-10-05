@@ -25,7 +25,6 @@ import com.solegendary.reignofnether.building.data.DataType;
 import com.solegendary.reignofnether.building.production.ActiveProduction;
 import com.solegendary.reignofnether.commands.rtsapi.ResourceObjectiveCriteria;
 import com.solegendary.reignofnether.entities.AdjustablePrimedTnt;
-import com.solegendary.reignofnether.fogofwar.FrozenChunkClientboundPacket;
 import com.solegendary.reignofnether.hud.HudClientboundPacket;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
@@ -652,7 +651,6 @@ public class BuildingServerEvents {
                 nz.startRestoring();
             saveNetherZones(serverLevel);
         }
-        FrozenChunkClientboundPacket.setBuildingDestroyedServerside(building.originPos);
 
         // AOE2-style refund: return the % of the non-built portion of the building
         // eg. cancelling a building at 70% completion will refund only 30% cost
@@ -821,7 +819,6 @@ public class BuildingServerEvents {
                         nz.startRestoring();
                     saveNetherZones(serverLevel);
                 }
-                FrozenChunkClientboundPacket.setBuildingDestroyedServerside(b.originPos);
                 return true;
             }
             return false;

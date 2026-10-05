@@ -7,7 +7,7 @@ import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.buildings.shared.AbstractMarket;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuildingClientEvents;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
+
 import com.solegendary.reignofnether.gamemode.ClientGameModeHelper;
 import com.solegendary.reignofnether.gamerules.GameruleClient;
 import com.solegendary.reignofnether.hero.HeroClientEvents;
@@ -257,7 +257,7 @@ public class PlayerClientEvents {
     public static void addRTSPlayer(String playerName, Faction faction, Long id, int startPosColorId, boolean isDogPerson) {
         if (!isRTSPlayer(playerName)) {
             rtsPlayers.add(RTSPlayer.getNewPlayer(playerName, faction, id.intValue(), startPosColorId, isDogPerson, -1L));
-            FogOfWarClientEvents.refreshLocalIsRTSPlayer();
+            
             if (MC.player != null && MC.player.getName().getString().equals(playerName)) {
                 GameruleClient.gamerulesMenuOpen = false;
                 if (faction != Faction.NONE) {
@@ -274,7 +274,7 @@ public class PlayerClientEvents {
             RTSPlayer rtsPlayer = RTSPlayer.getNewPlayer(playerName, faction, id.intValue(), 0, true, -1L);
             rtsPlayer.scenarioRoleIndex = scenarioRoleIndex;
             rtsPlayers.add(rtsPlayer);
-            FogOfWarClientEvents.refreshLocalIsRTSPlayer();
+            
             if (MC.player != null && MC.player.getName().getString().equals(playerName)) {
                 GameruleClient.gamerulesMenuOpen = false;
                 if (faction != Faction.NONE) {
@@ -287,7 +287,7 @@ public class PlayerClientEvents {
 
     public static void removeRTSPlayer(String playerName) {
         boolean removed = rtsPlayers.removeIf(p -> p.name.equals(playerName));
-        if (removed) FogOfWarClientEvents.refreshLocalIsRTSPlayer();
+        if (removed) 
         if (removed && MC.player != null && MC.player.getName().getString().equals(playerName)) {
             SoundClientEvents.stopFadeableMusicInstance();
         }
@@ -313,8 +313,8 @@ public class PlayerClientEvents {
         resetRTS(true);
         UnitClientEvents.getAllUnits().clear();
         BuildingClientEvents.getBuildings().clear();
-        FogOfWarClientEvents.movedToCapitol = false;
-        FogOfWarClientEvents.brightChunks.clear();
+        
+        
         OrthoviewClientEvents.unlockCam();
         HeroClientEvents.fallenHeroes.clear();
         PlayerDisplayClientEvents.resetDisplay();
@@ -333,7 +333,7 @@ public class PlayerClientEvents {
         // LOG IN TO SERVER WORLD ONLY
         if (MC.player != null && evt.getPlayer().getId() == MC.player.getId()) {
             // server pushes brightChunks; no client recompute
-            FogOfWarClientEvents.refreshLocalIsRTSPlayer();
+            
         }
     }
 
@@ -375,7 +375,7 @@ public class PlayerClientEvents {
     public static void resetRTS(boolean hardReset) {
         boolean isSandboxOrScenario = SandboxClientEvents.isSandboxPlayer() || GameruleClient.scenarioMode;
         rtsPlayers.clear();
-        FogOfWarClientEvents.refreshLocalIsRTSPlayer();
+        
         HelperButtons.updateButtons();
         SoundClientEvents.stopFadeableMusicInstance();
 
@@ -412,7 +412,7 @@ public class PlayerClientEvents {
 
     public static void publishScenarioMap() {
         rtsPlayers.clear();
-        FogOfWarClientEvents.refreshLocalIsRTSPlayer();
+        
         HelperButtons.updateButtons();
         SoundClientEvents.stopFadeableMusicInstance();
         HudClientEvents.controlGroups.clear();

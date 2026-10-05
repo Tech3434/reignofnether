@@ -13,7 +13,7 @@ import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.blocks.RangeIndicator;
 import com.solegendary.reignofnether.entities.NecromancerProjectile;
 import com.solegendary.reignofnether.faction.Faction;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
+
 import com.solegendary.reignofnether.hero.HeroClientboundPacket;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.keybinds.Keybindings;
@@ -251,10 +251,6 @@ public class NecromancerUnit extends Skeleton implements Unit, AttackerUnit, Ran
     public int maxResources = 100;
 
     public int souls = 0;
-
-    public int fogRevealDuration = 0; // set > 0 for the client who is attacked by this unit
-    public int getFogRevealDuration() { return fogRevealDuration; }
-    public void setFogRevealDuration(int duration) { fogRevealDuration = duration; }
 
     private UnitRangedAttackGoal<? extends LivingEntity> attackGoal;
     private MeleeAttackBuildingGoal attackBuildingGoal;
@@ -545,8 +541,6 @@ public class NecromancerUnit extends Skeleton implements Unit, AttackerUnit, Ran
 
         this.playSound(SoundEvents.SHULKER_SHOOT, 3.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
 
-        if (!level().isClientSide() && pTarget instanceof Unit unit)
-            FogOfWarClientboundPacket.revealRangedUnit(unit.getOwnerName(), this.getId());
     }
 
     // returns rank of soul siphon if any souls were consumed

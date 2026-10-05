@@ -15,7 +15,7 @@ import com.solegendary.reignofnether.cursor.CursorClientEvents;
 import com.solegendary.reignofnether.entities.BlazeUnitFireball;
 import com.solegendary.reignofnether.entities.MoltenBombProjectile;
 import com.solegendary.reignofnether.faction.Faction;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
+
 import com.solegendary.reignofnether.hero.HeroClientboundPacket;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.hud.TooltipColours;
@@ -254,10 +254,6 @@ public class WildfireUnit extends Blaze implements Unit, AttackerUnit, RangedAtt
     final static public boolean willRetaliate = true; // will attack when hurt by an enemy
     final static public boolean aggressiveWhenIdle = true;
     public int maxResources = 100;
-
-    public int fogRevealDuration = 0; // set > 0 for the client who is attacked by this unit
-    public int getFogRevealDuration() { return fogRevealDuration; }
-    public void setFogRevealDuration(int duration) { fogRevealDuration = duration; }
 
     private UnitRangedAttackGoal<? extends LivingEntity> attackGoal;
     private MeleeAttackBuildingGoal attackBuildingGoal;
@@ -617,8 +613,6 @@ public class WildfireUnit extends Blaze implements Unit, AttackerUnit, RangedAtt
             this.playSound(SoundEvents.BLAZE_SHOOT, 3.0F, 1.0F);
             this.level().addFreshEntity(fireball);
 
-            if (!level().isClientSide() && target instanceof Unit unit)
-                FogOfWarClientboundPacket.revealRangedUnit(unit.getOwnerName(), this.getId());
         }
     }
 

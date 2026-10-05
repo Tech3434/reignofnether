@@ -11,7 +11,7 @@ import com.solegendary.reignofnether.ability.abilities.WeaponSwapSword;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.building.buildings.villagers.TownCentre;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
+
 import com.solegendary.reignofnether.hud.TooltipColours;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
@@ -192,10 +192,6 @@ public class MilitiaUnit extends Vindicator implements Unit, AttackerUnit, Range
     private boolean shouldDiscard = false;
     public boolean shouldDiscard() { return shouldDiscard; }
     public void setShouldDiscard(boolean discard) { this.shouldDiscard = discard; }
-
-    public int fogRevealDuration = 0; // set > 0 for the client who is attacked by this unit
-    public int getFogRevealDuration() { return fogRevealDuration; }
-    public void setFogRevealDuration(int duration) { fogRevealDuration = duration; }
 
     // endregion
 
@@ -451,8 +447,6 @@ public class MilitiaUnit extends Vindicator implements Unit, AttackerUnit, Range
         this.playSound(SoundEvents.SKELETON_SHOOT, 3.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
         this.level().addFreshEntity(abstractarrow);
 
-        if (!level().isClientSide() && pTarget instanceof Unit unit)
-            FogOfWarClientboundPacket.revealRangedUnit(unit.getOwnerName(), this.getId());
     }
 
     @Override

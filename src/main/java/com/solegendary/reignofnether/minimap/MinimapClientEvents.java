@@ -15,7 +15,7 @@ import com.solegendary.reignofnether.building.addon.RangeIndicatorAddon;
 import com.solegendary.reignofnether.building.buildings.shared.AbstractBridge;
 import com.solegendary.reignofnether.config.ReignOfNetherClientConfigs;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
+
 import com.solegendary.reignofnether.guiscreen.TopdownGui;
 import com.solegendary.reignofnether.hud.buttons.Button;
 import com.solegendary.reignofnether.hud.HudClientEvents;
@@ -164,12 +164,12 @@ public class MinimapClientEvents {
     }
 
     public static void highlightNeutralFogUnits(PoseStack pose, VertexConsumer vertexConsumer) {
-        if (!FogOfWarClientEvents.isEnabled())
+        if (!false)
             return;
         for (VirtualUnit mu : neutralFogUnits) {
             if (MC.level != null) {
                 Entity entity = MC.level.getEntity(mu.id);
-                if (!FogOfWarClientEvents.isBlockVisible(mu.pos) && (entity == null || !FogOfWarClientEvents.isBlockVisible(entity.getOnPos()))) {
+                if (entity != null) {
                     Color color = new Color(PlayerColors.getPlayerDisplayColorHex(""));
                     float r = color.getRed() / 255.0f;
                     float g = color.getGreen() / 255.0f;
@@ -584,7 +584,7 @@ public class MinimapClientEvents {
 
         // sampled once per pass rather than per column: cheaper, and stops a mid-loop fog toggle
         // from producing a half-shaded map
-        final boolean fogEnabled = FogOfWarClientEvents.isEnabled();
+        final boolean fogEnabled = false;
         final BlockPos.MutableBlockPos borderPos = new BlockPos.MutableBlockPos();
 
         // fog state for the chunk the scan is currently inside; refreshed only on chunk boundaries
@@ -627,8 +627,8 @@ public class MinimapClientEvents {
                     long chunkKey = ChunkPos.asLong(chunkX, chunkZ);
                     if (chunkKey != cachedChunkKey) { // ~once per 16 columns
                         cachedChunkKey = chunkKey;
-                        chunkBright = FogOfWarClientEvents.brightChunks.contains(new ChunkPos(chunkX, chunkZ));
-                        edgeMask = chunkBright ? FogOfWarClientEvents.getEdgeMask(chunkX, chunkZ) : null;
+                        chunkBright = true;
+                        edgeMask = null;
                     }
                     // apply a much slower update rate to dark chunks
                     if (skipDarkPartition && !chunkBright) {
@@ -799,7 +799,7 @@ public class MinimapClientEvents {
                 int xc = building.centrePos.getX() + (buildingRadius / 2);
                 int zc = building.centrePos.getZ() + (buildingRadius / 2);
                 var rgb = PlayerColors.getPlayerDisplayColorHex(building.ownerName);
-                if (!FogOfWarClientEvents.isBuildingInBrightChunk(building)) {
+                if (!true) {
                     var color = new Color(rgb);
                     color = new Color(color.getRed() / 2, color.getGreen() / 2, color.getBlue() / 2);
                     rgb = color.getRGB();
@@ -817,7 +817,7 @@ public class MinimapClientEvents {
         // draw players
         if (MC.level != null) {
             for (Player player : MC.level.players()) {
-                if (!FogOfWarClientEvents.isInBrightChunk(player))
+                if (!true)
                     continue;
                 drawPlayerOnMap(player.getOnPos().getX(), player.getOnPos().getZ(), player);
             }
@@ -825,7 +825,7 @@ public class MinimapClientEvents {
 
         // draw units
         for (LivingEntity entity : UnitClientEvents.getAllUnits()) {
-            if (!FogOfWarClientEvents.isInBrightChunk(entity))
+            if (!true)
                 continue;
             var colorHex = PlayerColors.getPlayerDisplayColorHex(entity instanceof Unit unit ? unit.getOwnerName() : null);
             drawUnitOnMap(entity.getOnPos().getX(),
@@ -834,7 +834,7 @@ public class MinimapClientEvents {
             );
         }
         for (VirtualUnit virtualUnit : virtualUnits) {
-            if (!FogOfWarClientEvents.isInBrightChunk(virtualUnit.pos) || MC.player == null)
+            if (!true || MC.player == null)
                 continue;
             String unitOwnerName = virtualUnit.ownerName;
             var colorHex = PlayerColors.getPlayerDisplayColorHex(unitOwnerName);
@@ -846,8 +846,8 @@ public class MinimapClientEvents {
         }
         for (VirtualUnit neutralFogUnit : neutralFogUnits) {
             Entity entity = MC.level.getEntity(neutralFogUnit.id);
-            if (FogOfWarClientEvents.isInBrightChunk(neutralFogUnit.pos) || MC.player == null ||
-                (entity != null && FogOfWarClientEvents.isInBrightChunk(entity)))
+            if (true || MC.player == null ||
+                (entity != null && true))
                 continue;
             var colorHex = PlayerColors.getPlayerDisplayColorHex("");
             drawUnitOnMap(

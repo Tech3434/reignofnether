@@ -42,12 +42,6 @@
         "fire.FireBlockMixin",
         "fire.MagmaBlockMixin",
         "fire.WalkNodeEvaluatorMixin",
-        "fogofwar.ChunkHolderMixin",
-        "fogofwar.ChunkMapInitialSendMixin",
-        "fogofwar.ChunkMapMixin",
-        "fogofwar.ServerLevelParticleMixin",
-        "fogofwar.TrackedEntityMixin",
-        "fogofwar.WorldBorderMixin",
         "goals.MobMixin",
         "goals.RandomStrollGoalMixin"
     ],
@@ -64,18 +58,5 @@
         "MixinMinecraft",
         "OrthoViewMixin",
         "RenderChunkRegionMixin",
-        "ResourceLoadStateTrackerMixin",
-        "fogofwar.BiomeColorsMixin",
-        "fogofwar.BlockColorsAccessor",
-        "fogofwar.ClientChunkCacheMixin",
-        "fogofwar.ClientPacketListenerLightMixin",
-        "fogofwar.CompiledChunkMixin",
-        "fogofwar.EntityRenderDispatcherMixin",
-        "fogofwar.EntityShadowMixin",
-        "fogofwar.ItemEntityRendererMixin",
-        "fogofwar.LevelRendererMixin",
-        "fogofwar.LiquidBlockRendererMixin",
-        "fogofwar.SingleQuadParticleMixin",
-        "fogofwar.WorldBorderRenderMixin"
-  ]
+        "ResourceLoadStateTrackerMixin"]
 }

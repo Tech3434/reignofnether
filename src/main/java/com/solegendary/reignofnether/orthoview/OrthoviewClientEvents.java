@@ -8,7 +8,7 @@ import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.addon.RangeIndicatorAddon;
 import com.solegendary.reignofnether.config.ReignOfNetherClientConfigs;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
+
 import com.solegendary.reignofnether.guiscreen.TopdownGui;
 import com.solegendary.reignofnether.guiscreen.TopdownGuiServerboundPacket;
 import com.solegendary.reignofnether.hud.buttons.Button;
@@ -540,7 +540,7 @@ public class OrthoviewClientEvents {
                 () -> !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || !MinimapClientEvents.isLargeMap(),
                 () -> true,
                 () -> {
-                    FogOfWarClientEvents.resetFogChunks();
+                    
                     UnitClientEvents.windowUpdateTicks = 0;
                     if (hideLeavesMethod == LeafHideMethod.NONE) {
                         hideLeavesMethod = LeafHideMethod.AROUND_UNITS_AND_CURSOR;

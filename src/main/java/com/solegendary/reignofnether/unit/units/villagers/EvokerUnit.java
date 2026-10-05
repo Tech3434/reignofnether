@@ -8,7 +8,7 @@ import com.solegendary.reignofnether.ability.abilities.*;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
 import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.enchantments.RTSEnchantments;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
+
 import com.solegendary.reignofnether.hud.TooltipColours;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.registrars.AttributeRegistrar;
@@ -225,10 +225,6 @@ public class EvokerUnit extends Evoker implements Unit, AttackerUnit, RangedAtta
 
     public int maxResources = 100;
 
-    public int fogRevealDuration = 0; // set > 0 for the client who is attacked by this unit
-    public int getFogRevealDuration() { return fogRevealDuration; }
-    public void setFogRevealDuration(int duration) { fogRevealDuration = duration; }
-
     private UnitBowAttackGoal<? extends LivingEntity> attackGoal;
     private MeleeAttackBuildingGoal attackBuildingGoal;
 
@@ -386,8 +382,6 @@ public class EvokerUnit extends Evoker implements Unit, AttackerUnit, RangedAtta
             this.getCastFangsGoal().setAbility(this.abilities.get().get(1));
             this.getCastFangsGoal().setTarget(pTarget);
         }
-        if (!level().isClientSide() && pTarget instanceof Unit unit)
-            FogOfWarClientboundPacket.revealRangedUnit(unit.getOwnerName(), this.getId());
     }
 
     // actually performs the fangs attack

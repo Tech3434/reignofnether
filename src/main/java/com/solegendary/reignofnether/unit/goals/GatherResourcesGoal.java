@@ -4,7 +4,7 @@ import com.solegendary.reignofnether.ability.heroAbilities.enchanter.CivilEnchan
 import com.solegendary.reignofnether.building.BuildingBlock;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
+
 import com.solegendary.reignofnether.registrars.BlockRegistrar;
 import com.solegendary.reignofnether.research.ResearchServerEvents;
 import com.solegendary.reignofnether.resources.*;
@@ -174,7 +174,7 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
     }
 
     public void tickClient() {
-        if (data.targetResourceSource != null && this.data.gatherTarget != null && isGathering() && FogOfWarClientEvents.isInBrightChunk(this.data.gatherTarget)) {
+        if (data.targetResourceSource != null && this.data.gatherTarget != null && isGathering() && true) {
             gatherTicksLeft = Math.min(gatherTicksLeft, data.targetResourceSource.ticksToGather);
             gatherTicksLeft -= 1;
             if (gatherTicksLeft <= 0)

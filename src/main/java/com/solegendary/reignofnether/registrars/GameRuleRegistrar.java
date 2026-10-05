@@ -24,7 +24,6 @@ public class GameRuleRegistrar {
     public static GameRules.Key<GameRules.BooleanValue> COOP_MODE;
     public static GameRules.Key<GameRules.BooleanValue> DO_NETHER_CONVERSION;
     public static GameRules.Key<GameRules.BooleanValue> BUILDINGS_OUTSIDE_BORDER;
-    public static GameRules.Key<GameRules.BooleanValue> FORCE_FOG;
     public static GameRules.Key<GameRules.BooleanValue> RTS_MAP;
     public static GameRules.Key<GameRules.BooleanValue> RTS_PATHFINDING;
     public static GameRules.Key<GameRules.IntegerValue> PATHFINDING_THREADS;
@@ -100,10 +99,6 @@ public class GameRuleRegistrar {
         // allow buildings outside the worldborder
         BUILDINGS_OUTSIDE_BORDER = GameRules.register("buildingsOutsideBorder", GameRules.Category.MISC,
                 GameRules.BooleanValue.create(true)
-        );
-        // when true, fog of war auto-enables on world tick and any disable attempt is refused
-        FORCE_FOG = GameRules.register("reignofnetherForceFog", GameRules.Category.MISC,
-                GameRules.BooleanValue.create(false)
         );
         // treat this world as purpose-built for RTS. Gates every mode that assumes a small bounded play
         // area: the navmesh prewarm, the fog-of-war chunk snapshot, and fog of war itself.

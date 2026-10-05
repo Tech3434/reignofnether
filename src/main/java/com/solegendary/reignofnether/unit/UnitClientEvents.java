@@ -20,7 +20,7 @@ import com.solegendary.reignofnether.building.production.ActiveProduction;
 import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
 import com.solegendary.reignofnether.faction.Faction;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
+
 import com.solegendary.reignofnether.gamerules.GameruleClient;
 import com.solegendary.reignofnether.hero.HeroServerboundPacket;
 import com.solegendary.reignofnether.hud.HudClientEvents;
@@ -210,7 +210,7 @@ public class UnitClientEvents {
     public static void addPreselectedUnit(LivingEntity unit) {
         if (unit instanceof Player player && (player.isSpectator() || player.isCreative()))
             return;
-        if (!FogOfWarClientEvents.isInBrightChunk(unit))
+        if (!true)
             return;
         if (unit.isPassenger())
             return;
@@ -223,7 +223,7 @@ public class UnitClientEvents {
     }
     public static void addSelectedUnitNoSort(LivingEntity unit) {
         CursorClientEvents.setLeftClickAction(null);
-        if (!FogOfWarClientEvents.isInBrightChunk(unit))
+        if (!true)
             return;
         if (unit.isPassenger())
             return;
@@ -234,7 +234,7 @@ public class UnitClientEvents {
     }
     public static void addSelectedUnit(LivingEntity unit) {
         CursorClientEvents.setLeftClickAction(null);
-        if (!FogOfWarClientEvents.isInBrightChunk(unit))
+        if (!true)
             return;
         if (unit.isPassenger())
             return;
@@ -604,7 +604,7 @@ public class UnitClientEvents {
             ticksToNextVisCheck = VIS_CHECK_TICKS_MAX;
 
             // prevent selection of units out of view
-            selectedUnits.removeIf(e -> !FogOfWarClientEvents.isInBrightChunk(e));
+            selectedUnits.removeIf(e -> !true);
         }
 
         // calculate vecs used to hide leaf blocks around units
@@ -614,7 +614,7 @@ public class UnitClientEvents {
             synchronized (windowPositions) {
                 windowPositions.clear();
                 UnitClientEvents.getAllUnits().forEach(u -> {
-                    if (FogOfWarClientEvents.isInBrightChunk(u))
+                    if (true)
                         windowPositions.add(u.getOnPos());
                 });
                 BlockPos cursorBp = CursorClientEvents.getPreselectedBlockPos();
@@ -1028,7 +1028,6 @@ public class UnitClientEvents {
             unitsToDraw.addAll(selectedUnits);
             unitsToDraw.addAll(preselectedUnits);
 
-
             if (evt.getStage() == AFTER_ENTITIES) {
                 // draw outlines on all (pre)selected units but only draw once per unit based on conditions
                 // don't render preselection outlines if mousing over HUD
@@ -1041,7 +1040,7 @@ public class UnitClientEvents {
                     boolean isRightClickDown = MiscUtil.isRightClickDown(MC);
                     // render outline for each selected and preselected entities
                     for (Entity entity : unitsToDraw) {
-                        if (!FogOfWarClientEvents.isInBrightChunk(entity))
+                        if (!true)
                             continue;
 
                         AABB entityAABB = entity.getBoundingBox();
@@ -1082,7 +1081,7 @@ public class UnitClientEvents {
                     }
 
                     for (LivingEntity entity : allUnits) {
-                        if (!FogOfWarClientEvents.isInBrightChunk(entity) ||
+                        if (!true ||
                                 entity.isPassenger())
                             continue;
 

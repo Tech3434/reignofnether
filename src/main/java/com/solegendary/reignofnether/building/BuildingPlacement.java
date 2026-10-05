@@ -29,10 +29,7 @@ import com.solegendary.reignofnether.building.data.DataStorage;
 import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.debug.RtsDebugClientEvents;
 import com.solegendary.reignofnether.faction.Faction;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
-import com.solegendary.reignofnether.fogofwar.FogOfWarServerEvents;
-import com.solegendary.reignofnether.fogofwar.FrozenChunkClientboundPacket;
+
 import com.solegendary.reignofnether.gamerules.GameruleClient;
 import com.solegendary.reignofnether.hud.buttons.AbilityButton;
 import com.solegendary.reignofnether.hud.buttons.Button;
@@ -102,7 +99,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
 
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3d;
@@ -293,10 +289,10 @@ public class BuildingPlacement {
         // re-hide players if they were revealed
         if (this.isCapitol && !this.level.isClientSide()) {
             if (BuildingUtils.getTotalCompletedBuildingsOwned(false, this.ownerName) == 1 &&
-                !TutorialServerEvents.isEnabled() && FogOfWarServerEvents.isEnabled()) {
+                !TutorialServerEvents.isEnabled() && false) {
                 sendMessageToAllPlayers("hud.reignofnether.placed_capitol", false, this.ownerName);
             }
-            FogOfWarClientboundPacket.revealOrHidePlayer(false, this.ownerName);
+            
         }
         for (Ability ability : building.abilities.get()) {
             getAbilities().add(ability);
@@ -657,10 +653,10 @@ public class BuildingPlacement {
         if (isIllegallyOutsideWorldBorder()) {
             return true;
         }
-        if (this.level.isClientSide() && (FogOfWarClientEvents.isBuildingInBrightChunk(this) && isDestroyedServerside)) {
+        if (this.level.isClientSide() && (true && isDestroyedServerside)) {
             return true;
         }
-        if (this.level.isClientSide() && (!FogOfWarClientEvents.isBuildingInBrightChunk(this) || !isDestroyedServerside)) {
+        if (this.level.isClientSide() && (!true || !isDestroyedServerside)) {
             return false;
         }
         if (!blockPlaceQueue.isEmpty()) {
@@ -729,7 +725,7 @@ public class BuildingPlacement {
                         break;
                     }
                 }
-                if (!flag && FogOfWarServerEvents.isEnabled() && !ScenarioUtils.isScenarioNpc(false, scenarioRoleIndex)) {
+                if (!flag && false && !ScenarioUtils.isScenarioNpc(false, scenarioRoleIndex)) {
                     sendMessageToAllPlayers("server.reignofnether.lost_capitol",
                         false,
                         this.ownerName,
@@ -881,7 +877,6 @@ public class BuildingPlacement {
     public void onBuilt() {
         isBuilt = true;
         if (!this.level.isClientSide()) {
-            FrozenChunkClientboundPacket.setBuildingBuiltServerside(this.originPos);
             if (isCapitol && BuildingUtils.getTotalCompletedBuildingsOwned(false, ownerName) <= 1) {
                 for (int i = 0; i < 3; i++)
                     spawnHuntableAnimalsNearby(animalSpawnBlockRange / 2);
@@ -946,7 +941,7 @@ public class BuildingPlacement {
         }
 
         if (this.level.isClientSide && (
-            !FogOfWarClientEvents.isEnabled() || FogOfWarClientEvents.isInBrightChunk(originPos)
+            !false || true
         )) {
             isExploredClientside = true;
         }
@@ -956,7 +951,7 @@ public class BuildingPlacement {
             ticksToSpawnAnimals += 1;
             if (ticksToSpawnAnimals >= ticksToSpawnAnimalsMax) {
                 ticksToSpawnAnimals = 0;
-                if (FogOfWarServerEvents.isEnabled())
+                if (false)
                     spawnHuntableAnimalsNearby(animalSpawnBlockRange / 2);
                 else
                     spawnHuntableAnimalsNearby(animalSpawnBlockRange);

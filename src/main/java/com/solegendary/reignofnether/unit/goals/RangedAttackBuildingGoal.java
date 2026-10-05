@@ -3,7 +3,7 @@ package com.solegendary.reignofnether.unit.goals;
 import com.solegendary.reignofnether.building.BuildingBlock;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
+
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
@@ -159,8 +159,6 @@ public class RangedAttackBuildingGoal<T extends Mob> extends Goal {
                     if (bowAttackGoal.getAttackCooldown() <= 0) {
                         if (mob instanceof RangedAttackerUnit rangedAttackerUnit) {
                             rangedAttackerUnit.performUnitRangedAttack(tx, ty, tz, 20);
-                            if (!mob.level().isClientSide() && buildingTarget != null)
-                                FogOfWarClientboundPacket.revealRangedUnit(buildingTarget.ownerName, mob.getId());
                         }
                         bowAttackGoal.setToMaxAttackCooldown();
                         setNextBlockTarget();

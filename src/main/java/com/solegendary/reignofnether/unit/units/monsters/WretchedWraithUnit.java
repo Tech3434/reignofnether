@@ -255,10 +255,6 @@ public class WretchedWraithUnit extends Monster implements Unit, AttackerUnit, H
     final static public boolean aggressiveWhenIdle = true;
     public int maxResources = 100;
 
-    public int fogRevealDuration = 0; // set > 0 for the client who is attacked by this unit
-    public int getFogRevealDuration() { return fogRevealDuration; }
-    public void setFogRevealDuration(int duration) { fogRevealDuration = duration; }
-
     private AbstractMeleeAttackUnitGoal attackGoal;
     private MeleeAttackBuildingGoal attackBuildingGoal;
 

@@ -3,7 +3,7 @@ package com.solegendary.reignofnether.unit.goals;
 import com.solegendary.reignofnether.building.BuildingBlock;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
-import com.solegendary.reignofnether.fogofwar.FogOfWarServerEvents;
+
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
 import net.minecraft.core.BlockPos;
@@ -48,7 +48,7 @@ public class ExploreBuildLocationGoal extends MoveToTargetBlockGoal {
             boolean isPlaced = BuildingServerEvents.getBuildings().contains(bpl);
 
             // not placed and is explored -> place
-            if (!isPlaced && FogOfWarServerEvents.isBlockVisibleFor(((Unit) mob).getOwnerName(), bpl.centrePos.getX(), bpl.centrePos.getZ())) {
+            if (!isPlaced) {
                 BuildingPlacement newBuilding = BuildingServerEvents.placeBuilding(bpl, bpl.originPos, bpl.rotation, bpl.ownerName, new int[]{}, false, bpl.isDiagonalBridge, false, true);
                 if (newBuilding == null) { // failed to place due to obstacles in fog or some other reason
                     fogQueuedBuildings.remove(bpl);

@@ -3,7 +3,7 @@ package com.solegendary.reignofnether.mixin;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
+
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.sounds.SoundClientEvents;
@@ -101,7 +101,7 @@ public class ClientLevelMixin {
     // not a mixin, but called by them
     private void playSoundActual(double pX, double pY, double pZ, SoundEvent pSoundEvent, SoundSource pSource,
                            float pVolume, float pPitch, boolean pDistanceDelay, long pSeed) {
-        if (!FogOfWarClientEvents.isInBrightChunk(new BlockPos((int) (pX + 0.5f), (int) (pY + 0.5f), (int) (pZ + 0.5f))) &&
+        if (
                 !pSoundEvent.getLocation().getPath().contains("ui.button.click") &&
                 !pSoundEvent.getLocation().getNamespace().contains("reignofnether"))
             return;
@@ -169,7 +169,7 @@ public class ClientLevelMixin {
             cancellable = true
     )
     private void onAddDestroyBlockEffect(BlockPos pPos, BlockState pState, CallbackInfo ci) {
-        if (!FogOfWarClientEvents.isInBrightChunk(pPos))
+        if (!true)
             ci.cancel();
     }
 
@@ -189,7 +189,7 @@ public class ClientLevelMixin {
             cancellable = true
     )
     private void reignofnether$gateFoggedBlockUpdate(BlockPos pPos, BlockState pState, int pFlags, CallbackInfo ci) {
-        if (FogOfWarClientEvents.isEnabled() && !FogOfWarClientEvents.isBlockVisible(pPos))
+        if (false && !true)
             ci.cancel();
     }
 }

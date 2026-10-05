@@ -7,8 +7,7 @@ import com.solegendary.reignofnether.building.buildings.shared.AbstractBridge;
 import com.solegendary.reignofnether.building.buildings.villagers.TownCentre;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuilding;
 import com.solegendary.reignofnether.faction.Faction;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
-import com.solegendary.reignofnether.fogofwar.FogOfWarServerEvents;
+
 import com.solegendary.reignofnether.nether.NetherBlocks;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.tutorial.TutorialClientEvents;
@@ -286,11 +285,8 @@ public class BuildingValidators {
         return isInBrightChunk(level, centrePos, ownerName);
     }
 
+    // With fog of war gone there is nothing to hide a building behind, so it is always placeable.
     public static boolean isInBrightChunk(Level level, BlockPos centrePos, String ownerName) {
-        if (level.isClientSide()) {
-            return FogOfWarClientEvents.isInBrightChunk(centrePos);
-        } else {
-            return FogOfWarServerEvents.isBlockVisibleFor(ownerName, centrePos.getX(), centrePos.getZ());
-        }
+        return true;
     }
 }

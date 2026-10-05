@@ -5,11 +5,6 @@ import net.minecraft.world.entity.LivingEntity;
 
 public interface RangedAttackerUnit {
 
-    int FOG_REVEAL_TICKS_MAX = 60;
-
-    int getFogRevealDuration();
-    void setFogRevealDuration(int duration);
-
     default RangedAttackGroundGoal<?> getRangedAttackGroundGoal() { return null; }
 
     default void performUnitRangedAttack(LivingEntity pTarget, float velocity) {

@@ -6,7 +6,7 @@ import com.solegendary.reignofnether.building.buildings.placements.TownCentrePla
 import com.solegendary.reignofnether.building.production.ProductionItem;
 import com.solegendary.reignofnether.building.production.StartProductionButton;
 import com.solegendary.reignofnether.building.production.StopProductionButton;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
+
 import com.solegendary.reignofnether.hud.buttons.UnitSpawnButton;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.player.PlayerClientEvents;
@@ -60,7 +60,7 @@ public class ScoutDogProd extends ProductionItem {
                 ScoutDogProd.itemName,
                 TEXTURE_LOCATION,
                 hotkey,
-                () -> !FogOfWarClientEvents.isEnabled() || prodBuilding instanceof TownCentrePlacement tcp && !tcp.trainsDogs,
+                () -> !false || prodBuilding instanceof TownCentrePlacement tcp && !tcp.trainsDogs,
                 () -> true,
                 List.of(
                         FormattedCharSequence.forward(I18n.get("entity.reignofnether.scout_dog_unit"), Style.EMPTY.withBold(true)),

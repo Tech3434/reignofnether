@@ -8,7 +8,7 @@ import com.solegendary.reignofnether.blocks.RangeIndicator;
 import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.entities.WindcallerProjectile;
 import com.solegendary.reignofnether.faction.Faction;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
+
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.registrars.AttributeRegistrar;
@@ -208,10 +208,6 @@ public class WindcallerUnit extends Pillager implements Unit, AttackerUnit, Rang
     final static public boolean willRetaliate = true; // will attack when hurt by an enemy
     final static public boolean aggressiveWhenIdle = true;
     public int maxResources = 100;
-
-    public int fogRevealDuration = 0; // set > 0 for the client who is attacked by this unit
-    public int getFogRevealDuration() { return fogRevealDuration; }
-    public void setFogRevealDuration(int duration) { fogRevealDuration = duration; }
 
     private UnitRangedAttackGoal<? extends LivingEntity> attackGoal;
 
@@ -599,8 +595,6 @@ public class WindcallerUnit extends Pillager implements Unit, AttackerUnit, Rang
         if (!level().isClientSide())
             SoundClientboundPacket.playSoundAtPos(SoundAction.WINDCALLER_WIND_ATTACK, blockPosition(), 2.0F);
 
-        if (!level().isClientSide() && pTarget instanceof Unit unit)
-            FogOfWarClientboundPacket.revealRangedUnit(unit.getOwnerName(), this.getId());
     }
 
     @Override

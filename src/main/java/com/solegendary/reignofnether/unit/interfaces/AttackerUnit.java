@@ -255,11 +255,6 @@ public interface AttackerUnit {
             if (attackerUnit.getAttackBuildingGoal() != null && attackerUnit.canAttackBuildings())
                 attackerUnit.getAttackBuildingGoal().tick();
         }
-        else if (unit instanceof RangedAttackerUnit rangedAttackerUnit) {
-            int revealDuration = rangedAttackerUnit.getFogRevealDuration();
-            if (revealDuration > 0)
-                rangedAttackerUnit.setFogRevealDuration(revealDuration - 1);
-        }
 
         if (!unitMob.level().isClientSide && unitMob.tickCount % 4 == 0) {
             if (((LivingEntity) unit).getEffect(MobEffectHelpers.holder(MobEffectRegistrar.STUN.get())) != null ||

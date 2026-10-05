@@ -5,7 +5,7 @@ import com.solegendary.reignofnether.building.buildings.placements.CustomBuildin
 import com.solegendary.reignofnether.building.buildings.placements.ProductionPlacement;
 import com.solegendary.reignofnether.building.production.ActiveProduction;
 import com.solegendary.reignofnether.building.production.ProductionItem;
-import com.solegendary.reignofnether.fogofwar.FogOfWarServerEvents;
+
 import com.solegendary.reignofnether.registrars.PacketHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -49,7 +49,7 @@ public class BuildingProductionClientboundPacket  implements RTSSimplePayload {
         BuildingPlacement b = findBuilding(false, buildingPos);
         for (ServerPlayer sp : server.getPlayerList().getPlayers()) {
             if (ownerName.equals(sp.getName().getString()) ||
-                (b != null && FogOfWarServerEvents.canPlayerSeeBuilding(sp, b))) {
+                (b != null && true)) {
                 PacketHandler.send(PacketHandler.toPlayer(() -> sp), packet);
             }
         }

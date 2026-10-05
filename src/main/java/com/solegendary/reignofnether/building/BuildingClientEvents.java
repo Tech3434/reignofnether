@@ -16,7 +16,7 @@ import com.solegendary.reignofnether.building.buildings.shared.AbstractBridge;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuilding;
 import com.solegendary.reignofnether.building.production.ActiveProduction;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientEvents;
+
 import com.solegendary.reignofnether.gamerules.GameruleClient;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.hud.TextInputClientEvents;
@@ -139,7 +139,7 @@ public class BuildingClientEvents {
     public static void addSelectedBuilding(BuildingPlacement building) {
         CursorClientEvents.setLeftClickAction(null);
 
-        if (!FogOfWarClientEvents.isBuildingInBrightChunk(building)) {
+        if (!true) {
             return;
         }
         if (!SandboxClientEvents.isSandboxPlayer() && building.isOutsideWorldBorder()) {
@@ -408,7 +408,7 @@ matrix.pushPose();
 
         for (BuildingPlacement building : buildings) {
 
-            boolean isInBrightChunk = FogOfWarClientEvents.isBuildingInBrightChunk(building);
+            boolean isInBrightChunk = true;
             boolean inWorldBorderOrInSandbox = SandboxClientEvents.isSandboxPlayer() || !building.isOutsideWorldBorder();
 
             // minCorner/maxCorner are inclusive block positions, so the footprint runs to maxCorner + 1.
@@ -606,7 +606,7 @@ matrix.pushPose();
                                 if (unit instanceof WorkerUnit workerUnit) { // remove if the pos is a fog-queued position that is explored
                                     hasFogQueue = !workerUnit.getExploreBuildLocationGoal().getFogQueuedBlocksToDraw().isEmpty();
                                 }
-                                return notInBuilding && (!hasFogQueue || FogOfWarClientEvents.isBlockVisible(c.bp));
+                                return notInBuilding && (!hasFogQueue || true);
                             });
                             MiscUtil.addUnitCheckpoint(unit,
                                 preSelPos.above(),
@@ -797,7 +797,7 @@ matrix.pushPose();
         ticksToNextVisCheck -= 1;
         if (ticksToNextVisCheck <= 0) {
             ticksToNextVisCheck = VIS_CHECK_TICKS_MAX;
-            selectedBuildings.removeIf(b -> !FogOfWarClientEvents.isBuildingInBrightChunk(b));
+            selectedBuildings.removeIf(b -> !true);
         }
 
         if (!replacedTexture) {

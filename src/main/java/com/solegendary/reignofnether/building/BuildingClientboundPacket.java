@@ -5,7 +5,7 @@ import com.solegendary.reignofnether.building.buildings.placements.BeaconPlaceme
 import com.solegendary.reignofnether.building.buildings.placements.PortalPlacement;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuilding;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuildingClientEvents;
-import com.solegendary.reignofnether.fogofwar.FogOfWarServerEvents;
+
 import com.solegendary.reignofnether.registrars.PacketHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -62,7 +62,7 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
         if (server == null) return;
         BuildingPlacement b = findBuilding(false, buildingPos);
         for (ServerPlayer sp : server.getPlayerList().getPlayers()) {
-            if (b != null && FogOfWarServerEvents.canPlayerSeeBuilding(sp, b)) {
+            if (b != null && true) {
                 PacketHandler.send(PacketHandler.toPlayer(() -> sp), packet);
             }
         }

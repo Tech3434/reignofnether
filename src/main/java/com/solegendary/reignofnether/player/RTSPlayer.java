@@ -5,8 +5,7 @@ import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
 import com.solegendary.reignofnether.building.buildings.neutral.Beacon;
 import com.solegendary.reignofnether.building.buildings.placements.BeaconPlacement;
-import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
-import com.solegendary.reignofnether.fogofwar.FogOfWarServerEvents;
+
 import com.solegendary.reignofnether.faction.Faction;
 import com.solegendary.reignofnether.items.ItemUtil;
 import com.solegendary.reignofnether.items.UnitItem;
@@ -141,11 +140,11 @@ public class RTSPlayer {
             if (ticksWithoutCapitol < TICKS_TO_REVEAL) {
                 this.ticksWithoutCapitol += 1;
                 if (ticksWithoutCapitol == TICKS_TO_REVEAL) {
-                    if (FogOfWarServerEvents.isEnabled()) {
+                    if (false) {
                         PlayerServerEvents.sendMessageToAllPlayers("server.reignofnether.revealed", false, this.name);
                     }
-                    if (!ScenarioUtils.isScenarioNpc(false, scenarioRoleIndex))
-                        FogOfWarClientboundPacket.revealOrHidePlayer(true, this.name);
+                    if (!ScenarioUtils.isScenarioNpc(false, scenarioRoleIndex)) {
+                    }
                 }
             }
         } else {
