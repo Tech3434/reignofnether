@@ -124,6 +124,9 @@ public class OrthoviewClientEvents {
     public static double orthoviewPlayerBaseY = 100;
     public static double orthoviewPlayerMaxY = 160;
     private static double minOrthoviewY = 0;
+    // Upper bound for a pinned camera. Above the build limit there is nothing to render anyway, and a
+    // camera parked up there would sit outside the world the server simulates.
+    private static double maxOrthoviewY = 320;
 
     public static void setMinOrthoviewY(double value) {
         minOrthoviewY = value;
@@ -164,13 +167,40 @@ public class OrthoviewClientEvents {
                     count++;
                 }
             }
-            // Calculate the average height
+            // Average height sets the default, but only until the operator (or the player) sets one
+            // explicitly with setCameraHeight - otherwise every pan across uneven terrain would yank
+            // the camera back to a computed value.
             int avgHeight = count > 0 ? sumHeights / count : playerPos.getY();
 
-            // Update ORTHOVIEW values based on the average height
-            orthoviewPlayerBaseY = Math.max(avgHeight + 30, minOrthoviewY);
-            orthoviewPlayerMaxY = avgHeight + 100;
+            if (!cameraHeightOverridden) {
+                orthoviewPlayerBaseY = Math.max(avgHeight + 30, minOrthoviewY);
+                orthoviewPlayerMaxY = avgHeight + 100;
+            }
         }
+    }
+
+    /** Set once the operator picks a height, after which the terrain average stops overriding it. */
+    private static boolean cameraHeightOverridden = false;
+
+    /**
+     * Pin the camera to a height. Orthoview looks straight down, so anything above the camera is
+     * off-screen no matter where the player stands - this is the height worth picking. Clamped to the
+     * build limits so the camera cannot be parked outside the world.
+     */
+    public static void setCameraHeight(double y) {
+        double clamped = Math.max(minOrthoviewY, Math.min(maxOrthoviewY, y));
+        orthoviewPlayerBaseY = clamped;
+        orthoviewPlayerMaxY = clamped;
+        cameraHeightOverridden = true;
+    }
+
+    /** Go back to following the terrain. */
+    public static void clearCameraHeightOverride() {
+        cameraHeightOverridden = false;
+    }
+
+    public static double getCameraHeight() {
+        return orthoviewPlayerBaseY;
     }
 
     public static boolean isEnabled() {
