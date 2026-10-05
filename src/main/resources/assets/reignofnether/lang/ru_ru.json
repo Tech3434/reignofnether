@@ -803,6 +803,7 @@
     "commands.reignofnether.gamerule.ground_y_level": "Минимальная высота для камер",
     "commands.reignofnether.gamerule.flying_max_y_level": "Макс. высота для летающих юнитов",
     "commands.reignofnether.gamerule.rts_pathfinding": "Улучшенный поиск пути для RTS-карт",
+    "commands.reignofnether.gamerule.rts_map": "Считать этот мир RTS-картой: прогрев навмеша и разрешение тумана войны. Требует границу мира не больше 1280 блоков. По умолчанию выключено — без него мод не генерирует terrain.",
     "commands.reignofnether.gamerule.allow_beacons": "Разрешить рабочим строить Маяки",
     "commands.reignofnether.gamerule.pvp_modes_only": "Отключить Режим Волн и Песочницу",
     "commands.reignofnether.gamerule.beacon_win_minutes": "Время для победы через контроль маяка",

@@ -870,6 +870,7 @@
     "commands.reignofnether.gamerule.ground_y_level": "Minimum height for cameras",
     "commands.reignofnether.gamerule.flying_max_y_level": "Max height for flying units",
     "commands.reignofnether.gamerule.rts_pathfinding": "Use pathfinding specialised for RTS maps",
+    "commands.reignofnether.gamerule.rts_map": "Treat this world as an RTS map: prewarm the navmesh and allow fog of war. Requires a world border of 1280 blocks or less. Off by default - without it the mod does not generate any terrain.",
     "commands.reignofnether.gamerule.allow_beacons": "Allows workers to build Beacons",
     "commands.reignofnether.gamerule.pvp_modes_only": "Disable Wave Survival and Sandbox",
     "commands.reignofnether.gamerule.beacon_win_minutes": "Time needed to win with beacon control",

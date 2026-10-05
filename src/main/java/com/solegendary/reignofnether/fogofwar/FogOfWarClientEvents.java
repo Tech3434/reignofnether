@@ -11,14 +11,11 @@ import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.worldborder.WorldBorderServerEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ChunkPos;
@@ -210,14 +207,8 @@ public class FogOfWarClientEvents {
         }
     }
 
-    public static boolean isEnabled() {
+public static boolean isEnabled() {
         return enabled && localIsRTSPlayer;
-    }
-
-    // client-side mirror of WorldBorderServerEvents.isRtsOptimisedMap using the client's known border
-    public static boolean isOnRtsOptimisedMap() {
-        return MC.level != null
-                && MC.level.getWorldBorder().getSize() <= WorldBorderServerEvents.RTS_OPTIMIZED_BORDER;
     }
 
     @SubscribeEvent
@@ -228,13 +219,10 @@ public class FogOfWarClientEvents {
                         return -1;
                     if (!MC.player.hasPermissions(4))
                         return -1;
-                    // Fog only works on RTS-optimised maps; refuse locally so the toggle is effectively
-                    // hidden on vanilla-sized maps instead of bouncing off the server.
-                    if (!isOnRtsOptimisedMap()) {
-                        MC.player.sendSystemMessage(Component.literal(
-                                I18n.get("server.reignofnether.fog_requires_rts_map")));
-                        return -1;
-                    }
+                    // Whether fog is allowed at all is the server's call (reignofnetherRtsMap + a
+                    // bounding world border). It refuses and explains via
+                    // server.reignofnether.fog_requires_rts_map, so there is nothing to pre-check here -
+                    // and guessing from the border alone was wrong once the gamerule became the opt-in.
                     setServerFog(true);
                     return 1;
                 })));

@@ -25,6 +25,7 @@ public class GameRuleRegistrar {
     public static GameRules.Key<GameRules.BooleanValue> DO_NETHER_CONVERSION;
     public static GameRules.Key<GameRules.BooleanValue> BUILDINGS_OUTSIDE_BORDER;
     public static GameRules.Key<GameRules.BooleanValue> FORCE_FOG;
+    public static GameRules.Key<GameRules.BooleanValue> RTS_MAP;
     public static GameRules.Key<GameRules.BooleanValue> RTS_PATHFINDING;
     public static GameRules.Key<GameRules.IntegerValue> PATHFINDING_THREADS;
     public static GameRules.Key<GameRules.IntegerValue> PATHFINDING_CHUNK_BUILDS;
@@ -104,9 +105,19 @@ public class GameRuleRegistrar {
         FORCE_FOG = GameRules.register("reignofnetherForceFog", GameRules.Category.MISC,
                 GameRules.BooleanValue.create(false)
         );
+        // treat this world as purpose-built for RTS. Gates every mode that assumes a small bounded play
+        // area: the navmesh prewarm, the fog-of-war chunk snapshot, and fog of war itself.
+        // OFF by default and never inferred from the world border: a reduced border is a normal thing for
+        // a modpack survival map to have, and generating a whole border on server start is not something a
+        // world should get without being asked. The border size stays as a second condition - a small border
+        // is still required for the bounded-area assumption to hold - but it no longer opts you in by itself.
+        // Set with /gamerule reignofnetherRtsMap true on maps you want treated as RTS maps.
+        RTS_MAP = GameRules.register("reignofnetherRtsMap", GameRules.Category.MISC,
+                GameRules.BooleanValue.create(false)
+        );
         // use the RTS-optimised pathfinder (async grid A*, walkability cache) instead of vanilla.
-        // Auto-enabled at world load for RTS-optimised maps (small world border) - see
-        // WorldBorderServerEvents - which also prewarms the navmesh. Off otherwise.
+        // Enabled at world load for worlds with reignofnetherRtsMap on, which also prewarms the navmesh.
+        // Off otherwise.
         // May cause additional TPS lag on worlds without world borders as they will not have a pregenerated navmesh
         RTS_PATHFINDING = GameRules.register("rtsPathfinding", GameRules.Category.MOBS,
                 GameRules.BooleanValue.create(false)

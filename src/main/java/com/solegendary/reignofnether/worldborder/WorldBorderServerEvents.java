@@ -18,20 +18,29 @@ import net.neoforged.bus.api.SubscribeEvent;
 
 public class WorldBorderServerEvents {
 
-    // A world border this small (blocks) means the map was purpose-built for RoN RTS: it's "RTS-optimised".
-    // 1280 = 80x80 chunks. We never change the border - we only read it as the signal to switch the map into
-    // RTS-optimised mode (improved pathfinding + navmesh precompute). A vanilla map's border is ~60M wide, so
-    // it stays on vanilla pathfinding untouched. The whole bounded play area fits in the walkability cache
-    // (see PathfinderConfig.MAX_CACHED_CHUNKS), which is what makes the full-map precompute worthwhile.
+    // A world border this small (blocks) is still required for the "bounded play area" assumption that
+    // fog of war and the navmesh precompute rely on. 1280 = 80x80 chunks.
     public static final int RTS_OPTIMIZED_BORDER = 1280;
+
+    // Upper bound on the navmesh prewarm, in chunks, so a mis-set or oversized border cannot turn server
+    // start into a multi-minute terrain generation. 4096 = an 64x64 chunk square = 1024x1024 blocks.
+    // Overflow is skipped and logged rather than silently truncated.
+    public static final int PREWARM_MAX_CHUNKS = 4096;
 
     public static boolean prewarmedNavmesh = false;
 
-    // A small world border is the signal that a map was purpose-built for RoN RTS. Fog of war and the
-    // improved pathfinding/navmesh precompute both key off this: the whole play area is bounded, so it
-    // fits in caches and can be snapshotted in full (see FogChunkSnapshot).
+    // Whether this world is treated as purpose-built for RTS, which gates everything that assumes a small
+    // bounded play area: the navmesh prewarm, the fog-of-war chunk snapshot and fog of war itself.
+    //
+    // The reignofnetherRtsMap gamerule is the opt-in and is checked FIRST, so an admin has to ask for this
+    // mode explicitly. The border size is only a second condition, never an opt-in by itself: a reduced
+    // border is ordinary for a modpack survival map, and inferring RTS mode from it made the mod generate
+    // a whole border's terrain on server start in someone else's world.
     public static boolean isRtsOptimisedMap(ServerLevel level) {
-        return level != null && level.getWorldBorder().getSize() <= RTS_OPTIMIZED_BORDER;
+        if (level == null) return false;
+        if (level.getServer() == null) return false;
+        if (!level.getServer().getGameRules().getRule(GameRuleRegistrar.RTS_MAP).get()) return false;
+        return level.getWorldBorder().getSize() <= RTS_OPTIMIZED_BORDER;
     }
 
     @SubscribeEvent
@@ -41,18 +50,28 @@ public class WorldBorderServerEvents {
         if (level == null)
             return;
 
-        WorldBorder border = level.getWorldBorder();
-        // A small world border marks an RTS-optimised map; a vanilla-sized border is left fully untouched.
-        if (!isRtsOptimisedMap(level))
+        // opt-in only: reignofnetherRtsMap, plus a border small enough to bound the play area
+        if (!server.getGameRules().getRule(GameRuleRegistrar.RTS_MAP).get()) {
+            ReignOfNether.LOGGER.info(
+                    "Not treating this world as an RTS map (reignofnetherRtsMap is off) - no navmesh prewarm, no fog-of-war snapshot");
             return;
+        }
+        if (!isRtsOptimisedMap(level)) {
+            ReignOfNether.LOGGER.info(
+                    "reignofnetherRtsMap is on but the world border is {} blocks (> {}), so the bounded-play-area assumption does not hold - leaving the world alone",
+                    (int) level.getWorldBorder().getSize(), RTS_OPTIMIZED_BORDER);
+            return;
+        }
 
+        WorldBorder border = level.getWorldBorder();
         ReignOfNether.LOGGER.info(
-                "RTS-optimised map detected (world border = {} blocks) - enabling improved pathfinding + navmesh precompute",
+                "RTS map mode enabled by gamerule (world border = {} blocks) - enabling improved pathfinding + navmesh precompute",
                 (int) border.getSize());
 
         // Turn the rtsPathfinding gamerule on for this map (the gamerule's own default stays off, so
-        // vanilla maps are unaffected) and mirror it to the server flag + any clients, reusing the existing
-        // gamerule plumbing. At server-start there are no clients yet; player-join sync handles late joiners.
+        // worlds that did not opt in are unaffected) and mirror it to the server flag + any clients,
+        // reusing the existing gamerule plumbing. At server-start there are no clients yet; player-join
+        // sync handles late joiners.
         server.getGameRules().getRule(GameRuleRegistrar.RTS_PATHFINDING).set(true, server);
         UnitServerEvents.rtsPathfinding = true;
         GameruleClientboundPacket.setRtsPathfinding(true);
@@ -70,8 +89,11 @@ public class WorldBorderServerEvents {
     }
 
     // Force-load and classify every chunk inside the world border so the navmesh is fully warm before play.
-    // Synchronous by design: this is the load-time "prepare the world" phase, paid up front and bounded by the
-    // (small) RTS-optimised border. The cache is sized to hold all of it, so the prewarm never evicts itself.
+    // Synchronous by design: this is the load-time "prepare the world" phase, paid up front and bounded by
+    // the (small) RTS-optimised border. The cache is sized to hold all of it, so the prewarm never evicts itself.
+    //
+    // This DOES generate terrain for every chunk it touches, which is why it only runs on an explicitly opted-in
+    // world and why the chunk count is capped at PREWARM_MAX_CHUNKS.
     private static void prewarmNavmesh(ServerLevel level, WorldBorder border) {
         WalkabilityGrid grid = WalkabilityGrid.get(level);
 
@@ -81,6 +103,14 @@ public class WorldBorderServerEvents {
         int czMax = (int) Math.floor((border.getCenterZ() + border.getSize() / 2.0) / 16.0);
 
         int total = (cxMax - cxMin + 1) * (czMax - czMin + 1);
+        if (total > PREWARM_MAX_CHUNKS) {
+            ReignOfNether.LOGGER.warn(
+                    "Navmesh prewarm skipped: {} chunks inside the world border exceeds the cap of {}. " +
+                            "Shrink the world border or raise {} - refusing to generate that much terrain on server start",
+                    total, PREWARM_MAX_CHUNKS, "WorldBorderServerEvents.PREWARM_MAX_CHUNKS");
+            return;
+        }
+
         ReignOfNether.LOGGER.info("Prewarming RTS navmesh: {} chunks within world border ({}..{}, {}..{})...",
                 total, cxMin, cxMax, czMin, czMax);
 
