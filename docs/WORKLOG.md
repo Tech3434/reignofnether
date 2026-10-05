@@ -1,0 +1,226 @@
+# Worklog — порт на 1.21.1 и ветка `1.21.1-clean`
+
+Хронология работ для продолжения. Формат: что сделано, чем это доказано, что осталось.
+
+Репозиторий: `___temp/` (корень `ReignOfNether/` git-репозиторием **не является**).
+Апстрим 1.20.1: `918672b7` (1.4.4d) + `c68e0de` (1.5.0).
+Ветки: `neoforge-1.21.1-port` (порт без фич 1.5.0), `port-1.21.1-plus-1.5.0`
+(основная, с фичами 1.5.0), **`1.21.1-clean`** (от `8323d802`, план деинтрузивности).
+
+## 0. Документация
+
+| Файл | О чём |
+|---|---|
+| `docs/README.md` | индекс документов и правила работы с кодом мода |
+| `docs/CLEAN_FORK.md` | план деинтрузивности: что мод делает интрузивным и что с этим делать |
+| `docs/HOWTO_FACTION.md` | как создать свою фракцию: юниты, строения, исследования, локализация |
+| `docs/WORKLOG.md` | этот файл: хронология и методы диагностики |
+
+---
+
+## 1. Коммит `8323d802` — «Fix level rendering offsets and the shutdown hang on the 1.21.1 port`
+
+Три независимые причины, все — расхождения 1.21.1 с 1.20.1. Всё проверено в игре и подтверждено
+пользователем.
+
+### 1.1 Контуры юнитов уезжали с камерой
+
+`MyRenderer` запекает в вершины только `translate(-cam)` — это правильно. Ошибка была в том,
+**когда** применяется model-view.
+
+`BufferUploader#_drawWithShader` читает `RenderSystem.getModelViewMatrix()` **в момент сброса
+батча**, а не в момент добавления вершин:
+
+```java
+vertexbuffer.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+```
+
+`LevelRenderer#renderLevel` умножает поворот камеры в этот стек на **строке 994**, а стейджи
+`AFTER_SKY` / `AFTER_SOLID_BLOCKS` / `AFTER_CUTOUT_MIPPED_BLOCKS` / `AFTER_CUTOUT_BLOCKS`
+диспатчатся на строках 957/965/967/969 — то есть **раньше**. Контуры юнитов рисуются на
+`AFTER_CUTOUT_BLOCKS`, то есть вылетали без поворота камеры: геометрия держала фиксированную
+ориентацию по осям мира, пока кадр поворачивался.
+
+Правка: новая утилита `util/LevelRenderCompat.java`. `withCameraModelView(evt, runnable)` кладёт
+`evt.getModelViewMatrix()` в стек `RenderSystem` на время отрисовки и сброса; `drawAndFlush` —
+то же плюс сброс. Обернуты все четыре обработчика на ранних стейджах: `UnitClientEvents`,
+`CursorClientEvents`, `ItemClientEvents`, `NonUnitClientEvents` (последние три — только орторежим).
+
+**Опровергнутая гипотеза (не проверять заново):** «поза из `RenderLevelStageEvent` уже несёт
+поворот камеры, поэтому `translate(-cam)` лишний». Конструктор события подставляет
+`new PoseStack()` вместо `null`, поэтому поза на всех стейджах — identity. Правка `31c5a7aa`
+в `MyRenderer` (переход на `cameraRelativeMatrix`/`cameraRelativePose`) поэтому была no-op;
+она сохранена, но комментарий переписан на корректный.
+
+### 1.2 Рамки строений уходили на east
+
+**Это не матрицы, а данные позиции.** Ключ от пользователя: «поворот камеры не меняет съезжание».
+Матрица применяется к готовым вершинам и меняет только ориентацию; мировое смещение означает,
+что неверен сам AABB.
+
+```java
+// было (внесено при порте)
+new AABB(building.minCorner.getCenter(), building.maxCorner.offset(1,1,1).getCenter());
+// стало
+new AABB(Vec3.atLowerCornerOf(building.minCorner),
+         Vec3.atLowerCornerOf(building.maxCorner.offset(1,1,1)));
+```
+
+`minCorner`/`maxCorner` включительные (см. `BuildingPlacement`: цикл
+`for (x = minCorner.getX(); x <= maxCorner.getX(); x++)`), `getCenter()` даёт центры угловых
+блоков — сдвиг +0.5 по всем осям. Причина появления: в 1.21.1 удалён конструктор
+`AABB(BlockPos, BlockPos)` (`javap` по merged jar: остались только `(double×6)`, `(BlockPos)`,
+`(Vec3, Vec3)`), и код «починили» механически. Тем же исправлен `BuildingUtils.getUniqueChunkBps`.
+
+Возвращено и апстримное поведение `drawBuilding`: `cam.getY() - 0.6` (ноги камеры), а не
+`cam.getY() + cam.getEyeHeight()` — предыдущая правка сдвигала заливку превью выше примерно
+на 1.6 блока.
+
+**Побочная (латентная) починка:** на `AFTER_TRANSLUCENT_BLOCKS` ванильные `endBatch()` стоят
+**до** диспатча стейджа (строки 1170-1173 в fabulous-ветке), поэтому батчи мода доживали до
+GUI-прохода и рисовались с ортографической проекцией. Добавлен
+`LevelRenderCompat.flushWorldGeometry()` (безаргументный `endBatch()` по обоим буферам) в
+`BuildingClientEvents`, `BlockClientEvents` (через `try/finally` — там два ранних `return`),
+`CustomBuildingClientEvents`, `ResourcesClientEvents`. К съезжанию на восток это отношения
+не имело.
+
+### 1.3 Зависание на «Сохранение мира» при выходе
+
+Не дедлок: `Server thread` в состоянии RUNNABLE, ~95% ядра. `jstack` показал
+`MinecraftServer.stopServer(MinecraftServer.java:616)` → `ChunkMap.processUnloads(ChunkMap.java:492)`.
+
+```java
+// MinecraftServer#stopServer, строки 611-620
+while (this.levels.values().stream().anyMatch(l -> l.getChunkSource().chunkMap.hasWork())) {
+    for (ServerLevel serverlevel1 : this.getAllLevels()) {
+        serverlevel1.getChunkSource().removeTicketsOnClosing();
+        serverlevel1.getChunkSource().tick(() -> true, false);   // <- p_201914_ = false
+    }
+    this.waitUntilNextTick();
+}
+```
+
+`ServerChunkCache#tick(supplier, false)` намеренно **не** вызывает `chunkMap.tick()` /
+`flushWorker()` — единственное, что сбрасывает `queueSorter` и дренирует трекер билетов. Поэтому
+любой непустой бэклог на выходе = вечный цикл.
+
+Измерение (временная проба в `RtsDebugServerEvents`, давно удалена) дало:
+
+```
+minecraft:overworld hasWork=true updating=8010 toDrop=5925 queueSorter=true
+    holdersWithGenRefCount=7954/8010  toDropWithGenRefCount=5925/5925
+```
+
+То есть ~8000 держателей чанков, у всех generation-refcount в generation-полосе, из-за чего
+`processUnloads` не может выгрузить ни один. При `view-distance=10` ванилла держит несколько
+сотен держателей.
+
+Причина: `util/ChunkTicketUtil.java` передавал в `addRegionTicket` **уровень статуса** вместо
+**радиуса**:
+
+```java
+// DistanceManager#addRegionTicket
+Ticket<T> ticket = new Ticket<>(type, ChunkLevel.byStatus(FullChunkStatus.FULL) - ticketLevel, key, forceTicks);
+```
+
+`ChunkLevel.byStatus(FullChunkStatus.FULL)` = 33, поэтому `ticking=true` давал `level = 33 - 33 = 0`,
+а билет с уровнем `L` помечает needing-generation все позиции в радиусе `MAX_LEVEL - L`, то есть
+**44 чанка на каждого юнита** (≈7900 позиций). Теперь `radius = 0` — «этот один чанк на FULL».
+Это минимум, который вообще выражает монотонная модель билетов ваниллы.
+
+Связанная правка: `WalkabilityGrid.getOrBuild` больше не читает мир для незагруженного чанка.
+`WalkabilityGridChunk.build` → `classifyCell` → `level.getBlockState()` — блокирующая загрузка
+чанка с добавлением `TicketType.UNKNOWN` на FULL (тип, который `stopServer` специально
+сохраняет) и принудительной генерацией; A* расширяется по незагруженным чанкам с рабочих
+потоков. Теперь возвращается `WalkabilityGridChunk.blocked(...)` (все ячейки `KIND_BLOCKED`,
+без чтения мира, не кэшируется).
+
+**Ошибочные пути, чтобы не повторять:**
+
+* Гипотеза «виноват `crumblingBufferSource()` против `bufferSource()`» — неверна.
+* Гипотеза «виноват walkability/A*» — неверна; правка не изменила ни одного числа пробы
+  (показатели были байт-в-байт те же), что и доказало детерминированность структуры.
+* Преварм навмеша `WorldBorderServerEvents#prewarmNavmesh` и снимок тумана
+  `FogChunkSnapshot#captureFogChunks` выглядели кандидатами (та же принудительная загрузка по
+  всей границе мира), но на дев-мире **не запускаются** — оба под `isRtsOptimisedMap()`, а граница
+  дев-мира дефолтная. В логе нет ни их сообщений. Не они.
+
+---
+
+## 2. Незакрытые пункты, найденные попутно
+
+Оставлены как есть — правки были бы спекулятивными без возможности проверить.
+
+| Место | Что делает | Почему не тронуто |
+|---|---|---|
+| `WorldBorderServerEvents.java:96` | `level.getChunk(cx, cz, ChunkStatus.FULL, true)` в двойном цикле по границе мира — преварм навмеша | под `isRtsOptimisedMap()`; на RTS-картах с малой границей выстрелит. См. `CLEAN_FORK.md` §1.3 |
+| `FogChunkSnapshot.java:75` | `getChunk(cx, cz, true)` по всей границе — снимок тумана | то же |
+| `WraithSnowBlockEntity.java:80-98` | `addRegionTicket(TicketType.FORCED, pos, 1, pos)` → радиус 12 на каждый блок снега | поведение апстрима 1.20.1, не регрессия порта |
+| `UnitServerEvents.java:470-473` | снятие билета юнита при выходе **закомментировано** → чанк умершего юнита остаётся загруженным | поведение апстрима 1.20.1 (проверено `git show 918672b7`); в рамках порта не регрессия |
+| Геймрулы `doNetherConversion`, `buildingsOutsideBorder`, `neutralAggro`, `allowBeacons` — дефолты | неванильное поведение в мире без RTS | предмет `CLEAN_FORK.md` §1.2 |
+
+## 3. Ветка `1.21.1-clean` и документация
+
+Ответвлена от `8323d802` без изменений в коде. Назначение — убрать поведение мода,
+мешающее обычной ванильной игре и другим модам.
+
+Сделано:
+
+* `docs/CLEAN_FORK.md` — инвентаризация интрузивности и поэтапный план. Ключевые находки:
+  49 общих (серверных) миксинов + 27 клиентских; 23 геймрула, часть с неванильными
+  дефолтами; 8 файлов `SavedData`, пишущихся в любой мир; **конфигурация содержит только
+  стоимости и ни одного поведенческого переключателя**; главное — автоопределение RTS-карты
+  по размеру границы мира (`WorldBorderServerEvents#onServerStarted`), из-за которого любой
+  чужой мир с уменьшенной границей молча получает геймруль и форсированную генерацию.
+* `docs/HOWTO_FACTION.md` — гайд по созданию фракции (12 разделов, 820 строк).
+* `docs/WORKLOG.md` — этот файл.
+* `docs/README.md` — индекс и правила работы с кодом мода.
+
+### Что установлено при написании гайда (полезно и для деинтрузивности)
+
+* Реестра фракций нет: `Faction` — enum из шести значений, всё остальное — ручные `switch`.
+* Строения **не имеют** ни блока, ни блок-сущности: это объект в кастомном реестре
+  `ReignOfNetherRegistries.BUILDING` + NBT структуры + экземпляр `BuildingPlacement` в
+  статическом списке.
+* Класса `ResearchItem` нет: исследование — обычный `ProductionItem`, а «дерево технологий» —
+  это вызовы `productions.add(...)` в конструкторах строений.
+* **Рецептов в моде нет вообще** — ни каталога, ни `RecipeRegistrar`, ни ссылок на
+  `RecipeManager`. Стоимость берётся из пула ресурсов.
+* Слой `UnitItem` (геройские предметы, магазины, изумрудная валюта) **выключен**:
+  `items/UnitItem.java:48` — `ENABLED = false`.
+* Три исследования недостижимы (зарегистрированы, но ни одно строение их не производит),
+  и в пяти случаях ключ реестра не совпадает с ключом локализации.
+* Ключ локализации строения в самом коде строится как `buildings.<фракция>.<ns>.<path>`,
+  которого нет ни в одном lang-файле; есть только `buildings.<ns>.<path>`.
+* Креативных вкладок по фракциям нет — вкладки по типу контента, и лежат они в
+  `items/CreativeModeTabsRegistrar.java`, а не в `registrars/`.
+* Файлы `data/reignofnether/maps/*.json` модом не читаются; рабочий формат карты —
+  `rtsmap.json` в папке мира.
+
+Ничего из перечисленного не исправлялось — это описание состояния на `8323d802`.
+
+---
+
+## 4. Проверка
+
+Гейты, зелёные на `8323d802`: `compileJava` (0 ошибок), `validateMixins` (0 ошибок; только
+уже задокументированные предупреждения), `runData`, `runServer` (`Done (1.399s)!`), `runClient`
+до титольного экрана. Визуальная проверка в игре — пользователем, все три симптома подтверждены
+исправленными.
+
+Ни один гейт не проверяет геометрию на экране и не проверяет зависание при выходе — только
+ручной прогон.
+
+## 5. Как проверять подобное дальше
+
+* Thread dump через `jstack -l <pid>` на зависшем клиенте даёт ответ быстрее любого чтения кода:
+  сразу видно, дедлок это (состояние потока) или спин (RUNNABLE + 100% CPU), и точную строку
+  ванильного цикла.
+* Временная проба в зарегистрированном серверном обработчике (`RtsDebugServerEvents` +
+  `ServerStoppingEvent`, daemon-поток, логирование раз в 2 с) — рабочий способ снять значения
+  внутренних полей `ChunkMap` рефлексией. Удалять после диагноза.
+* Прежде чем искать причину в конвейере рендера/загрузки чанков, проверить, **в мировых ли
+  координатах** смещение. Если да — искать в данных (`git show 918672b7:<file>` и сравнение с
+  апстримом), а не в матрицах.
+* Сравнивать числа пробы **между прогонами**. Идентичность показаний = структура приходит из
+  мира/конфигурации, а не накапливается в игре. Это сразу исключило половину гипотез.
