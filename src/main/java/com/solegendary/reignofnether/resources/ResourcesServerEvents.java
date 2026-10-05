@@ -340,22 +340,29 @@ public class ResourcesServerEvents {
     @SubscribeEvent
     public static void onRegisterCommand(RegisterCommandsEvent evt) {
 
+        // Moving resources between players moves a whole balance sheet, so these need an operator
+        // permission like the rest of the resource and building commands. They used to have no
+        // requirement at all, which let any player drain another's resources.
         evt.getDispatcher().register(Commands.literal("sendfood")
+            .requires(cs -> cs.hasPermission(2))
             .then(Commands.argument("player", EntityArgument.player())
             .then(Commands.argument("amount", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
             .executes((command) -> trySendingResources(command, ResourceName.FOOD)))));
 
         evt.getDispatcher().register(Commands.literal("sendwood")
+            .requires(cs -> cs.hasPermission(2))
             .then(Commands.argument("player", EntityArgument.player())
             .then(Commands.argument("amount", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
             .executes((command) -> trySendingResources(command, ResourceName.WOOD)))));
 
         evt.getDispatcher().register(Commands.literal("sendore")
+            .requires(cs -> cs.hasPermission(2))
             .then(Commands.argument("player", EntityArgument.player())
             .then(Commands.argument("amount", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
             .executes((command) -> trySendingResources(command, ResourceName.ORE)))));
 
         evt.getDispatcher().register(Commands.literal("sendemerald")
+            .requires(cs -> cs.hasPermission(2))
             .then(Commands.argument("player", EntityArgument.player())
             .then(Commands.argument("amount", IntegerArgumentType.integer(1, Integer.MAX_VALUE))
             .executes((command) -> trySendingResources(command, ResourceName.EMERALD)))));

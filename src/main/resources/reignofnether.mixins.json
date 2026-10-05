@@ -28,8 +28,6 @@
         "PlayerMixin",
         "PowderSnowBlockMixin",
         "SculkCatalystBlockEntityMixin",
-        "ServerGamePacketListenerImplMixin",
-        "ServerLevelMixin",
         "StructureBlockEntityAccessor",
         "StructureBlockEntityMixin",
         "ThrownPotionMixin",

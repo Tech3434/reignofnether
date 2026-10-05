@@ -80,7 +80,6 @@ import static com.solegendary.reignofnether.building.BuildingServerEvents.saveBu
 import static com.solegendary.reignofnether.items.RandomItemDropRule.ENABLED_NON_STRICT;
 import static com.solegendary.reignofnether.items.RandomItemDropRule.ENABLED_STRICT;
 import static com.solegendary.reignofnether.time.TimeUtils.getWaveSurvivalTimeModifier;
-import static net.minecraft.world.level.GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.entity.animal.Rabbit;
 import com.solegendary.reignofnether.player.RTSPlayerScoresCommand;
@@ -179,8 +178,6 @@ public class PlayerServerEvents {
                 }
             }
             UnitServerEvents.maxPopulation = level.getGameRules().getInt(GameRuleRegistrar.MAX_POPULATION);
-
-            level.getGameRules().getRule(RULE_DISABLE_ELYTRA_MOVEMENT_CHECK).set(true, evt.getServer());
         }
     }
 
@@ -856,10 +853,10 @@ public class PlayerServerEvents {
             }
 
             // apply all cheats - NOTE can cause concurrentModificationException clientside
-            if (words.length == 1 && words[0].equalsIgnoreCase("allcheats") && (
-                playerName.equalsIgnoreCase("solegendary") ||
-                playerName.equalsIgnoreCase("altsolegendary"))
-            ) {
+            // Cheats already require permission 4 to type, so no name allowlist here: hardcoding
+            // two account names meant the cheat was unreachable for everyone else, including other
+            // operators.
+            if (words.length == 1 && words[0].equalsIgnoreCase("allcheats")) {
                 ResourcesServerEvents.addSubtractResources(new Resources(playerName, 99999, 99999, 99999));
                 UnitServerEvents.maxPopulation = 99999;
                 enableAllCheats(playerName);
