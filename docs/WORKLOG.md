@@ -363,3 +363,76 @@ region-файлов в дев-мире не появилось.
   апстримом), а не в матрицах.
 * Сравнивать числа пробы **между прогонами**. Идентичность показаний = структура приходит из
   мира/конфигурации, а не накапливается в игре. Это сразу исключило половину гипотез.
+---
+
+## Stage D checkpoint (continuation)
+
+Build loop: `./gradlew.bat` is broken on this machine - the wrapper passes both `-classpath ""` and
+`-jar`, so java fails with *"-classpath requires class path specification"*. Working invocation:
+
+`
+& "C:\Program Files\Java\jdk-21\bin\java.exe" -Dorg.gradle.appname=gradlew -jar gradle\wrapper\gradle-wrapper.jar compileJava --offline --console=plain
+`
+
+Errors dumped to `D:\_MC\CODING_AREA\ReignOfNether\errs2.txt`; per-file slicer script at
+`D:\_MC\CODING_AREA\ReignOfNether\errs.ps1` (`-Filter <path-fragment>`).
+
+### Deviation from the plan that needs recording
+
+* `ResourceSource` / `ResourceSources` were listed for deletion under economy (D.14), but the worker
+  loop the framework keeps - `WorkerUnit` -> `GatherResourcesGoal` -> `ReturnResourcesGoal` -> a
+  building with `canAcceptResources` - reads the resource table both for the block being harvested and
+  for the value of the item carried home. Without it no unit can carry a resource at all, so both files
+  were restored as framework. The per-faction resource chunks and generators are what a new faction writes.
+* `ItemShopAddon` / `StockedShopItem` were deleted even though addon contracts are listed as kept:
+  the shop existed only to sell `UnitItem`s, and the unit item layer is removed (D.15).
+* The unit "eating food" loop was removed from `Unit`: it was driven by
+  `items/unititems/EdibleFoodItem` and `ItemUtil.isPreparedEdibleFood`, both part of the removed item
+  layer. Units still carry world items and can use them as abilities (`UnitItemGoal`); they just no
+  longer eat.
+
+### Decisions taken while removing factions (stage F groundwork)
+
+* `player/Cheats` + `player/CheatsClientboundPacket` replace the cheat half of
+  `ResearchClient`/`ResearchServerEvents`. Research is gone, but cheats are an operator tool that
+  `PlayerServerEvents.onPlayerChat` still needs.
+* Cheat toggling moved to `PlayerServerboundPacket.setCheat(String)` -> `PlayerAction.SET_CHEAT`,
+  op-gated server-side with the other `opOnlyActions`. The old `ResearchServerboundPacket` path is gone.
+* `GameMode` is `CLASSIC` / `NONE` only (C.5). Sandbox is no longer a mode: both
+  `SandboxClientEvents.isSandboxPlayer` and `SandboxServer.isSandboxPlayer` now check operator
+  permission 2 (C.6).
+* `PlayerAction` lost the per-faction start actions; `START_RTS` is one action and
+  `PlayerServerEvents.startRTS` no longer switches on faction (F.3).
+* `RTSPlayer` lost `faction`, `scenarioRoleIndex`, `beaconOwnerTicks`, `tradeRates`,
+  `isDogPerson`, `itemsDropped`, `creepScore`, `itemSeed` and `itemDropQueue`; it keeps name,
+  id, colour, capitol-reveal timer and scores.
+* `ResourceCosts` keeps only the four template costs (villager, vindicator, town centre, barracks) with
+  the original default numbers baked in, plus the HUD formatting helpers, plus
+  `DEFAULT_MAX_POPULATION = 1` (decision 13). The 154 config entries are gone; new factions define
+  their costs in their own code.
+
+### Addendum (same session, later)
+
+* `ResourceIndex` is genuinely gone (it only existed to serve the economy). `GatherResourcesGoal` now
+  finds its target with a local shell scan - `findClosest` in that class walks rings outwards from the
+  worker and matches on `ResourceSources.getBlockResourceName`. Callers only get there on the search
+  cooldown and escalate `range` per failed search, so the cost is bounded, but a faction that wants the
+  per-chunk index back should key it off `ResourceSources#getFromBlockState`.
+* `RtsPathfinder.canClimb` is hardcoded `false` and the spider special case in `footprintRadiusFor`
+  is gone. The grid still supports climbing; no unit ships with it.
+* `MobilityClass.of` lost the boot-item and strider checks. `FIRE_IMMUNE` is still a class a unit or a
+  future faction can be put into, but nothing is classified into it automatically.
+* `MobilityClass` therefore no longer imports `UnitInventory`; the frost/magma walker boots are gone
+  with the item layer.
+
+### Tooling hazard, do not repeat
+
+`D:\_MC\CODING_AREA\ReignOfNether\delline.ps1` was first written to *replace* each deleted line with a
+`<<<REMOVED n>>>` marker instead of dropping it, which produced "illegal start of type" style syntax
+errors in four files. The script is fixed (it now skips) and the marker lines were stripped, restoring those
+files. If a bulk line edit ever reports syntax errors at unrelated line numbers, check for
+`<<<REMOVED` markers first.
+
+Also: `git show <ref>:<path> > <file>` under PowerShell 5.1 writes UTF-16LE, and javac then reports the
+whole file as "unmappable character (0xFF)" - thousands of bogus errors in one file. Use
+`cmd /c "git show ... > file"` instead.

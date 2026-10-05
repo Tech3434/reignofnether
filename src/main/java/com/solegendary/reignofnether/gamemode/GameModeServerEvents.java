@@ -1,26 +1,22 @@
 package com.solegendary.reignofnether.gamemode;
 
+import net.minecraft.server.level.ServerLevel;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.player.RTSPlayer;
-import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 
-import net.minecraft.server.level.ServerLevel;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-
+/**
+ * Locks every connected client to the running game mode as soon as the match starts.
+ *
+ * <p>Survival and Scenario are gone, so the mode is always {@link GameMode#CLASSIC}; the class is kept
+ * because the lock itself is still what stops a client from walking off into a different mode once a
+ * match is running.
+ */
 public class GameModeServerEvents {
 
     private static GameMode getGameMode(ServerLevel level) {
-        if (level.getGameRules().getRule(GameRuleRegistrar.SCENARIO_MODE).get()) {
-            return GameMode.SCENARIO;
-        }
-        for (RTSPlayer rtsPlayer : PlayerServerEvents.rtsPlayers)
-            if (rtsPlayer.faction == Faction.NONE)
-                return GameMode.SANDBOX;
-
-        if (SurvivalServerEvents.isEnabled())
-            return GameMode.SURVIVAL;
-
         return GameMode.CLASSIC;
     }
 

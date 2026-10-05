@@ -16,17 +16,12 @@ import com.solegendary.reignofnether.debug.RtsDebugClientEvents;
 import com.solegendary.reignofnether.debug.RtsDebugPathPreview;
 import com.solegendary.reignofnether.hud.buttons.Button;
 
-import com.solegendary.reignofnether.items.unititems.EdibleFoodItem;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.player.PlayerClientEvents;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.player.RTSPlayer;
 import com.solegendary.reignofnether.registrars.AttributeRegistrar;
-import com.solegendary.reignofnether.registrars.BlockRegistrar;
-import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
-import com.solegendary.reignofnether.research.ResearchClient;
-import com.solegendary.reignofnether.research.ResearchServerEvents;
 import com.solegendary.reignofnether.resources.*;
 
 import com.solegendary.reignofnether.time.NightUtils;
@@ -35,8 +30,6 @@ import com.solegendary.reignofnether.unit.goals.*;
 import com.solegendary.reignofnether.unit.packets.UnitAnimationClientboundPacket;
 import com.solegendary.reignofnether.unit.packets.UnitSyncClientboundPacket;
 
-import com.solegendary.reignofnether.unit.units.villagers.ScoutCatUnit;
-import com.solegendary.reignofnether.unit.units.villagers.ScoutDogUnit;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.client.resources.language.I18n;
@@ -87,10 +80,8 @@ import static com.ibm.icu.impl.ValidIdentifiers.Datatype.unit;
 import static com.solegendary.reignofnether.util.MiscUtil.fcs;
 import net.minecraft.core.Holder;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
-import com.solegendary.reignofnether.unit.goals.UsePortalGoal;
 import com.solegendary.reignofnether.unit.UnitStatType;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
-import com.solegendary.reignofnether.unit.goals.UnitItemGoal;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
@@ -110,7 +101,6 @@ import com.solegendary.reignofnether.unit.goals.GenericUntargetedSpellGoal;
 import com.solegendary.reignofnether.unit.goals.GenericTargetedSpellGoal;
 import com.solegendary.reignofnether.unit.goals.GatherResourcesGoal;
 import com.solegendary.reignofnether.unit.goals.GarrisonGoal;
-import com.solegendary.reignofnether.unit.goals.FlyingUsePortalGoal;
 import com.solegendary.reignofnether.unit.goals.FlyingMoveToTargetGoal;
 import net.minecraft.world.level.material.Fluid;
 
@@ -129,8 +119,7 @@ public interface Unit {
     int DEFAULT_SIGHT_RANGE = 16;
     int ANCHOR_RETREAT_RANGE = 30;
 
-    int PIGLIN_HEALING_TICKS = 8 * ResourceCost.TICKS_PER_SECOND;
-    int MONSTER_HEALING_TICKS = 8 * ResourceCost.TICKS_PER_SECOND;
+    int NIGHT_SOURCE_HEALING_TICKS = 8 * ResourceCost.TICKS_PER_SECOND;
 
     // used for increasing pathfinding calculation range, default is 16 for most mobs
     int FOLLOW_RANGE_IMPROVED = 64;
@@ -156,32 +145,13 @@ public interface Unit {
     GarrisonGoal getGarrisonGoal();
     boolean canGarrison();
 
-    MoveToTargetBlockGoal getUsePortalGoal();
-    boolean canUsePortal();
 
-    Faction getFaction();
     Abilities getAbilities();
     default List<Button> getAbilityButtons() {
         return getAbilities().getButtons(this);
     }
     List<ItemStack> getItems();
     int getMaxResources();
-
-    public default boolean isEatingFood() { return getEatingTicksLeft() > 0; };
-    public default boolean isHoldingEdibleFood() {
-        for (ItemStack itemStack : getItems())
-            if (ItemUtil.isPreparedEdibleFood(itemStack.getItem()))
-                return true;
-        return false;
-    };
-    public default Item getFoodBeingEaten() {
-        for (ItemStack itemStack : getItems())
-            if (ItemUtil.isPreparedEdibleFood(itemStack.getItem()))
-                return itemStack.getItem();
-        return Items.AIR;
-    }
-    public void setEatingTicksLeft(int amount);
-    public int getEatingTicksLeft();
 
     // note that attackGoal is specific to unit types
     MoveToTargetBlockGoal getMoveGoal();
@@ -225,9 +195,6 @@ public interface Unit {
     String getOwnerName();
     void setOwnerName(String name);
 
-    int getScenarioRoleIndex(); // if -1, no role
-    void setScenarioRoleIndex(int index);
-    
     String getOnDeathCommand();
     void setOnDeathCommand(String command);
 
@@ -331,7 +298,6 @@ public interface Unit {
                 }
             }
         } else {
-            checkAndPickupEdibleFood(unit);
             checkAndPickupResources(unit);
             checkAndPickupEquipment(unit);
 
@@ -350,29 +316,14 @@ public interface Unit {
                 unit.setMoveTarget(unit.getFollowTarget().blockPosition());
         }
 
-        // slow regen for monster and piglin units
+        // slow regen for any unit standing in a night source's aura at night
         LivingEntity le = (LivingEntity) unit;
 
-        if (!le.level().isClientSide()) {
-            if (unit.getFaction() == Faction.MONSTERS &&
-                    le.tickCount % MONSTER_HEALING_TICKS == 0 &&
-                    (!le.level().isDay())) {
-                le.heal(1);
-            } else if (unit.getFaction() == Faction.MONSTERS &&
-                    (le.tickCount + MONSTER_HEALING_TICKS / 2) % MONSTER_HEALING_TICKS == 0 &&
-                    (NightUtils.isInRangeOfNightSource(le.position(), le.level().isClientSide()))) {
-                le.heal(1);
-            } else if (unit.getFaction() == Faction.PIGLINS &&
-                    le.tickCount % PIGLIN_HEALING_TICKS == 0 &&
-                    (MiscUtil.isOnNetherTerrain(le) || unit instanceof GhastUnit)) {
-                le.heal(1);
-            }
-        }
-
-        // stuck in bridge
-        BuildingPlacement bpl = BuildingUtils.findBuilding(le.level().isClientSide(), le.getOnPos().above());
-        if (le.isInWater() && bpl != null && bpl.getBuilding() instanceof AbstractBridge) {
-            le.setDeltaMovement(0, 0.2, 0);
+        if (!le.level().isClientSide() && !le.level().isDay() &&
+                (le.tickCount % NIGHT_SOURCE_HEALING_TICKS == 0 ||
+                 ((le.tickCount + NIGHT_SOURCE_HEALING_TICKS / 2) % NIGHT_SOURCE_HEALING_TICKS == 0 &&
+                  NightUtils.isInRangeOfNightSource(le.position(), false)))) {
+            le.heal(1);
         }
 
         if (!le.level().getWorldBorder().isWithinBounds(le.getOnPos()))
@@ -386,8 +337,7 @@ public interface Unit {
             unit.getSunlightEffect() == SunlightEffect.SLOWNESS_MINOR) {
             // apply slowness during daytime for a short time repeatedly
             if (unitMob.tickCount % 10 == 0 && !unitMob.level().isClientSide() && unitMob.level().isDay() &&
-                    !NightUtils.isInRangeOfNightSource(unitMob.getEyePosition(), false) &&
-                    !ResearchServerEvents.playerHasCheat(unit.getOwnerName(), "slipslopslap")) {
+                    !NightUtils.isInRangeOfNightSource(unitMob.getEyePosition(), false)) {
 
                 if (unit.getSunlightEffect() == SunlightEffect.SLOWNESS_MINOR) {
                     unitMob.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.MINOR_MOVEMENT_SLOWDOWN.get(), 15, 1));
@@ -408,80 +358,12 @@ public interface Unit {
             }
         }
 
-        if (unit.isEatingFood()) {
-            unit.setEatingTicksLeft(unit.getEatingTicksLeft() - 1);
-            if (!unit.isEatingFood()) {
-                for (ItemStack itemStack : unit.getItems()) {
-                    if (ItemUtil.isPreparedEdibleFood(itemStack.getItem())) {
-                        unitMob.level().playSound(null, unitMob.getX(), unitMob.getY(), unitMob.getZ(),
-                                SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F,
-                                unitMob.getRandom().nextFloat() * 0.1F + 0.9F
-                        );
-                        if (itemStack.getItem() == Items.GOLDEN_APPLE) {
-                            int absorb = EdibleFoodItem.GOLDEN_APPLE_ABSORB;
-                            unitMob.addEffect(MobEffectHelpers.instance(MobEffects.ABSORPTION, 999999, (absorb / 4) - 1));
-                            unitMob.setAbsorptionAmount(absorb);
-                        } else if (itemStack.getItem() == Items.ENCHANTED_GOLDEN_APPLE) {
-                            int absorb = EdibleFoodItem.ENCHANTED_GOLDEN_APPLE_ABSORB;
-                            unitMob.addEffect(MobEffectHelpers.instance(MobEffects.ABSORPTION, 999999, (absorb / 4) - 1));
-                            unitMob.setAbsorptionAmount(absorb);
-                        } else {
-                            unitMob.heal(ItemUtil.getFoodHealAmount(itemStack));
-                        }
-                        itemStack.setCount(itemStack.getCount() - 1);
-                        break;
-                    }
-                }
-            } else if (unit.getEatingTicksLeft() % 4 == 0) {
-                unitMob.level().playSound(null, unitMob.getX(), unitMob.getY(), unitMob.getZ(),
-                        SoundEvents.GENERIC_EAT, SoundSource.PLAYERS, 0.5F,
-                        unitMob.getRandom().nextFloat() * 0.1F + 0.9F
-                );
-            }
-        } else {
-            for (ItemStack itemStack : unit.getItems()) {
-                if (ItemUtil.isPreparedEdibleFood(itemStack.getItem())) {
-                    unit.setEatingTicksLeft(40);
-                    break;
-                }
-            }
-        }
-        if (unitMob.hasEffect(MobEffects.ABSORPTION) && unitMob.getAbsorptionAmount() <= 0)
-            unitMob.removeEffect(MobEffects.ABSORPTION);
-
         if (unitMob.tickCount % 10 == 0 &&
             !(unit instanceof WorkerUnit) &&
-            unit.getFaction() == Faction.PIGLINS &&
-            MiscUtil.isOnNetherTerrain(unitMob)) {
+            !unitMob.level().isClientSide() &&
+            !unitMob.level().isDay() &&
+            NightUtils.isInRangeOfNightSource(unitMob.getEyePosition(), false)) {
             unitMob.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.MINOR_MOVEMENT_SPEED.get(), 15, 1, true, false));
-        }
-        if (unitMob.tickCount % 10 == 0 &&
-            !(unit instanceof WorkerUnit) &&
-            unit.getFaction() == Faction.MONSTERS &&
-            NightUtils.isInRangeOfNightSource(unitMob.getEyePosition(), unitMob.level().isClientSide)) {
-            unitMob.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.MINOR_MOVEMENT_SPEED.get(), 15, 1, true, false));
-        }
-
-        if (unitMob.tickCount % 80 == 0) {
-            int fortifyingLevel = unitMob.getItemBySlot(EquipmentSlot.CHEST).getEnchantmentLevel(EnchantmentRegistrar.FORTYIFYING.get());
-            float absorbHp = unitMob.getAbsorptionAmount();
-            if (fortifyingLevel > 0 && absorbHp < fortifyingLevel * ProtectiveEnchantment.MAX_ABSORB_HP_PER_FORTIFYING_LEVEL)
-                unitMob.setAbsorptionAmount(absorbHp + 1);
-        }
-
-        if (unitMob.tickCount % 4 == 0 && unitMob.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.SCORCHING_FIRE.get())) &&
-            unitMob.onGround() && !unitMob.level().isClientSide()) {
-            BlockState bsOn = unitMob.level().getBlockState(unitMob.getOnPos());
-            BlockState bsMagma = BlockRegistrar.WALKABLE_MAGMA_BLOCK.get().defaultBlockState();
-            if (bsOn.getBlock() != BlockRegistrar.WALKABLE_MAGMA_BLOCK.get()) {
-                BlockServerEvents.addTempBlock((ServerLevel) unitMob.level(), unitMob.getOnPos(), bsMagma, bsOn, unitMob.getRandom()
-                        .nextInt(ScorchingGaze.MIN_MAGMA_DURATION, ScorchingGaze.MAX_MAGMA_DURATION));
-            }
-            MiscUtil.addParticleExplosion(ParticleTypes.LAVA, 1, unitMob.level(), unitMob.position());
-            if (!unitMob.isOnFire()) {
-                int ticks = unitMob.getEffect(MobEffectHelpers.holder(MobEffectRegistrar.SCORCHING_FIRE.get())).getDuration();
-                unitMob.setRemainingFireTicks(ticks);
-            }
         }
 
         // possible fix for units getting stuck randomly on rtsPathfinding
@@ -493,9 +375,6 @@ public interface Unit {
         }
          */
 
-        if (unit.getItemGoal() != null) {
-            unit.getItemGoal().tick();
-        }
     }
 
     private static void checkAndPickupResources(Unit unit) {
@@ -559,53 +438,9 @@ public interface Unit {
 
     default void onPickupEquipment(ItemStack itemStack) { }
 
-    static int HOSTILE_FOOD_DELAY_TICKS = 200;
-
-    private static void checkAndPickupEdibleFood(Unit unit) {
-        Mob unitMob = (Mob) unit;
-        if (!unit.isHoldingEdibleFood()) {
-            for (ItemEntity itementity : unitMob.level().getEntitiesOfClass(ItemEntity.class, unitMob.getBoundingBox().inflate(1, 0, 1))) {
-                if (itementity.isRemoved() || itementity.tickCount < 10)
-                    continue;
-                ItemStack itemstack = itementity.getItem();
-                if (itemstack.getItem() == Items.ENCHANTED_GOLDEN_APPLE) {
-                    if (unitMob.getAbsorptionAmount() > 0)
-                        continue;
-                } else if (unitMob.getHealth() >= unitMob.getMaxHealth()) {
-                    continue;
-                }
-                Relationship rl = UnitServerEvents.getUnitToEntityRelationship(unit, itementity);
-                Item item = itemstack.getItem();
-                if (!itementity.isRemoved() && !itemstack.isEmpty() && !itementity.hasPickUpDelay() && unitMob.isAlive() && !unit.getOwnerName().isEmpty() &&
-                    (rl != Relationship.HOSTILE || itementity.tickCount > HOSTILE_FOOD_DELAY_TICKS) && ItemUtil.isPreparedEdibleFood(item)) {
-
-                    boolean isApple = item == Items.ENCHANTED_GOLDEN_APPLE || item == Items.GOLDEN_APPLE;
-                    boolean noAbsorb = unitMob.getAbsorptionAmount() <= 0;
-                    boolean isHurt = unitMob.getHealth() < ((Mob) unit).getMaxHealth();
-                    if ((isApple && noAbsorb) || (!isApple && isHurt)) {
-                        startEatingFood(unit, itementity);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    public static void startEatingFood(Unit unit, ItemEntity itemEntity) {
-        ItemStack itemStack = itemEntity.getItem();
-        ((LivingEntity) unit).onItemPickup(itemEntity);
-        ((LivingEntity) unit).take(itemEntity, 1);
-        unit.getItems().add(new ItemStack(itemStack.getItem(), 1));
-        UnitAnimationClientboundPacket.sendEatFoodPacket(((LivingEntity) unit), BuiltInRegistries.ITEM.getId(itemStack.getItem()));
-        itemStack.setCount(itemStack.getCount() - 1);
-        if (itemStack.getCount() <= 0)
-            itemEntity.discard();
-    }
-
     // call from addAdditionalSaveData
     public default void addUnitSaveData(@NotNull CompoundTag pCompound) {
         pCompound.putString("ownerName", getOwnerName());
-        pCompound.putInt("scenarioRoleIndex", getScenarioRoleIndex());
         if (getAnchor() != null) {
             pCompound.putInt("anchorPosX", getAnchor().getX());
             pCompound.putInt("anchorPosY", getAnchor().getY());
@@ -625,7 +460,6 @@ public interface Unit {
     // call from readAdditionalSaveData
     public default void readUnitSaveData(@NotNull CompoundTag pCompound) {
         setOwnerName(pCompound.getString("ownerName"));
-        setScenarioRoleIndex(pCompound.getInt("scenarioRoleIndex"));
         BlockPos anchorPos = new BlockPos(
             pCompound.getInt("anchorPosX"),
             pCompound.getInt("anchorPosY"),
@@ -719,14 +553,6 @@ public interface Unit {
         unit.setHoldPosition(false);
         if (unit.canGarrison())
             unit.getGarrisonGoal().stopGarrisoning();
-        if (unit.canUsePortal()) {
-            if (unit.getUsePortalGoal() instanceof FlyingUsePortalGoal flyingUsePortalGoal)
-                flyingUsePortalGoal.stopUsingPortal();
-            if (unit.getUsePortalGoal() instanceof UsePortalGoal usePortalGoal)
-                usePortalGoal.stopUsingPortal();
-        }
-        if (unit.getItemGoal() != null)
-            unit.getItemGoal().stop();
     }
 
     // can be overridden in the Unit's class to do additional logic on a reset
@@ -752,9 +578,6 @@ public interface Unit {
 
     /**
      * Base attribute set every unit starts from; per-unit builders chain onto this.
-     *
-     * <p>1.5.0 added the crit/explosive/building-damage/lifesteal/mana-on-hit/scale attributes,
-     * so the base has to register them or the per-unit {@code .add(...)} calls will not compile.
      */
     static AttributeSupplier.Builder createDefaultAttributes() {
         return Mob.createMobAttributes()
@@ -771,36 +594,17 @@ public interface Unit {
                 .add(AttributeHelpers.holder(AttributeRegistrar.SIGHT_RANGE.get()), Unit.DEFAULT_SIGHT_RANGE)
                 .add(AttributeHelpers.holder(AttributeRegistrar.RANGED_DAMAGE_RESIST.get()), 0)
                 .add(AttributeHelpers.holder(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get()), 0)
-                .add(AttributeHelpers.holder(AttributeRegistrar.EVASION_CHANCE.get()), 0)
-                .add(AttributeHelpers.holder(AttributeRegistrar.CRITICAL_HIT_CHANCE.get()), 0)
-                .add(AttributeHelpers.holder(AttributeRegistrar.EXPLOSIVE_HIT_CHANCE.get()), 0)
-                .add(AttributeHelpers.holder(AttributeRegistrar.BUILDING_DAMAGE_BONUS.get()), 0)
-                .add(AttributeHelpers.holder(AttributeRegistrar.LIFESTEAL.get()), 0)
-                .add(AttributeHelpers.holder(AttributeRegistrar.MANA_ON_HIT.get()), 0)
-                .add(AttributeHelpers.holder(AttributeRegistrar.SCALE.get()), 1.0f);
+                .add(AttributeHelpers.holder(AttributeRegistrar.EVASION_CHANCE.get()), 0);
     }
 
     /**
      * Movement multiplier from equipment and abilities; overridden per unit.
-     *
-     * <p>1.5.0 made this an instance method so goals can call it without unwrapping the mob. The
-     * static overload below predates that and is still used by the shield check.
      */
     default float getSpeedModifier() {
         return 1.0f;
     }
 
-    static float getSpeedModifier(Unit unit) {
-        if (unit instanceof BruteUnit brute && brute.isHoldingUpShield()) {
-            return 0.5f;
-        }
-        return 1.0f;
-    }
-
     public static void startEatingOrDrinking(Unit unit, ItemEntity itemEntity) {
-        if (ItemUtil.isEdibleDrink(itemEntity.getItem().getItem())) {
-            SoundClientboundPacket.playSoundAtPos(SoundAction.POTION_POP, ((LivingEntity) unit).blockPosition(), 1.5f);
-        }
         ItemStack itemStack = itemEntity.getItem();
         ((LivingEntity) unit).onItemPickup(itemEntity);
         ((LivingEntity) unit).take(itemEntity, 1);
@@ -860,8 +664,7 @@ public interface Unit {
                 this.getFollowTarget() == null &&
                 idleAttacker &&
                 idleWorker &&
-                idleRangedAttacker &&
-                (getItemGoal() == null || getItemGoal().isIdle());
+                idleRangedAttacker;
     }
 
     static Random RANDOM = new Random();
@@ -898,14 +701,7 @@ public interface Unit {
     }
 
     public default List<FormattedCharSequence> getAttackSpeedStatTooltip() {
-        if (this instanceof GhastUnit ghastUnit && ghastUnit.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.DISARM.get()))) {
-            return List.of(
-                    fcs(I18n.get("unitstats.reignofnether.attack_speed"), true),
-                    fcs(I18n.get("unitstats.reignofnether.ghast_disarmed"))
-            );
-        } else {
-            return List.of(fcs(I18n.get("unitstats.reignofnether.attack_speed"), true));
-        }
+        return List.of(fcs(I18n.get("unitstats.reignofnether.attack_speed"), true));
     }
 
     public default List<FormattedCharSequence> getRangeStatTooltip() {
@@ -970,16 +766,8 @@ public interface Unit {
     default List<Button> getPassiveIcons() {
         ArrayList<Button> icons = new ArrayList<>();
         LivingEntity entity = (LivingEntity) this;
-        for (EnchantmentIcon enchantIcon : EnchantmentIcons.ENCHANTMENT_ICONS) {
-            ItemStack itemStack = entity.getItemBySlot(enchantIcon.slot);
-            for (Holder<Enchantment> enchant : itemStack.getEnchantments().keySet()) {
-                if (enchant == enchantIcon.enchantment) {
-                    icons.add(enchantIcon);
-                }
-            }
-        }
         synchronized (UnitClientEvents.mobEffectIcons) {
-            HashMap<Holder<MobEffect>, MobEffectIcon> mobEffects = UnitClientEvents.mobEffectIcons.get(entity.getId());
+            HashMap<Holder<MobEffect>, Button> mobEffects = UnitClientEvents.mobEffectIcons.get(entity.getId());
             if (mobEffects != null) {
                 for (Holder<MobEffect> effect : mobEffects.keySet()) {
                     if (mobEffects.get(effect) != null)
@@ -1049,24 +837,11 @@ public interface Unit {
         return rtsPlayer != null;
     }
 
-    public default boolean hasScenarioNpcOwner() {
-        return ScenarioUtils.isScenarioNpc(((Entity) this).level().isClientSide(), this.getOwnerName());
-    }
-
-    public default boolean isScout() {
-        return this instanceof ScoutDogUnit || this instanceof ScoutCatUnit || this instanceof BatUnit || this instanceof StriderUnit;
-    }
-
     public default boolean isGarrisoned() {
         return getGarrison() != null;
     }
 
     public default BuildingPlacement getGarrison() {
         return GarrisonableBuildingAddon.getGarrison(this);
-    }
-
-    @Nullable
-    public default UnitItemGoal getItemGoal() {
-        return null;
     }
 }

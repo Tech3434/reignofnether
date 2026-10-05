@@ -85,9 +85,6 @@ public class VindicatorUnit extends Vindicator implements Unit, AttackerUnit {
     public GarrisonGoal getGarrisonGoal() { return garrisonGoal; }
     public boolean canGarrison() { return getGarrisonGoal() != null; }
 
-    UsePortalGoal usePortalGoal;
-    public UsePortalGoal getUsePortalGoal() { return usePortalGoal; }
-    public boolean canUsePortal() { return getUsePortalGoal() != null; }
 
     public Faction getFaction() {return Faction.VILLAGERS;}
     public Abilities getAbilities() {return abilities;}
@@ -263,7 +260,6 @@ public class VindicatorUnit extends Vindicator implements Unit, AttackerUnit {
     }
 
     public void initialiseGoals() {
-        this.usePortalGoal = new UsePortalGoal(this);
         this.moveGoal = new MoveToTargetBlockGoal(this, false, 0);
         this.targetGoal = new SelectedTargetGoal<>(this, true, true);
         this.garrisonGoal = new GarrisonGoal(this);
@@ -275,7 +271,6 @@ public class VindicatorUnit extends Vindicator implements Unit, AttackerUnit {
     @Override
     protected void registerGoals() {
         initialiseGoals();
-        this.goalSelector.addGoal(2, usePortalGoal);
 
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, attackGoal);

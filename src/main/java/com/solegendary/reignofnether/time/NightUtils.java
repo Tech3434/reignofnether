@@ -4,9 +4,9 @@ import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.building.*;
 import com.solegendary.reignofnether.building.addon.NightSourceAddon;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
-import com.solegendary.reignofnether.research.ResearchServerEvents;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
+import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -66,7 +66,7 @@ public class NightUtils {
         if (mob.level().isClientSide)
             return false;
 
-        if (mob instanceof Unit unit && ResearchServerEvents.playerHasCheat(unit.getOwnerName(), "slipslopslap"))
+        if (mob instanceof Unit unit && Cheats.playerHasCheat(unit.getOwnerName(), "slipslopslap"))
             return false;
 
         if (mob.tickCount % 10 == 0 && TimeUtils.isDay(mob.level())) {

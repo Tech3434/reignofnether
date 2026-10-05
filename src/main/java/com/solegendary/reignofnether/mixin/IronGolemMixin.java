@@ -1,7 +1,6 @@
 package com.solegendary.reignofnether.mixin;
 
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.units.villagers.IronGolemUnit;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.IronGolem;

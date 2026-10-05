@@ -53,10 +53,6 @@ public class GameModeClientboundPacket  implements RTSSimplePayload {
                         if (gameMode != GameMode.NONE) {
                             ClientGameModeHelper.gameModeLocked = true;
                             ClientGameModeHelper.gameMode = this.gameMode;
-                            if (gameMode != GameMode.CLASSIC && StartPosClientEvents.hasReservedPos()) {
-                                StartPosClientEvents.selectedFaction = Faction.NONE;
-                                StartPosServerboundPacket.unreservePos(StartPosClientEvents.getPos().pos);
-                            }
                         } else {
                             ClientGameModeHelper.gameModeLocked = false;
                         }

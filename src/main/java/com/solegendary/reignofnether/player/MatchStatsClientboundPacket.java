@@ -30,14 +30,12 @@ public class MatchStatsClientboundPacket  implements RTSSimplePayload {
     // one results-table row per player that took part in the match
     public static class MatchStatRow {
         public final String name;
-        public final Faction faction;
         public final boolean winner;
         public final int teamId; // startPosColorId - players sharing it are on the same team
         public final int[] scores; // ordered as RTSPlayerScoresEnum.values()
 
-        public MatchStatRow(String name, Faction faction, boolean winner, int teamId, int[] scores) {
+        public MatchStatRow(String name, boolean winner, int teamId, int[] scores) {
             this.name = name;
-            this.faction = faction;
             this.winner = winner;
             this.teamId = teamId;
             this.scores = scores;
@@ -63,11 +61,10 @@ public class MatchStatsClientboundPacket  implements RTSSimplePayload {
         this.rows = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             String name = buffer.readUtf();
-            Faction faction = buffer.readEnum(Faction.class);
             boolean winner = buffer.readBoolean();
             int teamId = buffer.readVarInt();
             int[] scores = buffer.readVarIntArray();
-            this.rows.add(new MatchStatRow(name, faction, winner, teamId, scores));
+            this.rows.add(new MatchStatRow(name, winner, teamId, scores));
         }
     }
 
@@ -76,7 +73,6 @@ public class MatchStatsClientboundPacket  implements RTSSimplePayload {
         buffer.writeInt(rows.size());
         for (MatchStatRow row : rows) {
             buffer.writeUtf(row.name);
-            buffer.writeEnum(row.faction);
             buffer.writeBoolean(row.winner);
             buffer.writeVarInt(row.teamId);
             buffer.writeVarIntArray(row.scores);

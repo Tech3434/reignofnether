@@ -25,9 +25,8 @@ public abstract class LevelChunkMixin {
     private void reignofnether$invalidateWalkability(BlockPos pos, BlockState state, boolean isMoving,
                                                      CallbackInfoReturnable<BlockState> cir) {
         // Only feed the walkability cache when the rtsPathfinding gamerule is on; with it off the
-        // grid is unused so there's nothing to invalidate. The resource index is independent and always runs.
+        // grid is unused so there's nothing to invalidate.
         if (UnitServerEvents.rtsPathfinding)
             WalkabilityGrid.markChunkDirtyIfPresent(getLevel(), pos);
-        ResourceIndex.onBlockChange(getLevel(), pos, state);
     }
 }

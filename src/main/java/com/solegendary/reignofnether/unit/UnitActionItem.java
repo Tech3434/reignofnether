@@ -5,6 +5,7 @@ import com.mojang.datafixers.util.Pair;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.HeroAbility;
 import com.solegendary.reignofnether.alliance.AlliancesClient;
+import com.solegendary.reignofnether.resources.ResourceSources;
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
@@ -267,12 +268,6 @@ public class UnitActionItem {
                                 goal.saveAndReturnResources();
                             }
                         }
-                    } else if (buildingAtPos instanceof PortalPlacement portal
-                        && portal.getPortalType() == PortalPlacement.PortalType.TRANSPORT && unit.canUsePortal()) {
-                        if (unit.getUsePortalGoal() instanceof FlyingUsePortalGoal flyingUsePortalGoal)
-                            flyingUsePortalGoal.setBuildingTarget(preselectedBlockPos);
-                        if (unit.getUsePortalGoal() instanceof UsePortalGoal usePortalGoal)
-                            usePortalGoal.setBuildingTarget(preselectedBlockPos);
                     } else if (actionableUnits.size() == 1) {
                         unit.setMoveTarget(preselectedBlockPos);
                     } else {

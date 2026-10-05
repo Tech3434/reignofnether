@@ -15,11 +15,10 @@ import com.solegendary.reignofnether.hud.buttons.UnitSpawnButton;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
+import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.player.PlayerClientEvents;
 import com.solegendary.reignofnether.player.PlayerServerboundPacket;
 import com.solegendary.reignofnether.registrars.BlockRegistrar;
-import com.solegendary.reignofnether.research.ResearchClient;
-import com.solegendary.reignofnether.research.ResearchServerboundPacket;
 
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
@@ -44,38 +43,31 @@ import static com.solegendary.reignofnether.util.MiscUtil.fcs;
 
 public class SandboxClientEvents {
 
-    // NONE == neutral
-    private static Faction faction = Faction.NONE;
     public static Relationship relationship = Relationship.OWNED;
     public static SandboxMenuType sandboxMenuType = SandboxMenuType.UNITS;
     public static CustomBuildingSortOption customBuildingSortOption = CustomBuildingSortOption.NAME;
 
     private static final Minecraft MC = Minecraft.getInstance();
 
-    public static Faction getFaction() { return faction; }
-
     public static String spawnUnitName = "";
 
+    /**
+     * Sandbox is gated on operator permission (level 2), not on a game mode.
+     *
+     * <p>It used to be a game mode of its own, reached by cycling the HUD's mode button, and existed
+     * only so its tools could be gated. With the modes reduced to CLASSIC, the tools key off permission
+     * directly and the mode toggle is gone.
+     */
     public static boolean isSandboxPlayer(String playerName) {
-        return MC.player != null && playerName.equals(MC.player.getName().getString()) &&
-                PlayerClientEvents.isRTSPlayer() && ClientGameModeHelper.gameMode == GameMode.SANDBOX;
+        return MC.player != null && playerName.equals(MC.player.getName().getString()) && isSandboxPlayer();
     }
 
     public static boolean isSandboxPlayer() {
-        return PlayerClientEvents.isRTSPlayer() && ClientGameModeHelper.gameMode == GameMode.SANDBOX;
-    }
-
-    public static List<BuildingPlaceButton> getNeutralBuildingButtons() {
-        return FactionRegistries.NONE.getBuildingButtons();
+        return PlayerClientEvents.isRTSPlayer() && MC.player != null && MC.player.hasPermissions(2);
     }
 
     public static List<BuildingPlaceButton> getBuildingButtons() {
-        return switch (faction) {
-            case VILLAGERS -> VillagerUnit.getBuildingButtons();
-            case MONSTERS -> ZombieVillagerUnit.getBuildingButtons();
-            case PIGLINS -> GruntUnit.getBuildingButtons();
-            default -> getNeutralBuildingButtons();
-        };
+        return VillagerUnit.getBuildingButtons();
     }
 
     public static List<Button> getCustomBuildingButtons() {
@@ -125,40 +117,6 @@ public class SandboxClientEvents {
             case NEUTRAL -> I18n.get("hud.relationship.reignofnether.neutral");
             case HOSTILE -> I18n.get("hud.relationship.reignofnether.enemy");
         };
-    }
-
-    public static Button getToggleFactionButton() {
-        return new Button(
-                "Toggle Faction",
-                Button.itemIconSize,
-                MiscUtil.getFactionIcon(faction),
-                (Keybinding) null,
-                () -> false,
-                () -> false,
-                () -> true,
-                () -> {
-                    switch (faction) {
-                        case VILLAGERS -> faction = Faction.MONSTERS;
-                        case MONSTERS -> faction = Faction.PIGLINS;
-                        case PIGLINS -> faction = Faction.NONE;
-                        default -> faction = Faction.VILLAGERS;
-                    }
-                },
-                () -> {
-                    switch (faction) {
-                        case VILLAGERS -> faction = Faction.NONE;
-                        case MONSTERS -> faction = Faction.VILLAGERS;
-                        case PIGLINS -> faction = Faction.MONSTERS;
-                        default -> faction = Faction.PIGLINS;
-                    }
-                },
-                List.of(
-                        fcs(I18n.get("hud.faction.reignofnether.villagers"), faction == Faction.VILLAGERS),
-                        fcs(I18n.get("hud.faction.reignofnether.monsters"), faction == Faction.MONSTERS),
-                        fcs(I18n.get("hud.faction.reignofnether.piglins"), faction == Faction.PIGLINS),
-                        fcs(I18n.get("hud.faction.reignofnether.neutral"), faction == Faction.NONE)
-                )
-        );
     }
 
     public static Button getToggleRelationshipButton() {
@@ -236,9 +194,7 @@ public class SandboxClientEvents {
         Minecraft MC = Minecraft.getInstance();
         if (MC.player == null)
             return null;
-        boolean hasCheats = ResearchClient.hasCheat("warpten") &&
-                ResearchClient.hasCheat("modifythephasevariance");
-        String playerName = Minecraft.getInstance().player.getName().getString();
+        boolean hasCheats = Cheats.hasCheat("warpten") && Cheats.hasCheat("modifythephasevariance");
         return new Button(
                 "Toggle Building Cheats",
                 Button.itemIconSize,
@@ -250,13 +206,9 @@ public class SandboxClientEvents {
                 () -> false,
                 () -> true,
                 () -> {
-                    if (hasCheats) {
-                        ResearchServerboundPacket.removeCheat(playerName, "warpten");
-                        ResearchServerboundPacket.removeCheat(playerName, "modifythephasevariance");
-                    } else {
-                        ResearchServerboundPacket.addCheat(playerName, "warpten");
-                        ResearchServerboundPacket.addCheat(playerName, "modifythephasevariance");
-                    }
+                    for (String cheat : List.of("warpten", "modifythephasevariance"))
+                        if (Cheats.hasCheat(cheat) == hasCheats)
+                            PlayerServerboundPacket.setCheat(cheat);
                 },
                 null,
                 List.of(hasCheats ? fcs(I18n.get("sandbox.reignofnether.building_cheats_on")) :
@@ -270,11 +222,8 @@ public class SandboxClientEvents {
         Minecraft MC = Minecraft.getInstance();
         if (MC.player == null)
             return null;
-        boolean hasCheats = ResearchClient.hasCheat("operationcwal") &&
-                            ResearchClient.hasCheat("medievalman") &&
-                            ResearchClient.hasCheat("foodforthought") &&
-                            ResearchClient.hasCheat("slipslopslap");
-        String playerName = Minecraft.getInstance().player.getName().getString();
+        List<String> cheats = List.of("operationcwal", "medievalman", "foodforthought", "slipslopslap");
+        boolean hasCheats = cheats.stream().allMatch(Cheats::hasCheat);
         return new Button(
                 "Toggle Unit Cheats",
                 Button.itemIconSize,
@@ -286,17 +235,9 @@ public class SandboxClientEvents {
                 () -> false,
                 () -> true,
                 () -> {
-                    if (hasCheats) {
-                        ResearchServerboundPacket.removeCheat(playerName, "operationcwal");
-                        ResearchServerboundPacket.removeCheat(playerName, "medievalman");
-                        ResearchServerboundPacket.removeCheat(playerName, "foodforthought");
-                        ResearchServerboundPacket.removeCheat(playerName, "slipslopslap");
-                    } else {
-                        ResearchServerboundPacket.addCheat(playerName, "operationcwal");
-                        ResearchServerboundPacket.addCheat(playerName, "medievalman");
-                        ResearchServerboundPacket.addCheat(playerName, "foodforthought");
-                        ResearchServerboundPacket.addCheat(playerName, "slipslopslap");
-                    }
+                    for (String cheat : cheats)
+                        if (Cheats.hasCheat(cheat) == hasCheats)
+                            PlayerServerboundPacket.setCheat(cheat);
                 },
                 null,
                 List.of(hasCheats ? fcs(I18n.get("sandbox.reignofnether.unit_cheats_on")) :
@@ -311,8 +252,7 @@ public class SandboxClientEvents {
         Minecraft MC = Minecraft.getInstance();
         if (MC.player == null)
             return null;
-        boolean hasCheat = ResearchClient.hasCheat("wouldyoukindly");
-        String playerName = Minecraft.getInstance().player.getName().getString();
+        boolean hasCheat = Cheats.hasCheat("wouldyoukindly");
         return new Button(
                 "Toggle Full Unit Control",
                 Button.itemIconSize,
@@ -323,13 +263,7 @@ public class SandboxClientEvents {
                 () -> false,
                 () -> false,
                 () -> true,
-                () -> {
-                    if (hasCheat) {
-                        ResearchServerboundPacket.removeCheat(playerName, "wouldyoukindly");
-                    } else {
-                        ResearchServerboundPacket.addCheat(playerName, "wouldyoukindly");
-                    }
-                },
+                () -> PlayerServerboundPacket.setCheat("wouldyoukindly"),
                 null,
                 List.of(hasCheat ? fcs(I18n.get("sandbox.reignofnether.nonunit_control_cheat_on")) :
                                 fcs(I18n.get("sandbox.reignofnether.nonunit_control_cheat_off")),
@@ -395,46 +329,6 @@ public class SandboxClientEvents {
                 null,
                 List.of(
                         fcs(I18n.get("sandbox.reignofnether.exit1"), true)
-                )
-        );
-    }
-
-    public static Button getPublishScenarioButton() {
-        List<FormattedCharSequence> tooltips = ScenarioClientEvents.confirmPublishScenario ? List.of(
-                fcs(I18n.get("sandbox.reignofnether.publish_scenario_tooltip1"), true),
-                fcs(I18n.get("sandbox.reignofnether.publish_scenario_tooltip_confirm"))
-        ) : List.of(
-                fcs(I18n.get("sandbox.reignofnether.publish_scenario_tooltip1"), true),
-                fcs(I18n.get("sandbox.reignofnether.publish_scenario_tooltip2")),
-                fcs(I18n.get("sandbox.reignofnether.publish_scenario_tooltip3"))
-        );
-        return new Button(
-                "Publish Scenario Map",
-                Button.itemIconSize,
-                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/items/book.png"),
-                (Keybinding) null,
-                () -> ScenarioClientEvents.confirmPublishScenario,
-                () -> false,
-                () -> true,
-                ScenarioClientEvents::pressedPublishScenarioButton,
-                () -> ScenarioClientEvents.confirmPublishScenario = false,
-                tooltips
-        );
-    }
-
-    public static Button getConfigureScenarioButton() {
-        return new Button(
-                "Configure Scenario",
-                Button.itemIconSize,
-                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/blocks/command_block_conditional.png"),
-                (Keybinding) null,
-                ScenarioClientEvents::isMenuOpen,
-                () -> false,
-                () -> true,
-                () -> ScenarioClientEvents.setMenuOpen(!ScenarioClientEvents.isMenuOpen()),
-                null,
-                List.of(
-                        fcs(I18n.get("sandbox.reignofnether.configure_scenario"))
                 )
         );
     }

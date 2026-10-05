@@ -132,7 +132,6 @@ public final class PathfinderWorkerPool {
         RESULTS.clear();
         BUILD_QUEUE.clear();
         WalkabilityGrid.clearDirty();
-        ResourceIndex.clearAll();
         INFLIGHT.set(0);
     }
 
@@ -141,13 +140,12 @@ public final class PathfinderWorkerPool {
         // apply a pending pathfindingThreads change before any dispatch this tick.
         applyPendingResize();
         // walkability caching + dispatch only run with the rtsPathfinding gamerule on (off = vanilla
-        // pathfinding). the resource index is independent (used by gather goals either way), so always drains.
+        // pathfinding).
         // START: rebuild settled dirty chunks, then classify a budget of cold corridor chunks and dispatch any
         // request now warm. Drain first so paths captured this tick see freshest data.
         if (UnitServerEvents.rtsPathfinding) {
             WalkabilityGrid.drainDirtyChunks(PathfinderConfig.MAX_CHUNK_RECLASSIFY_PER_TICK);
         }
-        ResourceIndex.drainBuildQueue(ResourceIndex.MAX_RESOURCE_CHUNK_SCANS_PER_TICK);
         if (UnitServerEvents.rtsPathfinding) {
             processBuildQueue();
         }

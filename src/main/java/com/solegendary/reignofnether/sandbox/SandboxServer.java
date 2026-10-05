@@ -20,16 +20,31 @@ import static com.solegendary.reignofnether.player.PlayerServerEvents.serverLeve
 
 public class SandboxServer {
 
+    /**
+     * Sandbox is an operator tool, not a match mode.
+     *
+     * <p>It used to be recognised by an {@code RTSPlayer} sitting on the neutral faction, which meant
+     * "started without picking a faction". Factions are gone, so it is recognised by operator
+     * permission on the player themselves.
+     */
     public static boolean isSandboxPlayer(String playerName) {
         for (RTSPlayer rtsPlayer : PlayerServerEvents.rtsPlayers)
-            if (rtsPlayer.faction == Faction.NONE && playerName.equals(rtsPlayer.name))
-                return true;
+            if (playerName.equals(rtsPlayer.name))
+                return rtsPlayer.id >= 0 && isOperator(playerName);
         return false;
     }
 
+    private static boolean isOperator(String playerName) {
+        if (serverLevel == null)
+            return false;
+        var player = serverLevel.getServer().getPlayerList().getPlayerByName(playerName);
+        return player != null && player.hasPermissions(2);
+    }
+
+    /** True while at least one operator is in the match - the sandbox exemptions all key off this. */
     public static boolean isAnyoneASandboxPlayer() {
         for (RTSPlayer rtsPlayer : PlayerServerEvents.rtsPlayers)
-            if (rtsPlayer.faction == Faction.NONE)
+            if (rtsPlayer.id >= 0 && isOperator(rtsPlayer.name))
                 return true;
         return false;
     }

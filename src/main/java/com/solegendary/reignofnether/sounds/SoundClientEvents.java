@@ -64,19 +64,6 @@ public class SoundClientEvents {
         }
     }
 
-    public static void playFactionCalmTheme(Faction faction, String playerName) {
-        if (MC.player != null && MC.player.getName().getString().equals(playerName)) {
-            switch (faction) {
-                case VILLAGERS ->
-                        SoundClientEvents.playFadeableMusicInstance(new FadeableMusicInstance(SoundRegistrar.VILLAGER_CALM_THEME_SONG.get()), 5200);
-                case MONSTERS ->
-                        SoundClientEvents.playFadeableMusicInstance(new FadeableMusicInstance(SoundRegistrar.MONSTER_CALM_THEME_SONG.get()), 5200);
-                case PIGLINS ->
-                        SoundClientEvents.playFadeableMusicInstance(new FadeableMusicInstance(SoundRegistrar.PIGLIN_CALM_THEME_SONG.get()), 5200);
-            }
-        }
-    }
-
     public static void playFadeableMusicInstance(FadeableMusicInstance instance) {
         playFadeableMusicInstance(instance, 0);
     }

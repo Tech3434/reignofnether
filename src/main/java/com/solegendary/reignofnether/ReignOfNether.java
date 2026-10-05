@@ -65,7 +65,6 @@ public class ReignOfNether {
         BlockEntityRegistrar.init(container);
         GameRuleRegistrar.init();
         Buildings.init();
-        FactionRegistries.register();
         ProductionItems.init();
         MobEffectRegistrar.init(container);
         ParticleRegistrar.init(container);
@@ -105,7 +104,6 @@ public class ReignOfNether {
 
     @SubscribeEvent
     public static void init(FMLCommonSetupEvent event) {
-        ResourceCosts.deferredLoadResourceCosts();
     }
 
     @SubscribeEvent

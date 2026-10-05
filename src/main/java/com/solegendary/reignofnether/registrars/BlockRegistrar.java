@@ -126,70 +126,6 @@ public class BlockRegistrar {
                     .pushReaction(PushReaction.DESTROY)),
             CreativeModeTabs.BUILDING_BLOCKS);
 
-    public static final Supplier<Block> RTS_START_BLOCK_BLUE = registerBlock("rts_start_block_blue", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_BLUE)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_YELLOW = registerBlock("rts_start_block_yellow", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_YELLOW)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_GREEN = registerBlock("rts_start_block_green", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_GREEN)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_RED = registerBlock("rts_start_block_red", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_RED)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_ORANGE = registerBlock("rts_start_block_orange", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_ORANGE)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_CYAN = registerBlock("rts_start_block_cyan", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_CYAN)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_MAGENTA = registerBlock("rts_start_block_magenta", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_MAGENTA)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_BROWN = registerBlock("rts_start_block_brown", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_BROWN)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_WHITE = registerBlock("rts_start_block_white", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.SNOW)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_BLACK = registerBlock("rts_start_block_black", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_BLACK)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_LIGHT_BLUE = registerBlock("rts_start_block_light_blue", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_LIGHT_BLUE)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_LIME = registerBlock("rts_start_block_lime", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_LIGHT_GREEN)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_LIGHT_GRAY = registerBlock("rts_start_block_light_gray", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_LIGHT_GRAY)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_GRAY = registerBlock("rts_start_block_gray", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_GRAY)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_PURPLE = registerBlock("rts_start_block_purple", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_PURPLE)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
-    public static final Supplier<Block> RTS_START_BLOCK_PINK = registerBlock("rts_start_block_pink", () ->
-            new RTSStartBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).mapColor(MapColor.COLOR_PINK)
-                    .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
-
     public static final Supplier<Block> RTS_STRUCTURE_BLOCK = registerBlock("rts_structure_block", () ->
             new RTSStructureBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).requiresCorrectToolForDrops()
                     .strength(-1.0F, 3600000.0F).noLootTable()), CreativeModeTabs.FUNCTIONAL_BLOCKS);
@@ -258,26 +194,6 @@ public class BlockRegistrar {
                             .instrument(NoteBlockInstrument.SKELETON).strength(1.0F).pushReaction(PushReaction.DESTROY)),
             CreativeModeTabs.BUILDING_BLOCKS);
 
-    public static final Supplier<Block> DROWNED_WALL_HEAD = registerBlock("drowned_wall_head", () ->
-                    new DrownedWallSkullBlock(BlockBehaviour.Properties.of()
-                            .instrument(NoteBlockInstrument.ZOMBIE).strength(1.0F).pushReaction(PushReaction.DESTROY)),
-            CreativeModeTabs.BUILDING_BLOCKS);
-
-    public static final Supplier<Block> HUSK_WALL_HEAD = registerBlock("husk_wall_head", () ->
-                    new HuskWallSkullBlock(BlockBehaviour.Properties.of()
-                            .instrument(NoteBlockInstrument.ZOMBIE).strength(1.0F).pushReaction(PushReaction.DESTROY)),
-            CreativeModeTabs.BUILDING_BLOCKS);
-
-    public static final Supplier<Block> STRAY_WALL_SKULL = registerBlock("stray_wall_skull", () ->
-                    new StrayWallSkullBlock(BlockBehaviour.Properties.of()
-                            .instrument(NoteBlockInstrument.SKELETON).strength(1.0F).pushReaction(PushReaction.DESTROY)),
-            CreativeModeTabs.BUILDING_BLOCKS);
-
-    public static final Supplier<Block> BOGGED_WALL_SKULL = registerBlock("bogged_wall_skull", () ->
-                    new BoggedWallSkullBlock(BlockBehaviour.Properties.of()
-                            .instrument(NoteBlockInstrument.SKELETON).strength(1.0F).pushReaction(PushReaction.DESTROY)),
-            CreativeModeTabs.BUILDING_BLOCKS);
-
     public static final Supplier<Block> SPIDER_FRIENDLY_BARRIER = registerBlock("spider_friendly_barrier",
             () -> new SpiderFriendlyBarrierBlock(BlockBehaviour.Properties.of()
                     .strength(-1.0F, 3600000.0F)
@@ -318,15 +234,6 @@ public class BlockRegistrar {
                             .isValidSpawn((p_187421_, p_187422_, p_187423_, p_187424_) -> p_187424_.fireImmune())
                             .hasPostProcess(BlockRegistrar::always).emissiveRendering(BlockRegistrar::always)),
             CreativeModeTabs.BUILDING_BLOCKS);
-
-    public static final Supplier<Block> HORIZONTAL_PORTAL = registerBlock("horizontal_portal",
-            () -> new HorizontalPortalBlock(BlockBehaviour.Properties.of()
-                    .noCollission()
-                    .noOcclusion()
-                    .strength(-1F)
-                    .lightLevel(s -> 11)
-                    .sound(SoundType.GLASS)
-            ), CreativeModeTabs.BUILDING_BLOCKS);
 
     public static void init(ModContainer context) {
         BLOCKS.register(context.getEventBus());

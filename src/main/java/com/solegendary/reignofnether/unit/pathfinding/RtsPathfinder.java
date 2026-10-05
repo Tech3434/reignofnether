@@ -38,8 +38,9 @@ public final class RtsPathfinder {
         }
         int clearanceCells = Math.max(2, Mth.ceil(mob.getBbHeight()));
         float fireCost = fireCostFor(mob);
-        // Only spiders with wall-climbing toggled on may scale vertical walls; PoisonSpiderUnit inherits this.
-        boolean canClimb = mob instanceof SpiderUnit su && su.isWallClimbing();
+        // Wall climbing is a unit ability the grid still supports, but no unit ships with it: a spider's
+        // climb toggle went with the spiders. A faction that wants climbing units turns this back on.
+        boolean canClimb = false;
         int footprintRadius = footprintRadiusFor(mob);
         // Snap the goal onto a standable cell. If none exists nearby (eg. an airborne canopy leaf) the goal is
         // unreachable as an exact cell: path best-effort with a capped budget so A* can't flood MAX_RADIUS
@@ -64,11 +65,8 @@ public final class RtsPathfinder {
     }
 
     // Tile footprint radius, vanilla style: floor(width + 1) - 1. 0 for a <=1-wide unit, 1 for a bear. Shared
-    // by requestPath and the debug overlay so the overlay scores cells exactly like A*. A climbing spider is
-    // pathed 1-wide (radius 0): a 3x3 footprint overhangs a cliff edge, so the climb could never connect to the
-    // plateau; 1-wide fixes that and is cheaper (skips the per-node wideFits check).
+    // by requestPath and the debug overlay so the overlay scores cells exactly like A*.
     public static int footprintRadiusFor(Mob mob) {
-        if (mob instanceof SpiderUnit su && su.isWallClimbing()) return 0;
         return Math.max(0, Mth.floor(mob.getBbWidth() + 1.0f) - 1);
     }
 

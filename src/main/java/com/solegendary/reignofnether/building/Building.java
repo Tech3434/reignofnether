@@ -115,7 +115,6 @@ public abstract class Building {
         return new BuildingPlacement(this, level, pos, rotation, ownerName, BuildingUtils.getAbsoluteBlockData(this.getRelativeBlockData(level), level, pos, rotation), this.isCapitol);
     }
 
-    public abstract Faction getFaction();
 
     public int getUpgradeLevel(BuildingPlacement placement) {
         return 0;

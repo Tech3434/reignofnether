@@ -28,7 +28,6 @@ public class BuildingCommand {
         OFF_COOLDOWN_IF_COMPLETE,
         OFF_COOLDOWN_IF_GARRISONED,
         OFF_COOLDOWN_IF_CAPTURED,
-        ON_SCENARIO_START,
         NONE
     }
 
@@ -38,8 +37,7 @@ public class BuildingCommand {
             TriggerCondition.ON_DAMAGE_TAKEN,
             TriggerCondition.OFF_COOLDOWN_IF_COMPLETE,
             TriggerCondition.OFF_COOLDOWN_IF_GARRISONED,
-            TriggerCondition.OFF_COOLDOWN_IF_CAPTURED,
-            TriggerCondition.ON_SCENARIO_START
+            TriggerCondition.OFF_COOLDOWN_IF_CAPTURED
         ).contains(condition);
     }
 
@@ -112,24 +110,19 @@ public class BuildingCommand {
         if (!hasCooldownCondition())
             return;
 
-        boolean scenarioStarted = ScenarioServerEvents.isScenarioStarted((ServerLevel) bpl.level);
-        if (condition == TriggerCondition.ON_SCENARIO_START && !scenarioStarted)
-            return;
-
         if (tickCooldown > 0)
             tickCooldown -= 1;
-        if (tickCooldown <= 0 && checkTickingCondition(bpl, scenarioStarted)) {
+        if (tickCooldown <= 0 && checkTickingCondition(bpl)) {
             run(bpl);
         }
     }
 
-    public boolean checkTickingCondition(BuildingPlacement bpl, boolean scenarioStarted) {
+    public boolean checkTickingCondition(BuildingPlacement bpl) {
         GarrisonableBuildingAddon gba;
         return switch (condition) {
             case OFF_COOLDOWN_IF_COMPLETE -> bpl.isBuilt;
             case OFF_COOLDOWN_IF_GARRISONED -> (gba = bpl.getBuilding().getActiveAddon(GarrisonableBuildingAddon.class)) != null && !gba.getOccupants(bpl).isEmpty();
             case OFF_COOLDOWN_IF_CAPTURED -> !bpl.ownerName.isBlank();
-            case ON_SCENARIO_START -> scenarioStarted && triggerCount <= 0;
             case ON_CAPTURE -> !bpl.ownerName.isBlank() && triggerCount <= 0;
             default -> false;
         };

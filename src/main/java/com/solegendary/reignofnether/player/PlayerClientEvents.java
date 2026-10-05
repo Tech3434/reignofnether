@@ -1,7 +1,6 @@
 package com.solegendary.reignofnether.player;
 
 import com.solegendary.reignofnether.util.GuiLayerCompat;
-import com.solegendary.reignofnether.ability.TradeAction;
 import com.solegendary.reignofnether.alliance.AlliancesClient;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
@@ -18,7 +17,6 @@ import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.registrars.SoundRegistrar;
-import com.solegendary.reignofnether.research.ResearchClient;
 import com.solegendary.reignofnether.resources.ResourcesClientEvents;
 
 import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
@@ -92,13 +90,6 @@ public class PlayerClientEvents {
         return null;
     }
 
-    public static Faction getFaction() {
-        for (RTSPlayer rtsPlayer : rtsPlayers)
-            if (MC.player != null && rtsPlayer.name.equals(MC.player.getName().getString()))
-                return rtsPlayer.faction;
-        return Faction.NONE;
-    }
-
     public static RTSPlayer getPlayer(String playerName) {
         for (RTSPlayer rtsPlayer : rtsPlayers)
             if (rtsPlayer.name.equals(playerName))
@@ -133,27 +124,8 @@ public class PlayerClientEvents {
         return player.startPosColorId; // corresponds to a MapColor.id
     }
 
-    public static Faction getPlayerFaction(String playerName) {
-        var player = getPlayer(playerName);
-        if (player == null) {
-            return Faction.NONE;
-        }
-
-        return player.faction;
-    }
-
     public static String getPlayerName() {
         return MC.player != null ? MC.player.getName().getString() : "";
-    }
-
-    public static void setMarketRate(TradeAction tradeAction, String playerName, int rate) {
-        for (RTSPlayer rtsPlayer : rtsPlayers)
-            if (playerName.equals(rtsPlayer.name))
-                rtsPlayer.tradeRates.put(tradeAction, rate);
-
-        for (BuildingPlacement bpl : BuildingClientEvents.getBuildings())
-            if (bpl.getBuilding() instanceof AbstractMarket)
-                bpl.updateButtons();
     }
 
     @SubscribeEvent
@@ -240,8 +212,7 @@ public class PlayerClientEvents {
             MC.gui.setTitle(Component.translatable("titles.reignofnether.defeated"));
             MC.player.playSound(SoundRegistrar.DEFEAT.get(), 0.5f, 1.0f);
         }
-        ResearchClient.removeAllResearch();
-        ResearchClient.removeAllCheats();
+        Cheats.removeAllCheats();
         HudClientEvents.controlGroups.clear();
     }
 
@@ -253,33 +224,14 @@ public class PlayerClientEvents {
         MC.player.playSound(SoundRegistrar.VICTORY.get(), 0.5f, 1.0f);
     }
 
-    public static void addRTSPlayer(String playerName, Faction faction, Long id, int startPosColorId, boolean isDogPerson) {
+    public static void addRTSPlayer(String playerName, Long id, int startPosColorId) {
         if (!isRTSPlayer(playerName)) {
-            rtsPlayers.add(RTSPlayer.getNewPlayer(playerName, faction, id.intValue(), startPosColorId, isDogPerson, -1L));
-            
-            if (MC.player != null && MC.player.getName().getString().equals(playerName)) {
-                GameruleClient.gamerulesMenuOpen = false;
-                if (faction != Faction.NONE) {
-                    MC.getMusicManager().stopPlaying();
-                    ResearchClient.removeAllCheats();
-                }
-                PlayerServerboundPacket.requestMarketRates();
-            }
-        }
-    }
+            rtsPlayers.add(RTSPlayer.getNewPlayer(playerName, id.intValue(), startPosColorId));
 
-    public static void addScenarioNPCRTSPlayer(String playerName, Faction faction, Long id, int scenarioRoleIndex) {
-        if (!isRTSPlayer(playerName)) {
-            RTSPlayer rtsPlayer = RTSPlayer.getNewPlayer(playerName, faction, id.intValue(), 0, true, -1L);
-            rtsPlayer.scenarioRoleIndex = scenarioRoleIndex;
-            rtsPlayers.add(rtsPlayer);
-            
             if (MC.player != null && MC.player.getName().getString().equals(playerName)) {
                 GameruleClient.gamerulesMenuOpen = false;
-                if (faction != Faction.NONE) {
-                    MC.getMusicManager().stopPlaying();
-                    ResearchClient.removeAllCheats();
-                }
+                MC.getMusicManager().stopPlaying();
+                Cheats.removeAllCheats();
             }
         }
     }
@@ -315,13 +267,11 @@ public class PlayerClientEvents {
         
         
         OrthoviewClientEvents.unlockCam();
-        HeroClientEvents.fallenHeroes.clear();
         PlayerDisplayClientEvents.resetDisplay();
         PlayerColors.reset();
         CustomBuildingClientEvents.customBuildings.clear();
         CustomBuildingClientEvents.setCustomBuildingToEdit(null);
         AlliancesClient.resetAllAlliances();
-        RTSMapInfoClientEvents.reset();
         MinimapClientEvents.clearVirtualUnits();
         PlayerDisplayClientEvents.clearAll();
         rtsPlayers.clear();
@@ -372,65 +322,35 @@ public class PlayerClientEvents {
     }
 
     public static void resetRTS(boolean hardReset) {
-        boolean isSandboxOrScenario = SandboxClientEvents.isSandboxPlayer() || GameruleClient.scenarioMode;
+        boolean isSandbox = SandboxClientEvents.isSandboxPlayer();
         rtsPlayers.clear();
-        
+
         HelperButtons.updateButtons();
         SoundClientEvents.stopFadeableMusicInstance();
 
         HudClientEvents.controlGroups.clear();
         UnitClientEvents.getSelectedUnits().clear();
         UnitClientEvents.getPreselectedUnits().clear();
-        if (!isSandboxOrScenario)
+        if (!isSandbox)
             UnitClientEvents.getAllUnits().removeIf(u -> (hardReset || (u instanceof Unit unit && !Unit.hasAnchor(unit))));
-        if (!isSandboxOrScenario)
+        if (!isSandbox)
             for (LivingEntity entity : UnitClientEvents.getAllUnits())
                 if (entity instanceof Unit unit)
                     unit.setOwnerName("");
         UnitClientEvents.idleWorkerIds.clear();
-        ResearchClient.removeAllResearch();
-        ResearchClient.removeAllCheats();
+        Cheats.removeAllCheats();
         BuildingClientEvents.getSelectedBuildings().clear();
-        if (!isSandboxOrScenario)
+        if (!isSandbox)
             BuildingClientEvents.getBuildings().removeIf(b -> b.getBuilding().shouldDestroyOnReset || hardReset);
-        if (!isSandboxOrScenario)
+        if (!isSandbox)
             for (BuildingPlacement building : BuildingClientEvents.getBuildings())
                 building.ownerName = "";
         ResourcesClientEvents.resourcesList.clear();
         ClientGameModeHelper.gameMode = ClientGameModeHelper.DEFAULT_GAMEMODE;
         ClientGameModeHelper.gameModeLocked = false;
-        SurvivalClientEvents.reset();
-        StartPosClientEvents.resetAll();
-        HeroClientEvents.fallenHeroes.clear();
         AlliancesClient.playersWithAlliedControl.clear();
         PlayerColors.reset();
         PlayerDisplayClientEvents.resetDisplay();
-        TimeClientEvents.resetBloodMoon();
-        CustomBuildingClientEvents.setCustomBuildingToEdit(null);
-    }
-
-    public static void publishScenarioMap() {
-        rtsPlayers.clear();
-        
-        HelperButtons.updateButtons();
-        SoundClientEvents.stopFadeableMusicInstance();
-        HudClientEvents.controlGroups.clear();
-        UnitClientEvents.getSelectedUnits().clear();
-        UnitClientEvents.getPreselectedUnits().clear();
-        UnitClientEvents.idleWorkerIds.clear();
-        ResearchClient.removeAllResearch();
-        ResearchClient.removeAllCheats();
-        BuildingClientEvents.getSelectedBuildings().clear();
-        ResourcesClientEvents.resourcesList.clear();
-        ClientGameModeHelper.gameMode = ClientGameModeHelper.DEFAULT_GAMEMODE;
-        ClientGameModeHelper.gameModeLocked = false;
-        SurvivalClientEvents.reset();
-        StartPosClientEvents.resetAll();
-        HeroClientEvents.fallenHeroes.clear();
-        AlliancesClient.playersWithAlliedControl.clear();
-        PlayerColors.reset();
-        PlayerDisplayClientEvents.resetDisplay();
-        TimeClientEvents.resetBloodMoon();
         CustomBuildingClientEvents.setCustomBuildingToEdit(null);
     }
 
@@ -440,12 +360,6 @@ public class PlayerClientEvents {
 
     public static void setCanStartRTS(boolean canStart) {
         canStartRTS = canStart;
-    }
-
-    public static void syncBeaconOwnerTicks(String playerName, long ticks) {
-        for (int i = 0; i < rtsPlayers.size(); i++)
-            if (rtsPlayers.get(i).name.equals(playerName))
-                rtsPlayers.get(i).beaconOwnerTicks = (int) ticks;
     }
 
     @SubscribeEvent

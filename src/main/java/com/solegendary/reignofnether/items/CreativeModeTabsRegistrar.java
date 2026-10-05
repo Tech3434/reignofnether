@@ -1,7 +1,6 @@
 package com.solegendary.reignofnether.items;
 
 import com.solegendary.reignofnether.ReignOfNether;
-import com.solegendary.reignofnether.blocks.RTSStartBlock;
 import com.solegendary.reignofnether.registrars.BlockRegistrar;
 import com.solegendary.reignofnether.registrars.ItemRegistrar;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -67,10 +66,6 @@ public class CreativeModeTabsRegistrar {
                                 output.accept(BlockRegistrar.PRODUCTION_SPAWN_BLOCK.get());
                                 output.accept(BlockRegistrar.WALKABLE_MAGMA_BLOCK.get());
                                 output.accept(BlockRegistrar.TEMPORARY_WALKABLE_MAGMA_BLOCK.get());
-                                output.accept(BlockRegistrar.HORIZONTAL_PORTAL.get());
-                                for (var block : modBlocks())
-                                    if (block instanceof RTSStartBlock)
-                                        output.accept(block);
                             })
                             .build());
 
@@ -78,7 +73,7 @@ public class CreativeModeTabsRegistrar {
             CREATIVE_MODE_TABS.register("unit_spawn_eggs",
                     () -> CreativeModeTab.builder()
                             .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
-                            .icon(() -> new ItemStack(ItemRegistrar.BRUTE_UNIT_SPAWN_EGG.get()))
+                            .icon(() -> new ItemStack(ItemRegistrar.VILLAGER_UNIT_SPAWN_EGG.get()))
                             .title(Component.translatable("creativetab.reignofnether.unit_spawn_eggs"))
                             .displayItems((parameters, output) -> {
                                 for (Item item : modItems())
@@ -91,16 +86,12 @@ public class CreativeModeTabsRegistrar {
             CREATIVE_MODE_TABS.register("unit_items",
                     () -> CreativeModeTab.builder()
                             .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
-                            .icon(() -> new ItemStack(ItemRegistrar.HEART_MEDALLION.get()))
+                            .icon(() -> new ItemStack(ItemRegistrar.THROWABLE_TNT.get()))
                             .title(Component.translatable("creativetab.reignofnether.unit_items"))
                             .displayItems((parameters, output) -> {
                                 for (Item item : modItems())
                                     if (item instanceof FoilableItem)
                                         output.accept(item);
-                                output.accept(ItemRegistrar.THROWN_HERO_EXPERIENCE_BOTTLE.get());
-                                output.accept(net.minecraft.world.item.Items.BELL);
-                                output.accept(net.minecraft.world.item.Items.SPYGLASS);
-                                output.accept(net.minecraft.world.item.Items.TOTEM_OF_UNDYING);
                             })
                             .build());
 

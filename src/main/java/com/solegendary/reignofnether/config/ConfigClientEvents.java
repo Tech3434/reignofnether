@@ -60,7 +60,7 @@ public class ConfigClientEvents {
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/warning.png"),
                 (Keybinding) null,
                 () -> false,
-                () -> !showDiffsButton || TutorialClientEvents.isEnabled(),
+                () -> !showDiffsButton,
                 () -> true,
                 () -> showDiffsButton = false,
                 null,
@@ -136,7 +136,6 @@ public class ConfigClientEvents {
                     rescost.bakeValues(entry);
                 }
             }
-            ResourceCosts.deferredLoadResourceCosts();
         }
     }
 }

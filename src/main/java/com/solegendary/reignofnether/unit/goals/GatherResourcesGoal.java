@@ -5,7 +5,7 @@ import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
 
 import com.solegendary.reignofnether.registrars.BlockRegistrar;
-import com.solegendary.reignofnether.research.ResearchServerEvents;
+import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.resources.*;
 import com.solegendary.reignofnether.unit.TargetResourcesSave;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
@@ -76,7 +76,35 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
     }
 
     private int getReplantWoodCost() {
-        return (mob instanceof ZombieVillagerUnit) ? ResourceCosts.REDUCED_REPLANT_WOOD_COST : ResourceCosts.REPLANT_WOOD_COST;
+        return ResourceCosts.REPLANT_WOOD_COST;
+    }
+
+    /**
+     * Nearest block matching the wanted resource, found by scanning outwards in shells from {@code origin}.
+     *
+     * <p>This used to be a query against {@code ResourceIndex}, a per-chunk index of resource blocks fed by
+     * the pathfinder worker pool. That index went with the economy content, so the scan is back to walking
+     * blocks directly. Shells keep the common case cheap (the nearest tree is usually a few blocks away) and
+     * callers only reach here on the slow search cooldown, or after a failed search - see the {@code range}
+     * escalation and {@link #MAX_FAILED_SEARCHES} above. A faction that wants the index back should key it off
+     * {@code ResourceSources#getFromBlockState}, which is what decides a match here.
+     */
+    private static Optional<BlockPos> findClosest(LevelAccessor level, BlockPos origin, int range, ResourceName resourceName, Predicate<BlockPos> condition) {
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (int r = 1; r <= range; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dy = -r; dy <= r; dy++) {
+                    for (int dz = -r; dz <= r; dz++) {
+                        // only the shell at exactly this radius, so every cell is tested once across all r
+                        if (Math.max(Math.max(Math.abs(dx), Math.abs(dy)), Math.abs(dz)) != r) continue;
+                        cursor.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
+                        if (!level.isLoaded(cursor) || ResourceSources.getBlockResourceName(cursor, level) != resourceName) continue;
+                        if (condition.test(cursor.immutable())) return Optional.of(cursor.immutable());
+                    }
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     // whenever we attempt to assign a block as a target it must pass this test
@@ -221,8 +249,7 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
                 else {
                     Optional<BlockPos> bpOpt;
                     if (altSearchPos != null) {
-                        bpOpt = ResourceIndex.get(mob.level()).findClosest(
-                                mob.level(), altSearchPos, REACH_RANGE / 2, data.targetResourceName, BLOCK_CONDITION);
+                        bpOpt = findClosest(mob.level(), altSearchPos, REACH_RANGE / 2, data.targetResourceName, BLOCK_CONDITION);
                         altSearchPos = null;
                     }
                     else {
@@ -234,7 +261,7 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
                             ticksIdle += 200;
                         }
 
-                        bpOpt = ResourceIndex.get(mob.level()).findClosest(
+                        bpOpt = findClosest(
                             mob.level(),
                             new BlockPos(
                                     (int) mob.getEyePosition().x,
@@ -309,7 +336,7 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
                 else {
                     float ticksToProgress;
 
-                    if (ResearchServerEvents.playerHasCheat(((Unit) mob).getOwnerName(), "operationcwal"))
+                    if (Cheats.playerHasCheat(((Unit) mob).getOwnerName(), "operationcwal"))
                         ticksToProgress = (TICK_CD / 2) * 10;
                     else
                         ticksToProgress = (TICK_CD / 2);
@@ -329,7 +356,6 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
                             else
                                 ticksToProgress *= VillagerUnit.MINER_SPEED_MULT;
                         }
-                        ticksToProgress *= CivilEnchantment.getEfficiencyMultiplier(vUnit);
                     }
 
                     this.gatherTicksLeft -= ticksToProgress;

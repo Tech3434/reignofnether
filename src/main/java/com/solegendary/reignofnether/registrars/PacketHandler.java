@@ -21,18 +21,16 @@ import com.solegendary.reignofnether.hud.custombutton.CustomButtonActionServerbo
 import com.solegendary.reignofnether.hud.custombutton.CustomButtonClientboundPacket;
 import com.solegendary.reignofnether.items.ItemClientboundPacket;
 import com.solegendary.reignofnether.items.ItemServerboundPacket;
-import com.solegendary.reignofnether.items.ItemShopClientboundPacket;
 import com.solegendary.reignofnether.minimap.MapMarkerClientboundPacket;
 import com.solegendary.reignofnether.minimap.MapMarkerServerboundPacket;
 import com.solegendary.reignofnether.network.PacketTarget;
 import com.solegendary.reignofnether.network.RTSSimplePayload;
 import com.solegendary.reignofnether.orthoview.CameraClientboundPacket;
 import com.solegendary.reignofnether.orthoview.CameraFadeClientboundPacket;
+import com.solegendary.reignofnether.player.CheatsClientboundPacket;
 import com.solegendary.reignofnether.player.MatchStatsClientboundPacket;
 import com.solegendary.reignofnether.player.PlayerClientboundPacket;
 import com.solegendary.reignofnether.player.PlayerServerboundPacket;
-import com.solegendary.reignofnether.research.ResearchClientboundPacket;
-import com.solegendary.reignofnether.research.ResearchServerboundPacket;
 import com.solegendary.reignofnether.resources.ResourcesClientboundPacket;
 import com.solegendary.reignofnether.resources.ResourcesServerboundPacket;
 
@@ -90,7 +88,6 @@ public final class PacketHandler {
 
         registerServer(registrar, TopdownGuiServerboundPacket.TYPE, TopdownGuiServerboundPacket::new);
         registerServer(registrar, UnitActionServerboundPacket.TYPE, UnitActionServerboundPacket::new);
-        registerClient(registrar, BeaconSyncClientboundPacket.TYPE, BeaconSyncClientboundPacket::new);
         registerClient(registrar, UnitConvertClientboundPacket.TYPE, UnitConvertClientboundPacket::new);
         registerClient(registrar, UnitSyncClientboundPacket.TYPE, UnitSyncClientboundPacket::new);
         registerClient(registrar, UnitSyncWorkerClientBoundPacket.TYPE, UnitSyncWorkerClientBoundPacket::new);
@@ -101,8 +98,7 @@ public final class PacketHandler {
         registerClient(registrar, RtsDebugStatsClientboundPacket.TYPE, RtsDebugStatsClientboundPacket::new);
         registerClient(registrar, RtsDebugChunksClientboundPacket.TYPE, RtsDebugChunksClientboundPacket::new);
         registerClient(registrar, UnitIdleWorkerClientBoundPacket.TYPE, UnitIdleWorkerClientBoundPacket::new);
-        registerClient(registrar, ResearchClientboundPacket.TYPE, ResearchClientboundPacket::new);
-        registerServer(registrar, ResearchServerboundPacket.TYPE, ResearchServerboundPacket::new);
+        registerClient(registrar, CheatsClientboundPacket.TYPE, CheatsClientboundPacket::new);
         registerServer(registrar, PlayerServerboundPacket.TYPE, PlayerServerboundPacket::new);
         registerClient(registrar, PlayerClientboundPacket.TYPE, PlayerClientboundPacket::new);
         registerServer(registrar, BuildingServerboundPacket.TYPE, BuildingServerboundPacket::new);
@@ -117,33 +113,20 @@ public final class PacketHandler {
         registerClient(registrar, BuildingAbilityClientboundPacket.TYPE, BuildingAbilityClientboundPacket::new);
         registerClient(registrar, AttackWarningClientboundPacket.TYPE, AttackWarningClientboundPacket::new);
         registerClient(registrar, SoundClientboundPacket.TYPE, SoundClientboundPacket::new);
-        registerClient(registrar, TutorialClientboundPacket.TYPE, TutorialClientboundPacket::new);
-        registerServer(registrar, TutorialServerboundPacket.TYPE, TutorialServerboundPacket::new);
         registerClient(registrar, AllianceClientboundPacket.TYPE, AllianceClientboundPacket::new);
         registerServer(registrar, AllianceServerboundPacket.TYPE, AllianceServerboundPacket::new);
         registerServer(registrar, GameModeServerboundPacket.TYPE, GameModeServerboundPacket::new);
         registerClient(registrar, GameModeClientboundPacket.TYPE, GameModeClientboundPacket::new);
-        registerServer(registrar, SurvivalServerboundPacket.TYPE, SurvivalServerboundPacket::new);
-        registerClient(registrar, SurvivalClientboundPacket.TYPE, SurvivalClientboundPacket::new);
         registerClient(registrar, ClientboundSyncResourceCostPacket.TYPE, ClientboundSyncResourceCostPacket::decode);
         registerServer(registrar, SandboxServerboundPacket.TYPE, SandboxServerboundPacket::new);
         registerServer(registrar, GameruleServerboundPacket.TYPE, GameruleServerboundPacket::new);
         registerClient(registrar, GameruleClientboundPacket.TYPE, GameruleClientboundPacket::new);
-        registerServer(registrar, StartPosServerboundPacket.TYPE, StartPosServerboundPacket::new);
-        registerClient(registrar, StartPosClientboundPacket.TYPE, StartPosClientboundPacket::new);
-        registerClient(registrar, HeroClientboundPacket.TYPE, HeroClientboundPacket::new);
-        registerServer(registrar, HeroServerboundPacket.TYPE, HeroServerboundPacket::new);
-        registerClient(registrar, FallenHeroClientboundPacket.TYPE, FallenHeroClientboundPacket::new);
         registerClient(registrar, CustomBuildingClientboundPacket.TYPE, CustomBuildingClientboundPacket::new);
         registerServer(registrar, CustomBuildingServerboundPacket.TYPE, CustomBuildingServerboundPacket::new);
         registerClient(registrar, UnitSyncMobEffectsClientboundPacket.TYPE, UnitSyncMobEffectsClientboundPacket::new);
         registerServer(registrar, MapMarkerServerboundPacket.TYPE, MapMarkerServerboundPacket::new);
         registerClient(registrar, MapMarkerClientboundPacket.TYPE, MapMarkerClientboundPacket::new);
-        registerServer(registrar, ScenarioServerboundPacket.TYPE, ScenarioServerboundPacket::new);
-        registerClient(registrar, ScenarioClientboundPacket.TYPE, ScenarioClientboundPacket::new);
         registerClient(registrar, MatchStatsClientboundPacket.TYPE, MatchStatsClientboundPacket::new);
-        registerClient(registrar, RTSMapInfoClientboundPacket.TYPE, RTSMapInfoClientboundPacket::new);
-        registerServer(registrar, RTSMapInfoServerboundPacket.TYPE, RTSMapInfoServerboundPacket::new);
         registerClient(registrar, HudClientboundPacket.TYPE, HudClientboundPacket::new);
         registerClient(registrar, CameraClientboundPacket.TYPE, CameraClientboundPacket::new);
         registerClient(registrar, CameraFadeClientboundPacket.TYPE, CameraFadeClientboundPacket::new);
@@ -151,7 +134,6 @@ public final class PacketHandler {
         registerClient(registrar, CustomButtonClientboundPacket.TYPE, CustomButtonClientboundPacket::decode);
         registerServer(registrar, ItemServerboundPacket.TYPE, ItemServerboundPacket::new);
         registerClient(registrar, ItemClientboundPacket.TYPE, ItemClientboundPacket::new);
-        registerClient(registrar, ItemShopClientboundPacket.TYPE, ItemShopClientboundPacket::new);
     }
 
     /** Builds the StreamCodec for a payload from the buffer-writing half it already has. */

@@ -85,8 +85,7 @@ public interface WorkerUnit {
                 }
             }
         } else if (entity instanceof AttackerUnit attackerUnit &&
-                ((Unit) entity).getTargetGoal().getTarget() != null &&
-                !(entity instanceof ZombieVillagerUnit)) {
+                ((Unit) entity).getTargetGoal().getTarget() != null) {
             if (!mainHandItem.is(Items.WOODEN_SWORD) && !mainHandItem.is(Items.STONE_SWORD)) {
                 if (entity instanceof VillagerUnit vUnit && vUnit.getUnitProfession() == VillagerUnitProfession.HUNTER && vUnit.isVeteran())
                     entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.STONE_SWORD));
