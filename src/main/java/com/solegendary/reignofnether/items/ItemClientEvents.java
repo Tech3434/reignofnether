@@ -22,6 +22,7 @@ import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.util.LevelRenderCompat;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -325,6 +326,9 @@ public class ItemClientEvents {
             return;
 
         if (MC.level != null && OrthoviewClientEvents.isEnabled()) {
+            // see LevelRenderCompat: at AFTER_CUTOUT_BLOCKS RenderSystem's model-view does not have
+            // the camera rotation yet, so the draw and the flush both have to happen under it
+            LevelRenderCompat.drawAndFlush(evt, () -> {
             for (ItemEntity itemEntity : preselectedItems) {
                 ResourceSource res = ResourceSources.getFromItem(itemEntity.getItem().getItem());
                 boolean isResourceItem = res != null && res.resourceValue > 0;
@@ -337,6 +341,7 @@ public class ItemClientEvents {
                     );
                 }
             }
+            });
         }
     }
 

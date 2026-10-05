@@ -134,15 +134,18 @@ public class MyRenderer {
         drawLineBox(matrixStack, aabb, vertexConsumer, r, g, b, a);
     }
 
-    /**
-     * The matrix unit selection geometry is built with: camera-relative translation only.
+/**
+     * The matrix world-space line and box geometry is baked with: the camera-relative translation
+     * and nothing else.
      *
-     * <p>1.21.1 hands {@code RenderLevelStageEvent} a pose that already carries the camera rotation,
-     * and the vertex consumer bakes whatever matrix it is given straight into the vertices - the
-     * model-view matrix is then applied again by the shader. The rotation therefore lands twice, so
-     * rotating the camera swings the boxes with it while WASD movement still looks right (a
-     * translation commutes with a translation). In 1.20.1 the pose carried no rotation, which is why
-     * baking the whole pose was harmless then.
+     * <p>{@code RenderLevelStageEvent} hands out a fresh identity {@code PoseStack} (its
+     * constructor substitutes one when {@code LevelRenderer} passes {@code null}), and the camera
+     * rotation reaches the shader through {@code RenderSystem}'s model-view instead - so the bake
+     * must not contain it. Building it from scratch rather than from the caller's pose makes that
+     * independent of whatever a caller may have pushed onto the stack.
+     *
+     * <p>See {@link LevelRenderCompat} for the other half: the model-view is read when the batch is
+     * flushed, which at the early stages happens before 1.21.1 has applied the camera rotation.
      */
     private static Matrix4f cameraRelativeMatrix(double cx, double cy, double cz) {
         return new Matrix4f().translate((float) -cx, (float) -cy, (float) -cz);
@@ -151,15 +154,9 @@ public class MyRenderer {
     /**
      * A PoseStack holding the camera-relative translation and nothing else.
      *
-     * <p>1.21.1 hands {@code RenderLevelStageEvent} a pose that already carries the camera
-     * rotation. Handing that pose to the vanilla line helpers bakes the rotation into the vertices,
-     * and the shader then applies the model-view - including that rotation - a second time. So the
-     * boxes swing with the camera while WASD movement still looks right, because two translations
-     * commute but a translation and a rotation do not. In 1.20.1 the pose carried no rotation,
-     * which is why passing it straight through was harmless then.
-     *
-     * <p>This is deliberately a fresh PoseStack rather than a mutated copy: the vanilla helpers read
-     * {@code poseStack.last().pose()} themselves and ignore any matrix we compute separately.
+     * <p>Deliberately a fresh PoseStack rather than a mutated copy of the caller's: the vanilla
+     * helpers read {@code poseStack.last().pose()} themselves and ignore any matrix we compute
+     * separately, so the only way to hand them a rotation-free pose is to build it.
      */
     private static PoseStack cameraRelativePose(double cx, double cy, double cz) {
         PoseStack pose = new PoseStack();

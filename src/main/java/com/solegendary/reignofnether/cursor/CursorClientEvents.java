@@ -27,6 +27,7 @@ import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyMath;
 import com.solegendary.reignofnether.util.MyRenderer;
 import com.solegendary.reignofnether.util.GuiLayerCompat;
+import com.solegendary.reignofnether.util.LevelRenderCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
@@ -540,6 +541,9 @@ public class CursorClientEvents {
                     ItemClientEvents.getPreselectedItems().isEmpty() &&
                     !buildingTargetedByWorker && !buildingTargetedByAttacker) || isLeftClickActionStartRTS || getLeftClickSandboxAction() != null) {
 
+                // see LevelRenderCompat: at AFTER_CUTOUT_BLOCKS RenderSystem's model-view does not have
+                // the camera rotation yet, so the draw and the flush both have to happen under it
+                LevelRenderCompat.drawAndFlush(evt, () -> {
                 ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
                 var vertexConsumer = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
                 if (MiscUtil.isSnowLayerBlock(MC.level.getBlockState(getPreselectedBlockPos().offset(0, 1, 0)).getBlock())) {
@@ -552,6 +556,7 @@ public class CursorClientEvents {
                     MyRenderer.drawBox(evt.getPoseStack(), vertexConsumer, preselectedBlockPos, 1, 1, 1, rightClickDown ? 0.3f : 0.15f);
                     MyRenderer.drawBlockOutline(evt.getPoseStack(), preselectedBlockPos, rightClickDown ? 1.0f : 0.5f);
                 }
+                });
             }
         }
     }

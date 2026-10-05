@@ -57,6 +57,7 @@ import com.solegendary.reignofnether.unit.units.piglins.HeadhunterUnit;
 import com.solegendary.reignofnether.unit.units.piglins.HoglinUnit;
 import com.solegendary.reignofnether.unit.units.villagers.*;
 import com.solegendary.reignofnether.util.ArrayUtil;
+import com.solegendary.reignofnether.util.LevelRenderCompat;
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyMath;
 import com.solegendary.reignofnether.util.MyRenderer;
@@ -1069,6 +1070,10 @@ public class UnitClientEvents {
                     }
                 }
             } else if (evt.getStage() == AFTER_CUTOUT_BLOCKS) {
+                // AFTER_CUTOUT_BLOCKS runs before RenderSystem's model-view has the camera rotation, and a batch
+                // is drawn with whatever that stack holds at flush time - so draw and flush under the
+                // event's own model-view or these boxes keep a fixed world-axis orientation
+                LevelRenderCompat.drawAndFlush(evt, () -> {
                 if (MinimapClientEvents.shouldUnderline()) {
                     var selectedEntityIds = new HashSet<>();
                     for (LivingEntity selectedUnit : selectedUnits) {
@@ -1126,9 +1131,8 @@ public class UnitClientEvents {
                     }
                     MinimapClientEvents.highlightNeutralFogUnits(evt.getPoseStack(),
                             MC.renderBuffers().bufferSource().getBuffer(MyRenderer.LINES_UNDER_ENTITIES));
-                    MC.renderBuffers().bufferSource().endBatch(MyRenderer.LINES_UNDER_ENTITIES);
-                    MC.renderBuffers().bufferSource().endBatch(MyRenderer.LINES_NO_DEPTH_TEST);
                 }
+                });
             }
             // render items in front of face for eating units
             for (LivingEntity entity : getAllUnits()) {

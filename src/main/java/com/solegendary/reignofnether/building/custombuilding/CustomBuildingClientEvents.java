@@ -7,6 +7,7 @@ import com.solegendary.reignofnether.building.BuildingBlockData;
 import com.solegendary.reignofnether.guiscreen.TopdownGui;
 import com.solegendary.reignofnether.hud.buttons.Button;
 import com.solegendary.reignofnether.hud.RectZone;
+import com.solegendary.reignofnether.util.LevelRenderCompat;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -108,6 +109,10 @@ public class CustomBuildingClientEvents {
                         1f, 1f, 1f, 1f);
             }
         }
+
+        // vanilla empties the buffer source before dispatching this stage, so the boxes would
+        // otherwise linger until the GUI pass flushes them with an orthographic matrix
+        LevelRenderCompat.flushWorldGeometry();
     }
 
     @SubscribeEvent

@@ -12,6 +12,7 @@ import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.util.LevelRenderCompat;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -244,5 +245,9 @@ public class ResourcesClientEvents {
             floatingText.tickAge += 1;
         }
         floatingTexts.removeIf(t -> t.tickAge > FLOATING_TEXT_MAX_AGE);
+
+        // the font quads live in the shared builder until something flushes it, and vanilla's next
+        // endBatch() is the GUI pass's - an orthographic matrix. Flush before that happens.
+        LevelRenderCompat.flushWorldGeometry();
     }
 }

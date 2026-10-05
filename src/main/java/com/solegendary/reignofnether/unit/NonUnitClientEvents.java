@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.research.ResearchClient;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.util.LevelRenderCompat;
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
@@ -56,6 +57,9 @@ public class NonUnitClientEvents {
 
         // AFTER_CUTOUT_BLOCKS lets us see checkpoints through leaves
         if (OrthoviewClientEvents.isEnabled() && evt.getStage() == AFTER_CUTOUT_BLOCKS) {
+            // see LevelRenderCompat: at this stage RenderSystem's model-view does not have the
+            // camera rotation yet, so both the draw and the flush have to happen under it
+            LevelRenderCompat.drawAndFlush(evt, () -> {
             VertexConsumer vertexConsumerLine = MC.renderBuffers().bufferSource().getBuffer(RenderType.LINES);
             ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
             VertexConsumer vertexConsumerEntityTranslucent = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
@@ -101,6 +105,7 @@ public class NonUnitClientEvents {
                     }
                 }
             }
+            });
         }
     }
 }

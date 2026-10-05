@@ -14,6 +14,7 @@ import com.solegendary.reignofnether.research.ResearchClient;
 import com.solegendary.reignofnether.research.researchItems.ResearchSculkAmplifiers;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
+import com.solegendary.reignofnether.util.LevelRenderCompat;
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
@@ -39,12 +40,13 @@ public class BlockClientEvents {
     // deals with block rendering jobs like range indicators
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent evt) {
-        ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
-        var vertexConsumer = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
         if (evt.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
             return;
         }
+        ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
+        var vertexConsumer = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
         // draw range indicators for buildings with abilities and monster night sources
+        try {
         for (BuildingPlacement building : BuildingClientEvents.getBuildings()) {
             RangeIndicatorAddon ria;
             if ((ria = building.getBuilding().getActiveAddon(RangeIndicatorAddon.class)) != null) {
@@ -86,6 +88,8 @@ public class BlockClientEvents {
             }
         }
 
+        // early returns below would otherwise leave the range indicators queued in the shared
+        // builder for the GUI pass to flush with an orthographic matrix (see LevelRenderCompat)
         if (MC.player == null || MC.level == null) return;
         ItemStack heldItem = MC.player.getMainHandItem();
         if (!heldItem.is(BlockRegistrar.SPIDER_FRIENDLY_BARRIER.get().asItem()))
@@ -99,6 +103,9 @@ public class BlockClientEvents {
             if (MC.level.getBlockState(pos).getBlock() instanceof SpiderFriendlyBarrierBlock) {
                 MyRenderer.drawBlockOutline(evt.getPoseStack(), pos, 0.6f);
             }
+        }
+        } finally {
+            LevelRenderCompat.flushWorldGeometry();
         }
     }
 

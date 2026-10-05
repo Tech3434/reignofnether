@@ -34,6 +34,7 @@ import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.util.LevelRenderCompat;
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
@@ -275,14 +276,9 @@ public class BuildingClientEvents {
             // .getModelData(MC.level, bp));
 
 matrix.pushPose();
-        Entity cam = MC.cameraEntity;
-        matrix.translate( // bp is center of block whereas render is corner, so offset by 0.5
-                // Use the camera's eye height, like every other line helper in MyRenderer does.
-                // Against cam.getY() (the feet) this lands about a block low, which reads as a
-                // sideways shift when the ortho camera looks up and to the right.
-                bp.getX() - cam.getX(),
-                bp.getY() - (cam.getY() + cam.getEyeHeight()) - 0.6,
-                bp.getZ() - cam.getZ());
+            Entity cam = MC.cameraEntity;
+            matrix.translate( // bp is center of block whereas render is corner, so offset by 0.5
+                    bp.getX() - cam.getX(), bp.getY() - cam.getY() - 0.6, bp.getZ() - cam.getZ());
 
             int overlayColour = isGreen ? OverlayTexture.pack(0, 0) : OverlayTexture.pack(0, 3);
             if (forceColour == 1) {
@@ -415,7 +411,13 @@ matrix.pushPose();
             boolean isInBrightChunk = FogOfWarClientEvents.isBuildingInBrightChunk(building);
             boolean inWorldBorderOrInSandbox = SandboxClientEvents.isSandboxPlayer() || !building.isOutsideWorldBorder();
 
-            AABB aabb = new AABB(building.minCorner.getCenter(), building.maxCorner.offset(1, 1, 1).getCenter());
+            // minCorner/maxCorner are inclusive block positions, so the footprint runs to maxCorner + 1.
+            // Build it from the lower corners, not BlockPos#getCenter(): the latter spans the two
+            // corner blocks' centres and so shifts the box half a block on every axis, which shows up
+            // as a constant world-space offset no camera change can undo. 1.21.1 dropped
+            // AABB(BlockPos, BlockPos), which is what atLowerCornerOf() replaces.
+            AABB aabb = new AABB(Vec3.atLowerCornerOf(building.minCorner),
+                                 Vec3.atLowerCornerOf(building.maxCorner.offset(1, 1, 1)));
 
             var colorHex = new Color(PlayerColors.getPlayerDisplayColorHex(building.ownerName));
             float r = colorHex.getRed() / 255.0f;
@@ -481,11 +483,12 @@ matrix.pushPose();
             }
         }
 
-        // Flush everything this stage queued. Without it the geometry lingers in a shared builder and
-        // is eventually drawn by an unrelated flush with the wrong pose.
-        MC.renderBuffers().bufferSource().endBatch(BUILDING_FILL);
-        MC.renderBuffers().bufferSource().endBatch(MyRenderer.LINES_NO_DEPTH_TEST);
-        MC.renderBuffers().bufferSource().endBatch(MyRenderer.LINES_UNDER_ENTITIES);
+        // Flush everything this stage queued. Vanilla empties both buffer sources before it dispatches
+        // AFTER_TRANSLUCENT_BLOCKS (LevelRenderer lines 1170-1173 in the fabulous branch), so
+        // otherwise the geometry survives into the GUI pass, whose GuiGraphics#flush is the next
+        // endBatch() to run - with an orthographic projection and a Z-translated model-view.
+        // drawBuilding() also queues block models into the crumbling source.
+        LevelRenderCompat.flushWorldGeometry();
     }
 
     // on scroll rotate the building placement by 90deg by resorting the blocks list

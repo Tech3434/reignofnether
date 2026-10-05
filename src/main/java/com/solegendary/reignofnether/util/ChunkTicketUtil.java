@@ -5,8 +5,6 @@ import java.util.Objects;
 
 import com.solegendary.reignofnether.ReignOfNether;
 
-import net.minecraft.server.level.ChunkLevel;
-import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
@@ -17,9 +15,20 @@ import net.minecraft.world.level.ChunkPos;
  * dropped that helper in favour of the vanilla region-ticket API, so the per-owner bookkeeping
  * lives here: one ticket type per ticking flag, keyed on the owner object.
  *
- * <p>Vanilla {@code DistanceManager#addRegionTicket} takes a level in {@code FullChunkStatus}
- * units ({@code ENTITY_TICKING} < {@code BLOCK_TICKING} < {@code FULL}), so a ticking=false ticket
- * simply asks for the weaker status — the same distinction the old {@code ticking} flag made.
+ * <p><b>The third argument is a radius in chunks, not a status level.</b>
+ * {@code DistanceManager#addRegionTicket} computes
+ * {@code ticketLevel = ChunkLevel.byStatus(FullChunkStatus.FULL) - radius}, and a ticket at level
+ * {@code L} marks every position within {@code MAX_LEVEL - L} chunks as needing generation - so
+ * {@code radius = 0} means "this chunk alone, at FULL" and any larger value floods outwards.
+ * Passing a {@code ChunkLevel}/{@code FullChunkStatus} value is the natural misreading here
+ * ({@code ChunkLevel.byStatus(FULL)} is 33) and yields {@code level = 0}, i.e. a 44-chunk radius
+ * per ticket: one unit then pins roughly 8000 chunks at generation level, which is enough to keep
+ * the overworld's {@code ChunkMap#hasWork()} permanently true and to make quitting the world spin
+ * on "Saving worlds" with the server thread pegged at 100% CPU.
+ *
+ * <p>Vanilla tickets are monotone - a lower level always covers a wider area - so there is no way
+ * to ask for "this chunk at BLOCK_TICKING but not its neighbours". Radius 0 is the tightest the
+ * model can express for both cases.
  */
 public final class ChunkTicketUtil {
 	private ChunkTicketUtil() {}
@@ -52,13 +61,12 @@ public final class ChunkTicketUtil {
 	 */
 	public static void forceChunk(ServerLevel level, Object owner, int chunkX, int chunkZ, boolean add, boolean ticking) {
 		ChunkPos pos = new ChunkPos(chunkX, chunkZ);
-		FullChunkStatus status = ticking ? FullChunkStatus.FULL : FullChunkStatus.BLOCK_TICKING;
+		int radius = 0;
 		TicketType<Object> type = ticking ? OWNER_ENTITY_TICKING : OWNER_BLOCK_TICKING;
-		int ticketLevel = ChunkLevel.byStatus(status);
 		if (add) {
-			level.getChunkSource().addRegionTicket(type, pos, ticketLevel, owner, true);
+			level.getChunkSource().addRegionTicket(type, pos, radius, owner, true);
 		} else {
-			level.getChunkSource().removeRegionTicket(type, pos, ticketLevel, owner, true);
+			level.getChunkSource().removeRegionTicket(type, pos, radius, owner, true);
 		}
 	}
 }
