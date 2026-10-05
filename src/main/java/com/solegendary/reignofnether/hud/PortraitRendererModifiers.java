@@ -1,16 +1,9 @@
 package com.solegendary.reignofnether.hud;
 
 import com.mojang.datafixers.util.Pair;
-import com.solegendary.reignofnether.entities.TotemOfCasting;
-import com.solegendary.reignofnether.entities.TotemOfProtection;
-import com.solegendary.reignofnether.entities.TotemOfRegeneration;
-import com.solegendary.reignofnether.entities.TotemOfShielding;
+
 import com.solegendary.reignofnether.unit.UnitClientEvents;
-import com.solegendary.reignofnether.unit.units.monsters.BatUnit;
-import com.solegendary.reignofnether.unit.units.monsters.NecromancerUnit;
-import com.solegendary.reignofnether.unit.units.monsters.WretchedWraithUnit;
-import com.solegendary.reignofnether.unit.units.neutral.PolarBearUnit;
-import com.solegendary.reignofnether.unit.units.piglins.*;
+
 import com.solegendary.reignofnether.unit.units.villagers.EnchanterUnit;
 import com.solegendary.reignofnether.unit.units.villagers.RoyalGuardUnit;
 import com.solegendary.reignofnether.unit.units.villagers.ScoutCatProd;

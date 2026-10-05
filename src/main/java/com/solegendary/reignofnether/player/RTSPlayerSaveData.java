@@ -3,8 +3,7 @@ package com.solegendary.reignofnether.player;
 import net.minecraft.core.HolderLookup;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.ability.TradeAction;
-import com.solegendary.reignofnether.ability.abilities.TradeResources;
-import com.solegendary.reignofnether.faction.Faction;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;

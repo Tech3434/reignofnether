@@ -165,11 +165,7 @@ public abstract class ProductionItem {
             RTSPlayer rtsPlayer = PlayerServerEvents.getRTSPlayer(placement.ownerName);
             if (rtsPlayer != null) {
                 rtsPlayer.scores.addToScore(RTSPlayerScoresEnum.TOTAL_UNITS_PRODUCED);
-                if (List.of(
-                        ProductionItems.VILLAGER,
-                        ProductionItems.ZOMBIE_VILLAGER,
-                        ProductionItems.GRUNT
-                ).contains(this))
+                if (this == ProductionItems.VILLAGER)
                     rtsPlayer.scores.addToScore(RTSPlayerScoresEnum.WORKER_UNITS_PRODUCED);
                 else
                     rtsPlayer.scores.addToScore(RTSPlayerScoresEnum.MILITARY_UNITS_PRODUCED);

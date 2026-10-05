@@ -5,16 +5,14 @@ import com.solegendary.reignofnether.config.ReignOfNetherClientConfigs;
 import com.solegendary.reignofnether.guiscreen.TopdownGui;
 import com.solegendary.reignofnether.hud.buttons.Button;
 import com.solegendary.reignofnether.hud.HudClientEvents;
-import com.solegendary.reignofnether.matchstart.MatchStartScreen;
+
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.player.PlayerClientEvents;
 import com.solegendary.reignofnether.registrars.SoundRegistrar;
 import com.solegendary.reignofnether.sounds.FadeableMusicInstance;
 import com.solegendary.reignofnether.sounds.SoundClientEvents;
-import com.solegendary.reignofnether.survival.SurvivalClientEvents;
-import com.solegendary.reignofnether.tutorial.TutorialClientEvents;
-import com.solegendary.reignofnether.tutorial.TutorialStage;
+
 import com.solegendary.reignofnether.util.MyRenderer;
 import com.solegendary.reignofnether.util.GuiLayerCompat;
 import net.minecraft.client.Minecraft;

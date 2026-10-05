@@ -2,10 +2,7 @@ package com.solegendary.reignofnether.unit.goals;
 
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.AbilityClientboundPacket;
-import com.solegendary.reignofnether.ability.abilities.ThrowHealingPotion;
-import com.solegendary.reignofnether.ability.abilities.ThrowLingeringHarmingPotion;
-import com.solegendary.reignofnether.ability.abilities.ThrowLingeringRegenPotion;
-import com.solegendary.reignofnether.ability.abilities.ThrowWaterPotion;
+
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.units.villagers.WitchUnit;

@@ -10,7 +10,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.hud.RectZone;
-import com.solegendary.reignofnether.items.UnitItem;
+
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -163,7 +163,6 @@ public class MyRenderer {
         pose.translate((float) -cx, (float) -cy, (float) -cz);
         return pose;
     }
-
 
     public static void drawLineBox(PoseStack matrixStack, AABB aabb, VertexConsumer vertexConsumer, float r, float g, float b, float a) {
         Entity camEntity = MC.getCameraEntity();

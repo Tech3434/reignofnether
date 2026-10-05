@@ -6,18 +6,18 @@ import com.mojang.serialization.Dynamic;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
-import com.solegendary.reignofnether.ability.abilities.CallToArmsUnit;
+
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.building.BuildingBlock;
 import com.solegendary.reignofnether.building.BuildingPlaceButton;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuildingClientEvents;
 import com.solegendary.reignofnether.building.production.ProductionItems;
-import com.solegendary.reignofnether.faction.FactionRegistries;
+
 import com.solegendary.reignofnether.hud.TooltipColours;
 import com.solegendary.reignofnether.hud.buttons.Button;
 import com.solegendary.reignofnether.items.UnitInventory;
-import com.solegendary.reignofnether.items.UnitItems;
+
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.registrars.AttributeRegistrar;
 import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
@@ -34,7 +34,7 @@ import com.solegendary.reignofnether.unit.goals.*;
 import com.solegendary.reignofnether.unit.interfaces.*;
 import com.solegendary.reignofnether.unit.packets.UnitConvertClientboundPacket;
 import com.solegendary.reignofnether.unit.packets.UnitSyncClientboundPacket;
-import com.solegendary.reignofnether.faction.Faction;
+
 import net.minecraft.client.resources.language.I18n;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 
@@ -486,7 +486,6 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
 
     public void convertToMilitia() {
         if (!converted) {
-            LivingEntity newEntity = this.convertToUnit(EntityRegistrar.TEMPORARY_MILITIA_UNIT.get());
             if (newEntity instanceof MilitiaUnit mUnit) {
                 mUnit.resourcesSaveData = this.gatherResourcesGoal.permSaveData;
                 mUnit.profession = this.getProfession();
@@ -548,13 +547,11 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
 
     @Override
     public void setupEquipmentAndUpgradesClient() {
-        if (ResearchClient.hasResearch(ProductionItems.RESEARCH_RESOURCE_CAPACITY))
             this.maxResources = 200;
     }
 
     @Override
     public void setupEquipmentAndUpgradesServer() {
-        if (ResearchServerEvents.playerHasResearch(this.getOwnerName(), ProductionItems.RESEARCH_RESOURCE_CAPACITY))
             this.maxResources = 200;
 
         if (this.getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof BannerItem)

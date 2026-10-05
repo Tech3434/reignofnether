@@ -1,6 +1,5 @@
 package com.solegendary.reignofnether.items;
 
-import com.solegendary.reignofnether.items.UnitItem;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.registrars.PacketHandler;

@@ -4,17 +4,16 @@ import com.solegendary.reignofnether.util.ItemTagCompat;
 import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.mojang.datafixers.util.Pair;
 import com.solegendary.reignofnether.ReignOfNether;
-import com.solegendary.reignofnether.ability.heroAbilities.enchanter.ProtectiveEnchantment;
-import com.solegendary.reignofnether.ability.heroAbilities.necromancer.BloodMoon;
+
 import com.solegendary.reignofnether.alliance.AlliancesClient;
 import com.solegendary.reignofnether.blocks.BlockClientEvents;
 import com.solegendary.reignofnether.blocks.WraithSnowLayerBlock;
 import com.solegendary.reignofnether.building.*;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
 import com.solegendary.reignofnether.building.buildings.placements.CustomBuildingPlacement;
-import com.solegendary.reignofnether.building.buildings.shared.AbstractBridge;
+
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
-import com.solegendary.reignofnether.faction.Faction;
+
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.nether.NetherBlocks;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
@@ -30,11 +29,7 @@ import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.goals.AbstractMeleeAttackUnitGoal;
 import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.units.monsters.BoggedUnit;
-import com.solegendary.reignofnether.unit.units.monsters.PhantomSummon;
-import com.solegendary.reignofnether.unit.units.monsters.WraithUnit;
-import com.solegendary.reignofnether.unit.units.piglins.GhastUnit;
-import com.solegendary.reignofnether.unit.units.piglins.WitherSkeletonUnit;
+
 import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 import com.solegendary.reignofnether.unit.units.villagers.VillagerUnitProfession;
 import com.solegendary.reignofnether.unit.units.villagers.WindcallerUnit;
@@ -959,24 +954,9 @@ public class MiscUtil {
 
     public static boolean canWearChristmasHat(LivingEntity entity) {
         boolean isFarmer = entity instanceof VillagerUnit vUnit && vUnit.getUnitProfession() == VillagerUnitProfession.FARMER;
-        return List.of(
-                EntityRegistrar.VILLAGER_UNIT.get(),
-                EntityRegistrar.VINDICATOR_UNIT.get(),
-                EntityRegistrar.EVOKER_UNIT.get(),
-                EntityRegistrar.MILITIA_UNIT.get(),
-                EntityRegistrar.PILLAGER_UNIT.get(),
-                EntityRegistrar.ZOMBIE_VILLAGER_UNIT.get(),
-                EntityRegistrar.ZOMBIE_UNIT.get(),
-                EntityRegistrar.HUSK_UNIT.get(),
-                EntityRegistrar.DROWNED_UNIT.get(),
-                EntityRegistrar.SKELETON_UNIT.get(),
-                EntityRegistrar.STRAY_UNIT.get(),
-                EntityRegistrar.BOGGED_UNIT.get(),
-                EntityRegistrar.GRUNT_UNIT.get(),
-                EntityRegistrar.BRUTE_UNIT.get(),
-                EntityRegistrar.HEADHUNTER_UNIT.get(),
-                EntityRegistrar.WITHER_SKELETON_UNIT.get()
-        ).contains(entity.getType()) && !entity.hasItemInSlot(EquipmentSlot.HEAD) && !isFarmer;
+        return (entity.getType() == EntityRegistrar.VILLAGER_UNIT.get()
+                || entity.getType() == EntityRegistrar.VINDICATOR_UNIT.get())
+                && !entity.hasItemInSlot(EquipmentSlot.HEAD) && !isFarmer;
     }
 
     public static boolean isChristmasSeason() {

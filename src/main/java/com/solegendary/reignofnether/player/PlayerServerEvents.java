@@ -7,7 +7,7 @@ import com.solegendary.reignofnether.ability.TradeAction;
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.alliance.AllyCommand;
 import com.solegendary.reignofnether.building.*;
-import com.solegendary.reignofnether.building.buildings.neutral.Beacon;
+
 import com.solegendary.reignofnether.building.buildings.placements.CustomBuildingPlacement;
 import com.solegendary.reignofnether.building.buildings.placements.ProductionPlacement;
 
@@ -15,10 +15,9 @@ import com.solegendary.reignofnether.gamemode.GameMode;
 import com.solegendary.reignofnether.gamemode.GameModeClientboundPacket;
 import com.solegendary.reignofnether.gamerules.GameruleClientboundPacket;
 import com.solegendary.reignofnether.guiscreen.TopdownGuiContainer;
-import com.solegendary.reignofnether.hero.HeroClientboundPacket;
-import com.solegendary.reignofnether.hero.HeroServerEvents;
+
 import com.solegendary.reignofnether.items.ItemServerEvents;
-import com.solegendary.reignofnether.items.RandomItemDropRule;
+
 import com.solegendary.reignofnether.registrars.EntityRegistrar;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.research.ResearchClientboundPacket;
@@ -27,21 +26,17 @@ import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
 import com.solegendary.reignofnether.sandbox.SandboxServer;
-import com.solegendary.reignofnether.scenario.ScenarioRole;
-import com.solegendary.reignofnether.scenario.ScenarioServerEvents;
-import com.solegendary.reignofnether.scenario.ScenarioUtils;
-import com.solegendary.reignofnether.startpos.StartPosServerEvents;
-import com.solegendary.reignofnether.survival.SurvivalServerEvents;
+
 import com.solegendary.reignofnether.time.TimeServerEvents;
 import com.solegendary.reignofnether.time.TimeUtils;
-import com.solegendary.reignofnether.tutorial.TutorialServerEvents;
+
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
 import com.solegendary.reignofnether.unit.packets.UnitSyncClientboundPacket;
-import com.solegendary.reignofnether.faction.Faction;
+
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.worldborder.WorldBorderServerEvents;
 import net.minecraft.commands.Commands;
@@ -89,7 +84,7 @@ import com.solegendary.reignofnether.player.PlayerClientboundPacket;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.Mth;
 import com.solegendary.reignofnether.player.MatchStatsClientboundPacket;
-import com.solegendary.reignofnether.matchstart.MatchEndScreen;
+
 import com.solegendary.reignofnether.building.Buildings;
 import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
@@ -458,14 +453,9 @@ public class PlayerServerEvents {
 
             EntityType<? extends Unit> workerEntityType = switch (faction) {
                 case VILLAGERS -> EntityRegistrar.VILLAGER_UNIT.get();
-                case MONSTERS -> EntityRegistrar.ZOMBIE_VILLAGER_UNIT.get();
-                case PIGLINS -> EntityRegistrar.GRUNT_UNIT.get();
                 default -> null;
             };
             EntityType<? extends Unit> scoutEntityType = switch (faction) {
-                case VILLAGERS -> isDogPerson ? EntityRegistrar.SCOUT_DOG_UNIT.get() : EntityRegistrar.SCOUT_CAT_UNIT.get();
-                case MONSTERS -> EntityRegistrar.BAT_UNIT.get();
-                case PIGLINS -> EntityRegistrar.STRIDER_UNIT.get();
                 default -> null;
             };
             // first RTS join into a fresh game: snapshot the playable area for late joiners
@@ -520,7 +510,6 @@ public class PlayerServerEvents {
                     startingWorkers.add(entity);
                 }
             }
-            boolean isBat = scoutEntityType == EntityRegistrar.BAT_UNIT.get();
             if (false) {
                 BlockPos nonReadiedScoutBp = new BlockPos((int) pos.x - 1, 0,(int) pos.z - 1);
                 Entity scoutEntity = scoutEntityType != null ? scoutEntityType.create(level) : null;
@@ -561,12 +550,8 @@ public class PlayerServerEvents {
                         blocks = Buildings.TOWN_CENTRE.getRelativeBlockData(level);
                     }
                     case MONSTERS -> {
-                        building = Buildings.MAUSOLEUM;
-                        blocks = Buildings.MAUSOLEUM.getRelativeBlockData(level);
                     }
                     case PIGLINS -> {
-                        building = Buildings.CENTRAL_PORTAL;
-                        blocks = Buildings.CENTRAL_PORTAL.getRelativeBlockData(level);
                     }
                 };
                 if (building != null) {
@@ -634,8 +619,6 @@ public class PlayerServerEvents {
 
             EntityType<? extends Unit> entityType = switch (faction) {
                 case VILLAGERS -> EntityRegistrar.VILLAGER_UNIT.get();
-                case MONSTERS -> EntityRegistrar.ZOMBIE_VILLAGER_UNIT.get();
-                case PIGLINS -> EntityRegistrar.GRUNT_UNIT.get();
                 default -> null;
             };
             RTSPlayer bot = RTSPlayer.getNewBot(name, faction);

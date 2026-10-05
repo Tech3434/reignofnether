@@ -3,13 +3,11 @@ package com.solegendary.reignofnether.building;
 // class for static building functions
 
 import com.solegendary.reignofnether.building.addon.NetherConvertingAddon;
-import com.solegendary.reignofnether.building.buildings.monsters.SculkCatalyst;
-import com.solegendary.reignofnether.building.buildings.monsters.Stronghold;
-import com.solegendary.reignofnether.building.buildings.piglins.Fortress;
+
 import com.solegendary.reignofnether.building.buildings.placements.BeaconPlacement;
 import com.solegendary.reignofnether.building.buildings.placements.FarmPlacement;
 import com.solegendary.reignofnether.building.buildings.placements.SculkCatalystPlacement;
-import com.solegendary.reignofnether.building.buildings.shared.AbstractBridge;
+
 import com.solegendary.reignofnether.building.buildings.villagers.Castle;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import net.minecraft.core.BlockPos;

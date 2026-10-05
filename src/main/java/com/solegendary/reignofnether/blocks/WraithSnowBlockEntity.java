@@ -1,9 +1,7 @@
 package com.solegendary.reignofnether.blocks;
 
-import com.solegendary.reignofnether.ability.heroAbilities.wretchedwraith.BitterFrostPassive;
-import com.solegendary.reignofnether.ability.heroAbilities.wretchedwraith.Blizzard;
 import com.solegendary.reignofnether.registrars.BlockEntityRegistrar;
-import com.solegendary.reignofnether.unit.units.monsters.WretchedWraithUnit;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -27,7 +25,6 @@ public class WraithSnowBlockEntity extends BlockEntity {
     private int tickAge = 0;
 
     public WraithSnowBlockEntity(BlockPos pos, BlockState state) {
-        super(BlockEntityRegistrar.WRAITH_SNOW_BLOCK_ENTITY.get(), pos, state);
         randomiseLifeTicks();
     }
 

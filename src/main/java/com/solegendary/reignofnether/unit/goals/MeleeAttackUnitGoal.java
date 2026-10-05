@@ -1,6 +1,5 @@
 package com.solegendary.reignofnether.unit.goals;
 
-import com.solegendary.reignofnether.unit.units.neutral.PandaUnit;
 import net.minecraft.world.entity.Mob;
 
 public class MeleeAttackUnitGoal extends AbstractMeleeAttackUnitGoal {

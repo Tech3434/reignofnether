@@ -9,24 +9,20 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import com.mojang.datafixers.util.Pair;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.ability.AbilityClientboundPacket;
-import com.solegendary.reignofnether.ability.heroAbilities.necromancer.SoulSiphonPassive;
-import com.solegendary.reignofnether.ability.heroAbilities.wildfire.ScorchingGaze;
+
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
 import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
-import com.solegendary.reignofnether.building.buildings.monsters.SculkCatalyst;
+
 import com.solegendary.reignofnether.building.buildings.placements.GraveyardPlacement;
 import com.solegendary.reignofnether.building.buildings.placements.ProductionPlacement;
 import com.solegendary.reignofnether.building.buildings.placements.SculkCatalystPlacement;
 import com.solegendary.reignofnether.building.buildings.villagers.IronGolemBuilding;
 import com.solegendary.reignofnether.building.production.ActiveProduction;
 import com.solegendary.reignofnether.building.production.ProductionItems;
-import com.solegendary.reignofnether.entities.BlazeUnitFireball;
-import com.solegendary.reignofnether.entities.GhastUnitFireball;
-import com.solegendary.reignofnether.entities.WindcallerProjectile;
-import com.solegendary.reignofnether.hero.HeroServerEvents;
+
 import com.solegendary.reignofnether.items.ItemClientboundPacket;
 import com.solegendary.reignofnether.items.ItemServerEvents;
 import com.solegendary.reignofnether.items.UnitInventory;
@@ -42,8 +38,7 @@ import com.solegendary.reignofnether.sounds.SoundAction;
 import com.solegendary.reignofnether.sounds.SoundClientboundPacket;
 import com.solegendary.reignofnether.unit.interfaces.*;
 import com.solegendary.reignofnether.unit.packets.*;
-import com.solegendary.reignofnether.unit.units.monsters.*;
-import com.solegendary.reignofnether.unit.units.piglins.*;
+
 import com.solegendary.reignofnether.unit.units.villagers.*;
 import com.solegendary.reignofnether.util.EnchantmentUtil;
 import com.solegendary.reignofnether.util.MiscUtil;
@@ -549,52 +544,6 @@ public class UnitServerEvents {
             creeperUnit.explodeCreeper();
         }
 
-        LivingEntity lastHurtByMob = evt.getEntity().getLastHurtByMob();
-
-        boolean drownedInfected = evt.getEntity().getActiveEffectsMap().containsKey(MobEffectRegistrar.ZOMBIE_INFECTED.get()) ||
-                lastHurtByMob instanceof DrownedUnit;
-        boolean slimeInfected = (evt.getEntity().getActiveEffectsMap().containsKey(MobEffectRegistrar.SLIME_INFECTED.get()) ||
-                ((lastHurtByMob instanceof SlimeUnit) && !(lastHurtByMob instanceof MagmaCubeUnit)));
-
-        if (lastHurtByMob instanceof Unit unit && (drownedInfected || slimeInfected)) {
-
-            EntityType<? extends Unit> entityType = null;
-
-            if (drownedInfected) {
-                if (evt.getEntity() instanceof GruntUnit || evt.getEntity() instanceof BruteUnit
-                        || evt.getEntity() instanceof HeadhunterUnit || evt.getEntity() instanceof MarauderUnit) {
-                    entityType = EntityRegistrar.ZOMBIE_PIGLIN_UNIT.get();
-                } else if (evt.getEntity() instanceof HoglinUnit) {
-                    entityType = EntityRegistrar.ZOGLIN_UNIT.get();
-                } else if (evt.getEntity() instanceof VillagerUnit) {
-                    entityType = EntityRegistrar.ZOMBIE_VILLAGER_UNIT.get();
-                } else if (evt.getEntity() instanceof VindicatorUnit || evt.getEntity() instanceof PillagerUnit
-                        || evt.getEntity() instanceof EvokerUnit || evt.getEntity() instanceof WitchUnit) {
-                    entityType = EntityRegistrar.DROWNED_UNIT.get();
-                }
-            }
-            if (slimeInfected && entityType == null && ResearchServerEvents.playerHasResearch(unit.getOwnerName(), ProductionItems.RESEARCH_SLIME_CONVERSION)) {
-                entityType = EntityRegistrar.SLIME_UNIT.get();
-            }
-
-            if (entityType != null && evt.getEntity().level() instanceof ServerLevel serverLevel) {
-                Entity entity = entityType.spawn(serverLevel, ItemStack.EMPTY,
-                    null,
-                    evt.getEntity().getOnPos(),
-                    MobSpawnType.SPAWNER,
-                    true,
-                    false
-                );
-                if (entity instanceof SlimeUnit sUnit && evt.getEntity() instanceof Unit originalEntity) {
-                    sUnit.setSize(Mth.clamp(originalEntity.getCost().population - 1, 1, 5), true);
-                }
-                if (entity instanceof Unit convertedUnit) {
-                    convertedUnit.setOwnerName(unit.getOwnerName());
-                    entity.setYRot(evt.getEntity().getYRot());
-                }
-            }
-        }
-
         if (evt.getSource().getEntity() instanceof VillagerUnit vUnit &&
             ResourceSources.isHuntableAnimal(evt.getEntity())) {
             vUnit.incrementHunterExp();
@@ -625,47 +574,6 @@ public class UnitServerEvents {
                 if (resources.getTotalValue() > 0) {
                     ResourcesClientboundPacket.showFloatingText(resources, evt.getEntity().getOnPos());
                     ResourcesServerEvents.addSubtractResources(resources);
-                }
-            }
-        }
-
-        if (!(evt.getEntity() instanceof NecromancerUnit) && !evt.getEntity().level().isClientSide()) {
-            Vec3 pos = evt.getEntity().position();
-            List<NecromancerUnit> necromancers = MiscUtil.getEntitiesWithinRange(
-                    new Vector3d(pos.x, pos.y, pos.z),
-                    SoulSiphonPassive.RANGE,
-                    NecromancerUnit.class,
-                    evt.getEntity().level());
-
-            for (NecromancerUnit necromancerUnit : necromancers) {
-                SoulSiphonPassive soulSiphon = necromancerUnit.getSoulSiphon();
-                if (soulSiphon != null) {
-                    soulSiphon.checkAndGainSouls(evt.getEntity(), necromancers.size(), necromancerUnit);
-                    AbilityClientboundPacket.doAbility(necromancerUnit.getId(), UnitAction.SOUL_SIPHON_UPDATE, necromancerUnit.souls);
-                }
-            }
-        }
-
-        if (evt.getEntity().hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.SCORCHING_FIRE.get()))) {
-            List<Mob> mobs = MiscUtil.getEntitiesWithinRange(evt.getEntity().position(), ScorchingGaze.SPREAD_RANGE, Mob.class, evt.getEntity().level());
-            ArrayList<Mob> friendlyUnits = new ArrayList<>();
-            for (Mob mob : mobs) {
-                if (mob instanceof Unit unit1 && evt.getEntity() instanceof Unit unit2 &&
-                    getUnitToEntityRelationship(unit1, evt.getEntity()) == Relationship.FRIENDLY && unit1 != unit2) {
-                    friendlyUnits.add((Mob) unit1);
-                }
-            }
-            friendlyUnits.sort(Comparator.comparing(le -> le.position().distanceToSqr(evt.getEntity().position())));
-            if (!friendlyUnits.isEmpty()) {
-                int durationSeconds = evt.getEntity().getEffect(MobEffectHelpers.holder(MobEffectRegistrar.SCORCHING_FIRE.get())).getAmplifier() - 2;
-                int durationTicks = durationSeconds * 20;
-                if (durationSeconds > 0 && friendlyUnits.get(0).addEffect(MobEffectHelpers.instance(MobEffectRegistrar.SCORCHING_FIRE.get(), durationTicks, durationSeconds))) {
-                    MiscUtil.addParticleExplosion(ParticleTypes.LAVA, 12, evt.getEntity().level(), evt.getEntity().position());
-                    SoundClientboundPacket.playSoundAtPos(SoundAction.WILDFIRE_SCORCHING_GAZE_END, friendlyUnits.get(0).blockPosition());
-                    friendlyUnits.get(0).addEffect(MobEffectHelpers.instance(MobEffects.GLOWING, durationTicks,0, true, true));
-                    if (evt.getEntity().hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.SOULS_AFLAME.get()))) {
-                        friendlyUnits.get(0).addEffect(MobEffectHelpers.instance(MobEffectRegistrar.SOULS_AFLAME.get(), durationTicks + 20, 0, true, true));
-                    }
                 }
             }
         }

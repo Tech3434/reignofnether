@@ -65,16 +65,10 @@ public abstract class EquipAbility extends Ability {
     }
 
     public boolean isCorrectUnit(LivingEntity entity) {
-        return List.of(
-                EntityRegistrar.MILITIA_UNIT.get(),
-                EntityRegistrar.VINDICATOR_UNIT.get(),
-                EntityRegistrar.PILLAGER_UNIT.get(),
-                EntityRegistrar.EVOKER_UNIT.get()
-        ).contains(entity.getType());
+        return entity.getType() == EntityRegistrar.VINDICATOR_UNIT.get();
     }
 
     public boolean isWindcaller(LivingEntity entity) {
-        return entity.getType() == EntityRegistrar.WINDCALLER_UNIT.get();
     }
 
     public boolean hasSameItem(LivingEntity entity) {

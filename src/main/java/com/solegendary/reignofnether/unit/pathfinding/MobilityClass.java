@@ -1,9 +1,9 @@
 package com.solegendary.reignofnether.unit.pathfinding;
 
 import com.solegendary.reignofnether.items.UnitInventory;
-import com.solegendary.reignofnether.items.UnitItems;
+
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.units.piglins.StriderUnit;
+
 import com.solegendary.reignofnether.unit.units.villagers.ScoutCatUnit;
 import com.solegendary.reignofnether.unit.units.villagers.ScoutDogUnit;
 import net.minecraft.world.entity.Mob;

@@ -17,12 +17,9 @@ import com.solegendary.reignofnether.hud.TextInputClientEvents;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.player.PlayerServerboundPacket;
-import com.solegendary.reignofnether.startpos.StartPosClientEvents;
-import com.solegendary.reignofnether.startpos.StartPosServerboundPacket;
-import com.solegendary.reignofnether.tutorial.TutorialClientEvents;
-import com.solegendary.reignofnether.tutorial.TutorialStage;
+
 import com.solegendary.reignofnether.unit.UnitClientEvents;
-import com.solegendary.reignofnether.faction.Faction;
+
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyMath;
 import net.minecraft.client.CameraType;
@@ -30,7 +27,7 @@ import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.client.tutorial.TutorialSteps;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;

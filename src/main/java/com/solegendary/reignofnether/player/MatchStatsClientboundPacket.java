@@ -1,7 +1,5 @@
 package com.solegendary.reignofnether.player;
 
-import com.solegendary.reignofnether.faction.Faction;
-import com.solegendary.reignofnether.matchstart.MatchEndClientEvents;
 import com.solegendary.reignofnether.registrars.PacketHandler;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.neoforged.api.distmarker.Dist;

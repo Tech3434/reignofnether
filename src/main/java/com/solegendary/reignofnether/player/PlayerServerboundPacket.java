@@ -8,11 +8,7 @@ import com.solegendary.reignofnether.gamemode.GameMode;
 import com.solegendary.reignofnether.gamemode.GameModeServerboundPacket;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.registrars.PacketHandler;
-import com.solegendary.reignofnether.startpos.StartPosServerEvents;
-import com.solegendary.reignofnether.survival.SurvivalClientEvents;
-import com.solegendary.reignofnether.survival.SurvivalServerboundPacket;
-import com.solegendary.reignofnether.survival.WaveDifficulty;
-import com.solegendary.reignofnether.faction.Faction;
+
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;

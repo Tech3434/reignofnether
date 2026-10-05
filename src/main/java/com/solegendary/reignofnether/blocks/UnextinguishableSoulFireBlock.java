@@ -1,10 +1,10 @@
 package com.solegendary.reignofnether.blocks;
 
 import com.solegendary.reignofnether.util.MobEffectHelpers;
-import com.solegendary.reignofnether.ability.heroAbilities.wildfire.SoulsAflame;
+
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
-import com.solegendary.reignofnether.unit.units.piglins.WildfireUnit;
+
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

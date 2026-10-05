@@ -21,7 +21,6 @@ public class RTSStructureBlockEntity extends StructureBlockEntity {
 
     public RTSStructureBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super(pPos, pBlockState);
-        this.type = BlockEntityRegistrar.RTS_STRUCTURE_BLOCK_ENTITY.get();
     }
 
     // updateBlockState and getRelatedCorners became private in 1.21.1 and are only ever called

@@ -1,8 +1,7 @@
 package com.solegendary.reignofnether.building.buildings.villagers;
 
 import com.solegendary.reignofnether.ability.Ability;
-import com.solegendary.reignofnether.ability.abilities.BackToWorkBuilding;
-import com.solegendary.reignofnether.ability.abilities.CallToArmsBuilding;
+
 import com.solegendary.reignofnether.api.ReignOfNetherRegistries;
 import com.solegendary.reignofnether.blocks.BlockClientEvents;
 import com.solegendary.reignofnether.building.*;
@@ -16,7 +15,7 @@ import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.resources.ResourceCosts;
-import com.solegendary.reignofnether.faction.Faction;
+
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
@@ -60,8 +59,6 @@ public class TownCentre extends ProductionBuilding implements RangeIndicatorAddo
         this.abilities.add(backToWork, Keybindings.build);
 
         this.productions.add(ProductionItems.VILLAGER, Keybindings.abilitySlot1);
-        this.productions.add(ProductionItems.SCOUT_DOG, Keybindings.abilitySlot2);
-        this.productions.add(ProductionItems.SCOUT_CAT, Keybindings.abilitySlot2);
 
         setActiveAddon(RangeIndicatorAddon.class, this, true);
     }

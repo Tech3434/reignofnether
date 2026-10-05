@@ -1,6 +1,5 @@
 package com.solegendary.reignofnether.unit.controls;
 
-import com.solegendary.reignofnether.unit.units.monsters.SlimeUnit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvent;

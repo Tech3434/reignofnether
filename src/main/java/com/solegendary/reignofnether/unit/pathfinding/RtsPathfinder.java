@@ -1,7 +1,7 @@
 package com.solegendary.reignofnether.unit.pathfinding;
 
 import com.solegendary.reignofnether.ReignOfNether;
-import com.solegendary.reignofnether.unit.units.monsters.SpiderUnit;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;

@@ -11,7 +11,7 @@ import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.items.ItemClientEvents;
 import com.solegendary.reignofnether.registrars.BlockRegistrar;
 import com.solegendary.reignofnether.research.ResearchClient;
-import com.solegendary.reignofnether.research.researchItems.ResearchSculkAmplifiers;
+
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.util.LevelRenderCompat;
@@ -132,7 +132,6 @@ public class BlockClientEvents {
                 tempMouseCircleOrigin = new Pair<>(CursorClientEvents.getPreselectedBlockPos(), nsa0.getDefaultNightRange() - VISIBLE_BORDER_ADJ);
             } else if (BuildingClientEvents.getPreselectedBuilding() instanceof SculkCatalystPlacement scp &&
                         CursorClientEvents.getLeftClickAction() == UnitAction.CAST_SONIC_BOOM &&
-                        ResearchClient.hasResearch(ProductionItems.RESEARCH_SCULK_AMPLIFIERS) &&
                         MC.player != null && scp.ownerName.equals(MC.player.getName().getString())) {
                 tempMouseCircleOrigin = new Pair<>(scp.centrePos, ResearchSculkAmplifiers.SPLIT_BOOM_RANGE);
             } else {

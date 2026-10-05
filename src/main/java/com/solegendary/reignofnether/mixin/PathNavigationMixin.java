@@ -3,7 +3,7 @@ package com.solegendary.reignofnether.mixin;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.pathfinding.PathfinderConfig;
-import com.solegendary.reignofnether.unit.units.monsters.SpiderUnit;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;

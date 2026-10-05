@@ -23,9 +23,9 @@ import net.minecraft.world.level.Level;
 
 import java.util.List;
 import com.solegendary.reignofnether.hud.buttons.UnitItemInventoryButton;
-import com.solegendary.reignofnether.items.UnitItem;
+
 import com.solegendary.reignofnether.items.UnitInventory;
-import com.solegendary.reignofnether.items.ItemUtil;
+
 import com.solegendary.reignofnether.items.ItemServerboundPacket;
 import com.solegendary.reignofnether.items.ItemClientEvents;
 import com.solegendary.reignofnether.hud.buttons.Button;

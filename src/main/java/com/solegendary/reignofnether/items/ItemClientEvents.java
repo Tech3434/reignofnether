@@ -3,7 +3,7 @@ package com.solegendary.reignofnether.items;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.buildings.placements.ItemShopPlacement;
-import com.solegendary.reignofnether.building.buildings.shared.AbstractMarket;
+
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
 
 import com.solegendary.reignofnether.guiscreen.TopdownGui;
@@ -15,8 +15,7 @@ import com.solegendary.reignofnether.items.unititems.EmptyUnitItem;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
-import com.solegendary.reignofnether.resources.ResourceSource;
-import com.solegendary.reignofnether.resources.ResourceSources;
+
 import com.solegendary.reignofnether.unit.Checkpoint;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitClientEvents;

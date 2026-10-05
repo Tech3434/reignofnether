@@ -3,18 +3,13 @@ package com.solegendary.reignofnether.player;
 import com.solegendary.reignofnether.ability.TradeAction;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
-import com.solegendary.reignofnether.building.buildings.neutral.Beacon;
-import com.solegendary.reignofnether.building.buildings.placements.BeaconPlacement;
 
-import com.solegendary.reignofnether.faction.Faction;
-import com.solegendary.reignofnether.items.ItemUtil;
-import com.solegendary.reignofnether.items.UnitItem;
-import com.solegendary.reignofnether.scenario.ScenarioUtils;
+import com.solegendary.reignofnether.building.buildings.placements.BeaconPlacement;
 
 import java.util.*;
 
 import static com.solegendary.reignofnether.ability.TradeAction.*;
-import static com.solegendary.reignofnether.ability.abilities.TradeResources.*;
+
 import static com.solegendary.reignofnether.player.PlayerServerEvents.TICKS_TO_REVEAL;
 import com.solegendary.reignofnether.player.RTSPlayerScores;
 import com.solegendary.reignofnether.player.RTSPlayer;

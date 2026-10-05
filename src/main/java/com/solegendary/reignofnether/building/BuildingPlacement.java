@@ -16,19 +16,14 @@ import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.attackwarnings.AttackWarningClientboundPacket;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
 import com.solegendary.reignofnether.building.addon.NetherConvertingAddon;
-import com.solegendary.reignofnether.building.buildings.piglins.CentralPortal;
-import com.solegendary.reignofnether.building.buildings.piglins.FlameSanctuary;
-import com.solegendary.reignofnether.building.buildings.piglins.Fortress;
-import com.solegendary.reignofnether.building.buildings.piglins.PortalBasic;
+
 import com.solegendary.reignofnether.building.buildings.placements.BeaconPlacement;
 import com.solegendary.reignofnether.building.buildings.placements.PortalPlacement;
-import com.solegendary.reignofnether.building.buildings.shared.AbstractBridge;
-import com.solegendary.reignofnether.building.buildings.shared.AbstractStockpile;
+
 import com.solegendary.reignofnether.building.custombuilding.CustomBuilding;
 import com.solegendary.reignofnether.building.data.DataStorage;
 import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.debug.RtsDebugClientEvents;
-import com.solegendary.reignofnether.faction.Faction;
 
 import com.solegendary.reignofnether.gamerules.GameruleClient;
 import com.solegendary.reignofnether.hud.buttons.AbilityButton;
@@ -42,21 +37,19 @@ import com.solegendary.reignofnether.registrars.EntityRegistrar;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import com.solegendary.reignofnether.research.ResearchServerEvents;
-import com.solegendary.reignofnether.research.researchItems.ResearchSilverfish;
+
 import com.solegendary.reignofnether.blocks.BlockUtils;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.resources.ResourceName;
-import com.solegendary.reignofnether.resources.ResourceSources;
+
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesClientboundPacket;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
 import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
 import com.solegendary.reignofnether.sandbox.SandboxServer;
-import com.solegendary.reignofnether.scenario.ScenarioUtils;
+
 import com.solegendary.reignofnether.sounds.SoundClientEvents;
-import com.solegendary.reignofnether.survival.SurvivalServerEvents;
-import com.solegendary.reignofnether.tutorial.TutorialClientEvents;
-import com.solegendary.reignofnether.tutorial.TutorialServerEvents;
+
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.goals.BuildRepairGoal;
@@ -65,7 +58,7 @@ import com.solegendary.reignofnether.unit.goals.RangedAttackBuildingGoal;
 import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
-import com.solegendary.reignofnether.unit.units.monsters.SilverfishUnit;
+
 import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 import com.solegendary.reignofnether.unit.units.villagers.VillagerUnitProfession;
 import com.solegendary.reignofnether.util.MiscUtil;
@@ -772,11 +765,7 @@ public class BuildingPlacement {
         totalBlocksEverBroken += 1;
         Random rand = new Random();
 
-        if (this.getFaction() == Faction.MONSTERS && ResearchServerEvents.playerHasResearch(this.ownerName,
-            ProductionItems.RESEARCH_SILVERFISH
-        )) {
-            randomSilverfishSpawn(pos);
-        }
+        // Silverfish-on-break was gated on a Monsters-faction research item; both are gone.
 
         // when a player breaks a block that's part of the building:
         // - roll explodeChance to cause explosion effects and destroy more blocks
@@ -807,7 +796,6 @@ public class BuildingPlacement {
     private void randomSilverfishSpawn(BlockPos pos) {
         Random rand = new Random();
         if (rand.nextFloat(1.0f) < ResearchSilverfish.SILVERFISH_SPAWN_CHANCE) {
-            Entity entity = EntityRegistrar.SILVERFISH_UNIT.get().create(level);
             if (entity instanceof SilverfishUnit silverfishUnit) {
                 ((Unit) entity).setOwnerName(ownerName);
                 level.addFreshEntity(entity);
@@ -1016,11 +1004,6 @@ public class BuildingPlacement {
                         msPerBuild *= 2;
                 } else {
                     msPerBuild *= building.repairTimeModifier;
-                }
-
-                if (getBuilding() instanceof PortalBasic && !BuildingValidators.isOnNetherBlocks(serverLevel, blocks, originPos, true)
-                    && !ResearchServerEvents.playerHasResearch(ownerName, ProductionItems.RESEARCH_ADVANCED_PORTALS)) {
-                    msPerBuild *= PortalPlacement.NON_NETHER_BUILD_TIME_MODIFIER;
                 }
 
                 msToNextBuild = Math.min(msToNextBuild, msPerBuild);

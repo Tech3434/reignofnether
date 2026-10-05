@@ -4,23 +4,18 @@ import com.solegendary.reignofnether.util.AttributeHelpers;
 import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
-import com.solegendary.reignofnether.ability.heroAbilities.enchanter.ProtectiveEnchantment;
-import com.solegendary.reignofnether.ability.heroAbilities.wildfire.ScorchingGaze;
+
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.blocks.BlockServerEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
-import com.solegendary.reignofnether.building.buildings.shared.AbstractBridge;
+
 import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.debug.RtsDebugClientEvents;
 import com.solegendary.reignofnether.debug.RtsDebugPathPreview;
 import com.solegendary.reignofnether.hud.buttons.Button;
-import com.solegendary.reignofnether.hud.effecticons.EnchantmentIcon;
-import com.solegendary.reignofnether.hud.effecticons.EnchantmentIcons;
-import com.solegendary.reignofnether.hud.effecticons.MobEffectIcon;
-import com.solegendary.reignofnether.items.ItemUtil;
-import com.solegendary.reignofnether.items.UnitItem;
+
 import com.solegendary.reignofnether.items.unititems.EdibleFoodItem;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.player.PlayerClientEvents;
@@ -33,17 +28,13 @@ import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import com.solegendary.reignofnether.research.ResearchClient;
 import com.solegendary.reignofnether.research.ResearchServerEvents;
 import com.solegendary.reignofnether.resources.*;
-import com.solegendary.reignofnether.scenario.ScenarioUtils;
+
 import com.solegendary.reignofnether.time.NightUtils;
 import com.solegendary.reignofnether.unit.*;
 import com.solegendary.reignofnether.unit.goals.*;
 import com.solegendary.reignofnether.unit.packets.UnitAnimationClientboundPacket;
 import com.solegendary.reignofnether.unit.packets.UnitSyncClientboundPacket;
-import com.solegendary.reignofnether.unit.units.monsters.BatUnit;
-import com.solegendary.reignofnether.unit.units.piglins.BruteUnit;
-import com.solegendary.reignofnether.unit.units.piglins.GhastUnit;
-import com.solegendary.reignofnether.faction.Faction;
-import com.solegendary.reignofnether.unit.units.piglins.StriderUnit;
+
 import com.solegendary.reignofnether.unit.units.villagers.ScoutCatUnit;
 import com.solegendary.reignofnether.unit.units.villagers.ScoutDogUnit;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
@@ -108,8 +99,7 @@ import com.solegendary.reignofnether.sounds.SoundAction;
 import com.solegendary.reignofnether.unit.goals.SelectedTargetGoal;
 import com.solegendary.reignofnether.unit.goals.ReturnResourcesGoal;
 import com.solegendary.reignofnether.resources.Resources;
-import com.solegendary.reignofnether.resources.ResourceSources;
-import com.solegendary.reignofnether.resources.ResourceSource;
+
 import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.unit.Relationship;
@@ -123,7 +113,7 @@ import com.solegendary.reignofnether.unit.goals.GarrisonGoal;
 import com.solegendary.reignofnether.unit.goals.FlyingUsePortalGoal;
 import com.solegendary.reignofnether.unit.goals.FlyingMoveToTargetGoal;
 import net.minecraft.world.level.material.Fluid;
-import com.solegendary.reignofnether.unit.units.monsters.DrownedUnit;
+
 import com.solegendary.reignofnether.unit.Checkpoint;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -688,12 +678,8 @@ public interface Unit {
     }
 
     private static int getThresholdResources(Unit unit) {
-        boolean hasCarryBags;
-        if (((LivingEntity) unit).level().isClientSide())
-            hasCarryBags = ResearchClient.hasResearch(ProductionItems.RESEARCH_RESOURCE_CAPACITY);
-        else
-            hasCarryBags = ResearchServerEvents.playerHasResearch(unit.getOwnerName(), ProductionItems.RESEARCH_RESOURCE_CAPACITY);
-        return hasCarryBags ? 100 : 50;
+        // The carry-bag research that used to double this threshold is gone, so the base value applies.
+        return 50;
     }
 
     static boolean atMaxResources(Unit unit) {

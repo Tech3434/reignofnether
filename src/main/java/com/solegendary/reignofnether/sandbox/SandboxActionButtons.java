@@ -7,10 +7,7 @@ import com.solegendary.reignofnether.cursor.CursorClientEvents;
 import com.solegendary.reignofnether.hud.buttons.Button;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.keybinds.Keybinding;
-import com.solegendary.reignofnether.scenario.ScenarioClientEvents;
-import com.solegendary.reignofnether.scenario.ScenarioRole;
-import com.solegendary.reignofnether.scenario.ScenarioServerboundPacket;
-import com.solegendary.reignofnether.scenario.ScenarioUtils;
+
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;

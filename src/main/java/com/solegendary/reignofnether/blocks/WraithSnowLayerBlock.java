@@ -6,7 +6,7 @@ import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.units.monsters.WretchedWraithUnit;
+
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -81,7 +81,6 @@ public class WraithSnowLayerBlock extends BaseEntityBlock {
                 ? null
                 : createTickerHelper(
                 type,
-                BlockEntityRegistrar.WRAITH_SNOW_BLOCK_ENTITY.get(),
                 WraithSnowBlockEntity::tick
         );
     }

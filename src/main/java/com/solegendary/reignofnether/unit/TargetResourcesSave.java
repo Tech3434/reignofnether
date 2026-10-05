@@ -2,7 +2,7 @@ package com.solegendary.reignofnether.unit;
 
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.resources.ResourceName;
-import com.solegendary.reignofnether.resources.ResourceSource;
+
 import net.minecraft.core.BlockPos;
 
 import javax.annotation.Nullable;

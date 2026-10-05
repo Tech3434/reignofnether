@@ -2,7 +2,7 @@ package com.solegendary.reignofnether.unit.controls;
 
 import com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal;
 import com.solegendary.reignofnether.unit.goals.MeleeAttackSlimeUnitGoal;
-import com.solegendary.reignofnether.unit.units.monsters.SlimeUnit;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attributes;

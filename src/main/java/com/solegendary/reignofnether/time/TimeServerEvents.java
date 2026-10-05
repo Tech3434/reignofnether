@@ -2,17 +2,17 @@ package com.solegendary.reignofnether.time;
 
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import com.solegendary.reignofnether.ability.AbilityClientboundPacket;
-import com.solegendary.reignofnether.ability.heroAbilities.necromancer.BloodMoon;
+
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
 import com.solegendary.reignofnether.gamerules.GameruleClient;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.registrars.EntityRegistrar;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
-import com.solegendary.reignofnether.scenario.ScenarioClientEvents;
+
 import com.solegendary.reignofnether.sounds.SoundAction;
 import com.solegendary.reignofnether.sounds.SoundClientboundPacket;
-import com.solegendary.reignofnether.survival.SurvivalServerEvents;
+
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
@@ -82,7 +82,6 @@ public class TimeServerEvents {
 
             BlockPos bp = building.getClosestGroundPos(new BlockPos(x, building.minCorner.getY(), z), 3);
 
-            EntityType<? extends Mob> mobType = zombieOrSkeleton ? EntityRegistrar.ZOMBIE_UNIT.get() : EntityRegistrar.SKELETON_UNIT.get();
             List<Entity> spawnedMobs = UnitServerEvents.spawnMobs(mobType, (ServerLevel) level, bp, 1, BloodMoon.ENEMY_NAME);
             if (!spawnedMobs.isEmpty())
                 break;

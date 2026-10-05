@@ -1,6 +1,5 @@
 package com.solegendary.reignofnether.time;
 
-import com.solegendary.reignofnether.survival.WaveDifficulty;
 import net.minecraft.world.level.Level;
 
 public class TimeUtils {

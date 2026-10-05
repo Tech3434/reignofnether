@@ -3,8 +3,7 @@ package com.solegendary.reignofnether.gamemode;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.player.RTSPlayer;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
-import com.solegendary.reignofnether.survival.SurvivalServerEvents;
-import com.solegendary.reignofnether.faction.Faction;
+
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.bus.api.SubscribeEvent;

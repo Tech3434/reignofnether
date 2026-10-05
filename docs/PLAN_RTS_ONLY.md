@@ -519,31 +519,73 @@ border армия будет вымирать.
 
 ---
 
-## 13. Оценка трудоёмкости этапа D
+## 13. Состояние этапа D — измерено точно
 
-Этап D пробовали начать и остановили, чтобы не оставить дерево в некомпилируемом состоянии.
-Замер после массового удаления контента: **2371 уникальная ошибка компиляции** в 40+ файлах.
+Этап D начат и доведён до состояния «почти». Работа идёт на ветке
+**`wip/stage-d-deletions`**; ветка `1.21.1-clean` остаётся зелёной.
 
-Разбивка по объёму:
+### Что уже сделано
 
-| Файл | Ошибок | Характер работы |
-|---|---|---|
-| `config/ReignOfNetherCommonConfigs` | 156 | удалить `UnitCosts` / `BuildingCosts` / `ResearchCosts` / `AbilityCosts` целиком — механически |
-| `registrars/EntityRegistrar` | 121 | удалить все регистрации юнитов, кроме четырёх — механически |
-| `building/production/ProductionItems` | 109 | оставить два `Prod` — механически |
-| `building/Buildings` | 52 | оставить `TOWN_CENTRE` и `BARRACKS` — механически |
-| `building/BuildingSaveData` | 49 | свитч «имя → инстанс» — механически |
-| `BuildingServerEvents`, `UnitServerEvents`, `PlayerServerEvents`, `CommonModEvents` | ~260 | ручная правка |
-| `UnitClientEvents`, `HudClientEvents`, `BuildingClientEvents`, `SandboxClientEvents` | ~200 | ручная правка |
-| `unit/interfaces/Unit`, `GatherResourcesGoal`, `RTSPlayer`, `PortraitRendererModifiers` | ~150 | ручная правка |
+* Удалено **385 файлов контента**: `unit/units/**` (113), `building/buildings/**` (68),
+  `ability/abilities/**` (55), `ability/heroAbilities/**` (27), `research/researchItems/**` (51),
+  `resources/**` (15), сценарий, выживание, обучение, стартовые позиции, экран матча, `rtsmap`,
+  `faction/**`, предметный слой юнитов, а также поддеревья рендереров, моделей, анимаций,
+  снарядов, иконок чар и героев.
+* Сохранено: `VillagerUnit` + `VindicatorUnit` и их `Prod`, `TownCentre` + `Barracks`,
+  классы стоимости и пула ресурсов, `UnitInventory`.
+* `ReignOfNetherCommonConfigs` сведён к пустому spec — 154 записи стоимостей удалены.
+* `EntityRegistrar` → 2 типа юнитов, `ProductionItems` → 2, `Buildings` → 2,
+  `BuildingSaveData` → 2 случая, `ItemRegistrar` переписан.
+* Синтаксис после массового удаления восстановлен, компиляция проходит по синтаксису.
 
-Около 500 ошибок снимаются скриптом, остальные ~1900 требуют понимания кода на уровне
-рефакторинга. **Это отдельная большая работа, а не механическая правка**, и она не проверяется
-гейтами `runClient`/`runServer` — только компиляцией.
+### Что осталось: 1235 ошибок, 1146 из них — «cannot find symbol»
 
-Рекомендация: делать этапы **G** и **H** (камера и механики сессии) до этада D — они от него
-не зависят и дают пользу на текущем зелёном дереве. Этапы **C**, **D**, **E**, **F** лучше
-делать одним заходом в отдельной сессии с достаточным контекстом, порядок строго C → D → E → F.
+Это ссылки на удалённые классы в ~60 файлах. Таксономия по убыванию:
+
+| Что referenced | Файлов |
+|---|---|
+| `ResourceCosts.*` (стоимости юнитов/героев) | много |
+| `PortalPlacement`, `FarmPlacement`, `StockpilePlacement`, `ItemShopPlacement`, `GraveyardPlacement`, `SculkCatalystPlacement`, `HealingFountainPlacement`, `BridgePlacement`, `BeaconPlacement` | ~25 |
+| `HeroServerEvents` / `HeroClientEvents` | 8 |
+| `SurvivalServerEvents`, `ScenarioClientEvents`, `StartPosClientEvents`, `RTSMapInfoServerEvents`, `TutorialServerEvents` | ~30 |
+| `FactionRegistries`, `Faction` | ~15 |
+| `UnitItems` / `UnitItem` / `items.unititems.*` | ~20 |
+| Классы конкретных юнитов (`PillagerUnit`, `RavagerUnit`, `NecromancerUnit`, …) в instanceof-цепочках и свитчах | ~40 |
+
+Почему так много: интерфейсы (`Unit`, `HeroUnit`, `AttackerUnit`, `WorkerUnit`) и цели
+(`unit/goals/**`) содержат длинные цепочки `instanceof` по конкретным юнитам, а HUD и
+`SandboxClientEvents` перечисляют их в свитчах. Каждая такая цепочка требует ручного решения:
+удалить ветку, а не «закомментировать».
+
+### ⚠ Ошибка в границах удаления, которую надо исправить первой
+
+Каталог `building/buildings/placements/` содержал **12 подклассов размещения**, включая
+`TownCentrePlacement` и `CustomBuildingPlacement`, которые нужны **сохранённым** строениям и
+кастомным строениям. Он был удалён вместе с контентом целиком. `TownCentrePlacement` и
+`CustomBuildingPlacement` уже восстановлены; остальные девять (`PortalPlacement`,
+`ProductionPlacement` в этом каталоге, `FarmPlacement`, `StockpilePlacement`, `ItemShopPlacement`,
+`GraveyardPlacement`, `SculkCatalystPlacement`, `HealingFountainPlacement`, `BridgePlacement`,
+`BeaconPlacement`) удалены правильно — они соответствуют удалённым строениям.
+
+⚠ При продолжении не удалять `placements/` целиком: там лежит общий `ProductionPlacement`-по-
+не-разным путям и код, на который ссылается ядро.
+
+### Порядок продолжения
+
+1. Восстановить/проверить `placements/` (см. выше).
+2. Удалить ссылки на `ResourceCosts.*` — заменить на константы или убрать условия.
+3. Пройти `unit/interfaces/**` и `unit/goals/**` — вычистить `instanceof` по удалённым юнитам.
+4. Пройти `hud/**`, `sandbox/**`, `minimap/**`, `player/**`.
+5. Удалить регистрации удалённых пакетов в `PacketHandler`, `ClientEventRegistrar`,
+   `ServerEventRegistrar`.
+6. `ClientModEvents`, `CommonModEvents` — рендереры и атрибуты удалённых юнитов.
+7. Гейт после каждого шага; `validateMixins` обязателен — удаление миксинов легко ломает
+   цель инъекции.
+
+### Рекомендация
+
+Это ~10–15 часов работы. Начинать с чистой сессии. Проверка — только компиляцией;
+`runServer`/`runClient` запускать в самом конце, когда всё зелёное, как и договорились.
 
 **Этапы D–F делать подряд, одним прицеванием.** Между ними мод нерабочий, и держать
 промежуточные коммиты с «почти пустым» содержимым незачем.

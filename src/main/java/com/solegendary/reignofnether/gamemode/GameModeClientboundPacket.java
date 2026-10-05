@@ -1,9 +1,7 @@
 package com.solegendary.reignofnether.gamemode;
 
 import com.solegendary.reignofnether.registrars.PacketHandler;
-import com.solegendary.reignofnether.startpos.StartPosClientEvents;
-import com.solegendary.reignofnether.startpos.StartPosServerboundPacket;
-import com.solegendary.reignofnether.faction.Faction;
+
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.neoforged.api.distmarker.Dist;
 import com.solegendary.reignofnether.util.DistHelper;

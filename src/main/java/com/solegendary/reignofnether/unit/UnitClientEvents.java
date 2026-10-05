@@ -13,23 +13,20 @@ import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
 import com.solegendary.reignofnether.building.buildings.placements.GraveyardPlacement;
 import com.solegendary.reignofnether.building.buildings.placements.ItemShopPlacement;
 import com.solegendary.reignofnether.building.buildings.placements.ProductionPlacement;
-import com.solegendary.reignofnether.building.buildings.shared.AbstractBridge;
-import com.solegendary.reignofnether.building.buildings.shared.AbstractFarm;
+
 import com.solegendary.reignofnether.building.buildings.villagers.IronGolemBuilding;
 import com.solegendary.reignofnether.building.production.ActiveProduction;
 import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
-import com.solegendary.reignofnether.faction.Faction;
 
 import com.solegendary.reignofnether.gamerules.GameruleClient;
-import com.solegendary.reignofnether.hero.HeroServerboundPacket;
+
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.hud.TextInputClientEvents;
-import com.solegendary.reignofnether.hud.effecticons.MobEffectIcons;
-import com.solegendary.reignofnether.hud.effecticons.MobEffectIcon;
+
 import com.solegendary.reignofnether.items.ItemClientEvents;
 import com.solegendary.reignofnether.items.ItemServerboundPacket;
-import com.solegendary.reignofnether.items.ItemUtil;
+
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
@@ -41,20 +38,15 @@ import com.solegendary.reignofnether.registrars.PacketHandler;
 import com.solegendary.reignofnether.research.ResearchClient;
 import com.solegendary.reignofnether.resources.ResourceCosts;
 import com.solegendary.reignofnether.resources.ResourceName;
-import com.solegendary.reignofnether.resources.ResourceSources;
+
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
-import com.solegendary.reignofnether.tutorial.TutorialClientEvents;
+
 import com.solegendary.reignofnether.unit.goals.*;
 import com.solegendary.reignofnether.unit.interfaces.*;
 import com.solegendary.reignofnether.unit.packets.UnitActionServerboundPacket;
 import com.solegendary.reignofnether.unit.packets.UnitSyncServerboundPacket;
-import com.solegendary.reignofnether.unit.units.monsters.*;
-import com.solegendary.reignofnether.unit.units.neutral.PolarBearUnit;
-import com.solegendary.reignofnether.unit.units.piglins.BruteUnit;
-import com.solegendary.reignofnether.unit.units.piglins.GhastUnit;
-import com.solegendary.reignofnether.unit.units.piglins.HeadhunterUnit;
-import com.solegendary.reignofnether.unit.units.piglins.HoglinUnit;
+
 import com.solegendary.reignofnether.unit.units.villagers.*;
 import com.solegendary.reignofnether.util.ArrayUtil;
 import com.solegendary.reignofnether.util.LevelRenderCompat;
@@ -104,10 +96,10 @@ import static com.solegendary.reignofnether.hud.HudClientEvents.hudSelectedEntit
 import static com.solegendary.reignofnether.unit.Checkpoint.CHECKPOINT_TICKS_FADE;
 import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS;
 import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES;
-import com.solegendary.reignofnether.unit.units.monsters.ZoglinUnit;
+
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
 import com.solegendary.reignofnether.unit.units.villagers.WitchUnit;
-import com.solegendary.reignofnether.unit.units.monsters.WardenUnit;
+
 import com.solegendary.reignofnether.unit.VirtualUnit;
 import com.solegendary.reignofnether.unit.units.villagers.VindicatorUnit;
 import com.solegendary.reignofnether.unit.units.villagers.VillagerUnitProfession;
@@ -117,8 +109,7 @@ import com.solegendary.reignofnether.unit.UnitAnimationAction;
 import com.solegendary.reignofnether.unit.UnitActionItem;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.units.monsters.SpiderUnit;
-import com.solegendary.reignofnether.unit.units.monsters.SlimeUnit;
+
 import com.solegendary.reignofnether.unit.units.villagers.ScoutDogUnit;
 import com.solegendary.reignofnether.unit.units.villagers.ScoutCatUnit;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
@@ -136,7 +127,7 @@ import net.minecraft.core.IdMap;
 import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
 import com.solegendary.reignofnether.unit.FormationDragMove;
 import com.solegendary.reignofnether.unit.units.villagers.EvokerUnit;
-import com.solegendary.reignofnether.unit.units.monsters.CreeperUnit;
+
 import com.solegendary.reignofnether.unit.interfaces.ConvertableUnit;
 import com.solegendary.reignofnether.unit.Checkpoint;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -1524,14 +1515,7 @@ public class UnitClientEvents {
             return null;
         if (!((Unit) passenger).getOwnerName().equals(((Unit) vehicle).getOwnerName()))
             return null;
-        if ((hudSelectedEntity instanceof PillagerUnit || hudSelectedEntity instanceof EvokerUnit) && vehicle instanceof RavagerUnit &&
-            ResearchClient.hasResearch(ProductionItems.RESEARCH_RAVAGER_CAVALRY))
-            return UnitAction.MOUNT_RAVAGER;
-        if (hudSelectedEntity instanceof HeadhunterUnit && vehicle instanceof HoglinUnit &&
-            ResearchClient.hasResearch(ProductionItems.RESEARCH_HOGLIN_CAVALRY))
-            return UnitAction.MOUNT_HOGLIN;
-        if (hudSelectedEntity instanceof Unit && hudSelectedEntity instanceof AbstractSkeleton && vehicle instanceof SpiderUnit &&
-            ResearchClient.hasResearch(ProductionItems.RESEARCH_SPIDER_JOCKEYS))
+        if (hudSelectedEntity instanceof Unit && vehicle instanceof SpiderUnit && entityIsRiding)
             return UnitAction.MOUNT_SPIDER;
         return null;
     }

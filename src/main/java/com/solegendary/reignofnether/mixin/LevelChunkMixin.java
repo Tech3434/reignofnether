@@ -1,6 +1,5 @@
 package com.solegendary.reignofnether.mixin;
 
-import com.solegendary.reignofnether.resources.ResourceIndex;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.pathfinding.WalkabilityGrid;
 import net.minecraft.core.BlockPos;

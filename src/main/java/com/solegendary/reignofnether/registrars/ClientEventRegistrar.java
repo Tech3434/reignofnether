@@ -21,14 +21,13 @@ import com.solegendary.reignofnether.gamemode.GameModeServerEvents;
 import com.solegendary.reignofnether.gamerules.GameruleServerEvents;
 import com.solegendary.reignofnether.guiscreen.TopdownGuiClientEvents;
 import com.solegendary.reignofnether.healthbars.HealthBarClientEvents;
-import com.solegendary.reignofnether.hero.HeroServerEvents;
+
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.hud.TextInputClientEvents;
 import com.solegendary.reignofnether.hud.custombutton.CustomButtonServerEvents;
 import com.solegendary.reignofnether.hud.playerdisplay.PlayerDisplayClientEvents;
 import com.solegendary.reignofnether.items.ItemClientEvents;
-import com.solegendary.reignofnether.matchstart.MatchEndClientEvents;
-import com.solegendary.reignofnether.matchstart.MatchStartClientEvents;
+
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.CameraFadeClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
@@ -37,19 +36,15 @@ import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.research.ResearchServerEvents;
 import com.solegendary.reignofnether.resources.ResourcesClientEvents;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
-import com.solegendary.reignofnether.rtsmap.RTSMapInfoServerEvents;
+
 import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
-import com.solegendary.reignofnether.scenario.ScenarioClientEvents;
-import com.solegendary.reignofnether.scenario.ScenarioServerEvents;
+
 import com.solegendary.reignofnether.sounds.SoundClientEvents;
-import com.solegendary.reignofnether.startpos.StartPosClientEvents;
-import com.solegendary.reignofnether.startpos.StartPosServerEvents;
-import com.solegendary.reignofnether.survival.SurvivalServerEvents;
+
 import com.solegendary.reignofnether.time.TimeClientEvents;
 import com.solegendary.reignofnether.time.TimeServerEvents;
 import com.solegendary.reignofnether.debug.RtsDebugServerEvents;
-import com.solegendary.reignofnether.tutorial.TutorialClientEvents;
-import com.solegendary.reignofnether.tutorial.TutorialServerEvents;
+
 import com.solegendary.reignofnether.unit.NonUnitClientEvents;
 import com.solegendary.reignofnether.unit.NonUnitServerEvents;
 import com.solegendary.reignofnether.unit.UnitClientEvents;

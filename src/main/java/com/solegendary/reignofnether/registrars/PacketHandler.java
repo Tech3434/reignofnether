@@ -15,9 +15,7 @@ import com.solegendary.reignofnether.gamemode.GameModeServerboundPacket;
 import com.solegendary.reignofnether.gamerules.GameruleClientboundPacket;
 import com.solegendary.reignofnether.gamerules.GameruleServerboundPacket;
 import com.solegendary.reignofnether.guiscreen.TopdownGuiServerboundPacket;
-import com.solegendary.reignofnether.hero.FallenHeroClientboundPacket;
-import com.solegendary.reignofnether.hero.HeroClientboundPacket;
-import com.solegendary.reignofnether.hero.HeroServerboundPacket;
+
 import com.solegendary.reignofnether.hud.HudClientboundPacket;
 import com.solegendary.reignofnether.hud.custombutton.CustomButtonActionServerboundPacket;
 import com.solegendary.reignofnether.hud.custombutton.CustomButtonClientboundPacket;
@@ -37,18 +35,11 @@ import com.solegendary.reignofnether.research.ResearchClientboundPacket;
 import com.solegendary.reignofnether.research.ResearchServerboundPacket;
 import com.solegendary.reignofnether.resources.ResourcesClientboundPacket;
 import com.solegendary.reignofnether.resources.ResourcesServerboundPacket;
-import com.solegendary.reignofnether.rtsmap.RTSMapInfoClientboundPacket;
-import com.solegendary.reignofnether.rtsmap.RTSMapInfoServerboundPacket;
+
 import com.solegendary.reignofnether.sandbox.SandboxServerboundPacket;
-import com.solegendary.reignofnether.scenario.ScenarioClientboundPacket;
-import com.solegendary.reignofnether.scenario.ScenarioServerboundPacket;
+
 import com.solegendary.reignofnether.sounds.SoundClientboundPacket;
-import com.solegendary.reignofnether.startpos.StartPosClientboundPacket;
-import com.solegendary.reignofnether.startpos.StartPosServerboundPacket;
-import com.solegendary.reignofnether.survival.SurvivalClientboundPacket;
-import com.solegendary.reignofnether.survival.SurvivalServerboundPacket;
-import com.solegendary.reignofnether.tutorial.TutorialClientboundPacket;
-import com.solegendary.reignofnether.tutorial.TutorialServerboundPacket;
+
 import com.solegendary.reignofnether.unit.packets.*;
 import com.solegendary.reignofnether.debug.RtsDebugChunksClientboundPacket;
 import com.solegendary.reignofnether.debug.RtsDebugStatsClientboundPacket;

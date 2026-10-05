@@ -9,9 +9,7 @@ import com.solegendary.reignofnether.building.BuildingServerEvents;
 import com.solegendary.reignofnether.building.buildings.placements.ProductionPlacement;
 import com.solegendary.reignofnether.building.production.ActiveProduction;
 import com.solegendary.reignofnether.building.production.HeroProductionItem;
-import com.solegendary.reignofnether.hero.HeroClientEvents;
-import com.solegendary.reignofnether.hero.HeroClientboundPacket;
-import com.solegendary.reignofnether.hero.HeroServerEvents;
+
 import com.solegendary.reignofnether.registrars.AttributeRegistrar;
 import com.solegendary.reignofnether.registrars.ParticleRegistrar;
 import com.solegendary.reignofnether.resources.ResourceCost;
