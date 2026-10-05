@@ -16,21 +16,32 @@
 2. **Удалённый контент сохраняется как документация** — переносится в `docs/reference/`, а не
    остаётся в дереве. Код и так сохраняется в git поимённо.
 3. **Каркас РТС сохраняется целиком**: интерфейсы юнитов и зданий, цели, производство,
-   гарнизоны, ауры, атрибуты, эффекты, чары, камера, HUD, команды, читы, кастомные строения.
+   гарнизоны, ауры, атрибуты, эффекты, камера, HUD, команды, читы, кастомные строения.
+   Чары уходят (решение 9).
 4. **Режимы, кроме `CLASSIC`, удаляются.**
 5. **Интрузивность убирается.**
+6. **Туман войны удаляется целиком.** Совместимой переработки владелец не заказывал, а текущая
+   конструкция совместимости не имеет: она сокрывает данные, а не рисует, поэтому конфликтует с
+   любым модом рендера и протекает мимо фильтра пакетов. Разбор — `INTRUSION_AUDIT.md` §4.2.
+7. **Остаются как рабочий шаблон:** `VillagerUnit` (строитель), `TownCentre` (ратуша),
+   `Barracks` (производственное здание), `VindicatorUnit` (боевой юнит).
+8. **Остаётся палитра спецблоков** — под будущие способности новых юнитов.
+9. **Остаётся инвентарь юнита** (`UnitInventory` и его миксин) — чтобы юниты носили предметы
+   из мира.
+10. **Чары и способности — в документацию и удаляются** (решение владельца).
 
 ## ⚠ Последствие, о котором надо знать до начала
 
-После удаления контента в моде останется **ноль юнитов и ноль зданий**. Мод перестанет быть
-играбельным: гейты `compileJava`, `validateMixins`, `runData`, `runServer`, `runClient` будут
-зелёными, но в игре делать нечего, и **проверить в игре станет нечем**.
+После удаления контента в моде останется **четыре юнита-шаблона и два здания** (решение 7).
+Мод почти перестанет быть играбельным: гейты `compileJava`, `validateMixins`, `runData`,
+`runServer`, `runClient` будут зелёными, но игровой функционал сведутся к двум зданиям.
 
 Отсюда порядок этапов: сначала убрать интрузивность (этапы A–C), пока контент ещё есть и
 этапы можно проверить в игре, и только потом удалять контент (этап D).
 
-Практическая рекомендация: держать промежуточную точку. Пока каркас пустой, ветка непригодна
-для игры — если нужен играбельный вариант, его стоит держать на отдельной ветке от этапа C.
+Практическая рекомендация: держать промежуточную точку. Пока каркас пустой, ветка почти
+непригодна для игры — если нужен играбельный вариант, его стоит держать на отдельной ветке от
+этапа C.
 
 ---
 
@@ -72,6 +83,7 @@
 | Здания | `building/buildings/**` — 51 + абстрактные базы | `docs/reference/buildings.md` |
 | Способности | `ability/abilities/**`, `ability/heroAbilities/**` — 93 | `docs/reference/abilities.md` |
 | Чары | `registrars/EnchantmentRegistrar`, `data/reignofnether/enchantment/*.json` — 7 | `docs/reference/enchantments.md` |
+| Туман войны | `mixin/fogofwar/**` (19), `FogOfWar*`, `FogChunkSnapshot`, `FogTintingBlockColor`, геймрул `reignofnetherForceFog` | `docs/reference/fog-of-war.md` — почему сокрытие данных несовместимо с модами рендера и что делала визуальная альтернатива |
 | Исследования | `research/researchItems/**` — 51 | `docs/reference/research.md` |
 | Экономика | `resources/{ResourceSources,ResourceIndex,ResourceChunk,ResourcesServerEvents}` | `docs/reference/economy.md` |
 | Предметы юнитов | `items/{UnitItem,UnitItemBuilder,UnitItems,unititems/**}` | `docs/reference/items.md` |
@@ -121,91 +133,117 @@
 `textures/entity/trident.png` (решение при удалении `BlazeMixin` — если он не нужен, удалить и их).
 Убирает перекраску всех GUI, рождественского кота, подмену сплэшей и логотипа меню.
 
-### B.3 Перекраска за границей мира
-☐ B.3.1 Убрать ветку `0x252933` из `FogTintingBlockColor`, `BiomeColorsMixin`,
-`LiquidBlockRendererMixin`.
-☐ B.3.2 Убрать отмену рендера живых сущностей за границей —
-`FogOfWarClientEvents.java:272-281`.
-☐ B.3.3 Убрать скрытие предметов за границей — `fogofwar/ItemEntityRendererMixin.java:72`.
-☐ B.3.4 **Стена границы мира должна рисоваться** (решение владельца). Удалить
-`mixin/fogofwar/WorldBorderRenderMixin.java`: он отменяет `LevelRenderer.renderWorldBorder`,
-и без него ванилла рисует стену как обычно. Удаление миксина предпочтительнее инверсии
-условия — это возвращает ровно ванильное поведение.
-☐ B.3.5 Обёртки блоков и моделей. Решение владельца: оставить только если они реально
-нужны. `ModelEvent.ModifyBakingResult` (обёртка каждой модели с `tintIndex 0`) тривиально
-делается условным — вернуть модель как есть, когда туман выключен. Обёртка блоков
-(`ClientModEvents.onBlockColourEvent` + `mixin/fogofwar/BlockColorsAccessor`) регистрируется
-в статической карте `BlockColors` один раз и не снимается, поэтому её можно либо
-регистрировать лениво при первом включении тумана, либо удалить вместе с туманом.
-См. §12, пункт 2.
+### B.3 Туман войны — удаляется целиком
 
-### B.4 Дефолты геймрулов
+Текущий туман сокрывает **данные**, а не рисует: `ChunkMapMixin` выкидывает затемнённых
+игроков из получателей чанка, `TrackedEntityMixin` отменяет синхронизацию сущностей,
+`ServerLevelParticleMixin` режет частицы, `ChunkMapInitialSendMixin` отдаёт снимок с диска,
+`ClientChunkCacheMixin` заставляет клиент держать устаревший снимок, `ClientLevelMixin
+.setServerVerifiedBlockState` отбрасывает серверные обновления блоков,
+`ClientPacketListenerLightMixin` сохраняет клиентский свет. Из-за этого он несовместим с любым
+модом рендера и любым модом, шлющим свои пакеты по чанку. Решение владельца — удалить.
+
+☐ B.3.1 Удалить `mixin/fogofwar/` целиком (19 миксинов) и убрать их из
+`reignofnether.mixins.json`.
+☐ B.3.2 Удалить подсистему: `FogOfWarServerEvents`, `FogOfWarClientEvents`,
+`FogChunkSnapshot`, `FogTintingBlockColor`, `FogOfWarServerboundPacket`,
+`FogChunkServerboundPacket`, `FogChunkClientboundPacket`, `FogBuildingClientboundPacket`,
+`FogOfWarServerEvents`-связанные пакеты в `registrars/PacketHandler`.
+☐ B.3.3 Удалить `ClientModEvents.onBlockColourEvent` и `ModelEvent.ModifyBakingResult`
+(обёртка каждого блока и каждой модели) вместе с `mixin/fogofwar/BlockColorsAccessor`.
+☐ B.3.4 Удалить `FogOfWarClientEvents.onRenderLivingEvent` — отмену рендера живых сущностей
+за границей мира.
+☐ B.3.5 Удалить геймрул `reignofnetherForceFog` и его отображение в
+`gamerules/GameruleClientboundPacket`, `GameruleServerboundPacket`, `GameruleAction`,
+`GameruleClient`, локализации.
+☐ B.3.6 **Свип зависимостей.** Триан удаляемых компонентов имеют читателей вне подсистемы:
+`RangedAttackerUnit.getFogRevealDuration` (читает GhastUnit, который удаляется),
+`NightUtils.isInRangeOfNightSource` (комментирует использование ауры ночи),
+`BloodMoon` (читает `isBlockVisibleFor`, удаляется вместе с NecromancerUnit),
+`MinimapClientEvents` (`DARK_TERRAIN_PARTITIONS_MAX` — слой затемнённого рельефа становится
+мёртвым, миникарту оставляем как инструмент ГМа, слой удалить),
+`UnitServerEvents`/`FogOfWarClientEvents` в HUD. Найти все и почистить.
+☐ B.3.7 Проверить, что `Mausoleum`/`Stronghold` (`NightSourceAddon`) не ссылаются на туман.
+Они удаляются, но `NightSourceAddon` остаётся как контракт — комментарии в нём обновить.
+
+### B.4 Перекраска за границей мира — попадает в B.3
+
+☐ B.5.1 Ветка `0x252933` в `FogTintingBlockColor`, `BiomeColorsMixin`,
+`LiquidBlockRendererMixin` уходит вместе с B.3.
+☐ B.5.2 Скрытие предметов за границей — `fogofwar/ItemEntityRendererMixin.java:72` уходит
+вместе с миксином. Проверить, нет ли не-туманного назначения у этого миксина.
+☐ B.5.3 **Стена границы мира рисуется** (решение владельца). Удалить
+`mixin/fogofwar/WorldBorderRenderMixin.java`: он отменяет `LevelRenderer.renderWorldBorder`.
+Удаление миксина предпочтительнее инверсии условия — это возвращает ровно ванильное
+поведение.
+
+### B.5 Дефолты геймрулов
 
 **Решение владельца:** поведение должно совпадать с ванильным.
 
-☐ B.4.1 `doNetherConversion` → `false` (сейчас порталы зданий переписывают террейн).
-☐ B.4.2 `buildingsOutsideBorder` → `false`.
-☐ B.4.3 `neutralAggro` → `false`.
-☐ B.4.4 **`doPlayerGriefing` → `false`.** Это ванильный геймрул, и мод регистрирует его с
+☐ B.5.1 `doNetherConversion` → `false` (сейчас порталы зданий переписывают террейн).
+☐ B.5.2 `buildingsOutsideBorder` → `false`.
+☐ B.5.3 `neutralAggro` → `false`.
+☐ B.5.4 **`doPlayerGriefing` → `false`.** Это ванильный геймрул, и мод регистрирует его с
 дефолтом `true`, то есть меняет ванильное поведение (в ванилле ломание блоков выключено по
 умолчанию). Возврат `false` — это и есть «как в ванильной игре».
-☐ B.4.5 `doLogFalling` → `false` (ломание бревна превращает соседние в модовые блоки).
-☐ B.4.6 **`doUnitGriefing` — геймрула в ванилле нет.** Сейчас при `false`
+☐ B.5.5 `doLogFalling` → `false` (ломание бревна превращает соседние в модовые блоки).
+☐ B.5.6 **`doUnitGriefing` — геймрула в ванилле нет.** Сейчас при `false`
 `BuildingServerEvents.onExplosion:958-964` срезает урон взрывов по блокам до листвы и TNT,
 то есть криперы и TNT в мире не разрушают ничего — это не ванильное поведение. Варианты:
 (a) удалить геймрул и перехватывать только тот урон, что попадает по
 `BuildingPlacement`, оставив всё остальное ванилле; (b) оставить геймрул, но дефолт `true`.
 Рекомендация — (a): геймрул без ванильного аналога в общем пространстве имён только
-конфликтует. См. §12, пункт 4.
+конфликтует.
 
-### B.5 Безусловные миксины
-☐ B.5.1 `fire/FireBlockMixin` — вернуть ванильную таблицу горючести, горение до age 15, убрать
+### B.6 Безусловные миксины
+☐ B.6.1 `fire/FireBlockMixin` — вернуть ванильную таблицу горючести, горение до age 15, убрать
 горючесть обсидиана и `tryCatchFire`.
-☐ B.5.2 `fire/BaseFireBlockMixin`, `CampfireBlockMixin`, `MagmaBlockMixin` — вернуть ванильные
+☐ B.6.2 `fire/BaseFireBlockMixin`, `CampfireBlockMixin`, `MagmaBlockMixin` — вернуть ванильные
 ставки урона.
-☐ B.5.3 `BaseSpawnerMixin` — убрать форс 600 тиков на все спавнеры; роуковскую часть оставить
+☐ B.6.3 `BaseSpawnerMixin` — убрать форс 600 тиков на все спавнеры; роуковскую часть оставить
 (со спавнерами мода уйдёт).
-☐ B.5.4 `SculkCatalystBlockEntityMixin` — вернуть ванильный bloom.
-☐ B.5.5 `BlazeMixin` — вернуть ванильный `aiStep`.
-☐ B.5.6 `WitherRoseMixin`, `LeavesBlockMixin`, `PanicGoalMixin` — вернуть ваниллу.
-☐ B.5.7 `EntityMixin` — вернуть урон от удушья и полную заморозку. **Внимание:** с отключённым
+☐ B.6.4 `SculkCatalystBlockEntityMixin` — вернуть ванильный bloom.
+☐ B.6.5 `BlazeMixin` — вернуть ванильный `aiStep`.
+☐ B.6.6 `WitherRoseMixin`, `LeavesBlockMixin`, `PanicGoalMixin` — вернуть ваниллу.
+☐ B.6.7 `EntityMixin` — вернуть урон от удушья и полную заморозку. **Внимание:** с отключённым
 удушьем камера орторежима на высоте безопасна; если удушье вернуть — проверить, что камера не
 застревает в блоках (этап G).
-☐ B.5.8 `EvokerFangsMixin` — вернуть хитбокс.
-☐ B.5.9 `ThrownTridentMixin`, `ThrownPotionMixin`, `CrossbowMixin.getChargeDuration` — вернуть
+☐ B.6.8 `EvokerFangsMixin` — вернуть хитбокс.
+☐ B.6.9 `ThrownTridentMixin`, `ThrownPotionMixin`, `CrossbowMixin.getChargeDuration` — вернуть
 ванильные конвейеры.
-☐ B.5.10 `UnitInventoryMobMixin` — писать `reignofnether:UnitItems` в NBT только при
+☐ B.6.10 `UnitInventoryMobMixin` — писать `reignofnether:UnitItems` в NBT только при
 непустом инвентаре, а не всем мобам.
-☐ B.5.11 `AbstractArrowMixin` — объявить `canHitEntity` явно или убрать; убрать повторное
+☐ B.6.11 `AbstractArrowMixin` — объявить `canHitEntity` явно или убрать; убрать повторное
 применение урона.
-☐ B.5.12 `PathNavigationMixin` — ограничить `@ModifyConstant(doubleValue = 1.0)` через
+☐ B.6.12 `PathNavigationMixin` — ограничить `@ModifyConstant(doubleValue = 1.0)` через
 `require = 0`.
-☐ B.5.13 `UnitServerEvents` — не конвертировать юнита после смерти; починить
+☐ B.6.13 `UnitServerEvents` — не конвертировать юнита после смерти; починить
 `ConvertableUnit`, который не удаляет исходную сущность.
-☐ B.5.14 Удалить `PlayerMixin` из списка миксинов (тело закомментировано) и незарегистрированный
+☐ B.6.14 Удалить `PlayerMixin` из списка миксинов (тело закомментировано) и незарегистрированный
 `ZoglinMixin`.
 
-### B.6 Клиентские миксины без гейта
-☐ B.6.1 `TitleScreenMixin` — за флагом, дефолт `false`. Сейчас главное меню перехватывается
+### B.7 Клиентские миксины без гейта
+☐ B.7.1 `TitleScreenMixin` — за флагом, дефолт `false`. Сейчас главное меню перехватывается
 целиком безусловно.
-☐ B.6.2 `MusicManagerMixin` — за флагом.
-☐ B.6.3 `ClientLevelMixin.tickTime` — снять безусловный `cancellable`.
-☐ B.6.4 `LevelRendererMixin` (`renderLevel` TAIL) — оверлей разрушения блока с 32 до 256.
+☐ B.7.2 `MusicManagerMixin` — за флагом.
+☐ B.7.3 `ClientLevelMixin.tickTime` — снять безусловный `cancellable`.
+☐ B.7.4 `LevelRendererMixin` (`renderLevel` TAIL) — оверлей разрушения блока с 32 до 256.
 
-### B.7 Экология выживания
+### B.8 Экология выживания
 Всё за флагом `survivalEcology`, дефолт `false`. Часть пунктов уходит сама при удалении
 контента — отмечать при удалении, не дублировать.
-☐ B.7.1 Отмена ванильного лута животных при охоте — `unit/UnitServerEvents.java:680-729`.
-☐ B.7.2 Спавн животных вокруг столицы — `building/BuildingPlacement.java:881-888`.
-☐ B.7.3 Вытеснение животных вокруг нового здания — `building/BuildingServerEvents.java:617-626`.
-☐ B.7.4 Подавление роста культур в здании — `resources/ResourcesServerEvents.java:261-265`.
-☐ B.7.5 Ломание блока в здании → AIR — `resources/ResourcesServerEvents.java:277-283`.
-☐ B.7.6 `DIRT_PATH`→`DIRT` и уничтожение растений при смерти юнита у скульк-катализатора —
+☐ B.8.1 Отмена ванильного лута животных при охоте — `unit/UnitServerEvents.java:680-729`.
+☐ B.8.2 Спавн животных вокруг столицы — `building/BuildingPlacement.java:881-888`.
+☐ B.8.3 Вытеснение животных вокруг нового здания — `building/BuildingServerEvents.java:617-626`.
+☐ B.8.4 Подавление роста культур в здании — `resources/ResourcesServerEvents.java:261-265`.
+☐ B.8.5 Ломание блока в здании → AIR — `resources/ResourcesServerEvents.java:277-283`.
+☐ B.8.6 `DIRT_PATH`→`DIRT` и уничтожение растений при смерти юнита у скульк-катализатора —
 `unit/UnitServerEvents.java:497-537`.
-☐ B.7.7 Отмена перехода между измерениями в здании — `building/BuildingServerEvents.java:968-989`.
-☐ B.7.8 `FIRE` в центре порталов каждый тик.
-☐ B.7.9 Установка `Blocks.SCAFFOLDING` под фундаментом — оставить как часть зданий или снять.
-☐ B.7.10 Превращение `FARMLAND`/`DIRT_PATH`/`SOUL_SAND`/`MAGMA_BLOCK` под зданием —
+☐ B.8.7 Отмена перехода между измерениями в здании — `building/BuildingServerEvents.java:968-989`.
+☐ B.8.8 `FIRE` в центре порталов каждый тик.
+☐ B.8.9 Установка `Blocks.SCAFFOLDING` под фундаментом — оставить как часть зданий или снять.
+☐ B.8.10 Превращение `FARMLAND`/`DIRT_PATH`/`SOUL_SAND`/`MAGMA_BLOCK` под зданием —
 `BuildingPlacement.java:1072-1123`.
 
 **Проверка B:** создать новый мир на ванильном профиле, сравнить `run/world` до/после;
@@ -260,7 +298,13 @@
 ☐ D.10 Удалить `unit/units/**` (264 файла в пакете `unit`, из них контент — все кроме
 `unit/interfaces`, `unit/goals`, `unit/pathfinding`, `unit/controls` и четырёх
 `*ServerEvents`/`*ClientEvents`).
+**Исключения по решению владельца (решение 7): `unit/units/villagers/VillagerUnit`,
+`unit/units/villagers/VindicatorUnit` и их `*Prod` остаются как рабочий шаблон.**
 ☐ D.11 Удалить `building/buildings/**`.
+**Исключения по решению владельца (решение 7): `building/buildings/villagers/TownCentre`
+и `building/buildings/villagers/Barracks` остаются как рабочий шаблон.**
+Абстрактные базы (`shared/AbstractFarm`, `AbstractStockpile`, `AbstractBridge`, `AbstractMarket`,
+`piglins/AbstractPortal`) удаляются — они часть контента, а не каркаса.
 ☐ D.12 Удалить `ability/abilities/**`, `ability/heroAbilities/**` (решение владельца: в
 документацию). В `ability/UnitAction` удалить константы способностей, оставив те, что нужны
 механике (проверить по `UnitActionItem` и `Ability`).
@@ -271,7 +315,8 @@ ResourcesServerEvents}`. Решить судьбу `ResourceCost`/`ResourceCosts
 `ProductionItem.getCost()`. Вариант — оставить один плоский `ResourceCost` без
 привязки к фракциям.
 ☐ D.15 Удалить `items/UnitItem*`, `items/unititems/**`, `items/ItemUtil` (частично),
-`items/ItemServerEvents`, `items/ItemClientEvents`. Оставить `items/UnitInventory`.
+`items/ItemServerEvents`, `items/ItemClientEvents`. `items/UnitInventory` **остаётся** по
+решению владельца (решение 9) — под перенос предметов из мира.
 ☐ D.16 Удалить `faction/**`.
 ☐ D.17 Удалить `survival/**`, `scenario/**`, `tutorial/**`, `startpos/**`, `matchstart/**`,
 `rtsmap/**` (если не сделано в C).
@@ -280,12 +325,14 @@ ResourcesServerEvents}`. Решить судьбу `ResourceCost`/`ResourceCosts
 переводы контента. **Оставить** переводы каркаса: `hud.*`, `abilities.*`, `unitstats.*`,
 `commands.*`, `creativetab.*`, `resources.*`, `server.*`, `unititemtype.*`,
 `enchantment.reignofnether.*`.
-☐ D.20 Почистить реестры: `EntityRegistrar` (67 типов → 0 юнитов), `BlockRegistrar`
-(47 блоков → только нужные каркасу: `rts_structure_block`, `garrison_*`, `production_spawn_*`,
-`walkable_magma_block`, `wraith_snow_layer_block`, `spider_friendly_barrier`,
-`unextinguishable_soul_fire`, `decayable_*_wart_block`; **удалить** 16 `rts_start_block_*` —
-неразрушимые и в ванильной вкладке), `ItemRegistrar` (128 → только нужное каркасу),
-`BlockEntityRegistrar`, `MobEffectRegistrar`, `ParticleRegistrar`, `SoundRegistrar`.
+☐ D.20 Почистить реестры. `EntityRegistrar` — 67 типов, остаются 4 юнита-шаблона.
+`BlockRegistrar` — 47 блоков: **остаётся палитра** по решению владельца (решение 8) —
+`walkable_magma_block`, `temporary_walkable_magma_block`, `unextinguishable_soul_fire`,
+`spider_friendly_barrier`, `wraith_snow_layer_block`, `decayable_nether_wart_block`,
+`decayable_warped_wart_block`, `rts_structure_block`, четыре маркера гарнизона и производства;
+**удаляются** 16 `rts_start_block_*` (неразрушимые, лежат в ванильной вкладке), 8 блоков голов
+и стеновых черепов, `horizontal_portal`. `ItemRegistrar`, `BlockEntityRegistrar`,
+`MobEffectRegistrar`, `ParticleRegistrar`, `SoundRegistrar` — по спискам из решений ниже.
 
 ---
 
@@ -321,6 +368,12 @@ ResourcesServerEvents}`. Решить судьбу `ResourceCost`/`ResourceCosts
 ☐ E.8 **`neutralAggro` без юнитов** (`NonUnitServerEvents:75-98`) станет бессмысленным:
 он нацеливает ванильных мобов на юнитов. `attackSuppressedNonUnits` и `nonUnitMoveTargets`
 работают на ванильной навигации и остаются полезными.
+☐ E.9 **Скрытая связность `EntityRegistrar.getEntityType`.** `ProductionItems.getProductionItem`
+ищет юнит через `EntityRegistrar.getEntityType(prodItem.getItemName())`, поэтому строка
+`itemName` в каждом `*Prod` обязана совпадать с `case` в этом свитче. Несовпадение не даёт
+ошибки — кастомные строения просто молча не смогут обучить юнита. Это ловушка, на которую
+попадёт владелец, добавляя своих юнитов. Либо починить (сопоставлять по
+`EntityType<?>` напрямую, без строкового свитча), либо оставить как есть.
 
 **Проверка:** гейты 1–4; `runClient` грузится без ошибок; в логе нет новых исключений при
 входе в мир.
@@ -427,20 +480,27 @@ border армия будет вымирать.
 
 Закрыто на 2026-10-05:
 
-* **Стена границы мира рисуется** (B.3.4) — миксин удаляется, остаётся ванильное поведение.
-* **`doPlayerGriefing` и `doUnitGriefing` — как в ванилле** (B.4.4, B.4.6). Для
+* **Стена границы мира рисуется** (B.4.3) — миксин удаляется, остаётся ванильное поведение.
+* **`doPlayerGriefing` и `doUnitGriefing` — как в ванилле** (B.5.4, B.5.6). Для
   `doPlayerGriefing` это дефолт `false`. У `doUnitGriefing` ванильного аналога нет, поэтому
-  «как в ванилле» означает отказ от срезания урона взрывов по блокам; рекомендация —
-  удалить геймрул и перехватывать только урон по зданиям.
-* **Миграция старых миров не нужна** (F.6) — старые теги просто игнорируются, вызовов
+  «как в ванилле» означает отказ от срезания урона взрывов по блокам; геймрул удаляется, а
+  перехват ограничивается уроном по зданиям.
+* **Миграция старых миров не нужна** (F.6) — старые теги игнорируются, вызовов
   `Faction.valueOf()` на старом NBT остаться не должно.
 * **Чары и способности — в документацию и удаляются** (D.12, E.1), вместе с читателями в
   каркасе.
+* **Туман войны удаляется целиком** (B.3), вместе с обёртками блоков и моделей.
+* **Шаблон сохраняется:** `VillagerUnit`, `TownCentre`, `Barracks`, `VindicatorUnit` (решение 7).
+* **Палитра спецблоков сохраняется** (D.20).
+* **Инвентарь юнита сохраняется** (D.15) — миксин остаётся, NBT пишется только при
+  непустом инвентаре (B.6.10).
 
 Осталось открытым:
 
-1. Обёртка каждого блока в `ClientModEvents.onBlockColourEvent` — регистрировать лениво при
-   первом включении тумана, или удалить вместе с туманом (B.3.5).
-2. `ResourceCost` — оставить плоскую валюту или убрать стоимости совсем (D.14, E.4).
+1. Побочные эффекты размещения здания (B.8) — какие из них остаются как механика здания, а
+   какие удаляются. и требуют ли здания ровной земли и лесов.
+2. `ResourceCost` — оставить плоскую структуру стоимости или убрать стоимости совсем (D.14, E.4).
 3. Пять из 28 эффектов, использовавшихся только удаляемым контентом (E.3).
 4. Шесть атрибутов без потребителей — реализовать вызов или удалить (E.2).
+5. Вход и выход из РТС-режима (H.1, H.2) — командой ли, и что считается концом сессии.
+6. Чинить ли скрытую связность `EntityRegistrar.getEntityType` (E.9).
