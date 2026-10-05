@@ -1,1 +1,0 @@
-# You can include any function to run here every tick as though it were in a command block
