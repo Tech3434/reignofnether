@@ -798,7 +798,6 @@
     "commands.reignofnether.gamerule.do_log_falling": "Брёвна падают при рубке деревьев",
     "commands.reignofnether.gamerule.neutral_aggro": "Автоатака нейтральных мобов и ответные атаки",
     "commands.reignofnether.gamerule.max_population": "Максимальный лимит населения",
-    "commands.reignofnether.gamerule.unit_griefing": "Взрывоопасные юниты могут разрушать блоки",
     "commands.reignofnether.gamerule.player_griefing": "Игроки могут разрушать блоки ландшафта",
     "commands.reignofnether.gamerule.ground_y_level": "Минимальная высота для камер",
     "commands.reignofnether.gamerule.flying_max_y_level": "Макс. высота для летающих юнитов",

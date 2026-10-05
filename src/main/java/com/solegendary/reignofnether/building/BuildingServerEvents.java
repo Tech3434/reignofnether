@@ -952,13 +952,12 @@ public class BuildingServerEvents {
 
             }
         }
-        // don't do any block damage apart from the scripted building damage above or damage to leaves/tnt
-        if (serverLevel == null || !serverLevel.getGameRules().getRule(GameRuleRegistrar.DO_UNIT_GRIEFING).get()) {
-            evt.getAffectedBlocks().removeIf(bp -> {
-                BlockState bs = evt.getLevel().getBlockState(bp);
-                return !(bs.getBlock() instanceof LeavesBlock) && !(bs.getBlock() instanceof TntBlock);
-            });
-        }
+        // Explosions must not level the world just because a unit happened to be nearby. Only the building
+        // footprint is protected: blocks that are part of a placed building are removed from the
+        // explosion's block list, everything else is left to vanilla. The previous version cleared all
+        // block damage except leaves and TNT unless a gamerule was set, which made creepers, TNT and
+        // beds harmless everywhere in the world rather than near a base.
+        evt.getAffectedBlocks().removeIf(bp -> BuildingUtils.findBuilding(true, bp) != null);
 
     }
 

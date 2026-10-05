@@ -26,7 +26,6 @@ public class GameruleClient {
     public static boolean doLogFalling = true; // only for GUI
     public static boolean neutralAggro = false;
     public static int maxPopulation = ResourceCosts.DEFAULT_MAX_POPULATION;
-    public static boolean doUnitGriefing = false; // only for GUI
     public static boolean doPlayerGriefing = true; // only for GUI
     public static double groundYLevel = -320;
     public static double flyingMaxYLevel = 320;
@@ -145,10 +144,6 @@ public class GameruleClient {
         buttons.add(new GameruleBooleanButton("neutralAggro", neutralAggro,
             () -> GameruleServerboundPacket.setNeutralAggro(!neutralAggro),
             I18n.get("commands.reignofnether.gamerule.neutral_aggro")
-        ));
-        buttons.add(new GameruleBooleanButton("doUnitGriefing", doUnitGriefing,
-            () -> GameruleServerboundPacket.setUnitGriefing(!doUnitGriefing),
-            I18n.get("commands.reignofnether.gamerule.unit_griefing")
         ));
         buttons.add(new GameruleBooleanButton("doPlayerGriefing", doPlayerGriefing,
             () -> GameruleServerboundPacket.setPlayerGriefing(!doPlayerGriefing),

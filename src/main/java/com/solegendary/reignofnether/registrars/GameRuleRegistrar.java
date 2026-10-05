@@ -10,7 +10,6 @@ public class GameRuleRegistrar {
     public static GameRules.Key<GameRules.BooleanValue> LOG_FALLING;
     public static GameRules.Key<GameRules.BooleanValue> NEUTRAL_AGGRO;
     public static GameRules.Key<GameRules.IntegerValue> MAX_POPULATION;
-    public static GameRules.Key<GameRules.BooleanValue> DO_UNIT_GRIEFING;
     public static GameRules.Key<GameRules.BooleanValue> DO_PLAYER_GRIEFING;
     public static GameRules.Key<GameRules.IntegerValue> GROUND_Y_LEVEL;
     public static GameRules.Key<GameRules.IntegerValue> FLYING_MAX_Y_LEVEL;
@@ -32,25 +31,21 @@ public class GameRuleRegistrar {
     public static GameRules.Key<GameRules.IntegerValue> RANDOM_ITEM_DROPS;
 
     public static void init() {
-        // do cut trees convert their logs into falling logs?
+        // felling a tree turned neighbouring logs into mod falling-log blocks with their own loot tables; off by default so a vanilla world is unaffected
         LOG_FALLING = GameRules.register("doLogFalling", GameRules.Category.MISC,
-                GameRules.BooleanValue.create(true)
+                GameRules.BooleanValue.create(false)
         );
-        // treat neutral units as enemies? this includes auto attacks, right clicks and attack moving
+        // every 20 ticks any PathfinderMob within 20 blocks of a unit was force-targeted at it; off by default so a vanilla world is unaffected
         NEUTRAL_AGGRO = GameRules.register("neutralAggro", GameRules.Category.MOBS,
-                GameRules.BooleanValue.create(true)
+                GameRules.BooleanValue.create(false)
         );
         // set hard cap on population (max even with infinite houses)
         MAX_POPULATION = GameRules.register("maxPopulation", GameRules.Category.MISC,
                 GameRules.IntegerValue.create(ResourceCosts.DEFAULT_MAX_POPULATION)
         );
-        // allow units to damage blocks (separate from doMobGriefing which is only for vanilla mobs)
-        DO_UNIT_GRIEFING = GameRules.register("doUnitGriefing", GameRules.Category.MOBS,
-                GameRules.BooleanValue.create(false)
-        );
-        // allow players to break blocks other than buildings and resource blocks
+        // the mod overrode the vanilla default of false, so players could break blocks where vanilla forbids it; off by default so a vanilla world is unaffected
         DO_PLAYER_GRIEFING = GameRules.register("doPlayerGriefing", GameRules.Category.PLAYER,
-                GameRules.BooleanValue.create(true)
+                GameRules.BooleanValue.create(false)
         );
         // sets the minimum Y level for the camera so it doesn't fall into the void
         GROUND_Y_LEVEL = GameRules.register("groundYLevel", GameRules.Category.PLAYER,
@@ -92,13 +87,13 @@ public class GameRuleRegistrar {
         COOP_MODE = GameRules.register("coopMode", GameRules.Category.PLAYER,
                 GameRules.BooleanValue.create(false)
         );
-        // all players are allied and cannot change alliances, normal victory is disabled and can only be achieved via commands
+        // every portal building rewrote the surrounding terrain into nether blocks and back on destruction; off by default so a vanilla world is unaffected
         DO_NETHER_CONVERSION = GameRules.register("doNetherConversion", GameRules.Category.UPDATES,
-                GameRules.BooleanValue.create(true)
+                GameRules.BooleanValue.create(false)
         );
-        // allow buildings outside the worldborder
+        // buildings could sit outside the world border, and with it false out-of-border buildings get auto-destroyed; off by default so a vanilla world is unaffected
         BUILDINGS_OUTSIDE_BORDER = GameRules.register("buildingsOutsideBorder", GameRules.Category.MISC,
-                GameRules.BooleanValue.create(true)
+                GameRules.BooleanValue.create(false)
         );
         // treat this world as purpose-built for RTS. Gates every mode that assumes a small bounded play
         // area: the navmesh prewarm, the fog-of-war chunk snapshot, and fog of war itself.

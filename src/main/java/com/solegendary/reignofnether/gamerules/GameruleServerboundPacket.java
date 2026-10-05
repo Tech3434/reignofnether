@@ -45,10 +45,6 @@ public class GameruleServerboundPacket  implements RTSSimplePayload {
         PacketDistributor.sendToServer(
             new GameruleServerboundPacket(GameruleAction.SET_MAX_POPULATION, "", maxPopulation));
     }
-    public static void setUnitGriefing(boolean unitGriefing) {
-        PacketDistributor.sendToServer(
-            new GameruleServerboundPacket(GameruleAction.SET_UNIT_GRIEFING, "", unitGriefing ? 1L : 0L));
-    }
     public static void setPlayerGriefing(boolean playerGriefing) {
         PacketDistributor.sendToServer(
             new GameruleServerboundPacket(GameruleAction.SET_PLAYER_GRIEFING, "", playerGriefing ? 1L : 0L));
@@ -151,10 +147,6 @@ public class GameruleServerboundPacket  implements RTSSimplePayload {
                     UnitServerEvents.maxPopulation = Math.toIntExact(value);
                     gameRules.getRule(GameRuleRegistrar.MAX_POPULATION).set(UnitServerEvents.maxPopulation, server);
                     GameruleClientboundPacket.setMaxPopulation(UnitServerEvents.maxPopulation);
-                }
-                case SET_UNIT_GRIEFING -> {
-                    gameRules.getRule(GameRuleRegistrar.DO_UNIT_GRIEFING).set(booleanValue, server);
-                    GameruleClientboundPacket.setUnitGriefing(booleanValue);
                 }
                 case SET_PLAYER_GRIEFING -> {
                     gameRules.getRule(GameRuleRegistrar.DO_PLAYER_GRIEFING).set(booleanValue, server);

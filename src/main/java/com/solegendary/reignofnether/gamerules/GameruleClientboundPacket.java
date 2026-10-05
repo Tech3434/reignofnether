@@ -49,10 +49,6 @@ public class GameruleClientboundPacket  implements RTSSimplePayload {
         PacketHandler.send(PacketHandler.allPlayers(),
                 new GameruleClientboundPacket(GameruleAction.SET_MAX_POPULATION, "", maxPopulation));
     }
-    public static void setUnitGriefing(boolean unitGriefing) {
-        PacketHandler.send(PacketHandler.allPlayers(),
-                new GameruleClientboundPacket(GameruleAction.SET_UNIT_GRIEFING, "", unitGriefing ? 1L : 0L));
-    }
     public static void setPlayerGriefing(boolean playerGriefing) {
         PacketHandler.send(PacketHandler.allPlayers(),
                 new GameruleClientboundPacket(GameruleAction.SET_PLAYER_GRIEFING, "", playerGriefing ? 1L : 0L));
@@ -142,8 +138,7 @@ public class GameruleClientboundPacket  implements RTSSimplePayload {
                             case SET_LOG_FALLING -> GameruleClient.doLogFalling = value == 1L;
                             case SET_NEUTRAL_AGGRO -> GameruleClient.neutralAggro = value == 1L;
                             case SET_MAX_POPULATION -> GameruleClient.maxPopulation = Math.toIntExact(value);
-                            case SET_UNIT_GRIEFING -> GameruleClient.doUnitGriefing = value == 1L;
-                            case SET_PLAYER_GRIEFING -> GameruleClient.doPlayerGriefing = value == 1L;
+                                        case SET_PLAYER_GRIEFING -> GameruleClient.doPlayerGriefing = value == 1L;
                             case SET_GROUND_Y_LEVEL -> {
                                 GameruleClient.groundYLevel = value;
                                 OrthoviewClientEvents.setMinOrthoviewY(value + 30);

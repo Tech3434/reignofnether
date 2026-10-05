@@ -865,7 +865,6 @@
     "commands.reignofnether.gamerule.do_log_falling": "Tree logs fall when cut",
     "commands.reignofnether.gamerule.neutral_aggro": "Auto-attack and be attacked by neutral mobs",
     "commands.reignofnether.gamerule.max_population": "Highest possible population limit",
-    "commands.reignofnether.gamerule.unit_griefing": "Explosive units can break terrain blocks",
     "commands.reignofnether.gamerule.player_griefing": "Players can break terrain blocks",
     "commands.reignofnether.gamerule.ground_y_level": "Minimum height for cameras",
     "commands.reignofnether.gamerule.flying_max_y_level": "Max height for flying units",

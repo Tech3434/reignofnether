@@ -141,8 +141,6 @@ public class GameruleServerEvents {
             GameruleClientboundPacket.setNeutralAggro(neutralAggro);
             int maxPopulation = server.getGameRules().getInt(GameRuleRegistrar.MAX_POPULATION);
             GameruleClientboundPacket.setMaxPopulation(maxPopulation);
-            boolean unitGriefing = server.getGameRules().getRule(GameRuleRegistrar.DO_UNIT_GRIEFING).get();
-            GameruleClientboundPacket.setUnitGriefing(unitGriefing);
             boolean playerGriefing = server.getGameRules().getRule(GameRuleRegistrar.DO_PLAYER_GRIEFING).get();
             GameruleClientboundPacket.setPlayerGriefing(playerGriefing);
             int groundYLevel = server.getGameRules().getRule(GameRuleRegistrar.GROUND_Y_LEVEL).get();
