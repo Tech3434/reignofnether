@@ -1,126 +1,99 @@
 package com.solegendary.reignofnether.items;
 
 import com.solegendary.reignofnether.building.BuildingClientEvents;
-import com.solegendary.reignofnether.building.BuildingPlacement;
-
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
-
-import com.solegendary.reignofnether.guiscreen.TopdownGui;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.hud.RectZone;
 import com.solegendary.reignofnether.hud.buttons.Button;
-import com.solegendary.reignofnether.hud.buttons.UnitItemInventoryButton;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
-
+import com.solegendary.reignofnether.resources.ResourceSource;
+import com.solegendary.reignofnether.resources.ResourceSources;
 import com.solegendary.reignofnether.unit.Checkpoint;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.util.ItemTagCompat;
 import com.solegendary.reignofnether.util.LevelRenderCompat;
 import com.solegendary.reignofnether.util.MyRenderer;
+
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
-import net.neoforged.bus.api.SubscribeEvent;
+
 import org.lwjgl.glfw.GLFW;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
+/**
+ * The client side of a unit's carried items: the six-slot panel, picking a stack up out of it, and
+ * dropping, swapping or handing it over.
+ *
+ * <p>What left with the unit item layer: every action was driven by a {@code UnitItem} - use on the
+ * ground, on a building, on an entity, sell at a market, buy from a shop. What is left is the
+ * container itself. Slots are addressed by index while the panel is open and by UUID once a stack is
+ * in hand, because the stack can be dropped on a different unit before the release resolves.
+ */
 public class ItemClientEvents {
-
-    public static final boolean ENABLED = UnitItem.ENABLED;
 
     private static final Minecraft MC = Minecraft.getInstance();
 
-    // UnitItem that the player right-clicked or is left-click dragging
-    // Used for: dropping, giving to another unit, selling and rearranging inventory
-    public static UnitItem actionableUnitItem = null;
-    public static UnitItem actionableUnitItemDrag = null;
-    public static int actionableInvIndex = 0;
-    public static UUID actionableInvUUID = null;
-    public static boolean leftClickUseItem = true;
+    // slot the player picked up, if any
+    private static int actionableInvIndex = -1;
+    private static UUID actionableInvUUID = null;
+    private static boolean leftClickUseItem = true;
 
     private static int mouseX = 0;
     private static int mouseY = 0;
     private static int mouseLeftDownX = 0;
     private static int mouseLeftDownY = 0;
 
-    // last positions of hudSelectedEntity and cursor for use by UnitItem as RangeIndicator
-    private static BlockPos lastOnPos = new BlockPos(0,0,0);
-    private static BlockPos lastCursorPos = new BlockPos(0,0,0);
+    // last positions of hudSelectedEntity and cursor, so the highlight box only redraws when it moves
+    private static BlockPos lastOnPos = new BlockPos(0, 0, 0);
+    private static BlockPos lastCursorPos = new BlockPos(0, 0, 0);
 
     public static final ArrayList<Button> renderedButtons = new ArrayList<>();
 
     // items moused over
     private static final ArrayList<ItemEntity> preselectedItems = new ArrayList<>();
 
-    public static ItemShopPlacement openItemShop = null;
-
     public static void addPreselectedItem(ItemEntity itemEntity) {
-        if (!true)
-            return;
         preselectedItems.add(itemEntity);
     }
+
     public static void clearPreselectedItems() {
         preselectedItems.clear();
     }
+
     public static ArrayList<ItemEntity> getPreselectedItems() {
         return preselectedItems;
     }
 
     public static boolean hasDragActionItem() {
-        return actionableUnitItemDrag != null && (mouseX != mouseLeftDownX || mouseY != mouseLeftDownY) && !hasLeftClickAction();
+        return actionableInvUUID != null && (mouseX != mouseLeftDownX || mouseY != mouseLeftDownY);
     }
 
-    public static boolean shouldRenderUnitInventory(Unit unit) {
-        return unit instanceof UnitInventory &&
-                unit.getItemGoal() != null;
+    public static boolean hasLeftClickAction() {
+        return leftClickUseItem && actionableInvUUID != null;
     }
 
     public static void syncInventory(int unitId, List<ItemStack> items) {
         if (MC.level != null && MC.level.getEntity(unitId) instanceof UnitInventory inv)
             for (int i = 0; i < items.size() && i < inv.getAllItems().size(); i++)
                 inv.set(i, items.get(i));
-    }
-
-    public static void setShopServedUnit(int unitId, BlockPos shopPos) {
-        Unit actionableUnit = null;
-        for (LivingEntity le : UnitClientEvents.getAllUnits()) {
-            if (le.getId() == unitId && le instanceof Unit unit) {
-                actionableUnit = unit;
-                break;
-            }
-        }
-        if (actionableUnit != null) {
-            for (BuildingPlacement bpl : BuildingClientEvents.getBuildings()) {
-                if (bpl.originPos.equals(shopPos) && bpl instanceof ItemShopPlacement itemShopBpl) {
-                    itemShopBpl.setServedUnit(actionableUnit);
-                    if (itemShopBpl.getServedUnit() == actionableUnit && HudClientEvents.hudSelectedEntity == actionableUnit) {
-                        ItemClientEvents.openItemShop = itemShopBpl;
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    public static void setStockedShopItems(BlockPos buildingPos, ArrayList<StockedShopItem> stockedItems) {
-        for (BuildingPlacement bpl : BuildingClientEvents.getBuildings()) {
-            if (bpl.originPos.equals(buildingPos) && bpl instanceof ItemShopPlacement itemShopPlacement) {
-                itemShopPlacement.setStockedItems(stockedItems);
-                break;
-            }
-        }
     }
 
     private static final int BUTTON_WIDTH = 22;
@@ -135,44 +108,74 @@ public class ItemClientEvents {
             Keybindings.item6
     );
 
+    /**
+     * Draws the six slots. Slots render the raw stack, so what a unit carries is whatever it picked
+     * up off the ground - there is no item to describe it in the code any more.
+     */
     public static RectZone renderUnitInventory(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY, UnitInventory inv) {
         ItemClientEvents.renderedButtons.clear();
+        guiGraphics.pose().pushPose();
+
         for (int i = 0; i < inv.getAllItems().size(); i++) {
             Keybinding hotkey = i < hotkeys.size() ? hotkeys.get(i) : null;
             ItemStack itemStack = inv.getAllItems().get(i);
-            UnitItem unitItem = ItemUtil.getUnitItem(itemStack);
-            if (unitItem instanceof EmptyUnitItem emptyItem) {
-                ItemClientEvents.renderedButtons.add(emptyItem.getEmptySlotButton(i, hasDragActionItem(), (Unit) inv));
-            } else if (unitItem != null) {
-                ItemClientEvents.renderedButtons.add(unitItem.getInventoryButton(i, itemStack, (Unit) inv, hotkey));
-            }
-        }
-        int i = 0;
-        for (Button button : ItemClientEvents.renderedButtons) {
-            int xi = i % 2 == 0 ? x : x + BUTTON_WIDTH;
+            int xi = x + ((i % 2) * BUTTON_WIDTH);
             int yi = y + ((i / 2) * BUTTON_WIDTH);
-            button.render(guiGraphics, xi, yi, mouseX, mouseY);
-            i += 1;
+
+            // empty slot backdrop, so it is obvious there is room to pick something up
+            guiGraphics.fill(xi, yi, xi + BUTTON_WIDTH, yi + BUTTON_WIDTH, 0x60000000);
+
+            if (!itemStack.isEmpty()) {
+                MyRenderer.renderItem(guiGraphics, itemStack, xi + (BUTTON_WIDTH / 2) - 8, yi + (BUTTON_WIDTH / 2) - 8, 1.0f);
+
+                if (hotkey != null && hotkey.isDown())
+                    MyRenderer.renderItem(guiGraphics, itemStack, xi + (BUTTON_WIDTH / 2) - 8, yi + (BUTTON_WIDTH / 2) - 8, 1.0f);
+            }
+            ItemClientEvents.renderedButtons.add(new Button(
+                    "Item " + (i + 1),
+                    Button.itemIconSize,
+                    (ResourceLocation) null,
+                    hotkey,
+                    () -> false,
+                    () -> itemStack.isEmpty(),
+                    () -> true,
+                    () -> pickUpSlot(inv, i, itemStack),
+                    null,
+                    itemStack.isEmpty() ? List.of() : List.of(
+                            com.solegendary.reignofnether.util.MiscUtil.fcs(itemStack.getHoverName().getString()))
+            ));
         }
+
+        for (Button button : ItemClientEvents.renderedButtons)
+            button.render(guiGraphics, x, y, mouseX, mouseY);
 
         for (Button button : ItemClientEvents.renderedButtons)
             if (button.isMouseOver(mouseX, mouseY))
                 button.renderTooltip(guiGraphics, mouseX, mouseY);
 
+        guiGraphics.pose().popPose();
         return RectZone.getZoneByLW(x, y, INV_WIDTH, INV_HEIGHT);
+    }
+
+    private static void pickUpSlot(UnitInventory inv, int index, ItemStack itemStack) {
+        if (itemStack.isEmpty()) return;
+        actionableInvIndex = index;
+        UUID uuid = ItemTagCompat.tag(itemStack).getUUID("uuid");
+        actionableInvUUID = uuid != null ? uuid : UUID.randomUUID();
+        ItemTagCompat.tag(itemStack).putUUID("uuid", actionableInvUUID);
+        leftClickUseItem = true;
+    }
+
+    public static void resetActions() {
+        actionableInvUUID = null;
+        actionableInvIndex = -1;
+        leftClickUseItem = false;
     }
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post evt) {
-        if (HudClientEvents.hudSelectedEntity != null && actionableUnitItem != null &&
-                (actionableUnitItem.showRadiusCircle ||
-                 actionableUnitItem.showRangeCircle ||
-                 actionableUnitItem.showRangeLine) &&
-                (actionableUnitItem.range > 0 || actionableUnitItem.radius > 0)) {
-            LivingEntity le = HudClientEvents.hudSelectedEntity;
-            if (!lastOnPos.equals(le.getOnPos()) || !lastCursorPos.equals(CursorClientEvents.getPreselectedBlockPos())) {
-                actionableUnitItem.updateHighlightBps(MC.level);
-            }
+        // keep the tracked cursor/position current so the highlight box knows when to move
+        if (HudClientEvents.hudSelectedEntity instanceof LivingEntity le) {
             lastOnPos = le.getOnPos();
             lastCursorPos = CursorClientEvents.getPreselectedBlockPos();
         }
@@ -180,58 +183,44 @@ public class ItemClientEvents {
 
     @SubscribeEvent
     public static void onLeftMouseRelease(ScreenEvent.MouseButtonReleased.Post evt) {
-        if (!ENABLED || MC.player == null || evt.getButton() != GLFW.GLFW_MOUSE_BUTTON_1)
+        if (MC.player == null || evt.getButton() != GLFW.GLFW_MOUSE_BUTTON_1)
             return;
 
         for (Button button : renderedButtons)
             button.checkClickedReleased((int) evt.getMouseX(), (int) evt.getMouseY(), true);
 
-        if (hasDragActionItem() &&
-            HudClientEvents.hudSelectedEntity instanceof UnitInventory inv &&
-            HudClientEvents.hudSelectedEntity instanceof Unit unit
-        ) {
-            Button mousedOverButton = getMousedOverButton();
+        if (hasDragActionItem() && HudClientEvents.hudSelectedEntity instanceof UnitInventory inv
+                && HudClientEvents.hudSelectedEntity instanceof Unit unit) {
+            Button mousedOverButton = getMousedOverSlot();
             Button hudMousedOverButton = HudClientEvents.getMousedOverButton();
-            if (mousedOverButton instanceof UnitItemInventoryButton uiButton && actionableInvIndex != uiButton.invIndex) {
-                inv.swapSlots(actionableInvIndex, uiButton.invIndex);
-                ItemServerboundPacket.swap(((Entity) inv).getId(), actionableInvIndex, uiButton.invIndex);
+
+            if (mousedOverButton != null && mousedOverButton != renderedButtons.get(actionableInvIndex)) {
+                inv.swapSlots(actionableInvIndex, renderedButtons.indexOf(mousedOverButton));
+                ItemServerboundPacket.swap(((Entity) inv).getId(), actionableInvIndex, renderedButtons.indexOf(mousedOverButton));
             } else if (hudMousedOverButton != null &&
-                    hudMousedOverButton.entity instanceof HeroUnit &&
                     hudMousedOverButton.entity != HudClientEvents.hudSelectedEntity &&
                     hudMousedOverButton.entity instanceof UnitInventory) {
                 Relationship rlu = UnitClientEvents.getPlayerToEntityRelationship(hudMousedOverButton.entity);
                 if (rlu == Relationship.FRIENDLY || rlu == Relationship.OWNED) {
-                    // Give via group button
+                    // hand over via the unit under the cursor
                     unit.getCheckpoints().clear();
                     unit.getCheckpoints().add(new Checkpoint(hudMousedOverButton.entity, true));
                     ItemServerboundPacket.give(((Entity) inv).getId(), actionableInvUUID, hudMousedOverButton.entity.getId());
                 }
             } else if (!HudClientEvents.isMouseOverAnyButtonOrHud()) {
-                BuildingPlacement bpl = BuildingClientEvents.getPreselectedBuilding();
-                Relationship rl = bpl != null ? BuildingClientEvents.getPlayerToBuildingRelationship(bpl) : null;
-
                 if (!UnitClientEvents.getPreselectedUnits().isEmpty()) {
                     LivingEntity le = UnitClientEvents.getPreselectedUnits().get(0);
                     Relationship rlu = UnitClientEvents.getPlayerToEntityRelationship(le);
-                    if (le instanceof HeroUnit &&
-                        le instanceof UnitInventory &&
-                        le != HudClientEvents.hudSelectedEntity &&
-                        (rlu == Relationship.FRIENDLY || rlu == Relationship.OWNED)) {
-                        // Give via direct entity
+                    if (le instanceof UnitInventory && le != HudClientEvents.hudSelectedEntity &&
+                            (rlu == Relationship.FRIENDLY || rlu == Relationship.OWNED)) {
+                        // hand over via direct entity selection
                         unit.getCheckpoints().clear();
                         unit.getCheckpoints().add(new Checkpoint(le, true));
                         ItemServerboundPacket.give(((Entity) inv).getId(), actionableInvUUID, le.getId());
                     }
-                } else if (bpl != null && bpl.getBuilding() instanceof AbstractMarket &&
-                        (rl == Relationship.FRIENDLY || rl == Relationship.OWNED) &&
-                        actionableUnitItemDrag != null && actionableUnitItemDrag.sellValue > 0) {
-                    // sell at market
-                    unit.getCheckpoints().clear();
-                    unit.getCheckpoints().add(new Checkpoint(new BlockPos(bpl.centrePos.getX(), bpl.minCorner.getY(), bpl.centrePos.getZ()), true));
-                    ItemServerboundPacket.sell(((Entity) inv).getId(), actionableInvUUID, bpl.originPos);
                 } else {
+                    // drop on the ground
                     BlockPos bp = CursorClientEvents.getPreselectedBlockPos();
-                    // drop on ground
                     unit.getCheckpoints().clear();
                     unit.getCheckpoints().add(new Checkpoint(bp, true));
                     ItemServerboundPacket.drop(((Entity) inv).getId(), actionableInvUUID, bp);
@@ -240,23 +229,11 @@ public class ItemClientEvents {
             resetActions();
             CursorClientEvents.setLeftClickAction(null);
         }
-        actionableUnitItemDrag = null;
-    }
-
-    public static boolean hasLeftClickAction() {
-        return leftClickUseItem && actionableUnitItem != null && actionableInvUUID != null;
-    }
-
-    // for some reason some bound vanilla keys like Q and E don't trigger KeyPressed but still trigger keyReleased
-    @SubscribeEvent
-    public static void onKeyRelease(ScreenEvent.KeyReleased.KeyReleased.Post evt) {
-        for (Button button : renderedButtons)
-            button.checkPressed(evt.getKeyCode());
     }
 
     @SubscribeEvent
     public static void onMousePress(ScreenEvent.MouseButtonPressed.Post evt) {
-        if (!ENABLED || !(MC.screen instanceof TopdownGui) || MC.player == null)
+        if (!(MC.screen instanceof com.solegendary.reignofnether.guiscreen.TopdownGui) || MC.player == null)
             return;
         for (Button button : renderedButtons) {
             if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_1) {
@@ -265,49 +242,13 @@ public class ItemClientEvents {
                 button.checkClicked((int) evt.getMouseX(), (int) evt.getMouseY(), false);
             }
         }
-        if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_1) {
-            mouseLeftDownX = (int) evt.getMouseX();
-            mouseLeftDownY = (int) evt.getMouseY();
-
-            if (hasLeftClickAction() &&
-                HudClientEvents.hudSelectedEntity instanceof UnitInventory inv) {
-                Unit unit = (Unit) inv;
-                if (actionableUnitItem.onUseGround != null) {
-                    BlockPos pos = CursorClientEvents.getPreselectedBlockPos();
-                    unit.getCheckpoints().clear();
-                    unit.getCheckpoints().add(new Checkpoint(pos, true));
-                    ItemServerboundPacket.useOnBlock(((Entity) inv).getId(), actionableInvUUID, pos);
-                } else if (actionableUnitItem.onUseBuilding != null &&
-                    BuildingClientEvents.getPreselectedBuilding() != null) {
-                    BuildingPlacement bpl = BuildingClientEvents.getPreselectedBuilding();
-                    unit.getCheckpoints().clear();
-                    unit.getCheckpoints().add(new Checkpoint(new BlockPos(bpl.centrePos.getX(), bpl.minCorner.getY(), bpl.centrePos.getZ()), true));
-                    ItemServerboundPacket.useOnBuilding(((Entity) inv).getId(), actionableInvUUID, bpl.originPos);
-                } else if (actionableUnitItem.onUseEntity != null &&
-                    !UnitClientEvents.getPreselectedUnits().isEmpty()) {
-                    LivingEntity le = UnitClientEvents.getPreselectedUnits().get(0);
-                    unit.getCheckpoints().clear();
-                    unit.getCheckpoints().add(new Checkpoint(le, true));
-                    ItemServerboundPacket.useOnEntity(((Entity) inv).getId(), actionableInvUUID, le.getId());
-                }
-                resetActions();
-                CursorClientEvents.setLeftClickAction(null);
-            }
-        } else if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_2) {
+        if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_2) {
             resetActions();
             CursorClientEvents.setLeftClickAction(null);
         }
     }
 
-    public static void resetActions() {
-        actionableUnitItem = null;
-        actionableUnitItemDrag = null;
-        actionableInvUUID = null;
-        actionableInvIndex = 0;
-        leftClickUseItem = false;
-    }
-
-    private static Button getMousedOverButton() {
+    private static Button getMousedOverSlot() {
         for (Button button : renderedButtons)
             if (button.isMouseOver(mouseX, mouseY))
                 return button;
@@ -316,8 +257,6 @@ public class ItemClientEvents {
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent evt) {
-        if (!ENABLED) return;
-
         if (evt.getStage() != RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS ||
                 HudClientEvents.isMouseOverAnyButtonOrHud())
             return;
@@ -326,18 +265,17 @@ public class ItemClientEvents {
             // see LevelRenderCompat: at AFTER_CUTOUT_BLOCKS RenderSystem's model-view does not have
             // the camera rotation yet, so the draw and the flush both have to happen under it
             LevelRenderCompat.drawAndFlush(evt, () -> {
-            for (ItemEntity itemEntity : preselectedItems) {
-                ResourceSource res = ResourceSources.getFromItem(itemEntity.getItem().getItem());
-                boolean isResourceItem = res != null && res.resourceValue > 0;
-                if (ItemUtil.isUnitItem(itemEntity) || isResourceItem || ItemUtil.isPreparedEdibleFood(itemEntity.getItem().getItem())) {
-                    MyRenderer.drawBoxBottom(
-                            evt.getPoseStack(),
-                            itemEntity.getBoundingBox().inflate(0.25, 0, 0.25),
-                            1, 1, 1,
-                            CursorClientEvents.isRightClickDown() ? 1.0f : 0.25f
-                    );
+                for (ItemEntity itemEntity : preselectedItems) {
+                    ResourceSource res = ResourceSources.getFromItem(itemEntity.getItem().getItem());
+                    if (res != null && res.resourceValue > 0) {
+                        MyRenderer.drawBoxBottom(
+                                evt.getPoseStack(),
+                                itemEntity.getBoundingBox().inflate(0.25, 0, 0.25),
+                                1, 1, 1,
+                                CursorClientEvents.isRightClickDown() ? 1.0f : 0.25f
+                        );
+                    }
                 }
-            }
             });
         }
     }
@@ -350,20 +288,6 @@ public class ItemClientEvents {
         if (mouseX != mouseLeftDownX || mouseY != mouseLeftDownY) {
             mouseLeftDownX = 0;
             mouseLeftDownY = 0;
-        }
-
-        if (OrthoviewClientEvents.isEnabled() && MC.screen instanceof TopdownGui) {
-            for (ItemEntity itemEntity : preselectedItems) {
-                UnitItem unitItem = ItemUtil.getUnitItem(itemEntity.getItem());
-                if (unitItem != null && unitItem.enableTooltip) {
-                    MyRenderer.renderItemEntityTooltip(evt.getGuiGraphics(), unitItem, itemEntity.getItem(), evt.getMouseX(), evt.getMouseY());
-                    break;
-                }
-            }
-            if (ENABLED && hasDragActionItem() && HudClientEvents.hudSelectedEntity instanceof Unit unit) {
-                actionableUnitItemDrag.getInventoryButton(0, new ItemStack(actionableUnitItemDrag.item), unit, null)
-                        .renderGhost(evt.getGuiGraphics(), evt.getMouseX(), evt.getMouseY());
-            }
         }
     }
 }

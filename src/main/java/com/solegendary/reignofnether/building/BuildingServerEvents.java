@@ -4,15 +4,10 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import com.google.common.collect.Sets;
 import com.solegendary.reignofnether.ReignOfNether;
-import com.solegendary.reignofnether.ability.EnchantAbility;
-import com.solegendary.reignofnether.ability.BuildingAbilityClientboundPacket;
-import com.solegendary.reignofnether.ability.EquipAbility;
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
 import com.solegendary.reignofnether.building.addon.NetherConvertingAddon;
 import com.solegendary.reignofnether.building.addon.NightSourceAddon;
-
-import com.solegendary.reignofnether.building.buildings.placements.*;
 
 import com.solegendary.reignofnether.building.custombuilding.CustomBuildingServerEvents;
 import com.solegendary.reignofnether.building.data.DataType;
@@ -182,19 +177,10 @@ public class BuildingServerEvents {
         BuildingSaveData buildingData = BuildingSaveData.getInstance(level);
         buildingData.buildings.clear();
 
-        getBuildings().forEach(b -> {
+getBuildings().forEach(b -> {
             b.getDataStorage().setData(BUILDING_TAGS, b.tags);
             b.getDataStorage().setData(BUILDING_COMMANDS, b.commands);
 
-            ItemShopAddon itemShopAddon = b.getBuilding().getActiveAddon(ItemShopAddon.class);
-            if (itemShopAddon != null) {
-                b.getDataStorage().setData(ItemShopAddon.STOCKED_ITEMS, b.getDataStorage().getData(ItemShopAddon.STOCKED_ITEMS));
-            }
-            
-            PortalPlacement.PortalType portalType = null;
-            if (b instanceof PortalPlacement portal) {
-                portalType = portal.getPortalType();
-            }
             if (b instanceof CustomBuildingPlacement cb) {
                 cb.packCommandsNbt();
             }
@@ -207,8 +193,6 @@ public class BuildingServerEvents {
                     b.isDiagonalBridge,
                     b.isBuilt,
                     b.getUpgradeLevel(),
-                    portalType,
-                    b instanceof PortalPlacement portal && portal.hasDestination() ? portal.destination : new BlockPos(0,0,0),
                     b.scenarioRoleIndex,
                     b.getDataStorage(),
                     b.partialBlocksDestroyed,
@@ -245,7 +229,7 @@ public class BuildingServerEvents {
             NetherZoneSaveData netherData = NetherZoneSaveData.getInstance(level);
             ArrayList<BlockPos> placedNZs = new ArrayList<>();
             BuildingServerEvents.getBuildings().clear();
-            buildingData.buildings.forEach(b -> {
+buildingData.buildings.forEach(b -> {
                 BuildingPlacement building = BuildingUtils.getNewBuildingPlacement(b.building,
                     level,
                     b.originPos,
@@ -257,10 +241,10 @@ public class BuildingServerEvents {
                 if (building != null) {
                     building.partialBlocksDestroyed = b.partialBlocksDestroyed;
                     building.dataStorage = b.dataStorage;
-                    
+
                     building.tags = b.dataStorage.getData(BUILDING_TAGS);
                     building.commands = b.dataStorage.getData(BUILDING_COMMANDS);
-                    
+
                     building.scenarioRoleIndex = b.scenarioRoleIndex;
                     building.isBuilt = b.isBuilt;
                     BuildingServerEvents.getBuildings().add(building);
@@ -269,20 +253,9 @@ public class BuildingServerEvents {
                     }
 
                     if (b.upgradeLevel > 0) {
-                        if (building instanceof PortalPlacement portal) {
-                            if (!(building.getBuilding() instanceof NeutralTransportPortal)) {
-                                portal.changePortalStructure(b.portalType);
-                            }
-                            if (b.portalDestination != null && !b.portalDestination.equals(new BlockPos(0, 0, 0))) {
-                                portal.destination = b.portalDestination;
-                            }
-                        } else if (building instanceof BeaconPlacement beacon) {
-                            beacon.changeBeaconStructure(b.upgradeLevel);
-                        } else {
-                            String upgradedStructureName = building.getBuilding().getUpgradedStructureName(b.upgradeLevel);
-                            if (!upgradedStructureName.equals(building.getBuilding().structureName)) {
-                                building.changeStructure(upgradedStructureName);
-                            }
+                        String upgradedStructureName = building.getBuilding().getUpgradedStructureName(b.upgradeLevel);
+                        if (!upgradedStructureName.equals(building.getBuilding().structureName)) {
+                            building.changeStructure(upgradedStructureName);
                         }
                     }
                     // setNetherZone can only be run once - this supercedes where it normally happens in tick() ->
