@@ -1,419 +1,414 @@
-# План: оставить только РТС-систему, убрать остальное
+# План: оставить только РТС-каркас, контент вынести в документацию
 
-Цель: мод становится инструментом РТС для одного назначенного игрока на обычном сервере.
-Игрок входит в РТС-режим, получает стартовую армию, воюет, строит базу из зданий, которые
-помогают и в обычной игре (гарнизоны, ауры, лечение, генерация ресурсов). Всё, что не
-нужно этому сценарию, удаляется. Интрузивность в чужом мире убирается.
+Цель ветки: мод становится **чистым каркасом РТС-системы**. Всё, что является контентом
+готовых фракций — юниты, здания, способности, исследования, предметы, ресурсы, волны —
+удаляется из кода и сохраняется как документация. Остаётся механика: интерфейсы и цели,
+производство, здания как система, атрибуты, эффекты, чары, камера, HUD, команды, читы.
+Позже владелец ветки пишет на этом каркасе свою фракцию.
 
-Основание: каталог `FEATURES.md`, инвентаризация `INTRUSION_AUDIT.md`, анализ швов `FEATURES.md` §1.
-Состояние кода при составлении плана: `5079004e`.
+Обоснование: `FEATURES.md` (каталог), `INTRUSION_AUDIT.md` (инвентаризация вреда),
+`HOWTO_FACTION.md` (как добавлять контент). Состояние кода при составлении: `5079004e`.
 
 ## Принятые решения
 
-Заданы владельцем ветки и не переоткрываются:
+1. **Удаляются «дефолтные фракции» жителей / нежити / пиглинов** вместе со всем
+   содержащимся контентом. `Faction` удаляется полностью, абстракцией не заменяется.
+2. **Удалённый контент сохраняется как документация** — переносится в `docs/reference/`, а не
+   остаётся в дереве. Код и так сохраняется в git поимённо.
+3. **Каркас РТС сохраняется целиком**: интерфейсы юнитов и зданий, цели, производство,
+   гарнизоны, ауры, атрибуты, эффекты, чары, камера, HUD, команды, читы, кастомные строения.
+4. **Режимы, кроме `CLASSIC`, удаляются.**
+5. **Интрузивность убирается.**
 
-1. **Юниты создаются зданиями**, а не напрямую. Значит производственный шов
-   (`ProductionItem` / `ProductionPlacement`) **не рвётся**, и 18 производящих зданий
-   остаются. Это снимает самую дорогую часть замысла.
-2. **Дополнительно юниты спавнятся при старте матча** — сейчас `startRTS` создаёт только
-   воркера и скаута; нужен параметр стартовой армии.
-3. **Здания — свободная смесь**: производящие, только исследующие, только гарнизон, только
-   эффект, генераторы ресурсов, миксы. Нужен базовый класс здания, который расширяется без
-   правки существующих — см. §5.
-4. **Генератор ресурсов** — новая фича, делается позже, когда будут фракции. Здесь только
-   закладывается форма класса; см. §5.4.
-5. **Режимы, кроме CLASSIC, удаляются** — `SURVIVAL`, `SANDBOX`, `SCENARIO`.
-6. **`Faction` удаляется**, абстракцией не заменяется — см. §4.
-7. **Черновики удаляемого кода — только в документации.** Код хранится в git поимённо, см. §9.
+## ⚠ Последствие, о котором надо знать до начала
 
----
+После удаления контента в моде останется **ноль юнитов и ноль зданий**. Мод перестанет быть
+играбельным: гейты `compileJava`, `validateMixins`, `runData`, `runServer`, `runClient` будут
+зелёными, но в игре делать нечего, и **проверить в игре станет нечем**.
 
-## 1. Что остаётся (не трогать ни в одном этапе)
+Отсюда порядок этапов: сначала убрать интрузивность (этапы A–C), пока контент ещё есть и
+этапы можно проверить в игре, и только потом удалять контент (этап D).
 
-Это ядро. Если этап требует правки любого из этих пунктов — значит этап понят неправильно.
-
-| Подсистема | Файлы |
-|---|---|
-| Интерфейс юнита | `unit/interfaces/Unit`, `AttackerUnit`, `WorkerUnit`, `RangedAttackerUnit`, `HeroUnit`, `ConvertableUnit`, `ArmSwingingUnit` |
-| Способности | `ability/**` целиком, включая `heroAbilities/**` |
-| Атрибуты, эффекты, частицы | `registrars/AttributeRegistrar`, `MobEffectRegistrar`, `ParticleRegistrar`, `registrars/EnchantmentRegistrar` + 7 чар датапаком |
-| Цели и ИИ | `unit/goals/**`, кроме привязанных к экономике |
-| `unit/pathfinding/**` | гейт тройной, ванилла не затронута; `rtsPathfinding` остаётся геймрулом |
-| Здания | `building/**`, кроме явно перечисленного на удаление в §5 |
-| Производство | `building/production/**`, `ProductionPlacement`, `ActiveProduction`, `ProdDupeRule` |
-| Орторежим | `orthoview/**`, `guiscreen/TopdownGui*`, `minimap/**`, `hud/**` |
-| Песочница как **инструмент ГМа** | `SandboxServer`, `SandboxClientEvents` (без режима SANDBOX — см. §3.2) |
-| `execute rts-related` | `commands/rtsapi/ExecuteCommands` + `argument/**` |
-| Читы | `PlayerServerEvents.onPlayerChat`, `ResearchServerEvents` список читов, без `allcheats` |
-| Кастомные строения | `building/custombuilding/**` + `RTSStructureBlockEntity` — отдельная полностью самодостаточная подсистема |
+Практическая рекомендация: держать промежуточную точку. Пока каркас пустой, ветка непригодна
+для игры — если нужен играбельный вариант, его стоит держать на отдельной ветке от этапа C.
 
 ---
 
-## 2. Этап A — закрыть реальные поломки (делать первым)
+## 1. Что остаётся — каркас (не трогать ни в одном этапе)
 
-Не «интрузивность», а баги. Пока они есть, любой следующий этап будет harder отлаживать.
+| Подсистема | Файлы | Зачем |
+|---|---|---|
+| Интерфейсы юнитов | `unit/interfaces/{Unit,AttackerUnit,WorkerUnit,RangedAttackerUnit,HeroUnit,ConvertableUnit,ArmSwingingUnit,KeyframeAnimated}` | контракт юнита |
+| Статика юнита | `Unit.createDefaultAttributes()`, `Unit.tick()`, `Unit.createCooldownMap()` | база атрибутов и тик |
+| Цели и ИИ | `unit/goals/**` (34 файла) | вся навигация и поведение |
+| Пути | `unit/pathfinding/**` (13 файлов) | гейт тройной, ваниллу не вредит |
+| События юнитов | `unit/UnitServerEvents`, `UnitClientEvents`, `NonUnitServerEvents` | спавн, команды, управление ванильными мобами |
+| Инвентарь юнита | `items/UnitInventory` | 6 слотов, добавляется миксином каждому мобу |
+| Базовые классы способностей | `ability/{Ability,HeroAbility,Abilities}`, `AbilityButton`, `ability/UnitAction` | контракт способности |
+| Здание как система | `building/{Building,BuildingPlacement,BuildingUtils,BuildingValidators,BuildingBlockData,BuildingPlaceButton}`, `building/buildings/placements/**` | ядро зданий |
+| Производство | `building/production/{ProductionItem,ActiveProduction,ProductionItemList,ProdDupeRule,ProductionBuilding,ProductionPlacement}` | очередь, стоимость, `onComplete` |
+| Аддоны | `building/addon/**` (5 контрактов) | гарнизон, аура, конвертация, магазин |
+| Данные размещения | `building/data/{DataType,DataStorage}` | персистентность аддонов |
+| Кастомные строения | `building/custombuilding/**` + `RTSStructureBlockEntity` | инструмент автора, полностью самодостаточен |
+| Атрибуты | `registrars/AttributeRegistrar` | 20 атрибутов, работают на любой сущности |
+| Эффекты | `registrars/MobEffectRegistrar` | 28 эффектов |
+| Частицы | `registrars/ParticleRegistrar` | 6 типов |
+| Чары | `registrars/EnchantmentRegistrar` + `data/reignofnether/enchantment/*.json` | датапак-чары |
+| Реестры | `api/ReignOfNetherRegistries` (`BUILDING`, `PRODUCTION_ITEM`, `DATA_TYPE`) | точка регистрации |
+| Камера и UI | `orthoview/**`, `guiscreen/TopdownGui*`, `minimap/**`, `hud/**` | рабочий инструмент ГМа |
+| Команды | `commands/**` | `/rtsapi`, `execute rts-related`, аргумент-селекторы |
+| Читы | `player/PlayerServerEvents.onPlayerChat`, список читов | операторские переключатели |
+| Союзы | `alliance/**` | командные отношения |
+| Игроки и матч | `player/{RTSPlayer,RTSPlayerSaveData,PlayerServerEvents,PlayerClientEvents}` | вход, выход, счёт |
+| Песочница-инструмент | `sandbox/{SandboxServer,SandboxClientEvents,SandboxActionButtons}` | спавн юнитов, якоря, переключатель отношений |
+| Утилиты | `util/{MyRenderer,LevelRenderCompat,ArrayUtil,SavedDataCompat,ChunkTicketUtil,MiscUtil}` | отрисовка и мелкие помощники |
+| Прочее | `keybinds/**`, `gamerules/**`, `time/TimeUtils`, `api/**`, `config/**` | инфраструктура |
+
+## 2. Что уходит в документацию
+
+| Подсистема | Файлов | Куда |
+|---|---|---|
+| Юниты | `unit/units/**` — 54 класса + `*Prod` | `docs/reference/units.md` |
+| Здания | `building/buildings/**` — 51 + абстрактные базы | `docs/reference/buildings.md` |
+| Способности | `ability/abilities/**`, `ability/heroAbilities/**` — 93 | `docs/reference/abilities.md` |
+| Исследования | `research/researchItems/**` — 51 | `docs/reference/research.md` |
+| Экономика | `resources/{ResourceSources,ResourceIndex,ResourceChunk,ResourcesServerEvents}` | `docs/reference/economy.md` |
+| Предметы юнитов | `items/{UnitItem,UnitItemBuilder,UnitItems,unititems/**}` | `docs/reference/items.md` |
+| Волны | `survival/**` — 15 | `docs/reference/waves.md` |
+| Сценарий, обучение, старт | `scenario/**`, `tutorial/**`, `startpos/**`, `matchstart/**`, `rtsmap/**` | `docs/reference/match-setup.md` |
+| Фракция | `faction/**` | `docs/reference/faction.md` |
+| Ассеты контента | текстуры юнитов/зданий, `models/item/*` спавн-яиц, звуки юнитов, lang-ключи | `docs/reference/assets.md` |
+| Структуры | `data/reignofnether/structures/*.nbt` — 67 | `docs/reference/buildings.md` |
+
+Восстановление любого класса: `git show 5079004e:src/main/java/com/solegendary/reignofnether/<путь>`.
+
+---
+
+## 3. Этап A — закрыть реальные поломки
+
+Пока контент есть, этап проверяем в игре.
 
 ☐ A.1 Убрать форс `disableElytraMovementCheck` — `player/PlayerServerEvents.java:183`.
-Проверить `git show 918672b7:<file>`, было ли это в апстриме. Если да — восстановить ваниллу;
-если нет — просто удалить строку.
 ☐ A.2 Вернуть ванильную валидацию движения — `mixin/ServerGamePacketListenerImplMixin.java:11-25`.
-Форс `isSingleplayerOwner()` в `true` отключает разрывы за скорость для всех игроков.
 ☐ A.3 Дублирование пакетов частиц — `mixin/ServerLevelMixin.java:16-30`.
-☐ A.4 Добавить проверку прав: `/sendfood`, `/sendwood`, `/sendore`, `/sendemerald`
-(`resources/ResourcesServerEvents.java:340-375`) и `/rts-fog`
+☐ A.4 Права команд: `/sendfood`, `/sendwood`, `/sendore`, `/sendemerald`
+(`resources/ResourcesServerEvents.java:340-375`), `/rts-fog`
 (`fogofwar/FogOfWarServerEvents.java:623-635`). Минимум `hasPermission(2)`.
 ☐ A.5 Ограничить `BuildingCommand` (`building/BuildingCommand.java:138-164`) — сейчас
-выполняет произвольные команды с правом 2. Требовать 4 либо явное поле разрешения.
-☐ A.6 Перестать форсить `allcheats` на два авторских ника
-(`player/PlayerServerEvents.java:859-862`) — заменить на обычный чит.
-☐ A.7 Вернуть ванильные ключи локализации 7 чар (`enchantment.reignofnether.*` в `en_us.json`) —
-сейчас имена показываются сырыми ключами.
+выполняет произвольные команды с правом 2.
+☐ A.6 Убрать форс `allcheats` на два авторских ника (`player/PlayerServerEvents.java:859-862`).
+☐ A.7 Вернуть ключи локализации 7 чар (`enchantment.reignofnether.*`).
 
-**Проверка:** `compileJava`, `validateMixins`, `runData`, `runServer`.
-Ручная: разгон/телепорт не должен давать disconnect; частицы не двоятся; `/sendfood` от игрока
-без прав отвечает отказом.
+**Проверка:** гейты 1–4 плюс ручная — разгон не рвёт соединение, частицы не двоятся,
+`/sendfood` без прав отвечает отказом.
 
 ---
 
-## 3. Этап B — убрать интрузивность
+## 4. Этап B — убрать интрузивность
 
-Порядок из `INTRUSION_AUDIT.md` §9 — по убыванию вреда. Каждый пункт отдельный коммит.
+Порядок из `INTRUSION_AUDIT.md` §9. Каждый пункт отдельный коммит.
 
-### B.1 Генерация мира — удаление файлов
+### B.1 Генерация мира
+☐ B.1.1 Удалить `data/minecraft/**`, кроме `tags/blocks/mineable/axe.json`.
+Возвращает пещеры и каньоны (`probability` 0.00), ванильную плотность рельефа, 14 ванильных
+биомов без руды на поверхности.
+☐ B.1.2 Удалить мёртвое: `data/flat_dimensions/**`, `data/overworldify/**`,
+`data/tectonic/**`, `data/minecraft/tags/functions/**`, `data/reignofnether/functions/**`.
 
-☐ B.1.1 Удалить весь `src/main/resources/data/minecraft/`, кроме
-`tags/blocks/mineable/axe.json` (аддитивный и корректный).
-Возвращает: пещеры и каньоны (`probability` 0.00), исходную плотность рельефа
-(`depth.json` с уклоном −0.8 между y75–105), 14 ванильных биомов без руды на поверхности,
-поверхностные золото/алмаз/изумруд.
-
-**Риск, который надо проверить:** правки `depth.json` и `sloped_cheese.json` вносились
-потому, что carver был отключён (комментарий в файлах: `Cave logic short-circuit, must not
-exceed 1.5625`). Возврат ваниллы снимает причину, но сами файлы должны исчезнуть, а не быть
-проверены вручную.
-
-### B.2 Ванильные ассеты — удаление файлов
-
-☐ B.2.1 Удалить `src/main/resources/assets/minecraft/`, кроме
-`textures/item/trident.png` и `textures/entity/trident.png` (или удалить и их, если трезубец
-не нужен — решение при удалении `BlazeMixin`).
-
-Убирает: перекраску всех ванильных GUI (`widgets.png`), рождественского кота на вырезанной
-тыкве, подмену сплэшей, логотипа меню, оверлея тыквы.
+### B.2 Ванильные ассеты
+☐ B.2.1 Удалить `assets/minecraft/`, кроме `textures/item/trident.png` и
+`textures/entity/trident.png` (решение при удалении `BlazeMixin` — если он не нужен, удалить и их).
+Убирает перекраску всех GUI, рождественского кота, подмену сплэшей и логотипа меню.
 
 ### B.3 Перекраска за границей мира
-
 ☐ B.3.1 Убрать ветку `0x252933` из `FogTintingBlockColor`, `BiomeColorsMixin`,
-`LiquidBlockRendererMixin` (условие `WorldBorderClientEvents.isOutsideWorldBorder(pos)`).
-Единственная безусловная перекраска мира в моде; бьёт любой мир с суженной границей.
+`LiquidBlockRendererMixin`.
 ☐ B.3.2 Убрать отмену рендера живых сущностей за границей —
 `FogOfWarClientEvents.java:272-281`.
 ☐ B.3.3 Убрать скрытие предметов за границей — `fogofwar/ItemEntityRendererMixin.java:72`.
-☐ B.3.4 Решить судьбу `WorldBorderRenderMixin`. **Пункт не однозначный:** стена границы
-полезна в РТС-режиме. Вариант — рисовать её только когда `OrthoviewClientEvents.isEnabled()`.
+☐ B.3.4 Решить судьбу `WorldBorderRenderMixin`. **Требует решения владельца:** стена границы
+полезна в РТС-режиме, но «никогда не рисовать» — это подмена ваниллы.
+☐ B.3.5 Решить, остаются ли `ClientModEvents.onBlockColourEvent` (обёртка `FogTintingBlockColor`
+на каждый блок) и `ModelEvent.ModifyBakingResult` (обёртка каждой модели с `tintIndex 0`).
 
-☐ B.3.5 Решить, остаются ли `ClientModEvents.onBlockColourEvent` (регистрация
-`FogTintingBlockColor` на **каждый** блок) и `ModelEvent.ModifyBakingResult` (обёртка
-**каждой** модели с `tintIndex 0`). В не-РТС мире визуально нейтрально, но через `BlockColor`
-проходит каждый блок. Минимальный вариант — не регистрировать обёртку, пока туман не включён.
-
-### B.4 Геймрулы с неванильными дефолтами
-
-☐ B.4.1 `doNetherConversion` → `false`. Сейчас порталы зданий **переписывают террейн**.
+### B.4 Дефолты геймрулов
+☐ B.4.1 `doNetherConversion` → `false` (сейчас порталы зданий переписывают террейн).
 ☐ B.4.2 `buildingsOutsideBorder` → `false`.
 ☐ B.4.3 `neutralAggro` → `false`.
-☐ B.4.4 `doUnitGriefing` уже `false`, но это значит «взрывы не разрушают ничего, кроме
-листвы и TNT» — пересмотреть, иначе крашеры и TNT в мире бессмысленны.
-☐ B.4.5 `doLogFalling` → `false` (ломание бревна превращает соседние в модовые блоки).
+☐ B.4.4 `doUnitGriefing`: сейчас `false` означает «взрывы не разрушают ничего, кроме листвы и
+TNT». Пересмотреть.
+☐ B.4.5 `doLogFalling` → `false`.
 ☐ B.4.6 `doPlayerGriefing` → `false` (сейчас ломание любого блока вне зданий отменяется).
 
 ### B.5 Безусловные миксины
-
-Каждый — отдельный коммит с пометкой, что именно возвращается ванилле.
-
-☐ B.5.1 `fire/FireBlockMixin` — `bootStrap` возвращает ванильную таблицу горючести
-(сейчас: огонь не распространяется, гаснет на age 2, обсидиан горючий, все записи Незера
-выброшены), `tick` возвращает горение до age 15, `tryCatchFire` удаляется.
-☐ B.5.2 `fire/BaseFireBlockMixin`, `CampfireBlockMixin`, `MagmaBlockMixin` — вернуть
-ванильные ставки урона.
-☐ B.5.3 `BaseSpawnerMixin` (`delay`) — убрать форс 600 тиков на **все** спавнеры; оставить
-роуковскую часть для спавнеров мода.
-☐ B.5.4 `SculkCatalystBlockEntityMixin` — вернуть ванильный bloom, оставив проверку
-`BuildingUtils.isWithinRangeOfMaxedCatalyst` только для катализаторов зданий.
-☐ B.5.5 `BlazeMixin` — вернуть ванильный `aiStep`. Важно: `BlazeUnit` его не переопределяет,
-то есть правка была не нужна ни для чего.
-☐ B.5.6 `WitherRoseMixin` — вернуть ванильное увядание.
-☐ B.5.7 `LeavesBlockMixin` — ограничить `nether_stem`-логику только crimson/warped либо
-удалить.
-☐ B.5.8 `PanicGoalMixin` — снять потолок скорости 1.2.
-☐ B.5.9 `EntityMixin` — вернуть урон от удушья и полную заморозку.
-☐ B.5.10 `EvokerFangsMixin` — вернуть хитбокс `inflate(0.2)`.
-☐ B.5.11 `ThrownTridentMixin`, `ThrownPotionMixin`, `CrossbowMixin.getChargeDuration` —
-вернуть ванильные конвейеры.
-☐ B.5.12 `UnitInventoryMobMixin` — перестать писать `reignofnether:UnitItems` в NBT всех
-мобов (писать только если инвентарь непуст).
-☐ B.5.13 `AbstractArrowMixin` — объявить `canHitEntity` как `@Overwrite` явно или убрать;
-убрать повторное применение урона.
-☐ B.5.14 `PathNavigationMixin` — ограничить `@ModifyConstant(doubleValue = 1.0)` через
-`require = 0`, чтобы не менять все константы в методе.
-☐ B.5.15 `PowderSnowMixin` — добавить `cancellable = true` либо осознать, что урон от рыхлого
-снега нужен.
-☐ B.5.16 `UnitServerEvents` — не конвертировать юнита после смерти
-(`UnitServerEvents.java:554-596`); и починить `ConvertableUnit`, который не удаляет исходную
-сущность.
-☐ B.5.17 `PlayerMixin` — удалить из списка миксинов (тело целиком закомментировано).
-☐ B.5.18 Удалить незарегистрированный `ZoglinMixin` или зарегистрировать — сейчас мёртвый.
+☐ B.5.1 `fire/FireBlockMixin` — вернуть ванильную таблицу горючести, горение до age 15, убрать
+горючесть обсидиана и `tryCatchFire`.
+☐ B.5.2 `fire/BaseFireBlockMixin`, `CampfireBlockMixin`, `MagmaBlockMixin` — вернуть ванильные
+ставки урона.
+☐ B.5.3 `BaseSpawnerMixin` — убрать форс 600 тиков на все спавнеры; роуковскую часть оставить
+(со спавнерами мода уйдёт).
+☐ B.5.4 `SculkCatalystBlockEntityMixin` — вернуть ванильный bloom.
+☐ B.5.5 `BlazeMixin` — вернуть ванильный `aiStep`.
+☐ B.5.6 `WitherRoseMixin`, `LeavesBlockMixin`, `PanicGoalMixin` — вернуть ваниллу.
+☐ B.5.7 `EntityMixin` — вернуть урон от удушья и полную заморозку. **Внимание:** с отключённым
+удушьем камера орторежима на высоте безопасна; если удушье вернуть — проверить, что камера не
+застревает в блоках (этап G).
+☐ B.5.8 `EvokerFangsMixin` — вернуть хитбокс.
+☐ B.5.9 `ThrownTridentMixin`, `ThrownPotionMixin`, `CrossbowMixin.getChargeDuration` — вернуть
+ванильные конвейеры.
+☐ B.5.10 `UnitInventoryMobMixin` — писать `reignofnether:UnitItems` в NBT только при
+непустом инвентаре, а не всем мобам.
+☐ B.5.11 `AbstractArrowMixin` — объявить `canHitEntity` явно или убрать; убрать повторное
+применение урона.
+☐ B.5.12 `PathNavigationMixin` — ограничить `@ModifyConstant(doubleValue = 1.0)` через
+`require = 0`.
+☐ B.5.13 `UnitServerEvents` — не конвертировать юнита после смерти; починить
+`ConvertableUnit`, который не удаляет исходную сущность.
+☐ B.5.14 Удалить `PlayerMixin` из списка миксинов (тело закомментировано) и незарегистрированный
+`ZoglinMixin`.
 
 ### B.6 Клиентские миксины без гейта
-
-☐ B.6.1 `TitleScreenMixin` — за флагом `titleScreenButtons`, дефолт `false`. Сейчас главное
-меню перехватывается целиком и безусловно.
+☐ B.6.1 `TitleScreenMixin` — за флагом, дефолт `false`. Сейчас главное меню перехватывается
+целиком безусловно.
 ☐ B.6.2 `MusicManagerMixin` — за флагом.
-☐ B.6.3 `ClientLevelMixin.tickTime` — снять `cancellable` или поставить за тот же флаг:
-ванильное применение времени заменено всегда.
-☐ B.6.4 `LevelRendererMixin` (`renderLevel` TAIL) — оверлей разрушения блока с
-дистанцией 32 → 256 безусловно.
+☐ B.6.3 `ClientLevelMixin.tickTime` — снять безусловный `cancellable`.
+☐ B.6.4 `LevelRendererMixin` (`renderLevel` TAIL) — оверлей разрушения блока с 32 до 256.
 
 ### B.7 Экология выживания
+Всё за флагом `survivalEcology`, дефолт `false`. Часть пунктов уходит сама при удалении
+контента — отмечать при удалении, не дублировать.
+☐ B.7.1 Отмена ванильного лута животных при охоте — `unit/UnitServerEvents.java:680-729`.
+☐ B.7.2 Спавн животных вокруг столицы — `building/BuildingPlacement.java:881-888`.
+☐ B.7.3 Вытеснение животных вокруг нового здания — `building/BuildingServerEvents.java:617-626`.
+☐ B.7.4 Подавление роста культур в здании — `resources/ResourcesServerEvents.java:261-265`.
+☐ B.7.5 Ломание блока в здании → AIR — `resources/ResourcesServerEvents.java:277-283`.
+☐ B.7.6 `DIRT_PATH`→`DIRT` и уничтожение растений при смерти юнита у скульк-катализатора —
+`unit/UnitServerEvents.java:497-537`.
+☐ B.7.7 Отмена перехода между измерениями в здании — `building/BuildingServerEvents.java:968-989`.
+☐ B.7.8 `FIRE` в центре порталов каждый тик.
+☐ B.7.9 Установка `Blocks.SCAFFOLDING` под фундаментом — оставить как часть зданий или снять.
+☐ B.7.10 Превращение `FARMLAND`/`DIRT_PATH`/`SOUL_SAND`/`MAGMA_BLOCK` под зданием —
+`BuildingPlacement.java:1072-1123`.
 
-Каждый пункт — за флагом `survivalEcology`, дефолт `false`. Либо явно оставить, если
-владелец ветки считает нужным.
-
-☐ B.7.1 Отмена ванильного лута животных при убийстве рабочим-охотником —
-`unit/UnitServerEvents.java:680-729`.
-☐ B.7.2 Спавн охотничьих животных вокруг столицы — `building/BuildingPlacement.java:881-888`.
-☐ B.7.3 Вытеснение животных из 10-блоковой зоны вокруг нового здания —
-`building/BuildingServerEvents.java:617-626`.
-☐ B.7.4 Подавление роста культур внутри здания — `resources/ResourcesServerEvents.java:261-265`.
-☐ B.7.5 Ломание блока внутри здания → AIR — `resources/ResourcesServerEvents.java:277-283`.
-☐ B.7.6 Превращение `DIRT_PATH`→`DIRT` и уничтожение растений в радиусе 3 при смерти юнита
-рядом со скульк-катализатором — `unit/UnitServerEvents.java:497-537`.
-☐ B.7.7 Отмена перехода между измерениями внутри здания —
-`building/BuildingServerEvents.java:968-989`.
-☐ B.7.8 Установка `FIRE` в центре порталов каждый тик (`PortalPlacement.tick`,
-`CentralPortal.tick`).
-☐ B.7.9 Выжигание огня внутри footprint здания — `building/BuildingPlacement.java:590-596`.
-☐ B.7.10 Превращение `FARMLAND`/`DIRT_PATH` под зданием в `DIRT`,
-`SOUL_SAND`→`SOUL_SOIL`, `MAGMA_BLOCK`→`COBBLESTONE` — `BuildingPlacement.java:1072-1123`.
-
-### B.8 Мёртвое и «написанное, но недостижимое»
-
-☐ B.8.1 Удалить 20+ файлов мёртвого датапака: `data/flat_dimensions/**`,
-`data/overworldify/**`, `data/tectonic/**`, `data/minecraft/tags/functions/**`,
-`data/reignofnether/functions/**`.
-☐ B.8.2 Решить судьбу предметного слоя. Он написан, но недостижим:
-`UnitItem.ENABLED = false`, а `UnitItems.ITEMS` содержит 7 из ~30. Либо
-включить и дописать реестр, либо удалить. **Проверить с Б.8.3** — часть предметов
-опирается на мёртвые атрибуты.
-☐ B.8.3 Шесть атрибутов без потребителей: `critical_hit_chance`,
-`explosive_hit_chance`, `lifesteal`, `mana_on_hit`, `scale`. Частицы
-`floating_crit`, `floating_heart`, `mana` уже написаны. Либо реализовать вызов в пути атаки,
-либо удалить атрибуты и выдающие их предметы (`KATANA`, `HEARTSTEALER`, `RITUAL_DAGGER`,
-`POWERSHAKER`).
-
-**Проверка:** после B.1–B.2 создать новый мир на ванильном профиле и сравнить
-`run/world` до/после. Файлов мода быть не должно, пещеры и рельеф — ванильные.
+**Проверка B:** создать новый мир на ванильном профиле, сравнить `run/world` до/после;
+ручная проверка огня, спавнеров, скулька, блейзов, руды, границы мира.
 
 ---
 
-## 4. Этап C — режимы
+## 5. Этап C — режимы
 
-☐ C.1 Удалить `scenario/**` (10 файлов) вместе с `GameMode.SCENARIO`, ветками
-`ScenarioMenu`, `ScenarioClientEvents`, `ScenarioServerboundPacket`,
-`ScenarioClientboundPacket`, `ScenarioSaveData`, `ScenarioRoleSaveData`, `ScenarioRole`.
-☐ C.2 Удалить `gamemode.SANDBOX` **как режим**, сохранив песочницу как инструмент ГМа:
-перевести `SandboxServer` и `SandboxClientEvents` с признака `Faction.NONE` в `RTSPlayer` на
-проверку прав оператора. Это отдельная работа, см. §3.2.
-☐ C.3 Удалить `survival/**` (15 файлов) вместе с `GameMode.SURVIVAL`, `WaveDifficulty`,
-`SurvivalSaveData`, пакетами и `/debug-next-night`, `/debug-end-wave`.
-⚠ Таблицы юнитов и ИИ волн **перенести в `docs/` как эталон** (см. §9).
-☐ C.4 Удалить геймрул `coopMode` — он существует только чтобы отключить автопобеду.
-☐ C.5 Удалить ветки CLASSIC-SURVIVAL-SANDBOX-SCENARIO из HUD
+☐ C.1 Удалить `scenario/**` (10 файлов) с `GameMode.SCENARIO`, `ScenarioRole`,
+`ScenarioSaveData`, `ScenarioRoleSaveData`, пакетами и ветками меню.
+☐ C.2 Удалить `survival/**` (15 файлов) с `GameMode.SURVIVAL`, `WaveDifficulty`,
+`SurvivalSaveData`, пакетами, `/debug-next-night`, `/debug-end-wave`.
+⚠ Таблицы юнитов и ИИ волн — в `docs/reference/waves.md` (этап D, до удаления).
+☐ C.3 Удалить геймрул `coopMode` — он существует только чтобы отключить автопобеду.
+☐ C.4 Удалить `tutorial/**`, `startpos/**`, `matchstart/**`, `rtsmap/**`.
+☐ C.5 Оставить `GameMode.CLASSIC` как единственный; убрать ветки выбора режима из HUD
 (`hud/HudClientEvents.java:1626-1660`) и из `ClientGameModeHelper`.
-☐ C.6 Убрать `PlayerServerboundPacket.startRTSScenario` и `publishScenarioMap`
+☐ C.6 Перевести песочницу с признака `Faction.NONE` в `RTSPlayer` на **проверку прав
+оператора**. Песочница — инструмент ГМа, а не режим, и она остаётся.
+☐ C.7 Убрать `PlayerServerboundPacket.startRTSScenario` и `publishScenarioMap`
 (`player/PlayerServerEvents.java:1328-1385`).
-☐ C.7 Остаётся только CLASSIC. Условие вывода — `rtsPlayers` непуст и
-`scenarioMode`/`coopMode`/`SurvivalServerEvents.isEnabled()` сняты.
 
 ---
 
-## 5. Этап D — здания
+## 6. Этап D — удалить контент
 
-### 5.1 Что убрать
+**Сначала** перенести в `docs/reference/`, **потом** удалять файлы.
 
-Решение владельца: юниты создаются зданиями, значит **производящие здания остаются**. Убирается
-чистая экономика, не имеющая отношения к производству.
+☐ D.1 `docs/reference/units.md` — таблица ростера со статами и ролью каждого юнита; анатомия
+класса юнита: `createAttributes`, `defineSynchedData`, `initialiseGoals`/`registerGoals`,
+`tick`, NBT через `addUnitSaveData`, интерфейсы. Уже частично есть в `HOWTO_FACTION.md` §5 —
+дополнить числами.
+☐ D.2 `docs/reference/buildings.md` — таблица 51 здания по группам; анатомия класса здания;
+контракты пяти аддонов; `BuildingPlacement` как система (HP по блокам, `minBlocksPercent`,
+строительство, тикеты, разрушение).
+☐ D.3 `docs/reference/abilities.md` — 93 способности с эффектом, кулдауном и гейтом по
+исследованию; анатомия `Ability`; список 36 способностей, жёстко привязанных кастом к
+классу юнита, — это и есть причина, по которой способность нельзя перенести без юнита.
+☐ D.4 `docs/reference/production.md` — как `ProductionItem`, очередь и стоимость работают
+вместе; чем заменять шов, если владелец захочет создавать юниты без зданий.
+☐ D.5 `docs/reference/research.md` — как устроено гейтирование способностей по исследованиям
+и почему гейт только клиентский.
+☐ D.6 `docs/reference/economy.md` — `ResourceSources`, `ResourceIndex`, население, лимиты.
+☐ D.7 `docs/reference/waves.md` — планировщик волн как готовый пример «спавнить волны по
+таймеру»: таблицы T1–T6, `WaveEnemy`, `WaveDifficulty`, выбор точек.
+☐ D.8 `docs/reference/items.md` — `UnitItem`/`UnitItemBuilder`, категории, инвентарь юнита;
+отметить, что слой был выключен `ENABLED = false` и наполнен на 7 из 30 пунктов.
+☐ D.9 `docs/reference/assets.md` — что нужно из ассетов для нового юнита/здания: модель,
+текстура, `mobheads`, звуки, lang-ключи.
 
-☐ D.1 Кандидаты на удаление (проверить, что ни одно не является единственным источником
-юнита или способности):
-`OakStockpile`, `SpruceStockpile`, `VillagerHouse`, `HauntedHouse`, `WheatFarm`,
-`PumpkinFarm`, `NetherwartFarm`, `PortalCivilian`, `HoglinStables`, `FlameSanctuary`,
-`WitherShrine`, `BasaltSprings`.
-⚠ `FlameSanctuary` и `BasaltSprings` дают огне-иммунитет юнитам приоритет
-(`BlazeUnit`/`WitherSkeletonUnit` ссылаются на них прямо) — удаление потребует правок в юнитах.
-
-### 5.2 Что остаётся и почему
-
-| Группа | Здания |
-|---|---|
-| Производство | `TownCentre`, `Barracks`, `Blacksmith`, `WitchHut`, `ArcaneTower`, `ShrineOfProsperity`, `Mausoleum`, `Graveyard`, `Dungeon`, `SpiderLair`, `SlimePit`, `Stronghold`, `AltarOfDarkness`, `CentralPortal`, `PortalMilitary`, `InfernalPortal`, `IronGolemBuilding`, `EndPortal` |
-| Гарнизон | `Watchtower`, `DarkWatchtower`, `Bastion`, `Castle`, `Fortress` |
-| Исследования | `Laboratory`, `Library`, рынки |
-| Эффект | `Beacon`, `CapturableBeacon`, `HealingFountain`, `SculkCatalyst`, мосты, `PortalTransport`, `NeutralTransportPortal`, `PortalBasic`, `PortalPocket` |
-
-### 5.3 Точки, которые придётся поправить
-
-☐ D.2 `PlayerServerEvents.startRTS` — воркер и скаут выбираются свитчем по фракции
-(`:463-474`). Заменяется на явный параметр или конфиг.
-☐ D.3 Стартовая армия. Сейчас `startRTS` создаёт только воркера и скаута. Нужен параметр
-«сколько юнитов каждого типа дать на старте» — через `UnitServerEvents.spawnMobs`
-(`unit/UnitServerEvents.java:891-927`), он уже умеет спавнить пачку с владельцем.
-☐ D.4 Побочные эффекты размещения. 22 эффекта из `FEATURES.md` §5.3 — часть под флагом
-(см. B.7), часть осмысленна (скаффолдинг, HP по блокам). Составить список «оставить /
-за флагом / убрать» и зафиксировать.
-☐ D.5 `BuildingCommand` — после A.5 пересмотреть, что команда вообще нужна.
-
-### 5.4 Базовый класс генератора ресурсов
-
-Не реализуется сейчас — закладывается форма. Требование владельца: «сделать класс таких и
-потом расширять его чисто ресурсами + самим строением».
-
-☐ D.6 Завести `ResourceGeneratorBuilding extends ProductionBuilding` (или `extends Building` —
-нужно определить, требуется ли производственный интерфейс), у которого:
-- `getTickInterval()` — как часто выдаёт;
-- `getResourceAmount()` и `getResourceType()` — что выдаёт;
-- `getCapacity()` — необязательное ограничение, чтобы генератор не давал бесконечно за тик;
-- всё остальное — обычное здание: структура NBT, HP, стоимость, кнопка постройки.
-
-☐ D.7 Описать в `docs/HOWTO_FACTION.md`, как расширять: «создать класс → положить NBT →
-добавить в `Buildings` и `FactionRegistries`-замену → добавить ключ локализации». Это ровно тот
-формат черновика, который владелец просил оставить.
-
----
-
-## 6. Этап E — стартовая армия и границы
-
-Решения владельца требуют, чтобы РТС-режим был пригоден для одиночной игры. Три поведения
-сейчас вредят именно этому.
-
-☐ E.1 **Юнит умирает за границей мира** — `unit/interfaces/Unit.java:388-389`. На сервере с
-world border армия ГМа будет вымирать. Либо убрать, либо ограничить только для юнитов
-не-игрока.
-☐ E.2 **Спавн рядом с игроком в РТС самовольно отдаёт ему юнита** —
-`unit/UnitServerEvents.java:847-857`. Для ГМа это ловушка: поспавнил врага рядом с союзником —
-он стал его. Сделать поведение явным или убрать.
-☐ E.3 `neutralAggro` в `NonUnitServerEvents:75-98` — каждые 20 тиков любой
-`PathfinderMob` в радиусе 20 рядом с юнитом принудительно нацеливается. Полезно, но
-по умолчанию выключено (B.4.3) — проверить, что без геймрула этого не происходит, иначе мир
-сам по себе враждебен к вашим юнитам.
+☐ D.10 Удалить `unit/units/**` (264 файла в пакете `unit`, из них контент — все кроме
+`unit/interfaces`, `unit/goals`, `unit/pathfinding`, `unit/controls` и четырёх
+`*ServerEvents`/`*ClientEvents`).
+☐ D.11 Удалить `building/buildings/**`.
+☐ D.12 Удалить `ability/abilities/**`, `ability/heroAbilities/**`. В `ability/UnitAction`
+удалить константы способностей, оставив те, что нужны механике (проверить по
+`UnitActionItem` и `Ability`).
+☐ D.13 Удалить `research/researchItems/**`. Проверить `ResearchSaveData` — оставить как
+инфраструктуру флагов.
+☐ D.14 Удалить `resources/{ResourceSources,ResourceIndex,ResourceChunk,ResourcesSaveData,
+ResourcesServerEvents}`. Решить судьбу `ResourceCost`/`ResourceCosts`: они нужны
+`ProductionItem.getCost()`. Вариант — оставить один плоский `ResourceCost` без
+привязки к фракциям.
+☐ D.15 Удалить `items/UnitItem*`, `items/unititems/**`, `items/ItemUtil` (частично),
+`items/ItemServerEvents`, `items/ItemClientEvents`. Оставить `items/UnitInventory`.
+☐ D.16 Удалить `faction/**`.
+☐ D.17 Удалить `survival/**`, `scenario/**`, `tutorial/**`, `startpos/**`, `matchstart/**`,
+`rtsmap/**` (если не сделано в C).
+☐ D.18 Удалить `data/reignofnether/structures/**` (67 NBT).
+☐ D.19 Почистить ассеты: текстуры юнитов и зданий, `models/item/*` спавн-яиц, сплэши и
+переводы контента. **Оставить** переводы каркаса: `hud.*`, `abilities.*`, `unitstats.*`,
+`commands.*`, `creativetab.*`, `resources.*`, `server.*`, `unititemtype.*`,
+`enchantment.reignofnether.*`.
+☐ D.20 Почистить реестры: `EntityRegistrar` (67 типов → 0 юнитов), `BlockRegistrar`
+(47 блоков → только нужные каркасу: `rts_structure_block`, `garrison_*`, `production_spawn_*`,
+`walkable_magma_block`, `wraith_snow_layer_block`, `spider_friendly_barrier`,
+`unextinguishable_soul_fire`, `decayable_*_wart_block`; **удалить** 16 `rts_start_block_*` —
+неразрушимые и в ванильной вкладке), `ItemRegistrar` (128 → только нужное каркасу),
+`BlockEntityRegistrar`, `MobEffectRegistrar`, `ParticleRegistrar`, `SoundRegistrar`.
 
 ---
 
-## 7. Этап F — `Faction`
+## 7. Этап E — дыры каркаса, найденные при удалении
 
-**Удалить, не абстрагировать.** Основание: командные отношения уже считаются по имени
-владельца и союзуам, а не по фракции (`UnitServerEvents.java:363-374`). `Faction` отвечает
-только за выбор стартового воркера/скаута, столицу, раскладку хоткеев и иконку в HUD.
+Обнаруживаются только когда контента нет. Каждый пункт — либо починить, либо осознанно
+оставить с записью.
 
-☐ F.1 Удалить `faction/Faction.java` и `faction/FactionRegistries.java`.
-☐ F.2 Удалить `Unit.getFaction()` (`unit/interfaces/Unit.java:172`) и
-`Building.getFaction()` (`building/Building.java:100`) вместе с 68 реализациями.
-☐ F.3 Переписать `PlayerServerEvents.startRTS:463-474, 562-575` — вместо свитча по фракции
-явный выбор стартового юнита и столицы (см. D.2).
+☐ E.1 **Чары теряют читателей.** 5 из 7 (`zeal`, `longshot`, `maiming`, `gust`, `vigor`)
+читаются внутри классов удаляемых юнитов и станут инертными. Либо перенести чтение в
+`UnitServerEvents`/`AttackerUnit` (как уже сделано для `breaching` в
+`UnitServerEvents.java:1000`), либо удалить эти чары.
+☐ E.2 **Атрибуты без потребителей.** Шесть (`critical_hit_chance`, `explosive_hit_chance`,
+`lifesteal`, `mana_on_hit`, `scale`, `building_damage_bonus`) имели геттеры без вызовов в пути
+атаки. Частицы `floating_crit`, `floating_heart`, `mana` написаны — не хватает вызова. Либо
+реализовать, либо удалить; при удалении контента `building_damage_bonus` точно не нужен.
+☐ E.3 **Эффекты.** Часть из 28 использовалась только удаляемым контентом:
+`zombie_infected`, `slime_infected`, `frost_damage`, `warm`, `villager_inspiration`,
+`limited_lifespan`. Решить, что из этого — каркас, а что мусор.
+☐ E.4 **Население без зданий.** `getTotalPopulationSupply` (`BuildingServerEvents.java:681-692`)
+суммирует `cost.population` построенных зданий → без зданий лимит 0. Нужен плоский лимит
+на игрока. Связано с решением по `ResourceCost` из D.14.
+☐ E.5 **Ленивое создание `SavedData`.** 8 файлов пишутся в любой мир. Проверить, создаёт ли
+`DataStorage.save()` записи, в которые ничего не клали; иначе — удалять пустые файлы после
+сохранения.
+☐ E.6 **`ProductionItems` пуст.** `ReignOfNetherRegistries.PRODUCTION_ITEM` останется пустым —
+проверить, что `CustomBuilding.checkAndAddProductionItems` и
+`CustomBuildingPlacement.getProductionItem` это переживают.
+☐ E.7 **`UnitItem.ENABLED = false`** и 7 из 30 предметов в реестре — если слой удалён (D.15),
+проверить, что на `ItemUtil` больше ничего не висит.
+☐ E.8 **`neutralAggro` без юнитов** (`NonUnitServerEvents:75-98`) станет бессмысленным:
+он нацеливает ванильных мобов на юнитов. `attackSuppressedNonUnits` и `nonUnitMoveTargets`
+работают на ванильной навигации и остаются полезными.
+
+**Проверка:** гейты 1–4; `runClient` грузится без ошибок; в логе нет новых исключений при
+входе в мир.
+
+---
+
+## 8. Этап F — `Faction`
+
+Становится тривиальным после этапа D: при живых контентных классах enum ещё что-то значил.
+
+☐ F.1 Удалить `faction/**` (уже в D.16).
+☐ F.2 Убрать `Unit.getFaction()` (`unit/interfaces/Unit.java:172`) и
+`Building.getFaction()` (`building/Building.java:100`) из контрактов. **Оба метода входят в
+список «не трогать» §1 — здесь исключение осознанное**, их правка не ломает механику, а
+убирает поле, которое после удаления контента не имеет носителей.
+☐ F.3 Переписать `PlayerServerEvents.startRTS:463-474, 562-575` — свичи по фракции исчезают;
+стартовый юнит и столица задаются параметром или конфигом.
 ☐ F.4 `building/custombuilding/CustomBuilding.java:93-95` — три флага
-`buildableByVillagers/Monsters/Piglags` в NBT заменить одним булевым, со **старой
-сигнатурой несовместимы** — см. F.7.
+`buildableByVillagers/Monsters/Piglags` в NBT заменить одним булевым. **Сигнатура NBT
+несовместима**, см. F.6.
 ☐ F.5 `util/MiscUtil.java:993-1014` — иконка и имя фракции.
-☐ F.6 Удалить таблицу «здание → хоткей» и заменить на список зданий, доступных
-назначенному игроку.
-☐ F.7 Миграция сохранений: `RTSPlayerSaveData.java:55, 98` вызывает `Faction.valueOf(name())`.
-Удаление enum ломает старые миры. **Решить:** написать миграцию (читать старый тег, игнорировать)
-или объявить старые миры несовместимыми.
-☐ F.8 Локализация: `hud.faction.reignofnether.*` в 22 файлах — удалить.
+☐ F.6 Миграция миров: `RTSPlayerSaveData.java:55, 98` вызывает `Faction.valueOf(name())`.
+**Требует решения владельца:** миграция или объявление старых миров несовместимыми.
+☐ F.7 Локализация `hud.faction.reignofnether.*` — удалить из 22 файлов.
 
-⚠ **Не делать** `FactionDefinition` как data-driven реестр. Это отдельная фича для нескольких
-играбельных рас, и enum из шести значений ей не фундамент. Если позже понадобится — проектировать
-отдельно; материалы для этого уже есть в `HOWTO_FACTION.md` §2.
+⚠ **Не делать** `FactionDefinition`. Это отдельная фича для нескольких играбельных рас, и
+enum из шести значений ей не фундамент. Материалы уже есть в `HOWTO_FACTION.md` §2.
 
 ---
 
-## 8. Этап G — камера
+## 9. Этап G — камера
 
-Требование владельца: менять высоту камеры игрока и не рендерить уровни выше камеры.
+Требование владельца: менять высоту камеры и не рендерить уровни выше камеры.
 
-Половина уже есть: `orthoviewPlayerBaseY = 100`, `orthoviewPlayerMaxY = 160`
-(`orthoview/OrthoviewClientEvents.java:124-125`), пересчёт от средней высоты местности
-(`:171-172`), и зажим телепорта по границе мира (`PlayerServerEvents.movePlayer`).
-Мёртвый геймрул `groundYLevel` сейчас влияет только на плоскость тумана на клиенте —
-это либо починить, либо удалить.
+Половина есть: `orthoviewPlayerBaseY = 100`, `orthoviewPlayerMaxY = 160`
+(`orthoview/OrthoviewClientEvents.java:124-125`), пересчёт от рельефа (`:171-172`), зажим
+телепорта по границе (`PlayerServerEvents.movePlayer`). Мёртвый геймрул `groundYLevel` влияет
+только на плоскость тумана на клиенте — починить или удалить.
 
-☐ G.1 Сделать высоту камеры настраиваемой и проверяемой, а не вычисляемой от рельефа.
-Убрать молчаливый пересчёт `:171-172` или оставить как значение по умолчанию.
-☐ G.2 Отсечение секций выше камеры. Камера смотрит строго вниз, значит секции с
-`sectionY > cameraY` не видны. Нужен миксин на
-`SectionRenderDispatcher.RenderSection` с проверкой Y; механизм уже есть в
-`SectionRenderDispatcher`/`LevelRenderer`, который отсекает по фрустуму. Оценка: один новый
-миксин, риск низкий.
-☐ G.3 ⚠ **Проверить, что камера на высоте не вызывает проблем.** Удушье уже отключено
-(`EntityMixin`, см. B.5.9), так что застревание в блоках не страшно; но вход в орторежим
-**стирает все эффекты игрока** (`PlayerServerEvents.enableOrthoview`) и **молча повышает
-одиночный Peaceful до Easy** (`OrthoviewClientEvents.switchToEasyIfPeaceful`). Оба обязательно
-снять, прежде чем орторежим станет основным инструментом, а не только RTS-режимом.
-☐ G.4 `TopdownGuiClientEvents` форсирует `guiScale = 3` и блокирует клавиши инвентаря и
-достижений — если орторежим используется на обычной игре, это мешает. Снять или за флагом.
+☐ G.1 Сделать высоту настраиваемой и проверяемой, а не вычисляемой от рельефа
+(`.setBaseY()` из расчёта `:171-172`, `isValidCameraHeight()`).
+☐ G.2 Отсечение секций выше камеры — миксин на `SectionRenderDispatcher.RenderSection` с
+проверкой Y. Камера смотрит строго вниз, значит секции выше не видны. Один новый миксин, риск
+низкий.
+☐ G.3 Снять побочные эффекты входа: `PlayerServerEvents.enableOrthoview` вызывает
+`removeAllEffects()` (стирает и ванильные зелья), а
+`OrthoviewClientEvents.switchToEasyIfPeaceful()` молча повышает одиночный Peaceful до Easy.
+**Обязательно**, иначе орторежим непригоден для обычной игры.
+☐ G.4 `TopdownGuiClientEvents` форсит `guiScale = 3` и блокирует клавиши инвентаря и
+достижений — снять или за флагом.
+☐ G.5 После B.5.7 (возврат удушья) проверить, что камера на высоте не застревает в блоках.
 
----
-
-## 9. Черновики удаляемого кода — в документацию
-
-Решение владельца: только документация. Код и так сохраняется в git.
-
-☐ I.1 Перед удалением `survival/**` вынести в `docs/reference/waves.md`: таблицы юнитов по
-тирам T1–T6 с бронёй и чарами, логику `WaveEnemy`, таблицу `WaveDifficulty`, формулу выбора
-точек спавна. Как эталон «как делать волны».
-☐ I.2 Вынести в `docs/reference/` рецепты по остальным удаляемым подсистемам:
-кастомные строения, гарнизоны, ауры маяка, ауры чар — всё, что владелец хочет потом
-воспроизвести в своей фракции.
-☐ I.3 В `FEATURES.md` оставить ссылки на эти выдержки и заменить удалённые разделы на
-«перенесено в `docs/reference/…`».
-
-Полезно для следующего агента: удалённый класс восстанавливается поимённо —
-`git show 5079004e:src/main/java/com/solegendary/reignofnether/<путь>`. Это дешевле, чем
-держать скомпилированный мёртвый код, который следующий агент начнёт «чинить».
+**Проверка:** визуально — высота двигается, секции сверху не рисуются, эффекты игрока не
+стираются при входе и выходе, Peaceful не меняется сам.
 
 ---
 
-## 10. Порядок и гейты
+## 10. Этап H — РТС-режим для обычной игры
+
+Задачи владельца, требующие своего кода. **Выполняются после того, как у каркаса появится
+контент** — иначе проверять нечем.
+
+☐ H.1 Вход в РТС-режим отдельной командой с проверкой прав. Сейчас вход возможен только
+через стартовую позицию или `startRTS` с фракцией `NONE`, а режим `NONE` удаляется в C.
+☐ H.2 Ограничение «назначенный игрок». Сейчас `rtsPlayers` может содержать кого угодно;
+плюс `/rts-lock` (`player/PlayerServerEvents.java:1228-1256`).
+☐ H.3 Юнит умирает за границей мира — `unit/interfaces/Unit.java:388-389`. На сервере с world
+border армия будет вымирать.
+☐ H.4 Спавн рядом с игроком в РТС самовольно отдаёт ему юнита —
+`unit/UnitServerEvents.java:847-857`. Для ГМа это ловушка: поспавнил врага рядом с союзником —
+он стал его.
+☐ H.5 Хук стартовой армии: сколько юнитов какого типа давать на старте. Сейчас `startRTS`
+создаёт только воркера и скаута; спавн пачки уже умеет `UnitServerEvents.spawnMobs`
+(`unit/UnitServerEvents.java:891-927`).
+☐ H.6 Класс генератора ресурсов. **Не реализуется в этом плане** — владелец сделает его при
+написании своей фракции. Форма, которую надо заложить:
+`getTickInterval()`, `getResourceAmount()`, `getResourceType()`, необязательный `getCapacity()`,
+чтобы генератор не давал бесконечно за тик. Описание расширения — в `HOWTO_FACTION.md`.
+
+---
+
+## 11. Порядок и гейты
 
 | Этап | Что | Зависит от | Гейт |
 |---|---|---|---|
-| **A** | Поломки: элитра, движение, права, частицы | — | гейт 1–4 + ручная проверка |
-| **B.1–B.2** | Удаление датапака и ассетов | — | новый мир, `diff` папки |
-| **B.3** | Перекраска за границей | — | визуально: мир с суженной границей |
-| **B.4** | Дефолты геймрулов | — | ручная проверка 6 геймрулов |
-| **B.5–B.7** | Миксины и экология | B.4 | гейт 1–4 + ручная проверка огня/спавнеров/скулька |
-| **B.8** | Мёртвое и недостижимое | — | гейт 1–4 |
-| **C** | Режимы кроме CLASSIC | B.4 | гейт 1–4, `runClient` без ошибок |
-| **D** | Здания | C | гейт 1–4 + постройка каждого типа |
-| **E** | Стартовая армия, границы | D | ручная: спавн армии, уход за границу |
-| **F** | `Faction` | C, D | гейт 1–4 + проверка сохранений |
-| **G** | Камера | независим | визуально: высота + отсутствие секций сверху |
+| **A** | Поломки | — | 1–4 + ручная проверка |
+| **B** | Интрузивность | — | 1–4 + новый мир, `diff` папки |
+| **C** | Режимы | B.4 | 1–4 + `runClient` |
+| **D** | Удаление контента | C | 1–4; **в игре не проверяемо** |
+| **E** | Дыры каркаса | D | 1–4 |
+| **F** | `Faction` | D | 1–4 + решение по миграции миров |
+| **G** | Камера | независим | визуальная проверка |
+| **H** | РТС для обычной игры | контент владельца | ручная проверка |
 
-Гейты на каждом этапе: `compileJava`, `validateMixins`, `runData`, `runServer`,
-`runClient` до титольного экрана. Ни один гейт не проверяет геометрию на экране и не
-проверяет зависание при выходе — только ручной прогон.
+Гейты на каждом этапе: `compileJava`, `validateMixins`, `runData`, `runServer`, `runClient`
+до титольного экрана.
 
----
+**Этапы D–F делать подряд, одним прицеванием.** Между ними мод нерабочий, и держать
+промежуточные коммиты с «почти пустым» содержимым незачем.
 
-## 11. Что потребует отдельного решения позже
+## 12. Что потребует отдельного решения владельца
 
-Не входит в объём, но будет нужно:
-
-* Полноценный **РТС-режим для обычной игры**: сейчас вход возможен только через стартовую
-  позицию или `startRTS` с фракцией `NONE`. Нужна отдельная команда входа с проверкой прав.
-* **Ограничение «назначенный игрок»** — сейчас `rtsPlayers` может быть любым. Плюс
-  `/rts-lock` (`player/PlayerServerEvents.java:1228-1256`).
-* **Баланс под одиночную игру** — популяция, лимит юнитов, `allowedHeroes`.
-* **Ключи локализации** для всего удаляемого (22 языка) — удалять или оставлять.
-* **Перенос стартовых блоков** (`rts_start_block_*`, 16 неразрушимых) — удаляются вместе с
-  режимом матча; если стартовые позиции нужны, надо решить, чем их заменить.
+1. `WorldBorderRenderMixin` — рисовать ли стену границы в РТС-режиме (B.3.4).
+2. `ClientModEvents.onBlockColourEvent` и `ModifyBakingResult` — оставлять ли обёртку каждого
+   блока и каждой модели (B.3.5).
+3. Девфолты `doUnitGriefing`, `doLogFalling`, `doPlayerGriefing` (B.4.4–B.4.6).
+4. `doUnitGriefing` и `doPlayerGriefing` — это ванильные геймрулы с ванильными именами;
+   менять их дефолты мод не должен. Вариант — не регистрировать вовсе, если свой геймрул не нужен.
+5. Миграция миров после удаления `Faction` (F.6).
+6. `ResourceCost` — оставить плоскую валюту или убрать стоимости совсем (D.14, E.4).
+7. Пять чар, теряющих читателей, — переносить чтение в каркас или удалять (E.1).
