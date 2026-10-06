@@ -7,9 +7,9 @@
 | Метрика | Значение |
 | --- | --- |
 | Ошибок `compileJava` на старте сессии | 1235 |
-| Ошибок `compileJava` сейчас | ~890 |
-| Файлов с ошибками | ~85 |
-| Гейты `validateMixins` / `runData` / `runServer` | ещё не запускались |
+| Ошибок `compileJava` сейчас | **0** ✅ |
+| Гейты `validateMixins` | ✅ (49 injection point'ов, 31 mixin-класс) |
+| Гейты `runData` / `runServer` / `runClient` | ещё не запускались |
 
 ## Как собирать
 
@@ -142,6 +142,10 @@
   `HeroServerEvents`, `HeroProductionItem`) удалены как контент; нужно либо урезать контракт,
   либо записать исключение;
 - затем гейты `compileJava` → `validateMixins` → `runData` → `runServer`/`runClient`.
+
+### Решения, принятые во второй половине сессии
+
+14. **E.1/E.2/E.3: чары удалены целиком.** 7 JSON-файлов (vigor, breaching, fortifying, gust, longshot, maiming, zeal) удалены. `EnchantmentRegistrar` переписан: удалены 7 `mod()`-поставщиков + хелпер `mod()`, оставлены `vanilla()`, `tryVanilla()`, `bind()`, `holder()`. `UnitServerEvents`: удалён блок BREACHING из `onLivingHurt`. `VindicatorUnit`: удалены `getMaimingLevel()` и `doHurtTarget` override.
 
 ## Решения, принятые во второй половине сессии
 
