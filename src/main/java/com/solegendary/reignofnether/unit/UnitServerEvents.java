@@ -797,14 +797,6 @@ public class UnitServerEvents {
         if (evt.getEntity().getAbsorptionAmount() > 0 && server != null)
             UnitSyncClientboundPacket.sendSyncStatsPacket(server.getPlayerList().getPlayers(), evt.getEntity());
 
-        if (evt.getSource().getEntity() instanceof LivingEntity le) {
-            int breachLevel = le.getMainHandItem().getEnchantmentLevel(EnchantmentRegistrar.BREACHING.get());
-            MobEffectInstance existingDmgIncrease = evt.getEntity().getEffect(MobEffectHelpers.holder(MobEffectRegistrar.DAMAGE_TAKEN_INCREASE.get()));
-            if (breachLevel > 0) {
-                int amp = existingDmgIncrease != null ? (breachLevel * 2) + existingDmgIncrease.getAmplifier() : Math.max(0, (breachLevel * 2) - 1);
-                evt.getEntity().addEffect(MobEffectHelpers.instance(MobEffectRegistrar.DAMAGE_TAKEN_INCREASE.get(), 100, amp));
-            }
-        }
         if (evt.getSource().is(DamageTypeTags.IS_FIRE)) {
             Level level = evt.getEntity().level();
             Block block = level.getBlockState(evt.getEntity().getOnPos().above()).getBlock();

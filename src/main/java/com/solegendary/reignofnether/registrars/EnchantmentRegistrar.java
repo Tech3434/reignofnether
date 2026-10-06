@@ -1,41 +1,33 @@
 package com.solegendary.reignofnether.registrars;
 
-import com.solegendary.reignofnether.ReignOfNether;
-import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 /**
- * Handles of the mod's seven enchantments.
+ * Resolves enchantment holders against the datapack enchantment registry.
  *
- * <p>On 1.20.1 these were Java classes extending {@code Enchantment} and registered through a
- * {@code DeferredRegister}. 1.21.1 made {@code Enchantment} a final record and moved its
- * definition into data, so the enchantments now live in
- * {@code data/reignofnether/enchantment/*.json} and this class only hands out the registry
- * holders.
+ * <p>The mod's own seven enchantments (vigor, breaching, fortifying, maiming, zeal, gust, longshot)
+ * were removed with stage D: {@code Enchantment} became a final record on 1.21.1 and their behaviour
+ * lived in Java effect classes, so porting them would mean rewriting all seven. Their data files,
+ * recipes, lang entries and every call site are gone with them.
  *
- * <p>That has one consequence worth spelling out: the enchantment registry is a <em>datapack</em>
- * registry, so unlike blocks or items it has no field on {@code BuiltInRegistries} - it only
- * exists once the server has built a {@code RegistryAccess} for it. The registry object itself is
- * captured from {@code ModifyRegistriesEvent} (which fires on both logical sides), and the holders
- * are looked up lazily and memoised on first use.
+ * <p>What remains is the bridge to <em>vanilla</em> enchantments. Those moved from classes to
+ * {@link ResourceKey}s ({@code Enchantments.SHARPNESS} and friends), and {@link #vanilla(ResourceKey)}
+ * turns one into the holder that {@code ItemStack#getEnchantmentLevel} and {@link EnchantmentUtil}
+ * want. {@link EnchantmentUtil} is the preferred entry point - it keeps working when nothing is bound.
  *
- * <p>Because of that, the seven mod enchantments are {@link Supplier}s rather than plain fields -
- * touching one before the registry exists would fail. Call sites read {@code .get()}, which is the
- * same shape the pre-port code had.
- *
- * <p>Vanilla's own enchantments moved the other way: {@code Enchantments.SHARPNESS} and friends are
- * now {@link ResourceKey}s, so {@link #vanilla(ResourceKey)} is the bridge from a key to the holder
- * that {@code ItemStack#getEnchantmentLevel} and friends want.
+ * <p>The registry itself is a <em>datapack</em> registry: unlike blocks or items it has no field on
+ * {@code BuiltInRegistries}, so it only exists once a {@code RegistryAccess} has been built for it.
+ * That is why {@link #vanilla(ResourceKey)} throws when called too early - see
+ * {@link EnchantmentUtil}, which returns 0/empty instead.
  */
 public class EnchantmentRegistrar {
 
@@ -43,14 +35,6 @@ public class EnchantmentRegistrar {
             new ConcurrentHashMap<>();
 
     private static volatile Registry<Enchantment> registry;
-
-    public static final Supplier<Holder<Enchantment>> VIGOR = mod("vigor");
-    public static final Supplier<Holder<Enchantment>> BREACHING = mod("breaching");
-    public static final Supplier<Holder<Enchantment>> FORTYIFYING = mod("fortifying");
-    public static final Supplier<Holder<Enchantment>> MAIMING = mod("maiming");
-    public static final Supplier<Holder<Enchantment>> ZEAL = mod("zeal");
-    public static final Supplier<Holder<Enchantment>> GUST = mod("gust");
-    public static final Supplier<Holder<Enchantment>> LONGSHOT = mod("longshot");
 
     private EnchantmentRegistrar() { }
 
@@ -75,10 +59,8 @@ public class EnchantmentRegistrar {
     /**
      * Resolves one of vanilla's {@code Enchantments.*} keys to its holder.
      *
-     * <p>A few vanilla enchantments were also renamed on the way: {@code POWER_ARROWS} is now
-     * {@code POWER}, {@code PUNCH_ARROWS} is {@code PUNCH}, {@code FLAMING_ARROWS} is
-     * {@code FLAME}, {@code MOB_LOOTING} is {@code LOOTING} and {@code BLOCK_EFFICIENCY} is
-     * {@code EFFICIENCY}.
+     * <p>Prefer {@link EnchantmentUtil}, which degrades to 0/empty instead of throwing when called
+     * before a world exists.
      */
     public static Holder<Enchantment> vanilla(ResourceKey<Enchantment> key) {
         return holder(key);
@@ -101,12 +83,6 @@ public class EnchantmentRegistrar {
     /** Kept so the mod constructor stays unchanged; there is nothing to register any more. */
     public static void init(net.neoforged.fml.ModContainer container) { }
 
-    private static Supplier<Holder<Enchantment>> mod(String path) {
-        ResourceKey<Enchantment> key = ResourceKey.create(Registries.ENCHANTMENT,
-                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, path));
-        return () -> holder(key);
-    }
-
     private static Holder<Enchantment> holder(ResourceKey<Enchantment> key) {
         Holder<Enchantment> cached = CACHE.get(key);
         if (cached != null) return cached;
@@ -115,8 +91,8 @@ public class EnchantmentRegistrar {
         if (reg == null)
             throw new IllegalStateException(
                     "Enchantment " + key.location() + " was requested before the enchantment registry"
-                            + " was bound; bind(HolderLookup.Provider) has to run first, and it only"
-                            + " can once a world with datapacks exists");
+                            + " was bound; bind(RegistryAccess) has to run first, and it only can once"
+                            + " a world with datapacks exists");
 
         Holder<Enchantment> resolved = reg.getHolderOrThrow(key);
         CACHE.put(key, resolved);
