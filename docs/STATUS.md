@@ -2,9 +2,12 @@
 
 **Дата:** 2026-10-06  
 **Ветка:** `wip/stage-d-deletions`  
-**HEAD:** `ed24b169`  
+**HEAD:** `a2d1123e`  
 **compileJava:** **0 ошибок** ✅  
-**validateMixins:** ✅ (49 injection point'ов, 31 mixin-класс, все резолвятся)
+**validateMixins:** ✅ (49 injection point'ов, 31 mixin-класс, все резолвятся)  
+**runData:** ✅ (BUILD SUCCESSFUL, 33s)  
+**runServer:** ✅ (Done (1.141s)!, 0 mixin apply failed)  
+**runClient:** ⏳ (нужен интерактивный прогон)
 
 ---
 
@@ -85,28 +88,35 @@
 | --- | --- |
 | **compileJava** | **0 ошибок** ✅ |
 | **validateMixins** | ✅ 49 injection point'ов, 31 mixin-класс, все резолвятся |
-| **runData** | ещё не запускался |
-| **runServer** | ещё не запускался |
-| **runClient** | ещё не запускался |
+| **runData** | ✅ BUILD SUCCESSFUL in 33s (генерация прошла, `Missing:` нет) |
+| **runServer** | ✅ `Done (1.392s)!`, 0 mixin apply failed, 0 ClassCastException/NoSuchMethod, RTS pathfinder pool стартанул |
+| **runClient** | ещё не запускался (нужен интерактивный прогон) |
 
-**Как собирать (gradlew.bat не работает):**
+**Как собирать (`gradlew.bat` не работает — `gradle-wrapper.properties` без
+`distributionUrl`, а `gradle-wrapper.jar` рабочий):**
 
 ```powershell
-& "C:\Program Files\Java\jdk-21\bin\java.exe" `
-  "-Dorg.gradle.appname=gradlew" `
-  -jar gradle\wrapper\gradle-wrapper.jar `
-  compileJava validateMixins --offline --console=plain
+& "C:\Program Files\Java\jdk-21\bin\java.exe" "-Dorg.gradle.appname=gradlew" `
+  -jar gradle\wrapper\gradle-wrapper.jar <tasks> --console=plain --no-daemon
 ```
+
+**Что реально показывает `runServer` (важно для интерпретации):** конфигурация
+мейн-мixin'ов выполняется **до** `Done!` — значит, `Done!` подтверждает, что все
+`@Inject` в main-миксинах применились. Но `@Override`-модель (`ClientPacketListenerMixin`,
+16 методов) и `IClientPacketListener` резолвятся только при входе в мир — это
+покрывается **`runClient`**, а не `runServer`.
 
 ---
 
 ## 3. Что осталось (этапы G+)
 
-### 3.1 Гейты (критично, ~1–2 часа)
+### 3.1 Гейты
 
-1. **`runData`** — генерация моделей, lang, recipe. Проверить, что none-lang не битый.
-2. **`runServer`** — запуск сервера. Лог должен быть чистый, без `Missing:` и `ERROR`.
-3. **`runClient`** — титольный экран. Проверить орторежим.
+1. ~~**`runData`**~~ — ✅ **пройден** (BUILD SUCCESSFUL in 33s).
+2. ~~**`runServer`**~~ — ✅ **пройден** (`Done (1.141s)!`, 0 `mixin apply failed`).
+3. **`runClient`** — **остался**. Титольный экран + вход в мир. Это единственный гейт,
+   который проверяет `@Override`-модель (`ClientPacketListenerMixin`, 16 методов) —
+   `runServer` её не трогает.
 4. **Ручной прогон** — геометрия на экране, зависание при выходе (только в игре).
 
 ### 3.2 Документация (~2–3 часа)
@@ -129,7 +139,11 @@
 
 1. **`git show <ref>:<path> > <file>`** под PowerShell 5.1 пишет UTF-16LE → javac: thousands of `unmappable character (0xFF)`. Только `cmd /c "git show ... > file"`.
 2. **`delline.ps1`** (первая версия) заменял удаляемые строки маркером `<<<REMOVED n>>>` → «illegal start of type». Исправлен.
-3. **`gradlew.bat`** передаёт java одновременно `-classpath ""` и `-jar` → java падает с `-classpath requires class path specification`. Использовать команду из §2.
+3. **`gradlew.bat`** передаёт java одновременно `-classpath ""` и `-jar` → java падает с
+   `-classpath requires class path specification`. Использовать команду из §2.
+4. **`validateMixins` не ловит часть mixin-ошибок** — они всплывают только в рантайме
+   (`Invalid LVT row`, `Segmentation fault` в `org.spongepowered.asm.util.LVTWriter`,
+   `InvalidInjectionException`). Единственный надёжный гейт — `runServer` / `runClient`.
 
 ---
 
@@ -146,5 +160,6 @@
 
 ---
 
-**Документ актуален на HEAD `ed24b169`.** compileJava зелёный, ready для прогона гейтов `runData` → `runServer` → `runClient`.
+**Документ актуален на HEAD `a2d1123e`.** compileJava зелёный, runData и runServer
+пройдены. Следующий гейт — `runClient` (титольный экран + вход в мир).
 
