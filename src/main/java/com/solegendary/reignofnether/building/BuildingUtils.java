@@ -27,7 +27,7 @@ public class BuildingUtils {
     public static List<Keybinding> keybindings = Arrays.asList();
 
     public static boolean isBridge(Building building) {
-        return building instanceof AbstractBridge;
+        return false;
     }
 
     // gets the cursor position rotated according to the preselected building
@@ -291,7 +291,7 @@ public class BuildingUtils {
             buildings = BuildingServerEvents.getBuildings();
 
         for (BuildingPlacement building : buildings)
-            if (building instanceof FarmPlacement && building.isPosInsideBuilding(bp))
+            if (false)
                 return true;
         return false;
     }

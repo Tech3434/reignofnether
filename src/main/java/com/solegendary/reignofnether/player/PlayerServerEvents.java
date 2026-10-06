@@ -15,7 +15,6 @@ import com.solegendary.reignofnether.gamemode.GameModeClientboundPacket;
 import com.solegendary.reignofnether.gamerules.GameruleClientboundPacket;
 import com.solegendary.reignofnether.guiscreen.TopdownGuiContainer;
 
-import com.solegendary.reignofnether.items.ItemServerEvents;
 
 import com.solegendary.reignofnether.registrars.EntityRegistrar;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;

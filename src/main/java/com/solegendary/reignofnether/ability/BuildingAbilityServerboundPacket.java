@@ -52,13 +52,7 @@ public class BuildingAbilityServerboundPacket implements RTSSimplePayload {
      * and any building with an ability gets auto-cast toggling for free.
      */
     public static void toggleAutoCast(BuildingPlacement building, Ability ability) {
-        String key = autoCastKey(ability);
-        building.getDataStorage().setData(key,
-                building.getDataStorage().getData(key) == ability ? null : ability);
-    }
-
-    public static String autoCastKey(Ability ability) {
-        return "autocast:" + ability.getClass().getSimpleName();
+        building.setAutocast(building.hasAutocast(ability) ? null : ability);
     }
 
     // packet-handler functions

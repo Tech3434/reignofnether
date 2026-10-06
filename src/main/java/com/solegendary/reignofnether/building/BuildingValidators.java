@@ -40,11 +40,7 @@ public class BuildingValidators {
         if (level == null || building == null)
             return "Unknown error";
 
-        ArrayList<BuildingBlock> relativeBlocks;
-        if (building instanceof AbstractBridge bridge)
-            relativeBlocks = bridge.getRelativeBlockData(level, isDiagonalBridge);
-        else
-            relativeBlocks = building.getRelativeBlockData(level);
+        ArrayList<BuildingBlock> relativeBlocks = building.getRelativeBlockData(level);
 
         ArrayList<BuildingBlock> absoluteBlocks = BuildingUtils.getAbsoluteBlockData(relativeBlocks, level, originPos, rotation);
 
@@ -116,10 +112,7 @@ public class BuildingValidators {
             return true;
         }
         boolean netherTerrainCustomBuilding = building instanceof CustomBuilding cb && cb.netherTerrainOnly;
-        if (!netherTerrainCustomBuilding && !"piglins".equals(building.getFaction()) || building instanceof CentralPortal) {
-            return true;
-        }
-        if (building instanceof PortalBasic || building instanceof PortalPocket) {
+        if (!netherTerrainCustomBuilding) {
             return true;
         }
         return isOnNetherBlocks(level, blocks, originPos, true);
@@ -223,7 +216,7 @@ public class BuildingValidators {
         BlockPos minPos = BuildingUtils.getMinCorner(blocks);
         int placeableBlocks = 0;
         for (BuildingBlock block : blocks)
-            if (!AbstractBridge.shouldCullBlock(originPos, block, level, true) && !block.getBlockState()
+            if (!false && !block.getBlockState()
                     .isAir()) {
                 placeableBlocks += 1;
             }
@@ -264,13 +257,7 @@ public class BuildingValidators {
     }
 
     private static boolean isNotTutorialOrNearValidCapitolPosition(Level level, Building building, BlockPos originPos) {
-        if (!level.isClientSide())
-            return true;
-        if (!TutorialClientEvents.isEnabled())
-            return true;
-        if (!(building instanceof TownCentre))
-            return true;
-        return TutorialClientEvents.BUILD_CAPITOL_POS.distSqr(originPos) < 625; // 25 block range
+        return true;
     }
 
     public static boolean isInBrightChunk(Level level, List<BuildingBlock> blocks, String ownerName) {

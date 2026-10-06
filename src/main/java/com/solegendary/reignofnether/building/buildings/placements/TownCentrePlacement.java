@@ -31,13 +31,5 @@ public class TownCentrePlacement extends ProductionPlacement {
 
     public TownCentrePlacement(Building building, Level level, BlockPos originPos, Rotation rotation, String ownerName, ArrayList<BuildingBlock> blocks) {
         super(building, level, originPos, rotation, ownerName, blocks, true);
-        RTSPlayer rtsPlayer;
-        if (level.isClientSide()) {
-            rtsPlayer = PlayerClientEvents.getRTSPlayer(ownerName);
-        } else {
-            rtsPlayer = PlayerServerEvents.getRTSPlayer(ownerName);
-        }
-        if (rtsPlayer != null)
-            trainsDogs = rtsPlayer.isDogPerson;
     }
 }

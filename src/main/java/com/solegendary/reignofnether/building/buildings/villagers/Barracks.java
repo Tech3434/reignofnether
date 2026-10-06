@@ -8,6 +8,7 @@ import com.solegendary.reignofnether.building.production.ProductionBuilding;
 import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.keybinds.Keybindings;
+import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.resources.ResourceCosts;
 
@@ -43,15 +44,15 @@ public class Barracks extends ProductionBuilding {
 
     public BuildingPlaceButton getBuildButton(Keybinding hotkey) {
         ResourceLocation key = ReignOfNetherRegistries.BUILDING.getKey(this);
-        String name = I18n.get("buildings." + getFaction().name().toLowerCase() + "." + key.getNamespace() + "." + key.getPath());
+        String name = I18n.get("buildings." + getFaction() + "." + key.getNamespace() + "." + key.getPath());
         return new BuildingPlaceButton(
                 name,
                 ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/fletching_table_front.png"),
                 hotkey,
                 () -> BuildingClientEvents.getBuildingToPlace() == Buildings.BARRACKS,
-                () -> !TutorialClientEvents.isAtOrPastStage(TutorialStage.EXPLAIN_BUILDINGS),
+                () -> true,
                 () -> BuildingClientEvents.hasFinishedBuilding(Buildings.TOWN_CENTRE) ||
-                        ResearchClient.hasCheat("modifythephasevariance"),
+                        Cheats.hasCheat("modifythephasevariance"),
                 List.of(
                         FormattedCharSequence.forward(I18n.get("buildings.reignofnether.barracks"), Style.EMPTY.withBold(true)),
                         ResourceCosts.getFormattedCost(cost),

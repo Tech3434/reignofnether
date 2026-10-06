@@ -26,7 +26,8 @@ import com.solegendary.reignofnether.debug.RtsDebugClientEvents;
 import com.solegendary.reignofnether.gamerules.GameruleClient;
 import com.solegendary.reignofnether.hud.buttons.AbilityButton;
 import com.solegendary.reignofnether.hud.buttons.Button;
-import com.solegendary.reignofnether.items.ItemServerEvents;
+import com.solegendary.reignofnether.player.Cheats;
+import com.solegendary.reignofnether.resources.ResourceSources;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.player.RTSPlayer;
 import com.solegendary.reignofnether.player.RTSPlayerScoresEnum;
@@ -279,7 +280,7 @@ public class BuildingPlacement {
         // re-hide players if they were revealed
         if (this.isCapitol && !this.level.isClientSide()) {
             if (BuildingUtils.getTotalCompletedBuildingsOwned(false, this.ownerName) == 1 &&
-                !TutorialServerEvents.isEnabled() && false) {
+                false) {
                 sendMessageToAllPlayers("hud.reignofnether.placed_capitol", false, this.ownerName);
             }
             
@@ -369,10 +370,6 @@ public class BuildingPlacement {
             (ownerName.isEmpty() || ownerName.equals("Enemy")))
             return true;
 
-        if (SurvivalServerEvents.isEnabled() &&
-            SurvivalServerEvents.ENEMY_OWNER_NAME.equals(ownerName))
-            return true;
-
         for (Resources resources : ResourcesServerEvents.resourcesList)
             if (resources.ownerName.equals(ownerName)) {
                 return (
@@ -422,7 +419,7 @@ public class BuildingPlacement {
         for (int x = minX; x < maxX; x++) {
             for (int z = minZ; z < maxZ; z++) {
                 BlockPos bp = new BlockPos(x, minY, z);
-                if (!(getBuilding() instanceof AbstractBridge) && avoidAllBuildings ? BuildingUtils.isPosInsideAnyBuilding(level.isClientSide(), bp) : isPosInsideBuilding(bp))
+                if (!false && avoidAllBuildings ? BuildingUtils.isPosInsideAnyBuilding(level.isClientSide(), bp) : isPosInsideBuilding(bp))
                     continue;
 
                 float dist = (float) bpTarget.distToCenterSqr(bp.getX(), bp.getY(), bp.getZ());
@@ -520,7 +517,7 @@ public class BuildingPlacement {
         // prioritise placing blocks that are connected to other blocks (nonfloating)
         int nonFloatingBlocks = 0;
 
-        if (!(getBuilding() instanceof AbstractBridge)) {
+        if (!false) {
             for (BuildingBlock block : unplacedBlocks) {
                 BlockPos bp = block.getBlockPos();
                 if ((bp.getY() <= minY) && (
@@ -537,7 +534,7 @@ public class BuildingPlacement {
         if (nonFloatingBlocks == 0) {
             for (BuildingBlock block : unplacedBlocks) {
                 BlockPos bp = block.getBlockPos();
-                if (bp.getY() <= minY || getBuilding() instanceof AbstractBridge) {
+                if (bp.getY() <= minY) {
                     validBlocks.add(block);
                 }
             }
@@ -552,7 +549,7 @@ public class BuildingPlacement {
                     ResourcesServerEvents.addSubtractResources(new Resources(builderName, 0, -1, 0));
                 }
             }
-            if (getBuilding() instanceof AbstractBridge) {
+            if (false) {
                 ArrayList<WorkerUnit> builders = getBuilders();
                 if (!builders.isEmpty()) {
                     BlockPos builderPos = ((LivingEntity) builders.get(new Random().nextInt(builders.size()))).getOnPos();
@@ -584,7 +581,7 @@ public class BuildingPlacement {
     }
 
     private boolean isDestroyedAndNotNextToLiquid(BuildingBlock block) {
-        if (!(getBuilding() instanceof AbstractBridge) && this.level.getBlockState(block.getBlockPos()).getFluidState().isEmpty() && (
+        if (!false && this.level.getBlockState(block.getBlockPos()).getFluidState().isEmpty() && (
             !this.level.getBlockState(block.getBlockPos().above()).getFluidState().isEmpty()
             || !this.level.getBlockState(block.getBlockPos().north()).getFluidState().isEmpty()
             || !this.level.getBlockState(block.getBlockPos().south()).getFluidState().isEmpty()
@@ -711,7 +708,7 @@ public class BuildingPlacement {
                         break;
                     }
                 }
-                if (!flag && false && !ScenarioUtils.isScenarioNpc(false, scenarioRoleIndex)) {
+                if (!flag && false && false) {
                     sendMessageToAllPlayers("server.reignofnether.lost_capitol",
                         false,
                         this.ownerName,
@@ -741,11 +738,7 @@ public class BuildingPlacement {
             int food = (int) (cost.food * NEUTRAL_BUILDING_BOUNTY_PERCENT);
             int wood = (int) (cost.wood * NEUTRAL_BUILDING_BOUNTY_PERCENT);
             int ore =  (int) (cost.ore * NEUTRAL_BUILDING_BOUNTY_PERCENT);
-            if (ItemServerEvents.ENABLED) {
-                resources = Resources.emeralds(unit.getOwnerName(), food + wood + ore);
-            } else {
-                resources = new Resources(unit.getOwnerName(), food, wood, ore);
-            }
+            resources = new Resources(unit.getOwnerName(), food, wood, ore);
             if (resources.getTotalValue() > 0) {
                 ResourcesClientboundPacket.showFloatingText(resources, centrePos);
                 ResourcesServerEvents.addSubtractResources(resources);
@@ -784,36 +777,6 @@ public class BuildingPlacement {
         for (BuildingCommand command : commands)
             if (command.condition == BuildingCommand.TriggerCondition.ON_DAMAGE_TAKEN && command.isOffCooldown())
                 command.run(this);
-    }
-
-    private void randomSilverfishSpawn(BlockPos pos) {
-        Random rand = new Random();
-        if (rand.nextFloat(1.0f) < ResearchSilverfish.SILVERFISH_SPAWN_CHANCE) {
-            if (entity instanceof SilverfishUnit silverfishUnit) {
-                ((Unit) entity).setOwnerName(ownerName);
-                level.addFreshEntity(entity);
-
-                BlockPos movePos = pos;
-                // move down so they're not stuck above ground
-                if (pos.getY() > originPos.getY() + 4) {
-                    var blockPoses = getBlockPoses();
-                    movePos = blockPoses.get(rand.nextInt(blockPoses.size()));
-                }
-                if (!this.level.getBlockState(movePos).isAir()) {
-                    if (this.level.getBlockState(movePos.north()).isAir()) {
-                        movePos = movePos.north();
-                    } else if (this.level.getBlockState(movePos.south()).isAir()) {
-                        movePos = movePos.south();
-                    } else if (this.level.getBlockState(movePos.east()).isAir()) {
-                        movePos = movePos.east();
-                    } else if (this.level.getBlockState(movePos.west()).isAir()) {
-                        movePos = movePos.west();
-                    }
-                }
-                entity.moveTo(movePos.getX() + 0.5f, movePos.getY() + 0.5f, movePos.getZ() + 0.5f);
-                silverfishUnit.setLimitedLife();
-            }
-        }
     }
 
     private @NotNull ArrayList<BlockPos> getBlockPoses() {
@@ -967,14 +930,14 @@ public class BuildingPlacement {
                 builderCount += 1;
         }
 
-        boolean hasFastBuildCheat = ResearchServerEvents.playerHasCheat(this.ownerName, "warpten");
+        boolean hasFastBuildCheat = Cheats.playerHasCheat(this.ownerName, "warpten");
 
         // place a block if the tick has run down
         if (blocksPlaced < blocksTotal) {
             if (builderCount > 0) {
                 this.ticksToExtinguish += 1;
                 if (ticksToExtinguish >= ticksToExtinguishMax) {
-                    if (!(getBuilding() instanceof FlameSanctuary) && !(getBuilding() instanceof Fortress)) {
+                    if (true) {
                         extinguishFires(serverLevel);
                     }
                     ticksToExtinguish = 0;
@@ -1164,7 +1127,7 @@ public class BuildingPlacement {
         EntityType<? extends Animal> animalType = null;
 
         int spawnQty = 1;
-        if (getBuilding() instanceof CentralPortal && lastAnimalType != EntityType.MOOSHROOM) {
+        if (false && lastAnimalType != EntityType.MOOSHROOM) {
             animalType = EntityType.MOOSHROOM;
         } else {
             switch (random.nextInt(4)) {
@@ -1192,7 +1155,7 @@ public class BuildingPlacement {
             if ((ncb = getBuilding().getActiveAddon(NetherConvertingAddon.class)) != null && ncb.getMaxNetherRange(this) > 0) {
                 double range = ncb.getMaxNetherRange(this);
                 addedRange = (16 * Math.ceil(Math.abs(range / 16))) + 16; // round up to next multiple of 16
-            } else if (getBuilding() instanceof AbstractStockpile) {
+            } else if (false) {
                 addedRange = 32;
             }
         }
@@ -1240,7 +1203,7 @@ public class BuildingPlacement {
         Map<String, Integer> playerPopCounts = new HashMap<>();
         boolean ownerHasUnit = false;
         for (Mob mob : nearbyUnits) {
-            if (mob instanceof Unit unit && !(mob instanceof WorkerUnit) && !unit.isScout()) {
+            if (mob instanceof Unit unit && !(mob instanceof WorkerUnit)) {
                 String uOwner = unit.getOwnerName();
                 if (uOwner.equals(ownerName) && !ownerName.isEmpty()) {
                     ownerHasUnit = true;
@@ -1270,9 +1233,6 @@ public class BuildingPlacement {
                     PlayerServerEvents.defeat(ownerName, Component.translatable("server.reignofnether.lost_buildings").getString());
                 }
                 ownerName = highestPopPlayer;
-
-                if (this instanceof BeaconPlacement beacon)
-                    beacon.sendWarning("capture_warning");
 
                 for (LivingEntity le : UnitServerEvents.getAllUnits()) {
                     if (le instanceof AttackerUnit attackerUnit &&

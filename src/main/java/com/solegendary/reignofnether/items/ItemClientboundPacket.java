@@ -38,10 +38,6 @@ public class ItemClientboundPacket  implements RTSSimplePayload {
         PacketHandler.send(PacketHandler.allPlayers(), new ItemClientboundPacket(unitId, items));
     }
 
-    public static void setShopServedUnit(int unitId, BlockPos shopPos) {
-        PacketHandler.send(PacketHandler.allPlayers(), new ItemClientboundPacket(unitId, shopPos));
-    }
-
     public ItemClientboundPacket(int unitId, List<ItemStack> items) {
         this.unitId = unitId;
         this.items = new ArrayList<>(items.size());
@@ -83,14 +79,8 @@ public class ItemClientboundPacket  implements RTSSimplePayload {
     // client-side packet-consuming functions
     public void handle(IPayloadContext ctx) {
         ctx.enqueueWork(() -> DistHelper.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            if (this.items == null) {
-                ReignOfNether.LOGGER.warn("ItemClientboundPacket: no items for unitId " + this.unitId);
-            }
-            else if (!this.items.isEmpty()) {
+            if (this.items != null && !this.items.isEmpty())
                 ItemClientEvents.syncInventory(this.unitId, this.items);
-            } else {
-                ItemClientEvents.setShopServedUnit(this.unitId, this.shopPos);
-            }
         }));
         return;
     }

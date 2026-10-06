@@ -20,6 +20,7 @@ import com.solegendary.reignofnether.hud.TextInputClientEvents;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
+import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.player.PlayerColors;
 import com.solegendary.reignofnether.resources.ResourceName;
 
@@ -73,7 +74,7 @@ public class BuildingClientEvents {
     static final Minecraft MC = Minecraft.getInstance();
 
     public static int getTotalPopulationSupply(String playerName) {
-        if (ResearchClient.hasCheat("foodforthought")) {
+        if (Cheats.hasCheat("foodforthought")) {
             return GameruleClient.maxPopulation;
         }
 
@@ -104,9 +105,6 @@ public class BuildingClientEvents {
         BlockPos preSelBp = CursorClientEvents.getPreselectedBlockPos();
         for (BuildingPlacement building : buildings)
             if (building.isPosInsideBuilding(preSelBp)) {
-                if (building.getBuilding() instanceof AbstractBridge && ResourceSources.getBlockResourceName(preSelBp, MC.level) != ResourceName.NONE) {
-                    return null;
-                }
                 return building;
             }
         return null;
@@ -180,11 +178,7 @@ public class BuildingClientEvents {
         if ((buildingToPlace != lastBuildingToPlace) && buildingToPlace != null) {
             // load the new buildingToPlace's data
             try {
-                if (buildingToPlace instanceof AbstractBridge bridge) {
-                    blocksToDraw = bridge.getRelativeBlockData(MC.level, isBridgeDiagonal());
-                } else {
-                    blocksToDraw = buildingToPlace.getRelativeBlockData(MC.level);
-                }
+                blocksToDraw = buildingToPlace.getRelativeBlockData(MC.level);
                 buildingDimensions = BuildingUtils.getBuildingSize(blocksToDraw);
                 buildingRotation = Rotation.NONE;
             } catch (Exception e) {
@@ -243,7 +237,7 @@ public class BuildingClientEvents {
                 MC.level, buildingToPlace, originPos, MC.player.getName().getString(), buildingRotation,
                 isBridgeDiagonal(), SandboxClientEvents.isSandboxPlayer(), true
         );
-        boolean yellowUnderline = buildingToPlace instanceof PortalBasic && !BuildingValidators.isOnNetherBlocks(MC.level, blocksToDraw, originPos, false);
+        boolean yellowUnderline = false;
         drawBuilding(blocksToDraw, matrix, originPos, forceColour, valid, yellowUnderline);
     }
 
@@ -261,10 +255,6 @@ public class BuildingClientEvents {
         ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
         var vertexConsumer = MC.renderBuffers().bufferSource().getBuffer(BUILDING_FILL);
         for (BuildingBlock block : blocks) {
-            if (isBridge(buildingToPlace)
-                    && MC.level != null && AbstractBridge.shouldCullBlock(originPos.offset(0, 1, 0), block, MC.level, true)) {
-                continue;
-            }
             BlockRenderDispatcher renderer = MC.getBlockRenderer();
             BlockState bs = block.getBlockState();
             BlockPos bp = block.getBlockPos().offset(originPos);
@@ -473,10 +463,6 @@ matrix.pushPose();
                     MyRenderer.drawLineBoxOutlineOnly(evt.getPoseStack(), vertexConsumerNoDepthLine, le.getBoundingBox(), isRed ? 1 : 0, isRed ? 0 : 1, 0, a, false);
                 }
             }
-            if (selBuilding instanceof PortalPlacement portal && portal.hasDestination()) {
-                float a = MiscUtil.getOscillatingFloat(0.25f, 0.75f);
-                MyRenderer.drawLine(evt.getPoseStack(), vertexConsumerLine, selBuilding.centrePos, portal.destination, 0, 1, 0, a);
-            }
         }
 
         // Flush everything this stage queued. Vanilla empties both buffer sources before it dispatches
@@ -501,33 +487,10 @@ matrix.pushPose();
     @SubscribeEvent
     public static void onMouseScroll(ScreenEvent.MouseScrolled.Post evt) {
         if (buildingToPlace != null) {
-            if (buildingToPlace instanceof AbstractBridge bridge) {
-                bridgePlaceState += evt.getScrollDeltaY() > 0 ? 1 : -1;
-                if (bridgePlaceState < 0) {
-                    bridgePlaceState = 3;
-                } else if (bridgePlaceState > 3) {
-                    bridgePlaceState = 0;
-                }
-                try {
-                    blocksToDraw = bridge.getRelativeBlockData(MC.level, isBridgeDiagonal());
-                    buildingDimensions = BuildingUtils.getBuildingSize(blocksToDraw);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                Rotation rotationDelta = List.of(0, 1).contains(bridgePlaceState)
-                                         ? Rotation.NONE
-                                         : Rotation.CLOCKWISE_90;
-                buildingRotation = rotationDelta;
-                if (bridgePlaceState == 2) {
-                    blocksToDraw.replaceAll(buildingBlock -> buildingBlock.move(MC.level, new BlockPos(-5, 0, 5)));
-                }
-                blocksToDraw.replaceAll(buildingBlock -> buildingBlock.rotate(MC.level, rotationDelta));
-            } else {
-                Rotation rotationDelta =
-                    evt.getScrollDeltaY() > 0 ? Rotation.CLOCKWISE_90 : Rotation.COUNTERCLOCKWISE_90;
-                buildingRotation = buildingRotation.getRotated(rotationDelta);
-                blocksToDraw.replaceAll(buildingBlock -> buildingBlock.rotate(MC.level, rotationDelta));
-            }
+            Rotation rotationDelta =
+                evt.getScrollDeltaY() > 0 ? Rotation.CLOCKWISE_90 : Rotation.COUNTERCLOCKWISE_90;
+            buildingRotation = buildingRotation.getRotated(rotationDelta);
+            blocksToDraw.replaceAll(buildingBlock -> buildingBlock.rotate(MC.level, rotationDelta));
         }
     }
 
@@ -554,10 +517,6 @@ matrix.pushPose();
             );
             boolean valid = errorMsgKey == null;
             boolean inFog = !BuildingValidators.isInBrightChunk(MC.level, preSelPos, MC.player.getName().getString());
-
-            if (errorMsgKey != null && errorMsgKey.equals("building.reignofnether.build_centre_here")) {
-                OrthoviewClientEvents.forceMoveCam(TutorialClientEvents.BUILD_CAM_POS, 50);
-            }
 
             // place a new building
             if (buildingToPlace != null && valid && MC.player != null) {
@@ -623,7 +582,7 @@ matrix.pushPose();
                     }
                     String ownerName = MC.player.getName().getString();
                     if (SandboxClientEvents.isSandboxPlayer(ownerName) && !hasSelectedWorkers &&
-                        !(buildingToPlace instanceof AbstractBridge)) {
+                        true) {
                         if (SandboxClientEvents.relationship == Relationship.NEUTRAL)
                             ownerName = "";
                         else if (SandboxClientEvents.relationship == Relationship.HOSTILE)
@@ -811,15 +770,6 @@ matrix.pushPose();
         }
     }
 
-    @SubscribeEvent
-    public static void onScreenOpen(ScreenEvent.Opening evt) {
-        if (evt.getScreen() instanceof BeaconScreen) {
-            BlockPos bp = Item.getPlayerPOVHitResult(MC.level, MC.player, ClipContext.Fluid.NONE).getBlockPos();
-            if (BuildingUtils.findBuilding(true, bp) instanceof BeaconPlacement)
-                evt.setCanceled(true);
-        }
-    }
-
     // on closing a chest screen check that it could be a stockpile chest so they can be consumed for resources
     @SubscribeEvent
     public static void onScreenClose(ScreenEvent.Closing evt) {
@@ -852,9 +802,7 @@ matrix.pushPose();
         int numBlocksToPlace,
         boolean isDiagonalBridge,
         int upgradeLevel,
-        boolean isBuilt,
-        PortalPlacement.PortalType portalType,
-        BlockPos portalDestination
+        boolean isBuilt
     ) {
         BuildingPlacement newBuilding = BuildingUtils.getNewBuildingPlacement(building,
             MC.level,
@@ -880,19 +828,9 @@ matrix.pushPose();
             }
 
             if (upgradeLevel > 0) {
-                if (newBuilding instanceof PortalPlacement portal) {
-                    if (!(newBuilding.getBuilding() instanceof NeutralTransportPortal)) {
-                        portal.changePortalStructure(portalType);
-                    }
-                    if (portalType == PortalPlacement.PortalType.TRANSPORT)
-                        portal.destination = portalDestination;
-                } else if (newBuilding instanceof BeaconPlacement beacon) {
-                    beacon.changeBeaconStructure(upgradeLevel);
-                } else {
-                    String upgradedStructureName = newBuilding.getBuilding().getUpgradedStructureName(upgradeLevel);
-                    if (!upgradedStructureName.equals(newBuilding.getBuilding().structureName)) {
-                        newBuilding.changeStructure(upgradedStructureName);
-                    }
+                String upgradedStructureName = newBuilding.getBuilding().getUpgradedStructureName(upgradeLevel);
+                if (!upgradedStructureName.equals(newBuilding.getBuilding().structureName)) {
+                    newBuilding.changeStructure(upgradedStructureName);
                 }
             }
             buildings.add(newBuilding);
@@ -979,20 +917,6 @@ matrix.pushPose();
             }
         }
         return false;
-    }
-
-    public static void syncBeacon(UnitAction action, BlockPos beaconPos, boolean activate) {
-        BeaconPlacement beacon = BuildingUtils.getBeacon(true);
-        if (beacon == null)
-            return;
-
-        if (activate) {
-            Holder<MobEffect> effect = BeaconPlacement.getMobEffectForAction(action);
-            if (effect != null)
-                beacon.activate(effect);
-        } else {
-            beacon.deactivate();
-        }
     }
 
     public static void removeBuilding(BlockPos bp) {

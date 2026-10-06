@@ -52,11 +52,6 @@ public class TownCentre extends ProductionBuilding implements RangeIndicatorAddo
         this.startingBlockTypes.add(Blocks.GRASS_BLOCK);
         this.startingBlockTypes.add(Blocks.POLISHED_ANDESITE_STAIRS);
 
-        Ability callToArms = new CallToArmsBuilding();
-        this.abilities.add(callToArms, Keybindings.hotkey1);
-        BackToWorkBuilding backToWork = new BackToWorkBuilding();
-        this.abilities.add(backToWork, Keybindings.build);
-
         this.productions.add(ProductionItems.VILLAGER, Keybindings.abilitySlot1);
 
         setActiveAddon(RangeIndicatorAddon.class, this, true);
@@ -71,7 +66,7 @@ public class TownCentre extends ProductionBuilding implements RangeIndicatorAddo
 
     public BuildingPlaceButton getBuildButton(Keybinding hotkey) {
         ResourceLocation key = ReignOfNetherRegistries.BUILDING.getKey(this);
-        String name = I18n.get("buildings." + getFaction().name().toLowerCase() + "." + key.getNamespace() + "." + key.getPath());
+        String name = I18n.get("buildings." + getFaction() + "." + key.getNamespace() + "." + key.getPath());
         return new BuildingPlaceButton(
                name,
                 ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/polished_granite.png"),

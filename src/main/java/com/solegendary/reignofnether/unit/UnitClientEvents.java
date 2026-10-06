@@ -424,33 +424,6 @@ public class UnitClientEvents {
     }
 
     private static void doResolveMoveAction() {
-        // open shop
-        if (ItemClientEvents.ENABLED && HudClientEvents.hudSelectedEntity instanceof Unit unit && unit.getItemGoal() != null &&
-                BuildingClientEvents.getPreselectedBuilding() instanceof ItemShopPlacement itemShop && MC.player != null &&
-                itemShop.isBuilt && !itemShop.getStockedItems().isEmpty()) {
-            unit.getCheckpoints().clear();
-            unit.getCheckpoints().add(new Checkpoint(BuildingClientEvents.getPreselectedBuilding().centrePos, true));
-
-            ItemServerboundPacket.openShop(
-                    HudClientEvents.hudSelectedEntity.getId(),
-                    BuildingClientEvents.getPreselectedBuilding().originPos
-            );
-            return;
-        }
-        // pickup item
-        else if (HudClientEvents.hudSelectedEntity instanceof Unit unit && unit.getItemGoal() != null &&
-                !ItemClientEvents.getPreselectedItems().isEmpty() && MC.player != null) {
-            unit.getCheckpoints().clear();
-            unit.getCheckpoints().add(new Checkpoint(ItemClientEvents.getPreselectedItems().get(0), true));
-
-            if (ItemClientEvents.ENABLED) {
-                ItemServerboundPacket.pickup(
-                        HudClientEvents.hudSelectedEntity.getId(),
-                        ItemClientEvents.getPreselectedItems().get(0).getId()
-                );
-                return;
-            }
-        }
         // follow friendly unit
         if (preselectedUnits.size() == 1 && !targetingSelf()) {
             if (hudSelectedEntity instanceof WitchUnit) {

@@ -562,11 +562,7 @@ public class UnitServerEvents {
                 int food = (int) (cost.food * bountyPercent);
                 int wood = (int) (cost.wood * bountyPercent);
                 int ore =  (int) (cost.ore * bountyPercent);
-                if (ItemServerEvents.ENABLED) {
-                    resources = Resources.emeralds(unit.getOwnerName(), food + wood + ore);
-                } else {
-                    resources = new Resources(unit.getOwnerName(), food, wood, ore);
-                }
+                resources = new Resources(unit.getOwnerName(), food, wood, ore);
                 if (resources.getTotalValue() > 0) {
                     ResourcesClientboundPacket.showFloatingText(resources, evt.getEntity().getOnPos());
                     ResourcesServerEvents.addSubtractResources(resources);

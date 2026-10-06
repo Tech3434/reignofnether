@@ -57,8 +57,7 @@ public class BuildingServerboundPacket  implements RTSSimplePayload {
             BuildingAction.DESTROY,
             BuildingAction.SET_RALLY_POINT,
             BuildingAction.ADD_RALLY_POINT,
-            BuildingAction.SET_RALLY_POINT_ENTITY,
-            BuildingAction.CHANGE_PORTAL
+            BuildingAction.SET_RALLY_POINT_ENTITY
     );
 
     public static void placeBuilding(Building building, BlockPos originPos, Rotation rotation,
@@ -232,10 +231,6 @@ public class BuildingServerboundPacket  implements RTSSimplePayload {
                     }
                 }
                 case CHECK_STOCKPILE_CHEST -> {
-                    if (building instanceof StockpilePlacement stockpile)
-                        stockpile.checkAndConsumeChestItems();
-                    else if (building instanceof PortalPlacement portal && portal.getBuilding() instanceof PortalCivilian)
-                        portal.checkAndConsumeChestItems();
                 }
                 case REQUEST_REPLACEMENT -> {
                     BuildingServerEvents.replaceClientBuilding(buildingPos);

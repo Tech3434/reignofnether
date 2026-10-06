@@ -17,6 +17,7 @@ import com.solegendary.reignofnether.building.buildings.placements.ProductionPla
 import com.solegendary.reignofnether.commands.rtsapi.ResourceObjectiveCriteria;
 
 import com.solegendary.reignofnether.hud.HudClientboundPacket;
+import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.resources.*;
@@ -312,8 +313,8 @@ buildingData.buildings.forEach(b -> {
 
         for (BuildingPlacement building : buildings) {
             for (BuildingBlock block : building.blocks) {
-                if (buildingToPlace.getBuilding() instanceof AbstractBridge &&
-                        building.getBuilding() instanceof AbstractBridge) {
+                if (false &&
+                        false) {
                     continue;
                 }
                 BlockPos bp = block.getBlockPos();
@@ -371,26 +372,6 @@ buildingData.buildings.forEach(b -> {
         }
         if (newBuilding != null && !buildingExists && serverLevel != null) {
 
-            // Handle special building (Iron Golem)
-            if (newBuilding.getBuilding() instanceof IronGolemBuilding) {
-                int currentPop = UnitServerEvents.getCurrentPopulation(ownerName);
-                int popSupply = BuildingServerEvents.getTotalPopulationSupply(ownerName);
-
-                boolean canAffordPop = false;
-                for (Resources resources : ResourcesServerEvents.resourcesList) {
-                    if (resources.ownerName.equals(ownerName)
-                            && (currentPop + ResourceCosts.IRON_GOLEM.population) <= popSupply) {
-                        canAffordPop = true;
-                        break;
-                    }
-                }
-                if (!canAffordPop && !fromCommand) {
-                    ResourcesClientboundPacket.warnInsufficientPopulation(ownerName);
-                    FogBuildingClientboundPacket.removeFogQueuedBuilding(originPos);
-                    return null;
-                }
-            }
-
             boolean canAfford = fromCommand || newBuilding.canAfford(ownerName);
             if (!canAfford) {
                 warnInsufficientResources(newBuilding);
@@ -421,19 +402,19 @@ buildingData.buildings.forEach(b -> {
 
             if (fromCommand ||
                     (serverLevel.getGameRules().getRule(GameRuleRegistrar.SLANTED_BUILDING).get() &&
-                            !(newBuilding.getBuilding() instanceof AbstractBridge))) {
+                            !(false))) {
                 BuildingUtils.clearBuildingArea(newBuilding);
             }
             buildings.add(newBuilding);
             newBuilding.forceChunk(true);
             int minY = BuildingUtils.getMinCorner(newBuilding.blocks).getY();
 
-            if (!(newBuilding.getBuilding() instanceof AbstractBridge))
+            if (!(false))
                 for (BuildingBlock block : newBuilding.blocks)
                     if (block.getBlockPos().getY() == minY && !block.getBlockState().isAir())
                         placeScaffoldingUnder(block, newBuilding);
 
-            boolean hasFastBuildCheat = ResearchServerEvents.playerHasCheat(ownerName, "warpten");
+            boolean hasFastBuildCheat = Cheats.playerHasCheat(ownerName, "warpten");
             if (SandboxServer.isAnyoneASandboxPlayer() && hasFastBuildCheat) {
                 newBuilding.maxBlocksPerTick = 4;
                 newBuilding.queueAllBlocks(serverLevel);
@@ -454,14 +435,12 @@ buildingData.buildings.forEach(b -> {
             BuildingClientboundPacket.placeBuilding(originPos,
                     newBuilding.getBuilding(),
                     rotation,
-                    newBuilding.getBuilding() instanceof AbstractBridge ? "" : ownerName,
+                    false ? "" : ownerName,
                     -1,
                     newBuilding.blockPlaceQueue.size(),
                     isDiagonalBridge,
                     0,
-                    false,
-                    PortalPlacement.PortalType.BASIC,
-                    originPos
+                    false
             );
             if (!fromCommand) {
                 ResourcesServerEvents.addSubtractResources(new Resources(ownerName,
@@ -486,7 +465,7 @@ buildingData.buildings.forEach(b -> {
             }
             moveAnimalsAwayFromBuildingFoundations(newBuilding);
 
-            if (newBuilding.getBuilding() instanceof AbstractBridge)
+            if (false)
                 newBuilding.ownerName = "";
 
             if (SandboxServer.isAnyoneASandboxPlayer() && builderUnitIds.length == 0) {
@@ -640,14 +619,14 @@ buildingData.buildings.forEach(b -> {
         // AOE2-style refund: return the % of the non-built portion of the building
         // eg. cancelling a building at 70% completion will refund only 30% cost
         // in survival, refund 50% of this amount
-        if (!building.isBuilt || SurvivalServerEvents.isEnabled()) {
+        if (!building.isBuilt || false) {
 
             float buildPercent = building.getBlocksPlacedPercent();
             int food = Math.round(building.getBuilding().cost.food * (1 - buildPercent));
             int wood = Math.round(building.getBuilding().cost.wood * (1 - buildPercent));
             int ore = Math.round(building.getBuilding().cost.ore * (1 - buildPercent));
 
-            if (building.isBuilt && SurvivalServerEvents.isEnabled()) {
+            if (building.isBuilt && false) {
                 food = Math.round(building.getBuilding().cost.food * 0.5f * buildPercent);
                 wood = Math.round(building.getBuilding().cost.wood * 0.5f * buildPercent);
                 ore = Math.round(building.getBuilding().cost.ore * 0.5f * buildPercent);
@@ -662,7 +641,7 @@ buildingData.buildings.forEach(b -> {
     }
 
     public static int getTotalPopulationSupply(String ownerName) {
-        if (ResearchServerEvents.playerHasCheat(ownerName, "foodforthought")) {
+        if (Cheats.playerHasCheat(ownerName, "foodforthought")) {
             return UnitServerEvents.maxPopulation;
         }
 
@@ -692,24 +671,10 @@ buildingData.buildings.forEach(b -> {
                     building.ownerName,
                     building.scenarioRoleIndex,
                     building.blockPlaceQueue.size(),
-                    building.getBuilding() instanceof AbstractBridge && building.isDiagonalBridge,
+                    building.isDiagonalBridge,
                     building.getUpgradeLevel(),
-                    building.isBuilt,
-                    building instanceof PortalPlacement p ? p.getPortalType() : PortalPlacement.PortalType.BASIC,
-                    building instanceof PortalPlacement p && p.hasDestination() ? p.destination : new BlockPos(0, 0, 0)
+                    building.isBuilt
             );
-
-            if (building.getBuilding() instanceof Library) {
-                EnchantAbility ability = building.getDataStorage().getData(Library.AUTO_CAST_ENCHANT);
-                if (ability != null) {
-                    BuildingAbilityClientboundPacket.doAbility(ability.action, building.originPos);
-                }
-            }else if (building.getBuilding() instanceof Blacksmith) {
-                EquipAbility ability = building.getDataStorage().getData(Blacksmith.AUTO_CAST_EQUIP);
-                if (ability != null) {
-                    BuildingAbilityClientboundPacket.doAbility(ability.action, building.originPos);
-                }
-            }
         }
     }
 
@@ -722,11 +687,9 @@ buildingData.buildings.forEach(b -> {
                         building.ownerName,
                         building.scenarioRoleIndex,
                         building.blockPlaceQueue.size(),
-                        building.getBuilding() instanceof AbstractBridge && building.isDiagonalBridge,
+                        building.isDiagonalBridge,
                         building.getUpgradeLevel(),
-                        building.isBuilt,
-                        building instanceof PortalPlacement p ? p.getPortalType() : PortalPlacement.PortalType.BASIC,
-                        building instanceof PortalPlacement p && p.hasDestination() ? p.destination : new BlockPos(0, 0, 0)
+                        building.isBuilt
                 );
             }
             break;
@@ -765,12 +728,6 @@ buildingData.buildings.forEach(b -> {
     public static void onLivingSpawn(EntityJoinLevelEvent evt) {
         if (evt.getLevel().isClientSide() || !(evt.getEntity() instanceof Mob mob)) return;
 
-        BuildingPlacement bpl = BuildingUtils.findBuilding(false, mob.blockPosition());
-        if (bpl != null &&
-           (bpl.getBuilding() instanceof Dungeon ||
-            bpl.getBuilding() instanceof FlameSanctuary)) {
-            mob.discard();
-        }
     }
 
     @SubscribeEvent
@@ -842,15 +799,6 @@ buildingData.buildings.forEach(b -> {
                     }
             }
             
-            for (BuildingPlacement bpl : getBuildings()) {
-                if (bpl instanceof GraveyardPlacement gy && gy.getUpgradeLevel() > 0 && gy.autoRelease) {
-                    playerName = gy.ownerName;
-                    int currentPop = UnitServerEvents.getCurrentPopulation(playerName);
-                    int popSupply = BuildingServerEvents.getTotalPopulationSupply(gy.ownerName);
-                    if (popSupply > currentPop)
-                        gy.releaseNextUnit();
-                }
-            }
         }
     }
 
@@ -863,64 +811,21 @@ buildingData.buildings.forEach(b -> {
     public static void onExplosion(ExplosionEvent.Detonate evt) {
         Explosion exp = evt.getExplosion();
 
-        GhastUnit ghastUnit = null;
-        CreeperUnit creeperUnit = null;
-        PillagerUnit pillagerUnit = null;
-
-        if (evt.getExplosion().getDirectSourceEntity() instanceof CreeperUnit cUnit) {
-            creeperUnit = cUnit;
-        }
-        else if (evt.getExplosion().getDirectSourceEntity() instanceof PillagerUnit pUnit) {
-            pillagerUnit = pUnit;
-        } else if (evt.getExplosion().getDirectSourceEntity() instanceof LargeFireball fireball && fireball.getOwner() instanceof GhastUnit gUnit) {
-            ghastUnit = gUnit;
-        }
-
-        if (exp.getDirectSourceEntity() == null && ghastUnit == null) {
+        if (exp.getDirectSourceEntity() == null) {
             evt.getAffectedEntities().clear();
         }
 
-        // apply creeper, ghast and mounted pillager attack damage as bonus damage to buildings
-        // this is dealt in addition to the actual blocks destroyed by the explosion itself
-        if (creeperUnit != null || ghastUnit != null || pillagerUnit != null || exp.getDirectSourceEntity() instanceof PrimedTnt) {
+        // bonus damage from vanilla TNT to the buildings it overlaps
+        if (exp.getDirectSourceEntity() instanceof PrimedTnt) {
             Set<BuildingPlacement> affectedBuildings = new HashSet<>();
-
-            if (pillagerUnit != null) {
-                // 1.21.1 renamed Explosion#getPosition to #center.
-                Vec3 pos = evt.getExplosion().center();
-                evt.getAffectedBlocks().add(new BlockPos((int) pos.x, (int) pos.y - 1, (int) pos.z));
-            }
 
             for (BlockPos bp : evt.getAffectedBlocks()) {
                 BuildingPlacement building = BuildingUtils.findBuilding(false, bp);
-
-                if (building != null) {
-                    // prevent enemy ghasts friendly firing their own buildings
-                    if (!(SurvivalServerEvents.isEnabled() && ghastUnit != null &&
-                            SurvivalServerEvents.ENEMY_OWNER_NAME.equals(ghastUnit.getOwnerName()) &&
-                            SurvivalServerEvents.ENEMY_OWNER_NAME.equals(building.ownerName)))
-                        affectedBuildings.add(building);
-                }
+                if (building != null)
+                    affectedBuildings.add(building);
             }
             for (BuildingPlacement building : affectedBuildings) {
-                float atkDmg = 0;
-                if (ghastUnit != null) {
-                    atkDmg = ghastUnit.getUnitAttackDamage();
-                    building.lastAttacker = ghastUnit;
-                } else if (creeperUnit != null) {
-                    atkDmg = creeperUnit.getUnitAttackDamage();
-                    if (creeperUnit.isPowered()) {
-                        atkDmg *= CreeperUnit.CHARGED_DAMAGE_MULT;
-                    }
-                    building.lastAttacker = creeperUnit;
-                } else if (pillagerUnit != null) {
-                    atkDmg = pillagerUnit.getUnitAttackDamage() / 2;
-                    building.lastAttacker = pillagerUnit;
-                } else if (exp.getDirectSourceEntity() instanceof AdjustablePrimedTnt aTNT) {
-                    atkDmg = aTNT.getExplosionPower() *  AdjustablePrimedTnt.DAMAGE_PER_POWER;
-                } else if (exp.getDirectSourceEntity() instanceof PrimedTnt) {
-                    atkDmg = TNT_BUILDING_BASE_DAMAGE;
-                }
+                float atkDmg = TNT_BUILDING_BASE_DAMAGE;
 
                 if (atkDmg > 0) {
                     // all explosion damage will directly hit all occupants at an average of 1/4 rate
@@ -951,21 +856,6 @@ buildingData.buildings.forEach(b -> {
         BuildingPlacement building = BuildingUtils.findBuilding(evt.getEntity().level().isClientSide(), evt.getEntity().getOnPos());
         if (building != null) {
             evt.setCanceled(true);
-
-            if (evt.getEntity() instanceof ServerPlayer player &&
-                !player.isSpectator() &&
-                (AlliancesServerEvents.isAllied(player.getName().getString(), building.ownerName) ||
-                building.getBuilding() instanceof NeutralTransportPortal ||
-                player.getName().getString().equals(building.ownerName)) &&
-                building instanceof PortalPlacement portal &&
-                portal.hasDestination()) {
-
-                player.teleportTo(portal.destination.getX(), portal.destination.getY(), portal.destination.getZ());
-                building.level.playSound(null, building.centrePos, SoundEvents.ENDERMAN_TELEPORT,
-                        player.getSoundSource(), 1.0F, 1.0F);
-                building.level.playSound(null, portal.destination, SoundEvents.ENDERMAN_TELEPORT,
-                        player.getSoundSource(), 1.0F, 1.0F);
-            }
         }
     }
 
@@ -1000,11 +890,9 @@ buildingData.buildings.forEach(b -> {
                         building.ownerName,
                         building.scenarioRoleIndex,
                         building.blockPlaceQueue.size(),
-                        building.getBuilding() instanceof AbstractBridge && building.isDiagonalBridge,
+                        building.isDiagonalBridge,
                         building.getUpgradeLevel(),
-                        building.isBuilt,
-                        building instanceof PortalPlacement p ? p.getPortalType() : PortalPlacement.PortalType.BASIC,
-                        building instanceof PortalPlacement p && p.getPortalType() == PortalPlacement.PortalType.TRANSPORT ? p.destination : new BlockPos(0,0,0)
+                        building.isBuilt
                 );
                 return;
             }

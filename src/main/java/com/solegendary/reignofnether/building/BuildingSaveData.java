@@ -66,8 +66,6 @@ public class BuildingSaveData extends SavedData {
                 boolean isDiagonalBridge = btag.getBoolean("isDiagonalBridge");
                 boolean isBuilt = btag.getBoolean("isBuilt");
                 int upgradeLevel = btag.getInt("upgradeLevel");
-                PortalPlacement.PortalType portalType = PortalPlacement.PortalType.valueOf(btag.getString("portalType"));
-                BlockPos portalDestination = new BlockPos(btag.getInt("xp"), btag.getInt("yp"), btag.getInt("zp"));
                 int scenarioRoleIndex = btag.getInt("scenarioRoleIndex");
                 DataStorage dataStorage;
                 if (btag.contains("dataStorage", Tag.TAG_LIST)) {
@@ -88,8 +86,6 @@ public class BuildingSaveData extends SavedData {
                             isDiagonalBridge,
                             isBuilt,
                             upgradeLevel,
-                            portalType,
-                            portalDestination,
                             scenarioRoleIndex,
                             dataStorage,
                             partialBlocksDestroyed,
@@ -126,10 +122,6 @@ public class BuildingSaveData extends SavedData {
             cTag.putBoolean("isDiagonalBridge", b.isDiagonalBridge);
             cTag.putBoolean("isBuilt", b.isBuilt);
             cTag.putInt("upgradeLevel", b.upgradeLevel);
-            cTag.putString("portalType", b.portalType != null ? b.portalType.name() : PortalPlacement.PortalType.BASIC.name());
-            cTag.putInt("xp", b.portalDestination != null ? b.portalDestination.getX() : 0);
-            cTag.putInt("yp", b.portalDestination != null ? b.portalDestination.getY() : 0);
-            cTag.putInt("zp", b.portalDestination != null ? b.portalDestination.getZ() : 0);
             cTag.putInt("scenarioRoleIndex", b.scenarioRoleIndex);
             cTag.put("dataStorage", b.dataStorage.write());
             cTag.putDouble("partialBlocksDestroyed", b.partialBlocksDestroyed);

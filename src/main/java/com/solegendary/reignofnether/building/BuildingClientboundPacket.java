@@ -10,19 +10,14 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Rotation;
 import net.neoforged.api.distmarker.Dist;
 import com.solegendary.reignofnether.util.DistHelper;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.network.RTSSimplePayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
-
-import java.util.Set;
-import java.util.function.Supplier;
 
 import static com.solegendary.reignofnether.building.BuildingUtils.findBuilding;
 
@@ -50,19 +45,14 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
     public boolean isDiagonalBridge;
     public int upgradeLevel;
     public boolean isBuilt;
-    public PortalPlacement.PortalType portalType;
-    public BlockPos portalDestination;
     public double partialBlocksDestroyed = 0;
 
-    // send only to players whose fog reveals at least one corner of this building
+    // send to every player that has the building loaded
     private static void sendFiltered(BlockPos buildingPos, BuildingClientboundPacket packet) {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server == null) return;
-        BuildingPlacement b = findBuilding(false, buildingPos);
         for (ServerPlayer sp : server.getPlayerList().getPlayers()) {
-            if (b != null && true) {
-                PacketHandler.send(PacketHandler.toPlayer(() -> sp), packet);
-            }
+            PacketHandler.send(PacketHandler.toPlayer(() -> sp), packet);
         }
     }
 
@@ -75,9 +65,7 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
             int numQueuedBlocks,
             boolean isDiagonalBridge,
             int upgradeLevel,
-            boolean isBuilt,
-            PortalPlacement.PortalType portalType,
-            BlockPos portalDestination
+            boolean isBuilt
     ) {
         sendFiltered(buildingPos, new BuildingClientboundPacket(
                 building instanceof CustomBuilding ? BuildingAction.PLACE_CUSTOM : BuildingAction.PLACE,
@@ -91,9 +79,7 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
                 numQueuedBlocks,
                 isDiagonalBridge,
                 upgradeLevel,
-                isBuilt,
-                portalType,
-                portalDestination
+                isBuilt
         ));
     }
 
@@ -109,52 +95,10 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
                 0,
                 false,
                 0,
-                false,
-                PortalPlacement.PortalType.BASIC,
-                new BlockPos(0,0,0)
+                false
         );
         packet.partialBlocksDestroyed = partialBlocksDestroyed;
         sendFiltered(buildingPos, packet);
-    }
-
-    public static void changePortal(BlockPos buildingPos, PortalPlacement.PortalType type) {
-        sendFiltered(buildingPos,
-                new BuildingClientboundPacket(BuildingAction.CHANGE_PORTAL,
-                        EMPTY,
-                        "",
-                        buildingPos,
-                        Rotation.NONE,
-                        "",
-                        0,
-                        0,
-                        0,
-                        false,
-                        0,
-                        false,
-                        type,
-                        new BlockPos(0,0,0)
-                )
-        );
-    }
-
-    public static void changeBeacon(BlockPos buildingPos, int upgradeLevel) {
-        sendFiltered(buildingPos,
-                new BuildingClientboundPacket(BuildingAction.CHANGE_BEACON,
-                        EMPTY,
-                        "",
-                        buildingPos,
-                        Rotation.NONE,
-                        "",
-                        0,
-                        0,
-                        0,
-                        false,
-                        upgradeLevel,
-                        false,
-                        PortalPlacement.PortalType.BASIC,
-                        new BlockPos(0,0,0)
-                )
-        );
     }
 
     public static void changeStructure(BlockPos buildingPos, String structureName) {
@@ -170,9 +114,7 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
                         0,
                         false,
                         0,
-                        false,
-                        PortalPlacement.PortalType.BASIC,
-                        new BlockPos(0,0,0)
+                        false
                 )
         );
     }
@@ -201,8 +143,6 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
         this.isDiagonalBridge = false;
         this.isBuilt = false;
         this.upgradeLevel = 0;
-        this.portalType = PortalPlacement.PortalType.BASIC;
-        this.portalDestination = new BlockPos(0,0,0);
     }
 
     public BuildingClientboundPacket(
@@ -217,9 +157,7 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
             int numQueuedBlocks,
             boolean isDiagonalBridge,
             int upgradeLevel,
-            boolean isBuilt,
-            PortalPlacement.PortalType portalType,
-            BlockPos portalDestination
+            boolean isBuilt
     ) {
         this.action = action;
         this.itemKey = itemKey;
@@ -233,8 +171,6 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
         this.isDiagonalBridge = isDiagonalBridge;
         this.isBuilt = isBuilt;
         this.upgradeLevel = upgradeLevel;
-        this.portalType = portalType;
-        this.portalDestination = portalDestination;
     }
 
     public BuildingClientboundPacket(RegistryFriendlyByteBuf buffer) {
@@ -250,8 +186,6 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
         this.isDiagonalBridge = buffer.readBoolean();
         this.isBuilt = buffer.readBoolean();
         this.upgradeLevel = buffer.readInt();
-        this.portalType = buffer.readEnum(PortalPlacement.PortalType.class);
-        this.portalDestination = buffer.readBlockPos();
         this.partialBlocksDestroyed = buffer.readDouble();
     }
 
@@ -268,8 +202,6 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
         buffer.writeBoolean(this.isDiagonalBridge);
         buffer.writeBoolean(this.isBuilt);
         buffer.writeInt(this.upgradeLevel);
-        buffer.writeEnum(this.portalType);
-        buffer.writeBlockPos(this.portalDestination);
         buffer.writeDouble(this.partialBlocksDestroyed);
     }
 
@@ -287,7 +219,6 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
                         // if the client was missing a building, replace it
                         if (this.action == BuildingAction.SYNC_BLOCKS_AND_OWNER) {
                             BuildingServerboundPacket.requestReplacement(this.buildingPos);
-                            //ReignOfNether.LOGGER.warn("Missing building");
                         }
                         return;
                     }
@@ -301,9 +232,7 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
                             this.numQueuedBlocks,
                             this.isDiagonalBridge,
                             this.upgradeLevel,
-                            this.isBuilt,
-                            this.portalType,
-                            this.portalDestination
+                            this.isBuilt
                     );
                     case PLACE_CUSTOM -> BuildingClientEvents.placeBuilding(
                             CustomBuildingClientEvents.getCustomBuilding(this.itemName),
@@ -313,22 +242,10 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
                             this.numQueuedBlocks,
                             this.isDiagonalBridge,
                             this.upgradeLevel,
-                            this.isBuilt,
-                            this.portalType,
-                            this.portalDestination
+                            this.isBuilt
                     );
                     case SYNC_BLOCKS_AND_OWNER -> {
                         BuildingClientEvents.syncBuilding(building, this.blocksPlaced, this.partialBlocksDestroyed, this.ownerName, this.scenarioRoleIndex);
-                    }
-                    case CHANGE_PORTAL -> {
-                        if (building instanceof PortalPlacement portal) {
-                            portal.changePortalStructure(portalType);
-                        }
-                    }
-                    case CHANGE_BEACON -> {
-                        if (building instanceof BeaconPlacement beacon) {
-                            beacon.changeBeaconStructure(upgradeLevel);
-                        }
                     }
                     case CHANGE_STRUCTURE -> {
                         building.changeStructure(itemName);

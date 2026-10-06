@@ -84,15 +84,6 @@ public class ItemServerboundPacket  implements RTSSimplePayload {
         send(ItemAction.BUY, unitId, itemUuid, -1, buildingPos, -1, -1);
     }
 
-    /**
-     * 1.5.0 addresses shop stock by item id rather than the per-stack UUID, so the HUD button
-     * does not have to track one. The UUID form above stays for the server-side paths.
-     */
-    public static void buy(int unitId, String descId, BlockPos buildingPos) {
-        UnitItem unitItem = ItemUtil.getUnitItem(descId);
-        send(ItemAction.BUY, unitId, unitItem != null ? unitItem.uuid : null, -1, buildingPos, -1, -1);
-    }
-
     private static void send(
             ItemAction action,
             int unitId,
@@ -192,19 +183,20 @@ public class ItemServerboundPacket  implements RTSSimplePayload {
                     !AlliancesServerEvents.canControlAlly(player.getName().getString(), actionableUnit.getOwnerName())) {
                 ReignOfNether.LOGGER.warn("ItemServerboundPacket: Tried to process packet from " + player.getName() + " for " + actionableUnit.getOwnerName());
             }
-            else {
-                if (this.action == ItemAction.BUY) {
-                    ItemServerEvents.buyItem(actionableUnit, this.itemUuid, this.targetPos);
-                } else if (this.action == ItemAction.SWAP) {
-                    ItemServerEvents.swapItems(actionableUnit, this.invIndex1, this.invIndex2);
-                } else {
-                    ItemServerEvents.doAction(
-                            this.action,
-                            actionableUnit,
-                            this.itemUuid,
-                            this.targetId,
-                            this.targetPos
-                    );
+            else if (actionableUnit instanceof UnitInventory inv) {
+                // with the unit item layer gone the container moves stacks directly: swap two slots,
+                // drop a stack on the ground, or hand one to another carried-item inventory
+                if (this.action == ItemAction.SWAP) {
+                    inv.swapSlots(this.invIndex1, this.invIndex2);
+                } else if (this.action == ItemAction.DROP) {
+                    inv.dropUUID(this.itemUuid, this.targetPos);
+                } else if (this.action == ItemAction.GIVE) {
+                    for (LivingEntity le : UnitServerEvents.getAllUnits()) {
+                        if (le.getId() == this.targetId && le instanceof UnitInventory target) {
+                            inv.giveTo(this.itemUuid, target);
+                            break;
+                        }
+                    }
                 }
             }
         });

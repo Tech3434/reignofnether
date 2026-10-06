@@ -274,11 +274,7 @@ public class ProductionPlacement extends BuildingPlacement {
                     if (!prodItem.isBelowMaxPopulation(this))
                         ResourcesClientboundPacket.warnMaxPopulation(ownerName);
                     else if (!prodItem.canAffordPopulation(this)) {
-                        if (prodItem instanceof GraveyardUnitProductionItem && this instanceof GraveyardPlacement gy && gy.getUpgradeLevel() > 0) {
-                            ResourcesClientboundPacket.warnFullGraveyard(ownerName);
-                        } else {
-                            ResourcesClientboundPacket.warnInsufficientPopulation(ownerName);
-                        }
+                        ResourcesClientboundPacket.warnInsufficientPopulation(ownerName);
                     }
                     else
                         ResourcesClientboundPacket.warnInsufficientResources(ownerName,
