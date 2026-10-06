@@ -2,6 +2,8 @@ package com.solegendary.reignofnether.unit.modelling.renderers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
+import com.solegendary.reignofnether.unit.modelling.models.VillagerUnitModel;
+import com.solegendary.reignofnether.unit.modelling.models.VillagerUnitProfessionLayer;
 import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -21,9 +23,7 @@ public class VillagerUnitRenderer extends AbstractVillagerUnitRenderer<AbstractI
         this.addLayer(new ItemInHandLayer<AbstractIllager, VillagerUnitModel<AbstractIllager>>(this, context.getItemInHandRenderer()) {
             public void render(PoseStack pose, MultiBufferSource mbs, int pPackedLight, AbstractIllager unit,
                                float pLimbSwing, float pLimbSwingAmount, float pPartialTicks, float pAgeInTicks, float pNetHeadYaw, float pHeadPitch) {
-                if (unit instanceof MilitiaUnit mUnit) {
-                    super.render(pose, mbs, pPackedLight, unit, pLimbSwing, pLimbSwingAmount, pPartialTicks, pAgeInTicks, pNetHeadYaw, pHeadPitch);
-                } else if (unit instanceof VillagerUnit vUnit &&
+                if (unit instanceof VillagerUnit vUnit &&
                         ((vUnit.getBuildRepairGoal() != null && vUnit.getBuildRepairGoal().isBuilding()) ||
                         (vUnit.getGatherResourceGoal() != null && vUnit.getGatherResourceGoal().isGathering()) ||
                         (vUnit.getTargetGoal() != null && vUnit.getTargetGoal().getTarget() != null))) {

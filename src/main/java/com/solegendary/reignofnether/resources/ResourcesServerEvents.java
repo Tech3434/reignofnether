@@ -71,99 +71,10 @@ public class ResourcesServerEvents {
     public static final float NEUTRAL_UNIT_BOUNTY_PERCENT = 0.25f;
     public static final float NEUTRAL_BUILDING_BOUNTY_PERCENT = 0.25f;
 
-    // to avoid having to save units too often add on all unit resources here too and just add directly on load
-    public static void saveResources(ServerLevel serverLevel) {
-        if (serverLevel == null) {
-            return;
-        }
-        ResourcesSaveData data = ResourcesSaveData.getInstance(serverLevel);
-        data.resources.clear();
-        resourcesList.forEach(r -> {
-
-            // add all unit held resources to resources so we don't have to save unit items
-            int unitFood = 0;
-            int unitWood = 0;
-            int unitOre = 0;
-            int unitEmerald = 0;
-            for (LivingEntity le : UnitServerEvents.getAllUnits()) {
-                if (le instanceof Unit u && u.getOwnerName().equals(r.ownerName)) {
-                    Resources unitRes = Resources.getTotalResourcesFromItems(u.getItems());
-                    unitFood += unitRes.food;
-                    unitWood += unitRes.wood;
-                    unitOre += unitRes.ore;
-                    unitEmerald += unitRes.emerald;
-                }
-            }
-            // add all production item costs since they will be cancelled on server shutdown
-            int prodFood = 0;
-            int prodWood = 0;
-            int prodOre = 0;
-            int prodEmerald = 0;
-            for (BuildingPlacement building : BuildingServerEvents.getBuildings()) {
-                if (building instanceof ProductionPlacement pBuilding) {
-                    for (ActiveProduction item : pBuilding.productionQueue) {
-                        prodFood += item.item.getCost(false, pBuilding.ownerName).food;
-                        prodWood += item.item.getCost(false, pBuilding.ownerName).wood;
-                        prodOre += item.item.getCost(false, pBuilding.ownerName).ore;
-                        prodEmerald += item.item.getCost(false, pBuilding.ownerName).emerald;
-                    }
-                }
-            }
-            data.resources.add(new Resources(r.ownerName,
-                r.food + r.foodToAdd + unitFood + prodFood,
-                r.wood + r.woodToAdd + unitWood + prodWood,
-                r.ore + r.oreToAdd + unitOre + prodOre,
-                r.emerald + r.emeraldToAdd + unitEmerald + prodEmerald
-            ));
-            //ReignOfNether.LOGGER.info("saved resources in serverevents: " + r.ownerName + "|" + r.food + "|" + r.wood + "|" + r.ore);
-        });
-        data.save();
-        serverLevel.getDataStorage().save();
-    }
-
-    @SubscribeEvent
-    public static void loadResources(ServerStartedEvent evt) {
-        ServerLevel level = evt.getServer().getLevel(Level.OVERWORLD);
-
-        if (level != null) {
-            ResourcesSaveData data = ResourcesSaveData.getInstance(level);
-            resourcesList.clear();
-            resourcesList.addAll(data.resources);
-
-            //ReignOfNether.LOGGER.info("saved " + data.resources.size() + " resources in serverevents");
-        }
-    }
-
-    private static final int SAVE_TICKS_MAX = 600;
-    private static int saveTicks = 0;
-    @SubscribeEvent
-    public static void onServerTick(ServerTickEvent.Post evt) {
-                saveTicks += 1;
-        if (saveTicks >= SAVE_TICKS_MAX) {
-            ServerLevel level = evt.getServer().getLevel(Level.OVERWORLD);
-            if (level != null) {
-                saveResources(level);
-                saveTicks = 0;
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onServerStopping(ServerStoppingEvent evt) {
-        ServerLevel level = evt.getServer().getLevel(Level.OVERWORLD);
-        if (level != null) {
-            saveResources(level);
-        }
-    }
-
     public static void resetResources(String playerName, boolean readiedStart) {
         for (Resources resources : resourcesList) {
             if (resources.ownerName.equals(playerName)) {
-                if (TutorialServerEvents.isEnabled()) {
-                    resources.food = STARTING_FOOD_TUTORIAL;
-                    resources.wood = STARTING_WOOD_TUTORIAL;
-                    resources.ore = STARTING_ORE_TUTORIAL;
-                } else if (SandboxServer.isSandboxPlayer(playerName)) {
+                if (SandboxServer.isSandboxPlayer(playerName)) {
                     resources.food = STARTING_FOOD_SANDBOX;
                     resources.wood = STARTING_WOOD_SANDBOX;
                     resources.ore = STARTING_ORE_SANDBOX;
@@ -231,27 +142,7 @@ public class ResourcesServerEvents {
 
     public static void assignResources(String playerName) {
         resourcesList.removeIf(r -> r.ownerName.equals(playerName));
-        Resources resources;
-        if (TutorialServerEvents.isEnabled()) {
-            resources = new Resources(playerName,
-                    STARTING_FOOD_TUTORIAL,
-                    STARTING_WOOD_TUTORIAL,
-                    STARTING_ORE_TUTORIAL
-            );
-        } else {
-            resources = new Resources(playerName, STARTING_FOOD, STARTING_WOOD, STARTING_ORE);
-        }
-        resourcesList.add(resources);
-        ResourcesClientboundPacket.syncResources(resourcesList);
-    }
-
-    public static void assignScenarioResources(RTSPlayer rtsPlayer) {
-        ScenarioRole role = ScenarioUtils.getScenarioRole(false, rtsPlayer.scenarioRoleIndex);
-        resourcesList.removeIf(r -> r.ownerName.equals(rtsPlayer.name));
-        Resources resources;
-        resources = role == null ?
-                new Resources(rtsPlayer.name, 0,0,0) :
-                new Resources(rtsPlayer.name, role.startingResources.food, role.startingResources.wood, role.startingResources.ore);
+        Resources resources = new Resources(playerName, STARTING_FOOD, STARTING_WOOD, STARTING_ORE);
         resourcesList.add(resources);
         ResourcesClientboundPacket.syncResources(resourcesList);
     }

@@ -1052,7 +1052,6 @@ public class PlayerServerEvents {
         saveBuildings(serverLevel);
         BuildingServerEvents.saveNetherZones(serverLevel);
         UnitServerEvents.saveGatherTargets(serverLevel);
-        ResourcesServerEvents.saveResources(serverLevel);
     }
 
     public static void setRTSLock(boolean lock) {

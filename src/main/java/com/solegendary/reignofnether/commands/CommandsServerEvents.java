@@ -282,50 +282,6 @@ public class CommandsServerEvents {
 			)
 		);
 		
-		dispatcher.register(Commands.literal("rtsapi-add-research")
-			.requires(source -> source.hasPermission(2))
-			.then(Commands.argument("researchItem", ResourceLocationArgument.id())
-				.suggests((ctx, builder) -> SharedSuggestionProvider.suggestResource(
-					ReignOfNetherRegistries.PRODUCTION_ITEM.keySet().stream(), builder))
-				.then(Commands.argument("playerName", StringArgumentType.string())
-					.executes(ctx -> addResearch(
-						ctx,
-						ResourceLocationArgument.getId(ctx, "researchItem"),
-						StringArgumentType.getString(ctx, "playerName")
-					))
-				)
-				.then(Commands.argument("playerSelector", EntityArgument.player())
-					.executes(ctx -> addResearch(
-						ctx,
-						ResourceLocationArgument.getId(ctx, "researchItem"),
-						getPlayerName(EntityArgument.getPlayer(ctx, "playerSelector"))
-					))
-				)
-			)
-		);
-		
-		dispatcher.register(Commands.literal("rtsapi-remove-research")
-			.requires(source -> source.hasPermission(2))
-			.then(Commands.argument("researchItem", ResourceLocationArgument.id())
-				.suggests((ctx, builder) -> SharedSuggestionProvider.suggestResource(
-					ReignOfNetherRegistries.PRODUCTION_ITEM.keySet().stream(), builder))
-				.then(Commands.argument("playerName", StringArgumentType.string())
-					.executes(ctx -> removeResearch(
-						ctx,
-						ResourceLocationArgument.getId(ctx, "researchItem"),
-						StringArgumentType.getString(ctx, "playerName")
-					))
-				)
-				.then(Commands.argument("playerSelector", EntityArgument.player())
-					.executes(ctx -> removeResearch(
-						ctx,
-						ResourceLocationArgument.getId(ctx, "researchItem"),
-						getPlayerName(EntityArgument.getPlayer(ctx, "playerSelector"))
-					))
-				)
-			)
-		);
-		
 		dispatcher.register(Commands.literal("rtsapi-set-unit-enemy-search")
 			.requires(source -> source.hasPermission(2))
 			.then(Commands.argument("ownerName", StringArgumentType.string())
@@ -352,24 +308,6 @@ public class CommandsServerEvents {
 						StringArgumentType.getString(ctx, "playerSelector"),
 						BoolArgumentType.getBool(ctx, "value")
 					))))
-		);
-
-		dispatcher.register(Commands.literal("rtsapi-teams-mode")
-				.requires(source -> source.hasPermission(2))
-				.then(Commands.argument("mode", StringArgumentType.string())
-						.executes(ctx -> setStartingTeamsMode(
-								ctx,
-								StringArgumentType.getString(ctx, "mode")
-						)))
-		);
-
-		dispatcher.register(Commands.literal("rtsapi-set-starting-teams-mode")
-				.requires(source -> source.hasPermission(2))
-				.then(Commands.argument("mode", StringArgumentType.string())
-						.executes(ctx -> setStartingTeamsMode(
-								ctx,
-								StringArgumentType.getString(ctx, "mode")
-						)))
 		);
 
 		dispatcher.register(Commands.literal("rtsapi-set-alliance")
@@ -866,34 +804,6 @@ public class CommandsServerEvents {
 		return 1;
 	}
 	
-	private static int addResearch(
-		CommandContext<CommandSourceStack> ctx,
-		ResourceLocation researchItemName,
-		String playerName
-	) {
-		ResearchServerEvents.addResearch(playerName, researchItemName);
-		ResearchServerEvents.syncResearch(playerName);
-		ctx.getSource().sendSuccess(
-			() -> Component.translatable("commands.reignofnether.research.add.success", researchItemName, playerName),
-			true
-		);
-		return 1;
-	}
-	
-	private static int removeResearch(
-		CommandContext<CommandSourceStack> ctx,
-		ResourceLocation researchItemName,
-		String playerName
-	) {
-		ResearchServerEvents.removeResearch(playerName, researchItemName);
-		ResearchServerEvents.syncResearch(playerName);
-		ctx.getSource().sendSuccess(
-			() -> Component.translatable("commands.reignofnether.research.remove.success", researchItemName, playerName),
-			true
-		);
-		return 1;
-	}
-	
 	public static int setUnitSearchBehaviour(
 		CommandContext<CommandSourceStack> ctx,
 		String ownerName,
@@ -978,31 +888,6 @@ public class CommandsServerEvents {
 		return building;
 	}
 	
-	public static int setStartingTeamsMode(
-		CommandContext<CommandSourceStack> ctx,
-		String mode
-	) {
-		if (StartPosServerEvents.isStartingGame()) {
-			return 0;
-		}
-		if (RTSMapInfoServerEvents.rtsMapInfo == null) {
-			ctx.getSource().sendFailure(Component.translatable("commands.reignofnether.rtsmap.not_load"));
-			return 0;
-		}
-		if (!RTSMapInfoServerEvents.rtsMapInfo.supportsMode(mode)) {
-			ctx.getSource().sendFailure(Component.translatable("commands.reignofnether.rtsmap.unknown_mode", mode));
-			return 0;
-		}
-		RTSMapInfoServerEvents.rtsMapInfo.setDefaultMode(mode);
-		RTSMapInfoClientboundPacket.sendValue(RTSMapInfoAction.SET_MODE, RTSMapInfoServerEvents.rtsMapInfo.getDefaultMode());
-		ctx.getSource().sendSuccess(
-			() -> Component.translatable("commands.reignofnether.rtsmap.starting_team_mode.set", mode),
-			true
-		);
-		StartPosServerEvents.loadPositionsFromMapInfo();
-		return 1;
-	}
-
 	public static int setAlliance(
 		CommandContext<CommandSourceStack> ctx,
 		boolean value,

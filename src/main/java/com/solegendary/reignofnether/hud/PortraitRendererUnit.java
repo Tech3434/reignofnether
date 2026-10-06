@@ -13,9 +13,12 @@ import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
 import com.solegendary.reignofnether.healthbars.HealthBarClientEvents;
 import com.solegendary.reignofnether.hud.buttons.Button;
+import com.solegendary.reignofnether.hud.effecticons.MobEffectIcon;
 
 import com.solegendary.reignofnether.player.PlayerColors;
 
+import com.solegendary.reignofnether.resources.ResourceSource;
+import com.solegendary.reignofnether.resources.ResourceSources;
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
@@ -230,10 +233,10 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
                 passiveIcon.render(guiGraphics, x - 2, yr, mouseX, mouseY);
                 if (passiveIcon.isMouseOver(mouseX, mouseY))
                     passiveIcon.renderTooltip(guiGraphics, mouseX, mouseY);
-                x += EnchantmentIcon.ICON_SIZE * 2;
+                x += MobEffectIcon.ICON_SIZE * 2;
             }
             if (!unit.getPassiveIcons().isEmpty())
-                x += EnchantmentIcon.ICON_SIZE / 2;
+                x += MobEffectIcon.ICON_SIZE / 2;
         }
         if (!(entity instanceof Player)) {
             guiGraphics.drawString(Minecraft.getInstance().font, name, x + 4, y - 9, WHITE);
@@ -380,9 +383,6 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
 
         if (unit instanceof AttackerUnit attackerUnit) {
             double atkDmg = attackerUnit.getUnitAttackDamage() + AttackerUnit.getWeaponDamageModifier(attackerUnit);
-            if (unit instanceof CreeperUnit cUnit && cUnit.isPowered()) {
-                atkDmg *= CreeperUnit.CHARGED_DAMAGE_MULT;
-            }
             if (unit instanceof WorkerUnit) {
                 atkDmg = (int) attackerUnit.getUnitAttackDamage();
             }
@@ -505,9 +505,6 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
         if (((LivingEntity) unit).getAttribute(Attributes.MOVEMENT_SPEED) != null) {
             float ms = unit.getMovementSpeed() * unit.getSpeedModifier();
             int msInt = (int) (ms * 101);
-            if (unit instanceof SlimeUnit slimeUnit && slimeUnit.isUsingJumpingMovement()) {
-                msInt /= SlimeJumpMoveControl.MOVESPEED_MULTIPLIER;
-            }
             int msColour = WHITE;
             double msBase = ((LivingEntity) unit).getAttributeBaseValue(Attributes.MOVEMENT_SPEED);
             if (msBase < ms) {

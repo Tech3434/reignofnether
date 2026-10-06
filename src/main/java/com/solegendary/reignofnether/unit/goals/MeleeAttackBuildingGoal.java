@@ -89,31 +89,13 @@ public class MeleeAttackBuildingGoal extends MoveToTargetBlockGoal {
     }
 
     protected void doBuildingAttack() {
-        if (mob instanceof IronGolemUnit ||
-                mob instanceof HoglinUnit ||
-                mob instanceof ZoglinUnit ||
-                mob instanceof RavagerUnit ||
-                mob instanceof WardenUnit ||
-                mob instanceof PolarBearUnit
-        ) {
-            mob.handleEntityEvent((byte) 4);
-            UnitAnimationClientboundPacket.sendBasicPacket(UnitAnimationAction.NON_KEYFRAME_ATTACK, mob);
-        }
-        else
-            this.mob.swing(InteractionHand.MAIN_HAND);
-
-        if (mob instanceof PandaUnit pandaUnit)
-            pandaUnit.roll(true);
+        this.mob.swing(InteractionHand.MAIN_HAND);
 
         AttackerUnit unit = (AttackerUnit) mob;
         ticksToNextBlockBreak = (int) unit.getAttackCooldown();
         double dmg = unit.getUnitAttackDamage() * buildingTarget.getMeleeDamageMult() * unit.getBuildingDamageMultiplier();
         buildingTarget.destroyRandomBlocks(dmg);
         buildingTarget.lastAttacker = this.mob;
-
-        if (unit instanceof MarauderUnit marauderUnit) {
-            marauderUnit.decrementAttacks();
-        }
 
         if (mob instanceof Slime slime && slime.onGround())
             slime.jumpFromGround();

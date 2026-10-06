@@ -34,10 +34,12 @@ import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.player.PlayerClientEvents;
+import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.player.PlayerColors;
 import com.solegendary.reignofnether.resources.ResourceName;
 
 import com.solegendary.reignofnether.resources.Resources;
+import com.solegendary.reignofnether.resources.ResourceSources;
 import com.solegendary.reignofnether.resources.ResourcesClientEvents;
 import com.solegendary.reignofnether.sandbox.SandboxActionButtons;
 import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
@@ -823,7 +825,6 @@ public class HudClientEvents {
             ArrayList<Button> actionButtons = new ArrayList<>();
 
             actionButtons.add(SandboxActionButtons.getSetRelationshipButton());
-            actionButtons.add(SandboxActionButtons.getCycleScenarioRoleButton());
             if (hudSelectedPlacement != null) {
                 actionButtons.add(SandboxActionButtons.removeBuildingPlacement);
             }

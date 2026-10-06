@@ -201,66 +201,6 @@ public class SandboxActionButtons {
         );
     }
 
-    public static Button getCycleScenarioRoleButton() {
-        ScenarioRole role = getHudSelectedScenarioRole();
-        String roleName = I18n.get("sandbox.reignofnether.scenario_role_none");
-        if (role != null) {
-            roleName = role.name;
-        }
-        return new Button(
-                "Switch Building Scenario Role",
-                Button.itemIconSize,
-                role != null ? ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/blocks/command_block_conditional.png") :
-                                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/blocks/command_block_conditional_dark.png"),
-                (Keybinding) null,
-                () -> false,
-                () -> false,
-                () -> true,
-                () -> cycleUnitOrBuildingRoleIndex(false),
-                () -> cycleUnitOrBuildingRoleIndex(true),
-                List.of(
-                        fcs(I18n.get("sandbox.reignofnether.cycle_scenario_role", roleName))
-                )
-        );
-    }
-
-    private static void cycleUnitOrBuildingRoleIndex(boolean reverse) {
-        int currentRoleIndex = 0;
-        if (HudClientEvents.hudSelectedPlacement != null) {
-            currentRoleIndex = HudClientEvents.hudSelectedPlacement.scenarioRoleIndex;
-        } else if (HudClientEvents.hudSelectedEntity instanceof Unit unit) {
-            currentRoleIndex = unit.getScenarioRoleIndex();
-        }
-        currentRoleIndex += reverse ? -1 : 1;
-        if (currentRoleIndex > ScenarioClientEvents.scenarioRoles.size() - 1)
-            currentRoleIndex = -1;
-        if (currentRoleIndex < -1)
-            currentRoleIndex = ScenarioClientEvents.scenarioRoles.size() - 1;
-
-        for (LivingEntity le : UnitClientEvents.getSelectedUnits()) {
-            if (le instanceof Unit unit) {
-                ScenarioServerboundPacket.setUnitRole(currentRoleIndex, le.getId());
-                unit.setScenarioRoleIndex(currentRoleIndex);
-            }
-        }
-        for (BuildingPlacement bpl : BuildingClientEvents.getSelectedBuildings()) {
-            ScenarioServerboundPacket.setBuildingRole(currentRoleIndex, bpl.originPos);
-            bpl.scenarioRoleIndex = currentRoleIndex;
-        }
-    }
-
-    @Nullable
-    private static ScenarioRole getHudSelectedScenarioRole() {
-        ScenarioRole role = null;
-        if (HudClientEvents.hudSelectedEntity instanceof Unit unit) {
-            role = ScenarioUtils.getScenarioRole(true, unit.getScenarioRoleIndex());
-        } else if (HudClientEvents.hudSelectedPlacement != null) {
-            int index = HudClientEvents.hudSelectedPlacement.scenarioRoleIndex;
-            role = ScenarioUtils.getScenarioRole(true, index);
-        }
-        return role;
-    }
-
     static {
         updateButtons();
     }

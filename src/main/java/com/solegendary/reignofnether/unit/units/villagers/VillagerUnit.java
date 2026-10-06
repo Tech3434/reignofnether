@@ -8,6 +8,7 @@ import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
 
 import com.solegendary.reignofnether.building.Building;
+import com.solegendary.reignofnether.building.Buildings;
 import com.solegendary.reignofnether.building.BuildingBlock;
 import com.solegendary.reignofnether.building.BuildingPlaceButton;
 import com.solegendary.reignofnether.building.BuildingPlacement;
@@ -18,7 +19,6 @@ import com.solegendary.reignofnether.hud.TooltipColours;
 import com.solegendary.reignofnether.hud.buttons.Button;
 import com.solegendary.reignofnether.items.UnitInventory;
 
-import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.registrars.AttributeRegistrar;
 import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
 import com.solegendary.reignofnether.registrars.EntityRegistrar;
@@ -87,9 +87,6 @@ import com.solegendary.reignofnether.util.EnchantmentUtil;
 
 public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, AttackerUnit, ArmSwingingUnit, VillagerDataHolder, ConvertableUnit {
     public static final Abilities ABILITIES = new Abilities();
-    static {
-        ABILITIES.add(new CallToArmsUnit(), Keybindings.abilitySlot1);
-    }
 
     //region
     @Override
@@ -235,7 +232,8 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
     }
 
     public boolean hasSpeedCheat() {
-        return !this.level().isClientSide() && ResearchServerEvents.playerHasCheat(getOwnerName(), "operationcwal");
+        // research cheats were removed with the faction content
+        return false;
     }
 
     // equal to 4 full farm clears
@@ -333,7 +331,8 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
 
     public static List<BuildingPlaceButton> getBuildingButtons() {
         List<BuildingPlaceButton> buttons = new ArrayList<>();
-        buttons.addAll(FactionRegistries.VILLAGERS.getBuildingButtons());
+        buttons.add(Buildings.TOWN_CENTRE.getBuildButton(null));
+        buttons.add(Buildings.BARRACKS.getBuildButton(null));
 
         CustomBuildingClientEvents.customBuildings.forEach(cb -> {
             if (cb.buildableByVillagers)
@@ -401,19 +400,6 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
                     EnchantmentUtil.clearEnchantments(getMainHandItem());
                 }
 
-                boolean inRangeOfBellHolder = false;
-                for (LivingEntity le : UnitServerEvents.getAllUnits()) {
-                    if (le instanceof UnitInventory inv && inv.isHoldingActive(UnitItems.BELL_OF_ARMS)) {
-                        int range = UnitItems.BELL_OF_ARMS_RANGE;
-                        if (this.getEyePosition().distanceToSqr(le.position()) <= range * range) {
-                            inRangeOfBellHolder = true;
-                            break;
-                        }
-                    }
-                }
-                if (inRangeOfBellHolder) {
-                    convertToMilitia();
-                }
             }
         }
     }
@@ -479,30 +465,9 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
         this.readUnitSaveData(pCompound);
     }
 
+    // The militia conversion target was removed with the faction content;
+    // CallToArmsGoal still calls this, so the hook stays as a no-op.
     public void convertToMilitia() {
-        if (!converted) {
-            if (newEntity instanceof MilitiaUnit mUnit) {
-                mUnit.resourcesSaveData = this.gatherResourcesGoal.permSaveData;
-                mUnit.profession = this.getProfession();
-                mUnit.isVeteran = this.isVeteran;
-                mUnit.farmerExp = this.farmerExp;
-                mUnit.lumberjackExp = this.lumberjackExp;
-                mUnit.minerExp = this.minerExp;
-                mUnit.masonExp = this.masonExp;
-                mUnit.hunterExp = this.hunterExp;
-                ItemStack chest = new ItemStack(this.chestplate);
-                if (chestplateEnchanted && chest.getItem() != Items.AIR) {
-                    chest.enchant(EnchantmentRegistrar.FORTYIFYING.get(), 1);
-                }
-                mUnit.setItemSlot(EquipmentSlot.CHEST, chest);
-                mUnit.swordEnchanted = swordEnchanted;
-                mUnit.bowEnchanted = bowEnchanted;
-                mUnit.swapWeapons(mUnit.isUsingBow());
-
-                UnitConvertClientboundPacket.syncConvertedUnits(getOwnerName(), List.of(getId()), List.of(newEntity.getId()));
-                converted = true;
-            }
-        }
     }
 
     @Override

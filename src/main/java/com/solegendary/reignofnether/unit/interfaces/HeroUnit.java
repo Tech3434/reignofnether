@@ -63,15 +63,6 @@ public interface HeroUnit extends Unit {
     public boolean needsStatSync();
     public void setNeedsStatSync(boolean value);
 
-    static ResourceCost getReviveCost(int heroLevel) {
-        return ResourceCost.Unit(
-                ResourceCosts.HERO_BASE_REVIVE_COST.food + (Mth.clamp(heroLevel, 1, 10) * ResourceCosts.HERO_EXTRA_REVIVE_COST_PER_LEVEL.food),
-                ResourceCosts.HERO_BASE_REVIVE_COST.wood + (Mth.clamp(heroLevel, 1, 10) * ResourceCosts.HERO_EXTRA_REVIVE_COST_PER_LEVEL.wood),
-                ResourceCosts.HERO_BASE_REVIVE_COST.ore + (Mth.clamp(heroLevel, 1, 10) * ResourceCosts.HERO_EXTRA_REVIVE_COST_PER_LEVEL.ore),
-                (ResourceCosts.HERO_BASE_REVIVE_COST.ticks + (Mth.clamp(heroLevel, 1, 10) * ResourceCosts.HERO_EXTRA_REVIVE_COST_PER_LEVEL.ticks)) / 20,
-                ResourceCosts.HERO_BASE_REVIVE_COST.population);
-    }
-
     static List<HeroUnit> getHeroes(boolean isClientside, String ownerName) {
         return getHeroes(isClientside, ownerName, "");
     }
@@ -87,37 +78,6 @@ public interface HeroUnit extends Unit {
             }
         }
         return list;
-    }
-
-    static List<ActiveProduction> getHeroesInTraining(boolean isClientside, String ownerName) {
-        List<BuildingPlacement> buildings = isClientside ? BuildingClientEvents.getBuildings() : BuildingServerEvents.getBuildings();
-        List<ActiveProduction> productions = new ArrayList<>();
-        for (BuildingPlacement b : buildings)
-            if (b instanceof ProductionPlacement pb && pb.ownerName.equals(ownerName))
-                for (ActiveProduction prod : pb.productionQueue)
-                    if (prod.item instanceof HeroProductionItem)
-                        productions.add(prod);
-        return productions;
-    }
-
-    @Nullable
-    static HeroUnitSave getFallenHero(boolean isClientSide, String ownerName, String heroName) {
-        ArrayList<HeroUnitSave> heroUnits = isClientSide ? HeroClientEvents.fallenHeroes : HeroServerEvents.fallenHeroes;
-        for (HeroUnitSave heroUnit : heroUnits) {
-            if (heroUnit.ownerName.equals(ownerName) && heroUnit.name.equals(heroName))
-                return heroUnit;
-        }
-        return null;
-    }
-
-    static int getNumHeroesOwnedOrInTraining(boolean isClientside, String ownerName) {
-        return HeroUnit.getHeroes(isClientside, ownerName).size() +
-                HeroUnit.getFallenHeroes(isClientside, ownerName).size() +
-                HeroUnit.getHeroesInTraining(isClientside, ownerName).size();
-    }
-
-    static List<HeroUnitSave> getFallenHeroes(boolean isClientSide, String ownerName) {
-        return isClientSide ? HeroClientEvents.fallenHeroes : HeroServerEvents.fallenHeroes;
     }
 
     int MAX_LEVEL = 10;
@@ -192,10 +152,8 @@ public interface HeroUnit extends Unit {
         setExperience(getExperience() + amount);
         int levelDiff = getHeroLevel() - levelBefore;
 
-        HeroClientboundPacket.setExperience(((LivingEntity) this).getId(), getExperience());
         if (levelDiff > 0) {
             setSkillPoints(getSkillPoints() + levelDiff);
-            HeroClientboundPacket.setSkillPoints(((LivingEntity) this).getId(), getSkillPoints());
             SoundClientboundPacket.playSoundAtPos(SoundAction.LEVEL_UP, ((LivingEntity) this).getOnPos());
             ParticleUtil.addParticleExplosion(ParticleRegistrar.LEVEL_UP.get(), 10,
                     ((LivingEntity) this).level(), ((LivingEntity) this).getEyePosition());
@@ -301,23 +259,6 @@ public interface HeroUnit extends Unit {
         return getHeroAbilityRanks().getOrDefault(ability, 0);
     }
 
-    public default void syncToClients() {
-        LivingEntity entity = (LivingEntity) this;
-        if (!entity.level().isClientSide()) {
-            HeroClientboundPacket.setExperience(entity.getId(), this.getExperience());
-            HeroClientboundPacket.setSkillPoints(entity.getId(), this.getSkillPoints());
-            HeroClientboundPacket.setCharges(entity.getId(), this.getChargesForSaveData());
-            List<HeroAbility> abls = this.getHeroAbilities();
-            if (abls.size() > 0)
-                HeroClientboundPacket.setAbilityRank(entity.getId(), abls.get(0).getRank(this), 0);
-            if (abls.size() > 1)
-                HeroClientboundPacket.setAbilityRank(entity.getId(), abls.get(1).getRank(this), 1);
-            if (abls.size() > 2)
-                HeroClientboundPacket.setAbilityRank(entity.getId(), abls.get(2).getRank(this), 2);
-            if (abls.size() > 3)
-                HeroClientboundPacket.setAbilityRank(entity.getId(), abls.get(3).getRank(this), 3);
-        }
-    }
 
     default void setHeroAbilityRank(HeroAbility ability, int rank) {
         getHeroAbilityRanks().put(ability, rank);

@@ -25,6 +25,7 @@ import com.solegendary.reignofnether.util.MyMath;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.tutorial.TutorialSteps;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.minecraft.client.resources.language.I18n;
 
@@ -559,7 +560,7 @@ public class OrthoviewClientEvents {
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/icon_frame.png"),
                 null,
                 () -> false,
-                () -> !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || !MinimapClientEvents.isLargeMap(),
+                () -> !MinimapClientEvents.isLargeMap(),
                 () -> true,
                 () -> {
                     
@@ -631,17 +632,13 @@ public class OrthoviewClientEvents {
         if (!Keybindings.altMod.isDown() && MC.isWindowActive() && !isCameraLocked()) {
             if (cursorX <= 0) {
                 panCam(getEdgeCamPanSensitivity(), 0, 0);
-                TutorialClientEvents.pannedLeft = true;
             } else if (cursorX >= glfwWinWidth) {
                 panCam(-getEdgeCamPanSensitivity(), 0, 0);
-                TutorialClientEvents.pannedRight = true;
             }
             if (cursorY <= 0) {
                 panCam(0, 0, getEdgeCamPanSensitivity());
-                TutorialClientEvents.pannedUp = true;
             } else if (cursorY >= glfwWinHeight) {
                 panCam(0, 0, -getEdgeCamPanSensitivity());
-                TutorialClientEvents.pannedDown = true;
             }
         }
         // lock mouse inside window

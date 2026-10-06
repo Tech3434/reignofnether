@@ -226,7 +226,6 @@ public class VindicatorUnit extends Vindicator implements Unit, AttackerUnit {
         super.tick();
         Unit.tick(this);
         AttackerUnit.tick(this);
-        PromoteIllager.checkAndApplyBuff(this);
     }
 
     @Override
@@ -326,7 +325,7 @@ public class VindicatorUnit extends Vindicator implements Unit, AttackerUnit {
         boolean hurt = super.doHurtTarget(pEntity);
         int maimingLevel = getMaimingLevel();
         if (hurt && maimingLevel > 0 && pEntity instanceof LivingEntity le)
-            le.addEffect(MobEffectHelpers.instance(MobEffects.MOVEMENT_SLOWDOWN, RTSEnchantments.MAIMING_SLOWNESS_DURATION, maimingLevel));
+            le.addEffect(MobEffectHelpers.instance(MobEffects.MOVEMENT_SLOWDOWN, 5 * ResourceCost.TICKS_PER_SECOND, maimingLevel));
         return hurt;
     }
 

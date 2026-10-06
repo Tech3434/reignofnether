@@ -104,24 +104,6 @@ public class VillagerUnitModel<T extends AbstractIllager> extends HumanoidModel<
         if (entity instanceof WorkerUnit workerUnit && workerUnit.getBuildRepairGoal() != null && workerUnit.getBuildRepairGoal().isBuilding()) {
             return VillagerUnitModel.ArmPose.BUILDING;
         }
-        else if (entity instanceof EvokerUnit evokerUnit) {
-            return evokerUnit.getEvokerArmPose();
-        }
-        else if (entity instanceof PillagerUnit) {
-            // CROSSBOW_HOLD
-            // CROSSBOW_CHARGE
-            return VillagerUnitModel.ArmPose.CROSSBOW_CHARGE;
-        }
-        else if (entity instanceof MilitiaUnit militiaUnit) {
-            if (militiaUnit.isUsingBow()) {
-                if (militiaUnit.isAggressive())
-                    return VillagerUnitModel.ArmPose.BOW_AND_ARROW;
-                else
-                    return VillagerUnitModel.ArmPose.CROSSBOW_CHARGE;
-            }
-            else
-                return VillagerUnitModel.ArmPose.ATTACKING;
-        }
         else if (entity instanceof AttackerUnit attackerUnit) {
             SelectedTargetGoal<?> goal = ((Unit) entity).getTargetGoal();
             if (goal != null && goal.getTarget() != null ||

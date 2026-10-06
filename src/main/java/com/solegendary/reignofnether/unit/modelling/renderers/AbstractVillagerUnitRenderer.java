@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.unit.modelling.layers.CustomUnitHeadLayer;
 import com.solegendary.reignofnether.unit.modelling.layers.VillagerUnitArmorLayer;
+import com.solegendary.reignofnether.unit.modelling.models.IllagerArmorModel;
+import com.solegendary.reignofnether.unit.modelling.models.VillagerUnitModel;
 
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
