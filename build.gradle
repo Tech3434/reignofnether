@@ -60,6 +60,10 @@ neoForge {
             // supported spelling and is what runData wires up.
             data()
         }
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
     }
 
     mods {
