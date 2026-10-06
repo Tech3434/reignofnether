@@ -69,6 +69,7 @@ public abstract class EquipAbility extends Ability {
     }
 
     public boolean isWindcaller(LivingEntity entity) {
+        return false;
     }
 
     public boolean hasSameItem(LivingEntity entity) {

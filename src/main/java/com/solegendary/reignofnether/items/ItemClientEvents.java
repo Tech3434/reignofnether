@@ -119,6 +119,7 @@ public class ItemClientEvents {
         for (int i = 0; i < inv.getAllItems().size(); i++) {
             Keybinding hotkey = i < hotkeys.size() ? hotkeys.get(i) : null;
             ItemStack itemStack = inv.getAllItems().get(i);
+            int slotIndex = i;
             int xi = x + ((i % 2) * BUTTON_WIDTH);
             int yi = y + ((i / 2) * BUTTON_WIDTH);
 
@@ -139,7 +140,7 @@ public class ItemClientEvents {
                     () -> false,
                     () -> itemStack.isEmpty(),
                     () -> true,
-                    () -> pickUpSlot(inv, i, itemStack),
+                    () -> pickUpSlot(inv, slotIndex, itemStack),
                     null,
                     itemStack.isEmpty() ? List.of() : List.of(
                             com.solegendary.reignofnether.util.MiscUtil.fcs(itemStack.getHoverName().getString()))

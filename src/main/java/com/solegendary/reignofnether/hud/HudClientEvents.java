@@ -102,6 +102,7 @@ public class HudClientEvents {
     private static final int TEMP_MSG_TICKS_FADE = 50; // ticks left when the msg starts to fade
     private static final int TEMP_MSG_TICKS_MAX = 150; // ticks to show the msg for
     private static final int MAX_BUTTONS_PER_ROW = 6;
+    public static final int START_BUTTON_ICON_SIZE = 14;
 
     public static final ArrayList<ControlGroup> controlGroups = new ArrayList<>(10);
     public static int lastSelCtrlGroupKey = -1;
@@ -638,11 +639,7 @@ public class HudClientEvents {
 
                 int totalRes = Resources.getTotalResourcesFromItems(unit.getItems()).getTotalValue();
 
-                if (ItemClientEvents.ENABLED && unit instanceof UnitInventory inv && ItemClientEvents.shouldRenderUnitInventory(unit)) {
-                    hudZones.add(ItemClientEvents.renderUnitInventory(evt.getGuiGraphics(), blitX, blitY - 6, mouseX, mouseY, inv));
-                    renderedItemsOrResources = true;
-                }
-                else if (hudSelectedEntity instanceof Mob mob && mob.canPickUpLoot() && totalRes > 0) {
+                if (hudSelectedEntity instanceof Mob mob && mob.canPickUpLoot() && totalRes > 0) {
                     hudZones.add(portraitRendererUnit.renderResourcesHeld(evt.getGuiGraphics(), blitX, blitY, unit));
 
                     // return button
@@ -970,7 +967,6 @@ public class HudClientEvents {
 
             ArrayList<Button> actionButtons = new ArrayList<>();
             actionButtons.add(SandboxClientEvents.getCycleBuildingOrUnitsButton());
-            actionButtons.add(SandboxClientEvents.getToggleFactionButton());
             actionButtons.add(SandboxClientEvents.getToggleRelationshipButton());
 
             if (SandboxClientEvents.sandboxMenuType == SandboxMenuType.UNITS) {
@@ -1099,12 +1095,7 @@ public class HudClientEvents {
         int resourceBlitYStart = blitY;
         int resourcePanelBottomY = blitY;
 
-        String[] resourceNames;
-        if (ItemClientEvents.ENABLED) {
-            resourceNames = new String[] { "food", "wood", "ore", "emerald", "pop" };
-        } else {
-            resourceNames = new String[] { "food", "wood", "ore", "pop" };
-        }
+        String[] resourceNames = new String[] { "food", "wood", "ore", "pop" };
 
         if (resources != null && MC.player != null) {
             for (String resourceName : resourceNames) {
@@ -1239,12 +1230,7 @@ public class HudClientEvents {
 
             blitY = resourceBlitYStart;
             final String finalSelPlayerName = selPlayerName;
-            String[] resourceNames2;
-            if (ItemClientEvents.ENABLED) {
-                resourceNames2 = new String[] { "food", "wood", "ore", "emerald", "population" };
-            } else {
-                resourceNames2 = new String[] { "food", "wood", "ore", "population" };
-            }
+            String[] resourceNames2 = new String[] { "food", "wood", "ore", "population" };
             for (String resourceName : resourceNames2) {
                 List<FormattedCharSequence> tooltip;
                 String key = String.format("resources.reignofnether.%s", resourceName);
