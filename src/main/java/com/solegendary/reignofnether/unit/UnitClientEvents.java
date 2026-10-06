@@ -19,6 +19,8 @@ import com.solegendary.reignofnether.cursor.CursorClientEvents;
 import com.solegendary.reignofnether.gamerules.GameruleClient;
 
 import com.solegendary.reignofnether.hud.HudClientEvents;
+import com.solegendary.reignofnether.hud.effecticons.MobEffectIcon;
+import com.solegendary.reignofnether.hud.effecticons.MobEffectIcons;
 import com.solegendary.reignofnether.hud.TextInputClientEvents;
 
 import com.solegendary.reignofnether.items.ItemClientEvents;
@@ -264,10 +266,7 @@ public class UnitClientEvents {
                 if (building.ownerName.equals(playerName))
                     if (building instanceof ProductionPlacement prodBuilding) {
                         for (ActiveProduction prodItem : prodBuilding.productionQueue)
-                            if (!(prodBuilding instanceof GraveyardPlacement gy) || gy.getUpgradeLevel() <= 0)
-                                currentPopulation += prodItem.item.getCost(true, playerName).population;
-                    } else if (building.getBuilding() instanceof IronGolemBuilding) {
-                        currentPopulation += ResourceCosts.IRON_GOLEM.population;
+                            currentPopulation += prodItem.item.getCost(true, playerName).population;
                     }
         }
         return currentPopulation;
@@ -426,11 +425,7 @@ public class UnitClientEvents {
     private static void doResolveMoveAction() {
         // follow friendly unit
         if (preselectedUnits.size() == 1 && !targetingSelf()) {
-            if (hudSelectedEntity instanceof WitchUnit) {
-                sendUnitCommand(UnitAction.THROW_LINGERING_REGEN_POTION);
-            } else {
-                sendUnitCommand(UnitAction.FOLLOW);
-            }
+            sendUnitCommand(UnitAction.FOLLOW);
         }
         // move to ground pos (disabled during camera manip)
         else if (!Keybindings.altMod.isDown() && !selectedUnits.isEmpty() && MC.level != null) {
@@ -453,10 +448,6 @@ public class UnitClientEvents {
     }
 
     public static void syncScenarioRoleIndex(int entityId, int scenarioRoleIndex) {
-        for (LivingEntity entity : allUnits)
-            if (entity.getId() == entityId && MC.level != null)
-                if (entity instanceof Unit unit)
-                    unit.setScenarioRoleIndex(scenarioRoleIndex);
     }
 
     /**
@@ -502,7 +493,6 @@ public class UnitClientEvents {
         for(LivingEntity entity : allUnits) {
             if (entity.getId() == entityId && MC.level != null) {
                 if (entity instanceof Unit unit) {
-                    unit.getItems().removeIf(i -> !ItemUtil.isPreparedEdibleFood(i.getItem()));
                     unit.getItems().add(new ItemStack(Items.SUGAR, res.food));
                     unit.getItems().add(new ItemStack(Items.STICK, res.wood));
                     unit.getItems().add(new ItemStack(Items.STONE, res.ore));
@@ -619,8 +609,6 @@ public class UnitClientEvents {
         Entity entity = evt.getEntity();
 
         if (entity instanceof Unit unit && evt.getLevel().isClientSide) {
-            TutorialClientEvents.updateStage();
-
             if (selectedUnits.removeIf(e -> e.getId() == entity.getId()))
                 selectedUnits.add((LivingEntity) entity);
             if (preselectedUnits.removeIf(e -> e.getId() == entity.getId()))
@@ -632,9 +620,6 @@ public class UnitClientEvents {
             unit.setupEquipmentAndUpgradesClient();
 
             UnitSyncServerboundPacket.requestSyncAbilities(entity.getId());
-
-            if (entity instanceof HeroUnit)
-                HeroServerboundPacket.requestHeroSync(entity.getId());
         }
         markSelectedUnitsChanged();
         MinimapClientEvents.removeVirtualUnit(entity.getId());
@@ -655,15 +640,6 @@ public class UnitClientEvents {
         // Can only detect clicks client side but only see and modify goals serverside so produce entity queues here
         // and consume in onWorldTick; we also can't add entities directly as they will not have goals populated
         if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_1) {
-
-            if (preselectedUnits.size() == 1 && preselectedUnits.get(0) instanceof ScoutDogUnit &&
-                getSelectedUnits().size() == 1 && getSelectedUnits().get(0) instanceof ScoutDogUnit dogUnit &&
-                getPlayerToEntityRelationship(dogUnit) == Relationship.OWNED)
-                dogUnit.pet();
-            if (preselectedUnits.size() == 1 && preselectedUnits.get(0) instanceof ScoutCatUnit &&
-                getSelectedUnits().size() == 1 && getSelectedUnits().get(0) instanceof ScoutCatUnit catUnit &&
-                getPlayerToEntityRelationship(catUnit) == Relationship.OWNED)
-                catUnit.pet();
 
             if (!selectedUnits.isEmpty() && isLeftClickAttack()) {
                 // A + left click -> force attack single unit (even if friendly)
@@ -802,18 +778,13 @@ public class UnitClientEvents {
                     getPlayerToEntityRelationship(preselectedUnits.get(0)) == Relationship.HOSTILE ||
                      ResourceSources.isHuntableAnimal(preselectedUnits.get(0)))) {
 
-                     if (hudSelectedEntity instanceof WitchUnit witchUnit) {
-                         sendUnitCommand(UnitAction.THROW_LINGERING_HARMING_POTION);
-                     } else {
-                         sendUnitCommand(UnitAction.ATTACK);
-                     }
+                     sendUnitCommand(UnitAction.ATTACK);
                      rightClickActionTaken = true;
                 }
                 // right click -> attack unfriendly building
                 else if (hudSelectedEntity instanceof AttackerUnit &&
                         (preSelBuilding != null) &&
                         !preSelBuilding.getBuilding().invulnerable &&
-                        !(preSelBuilding.getBuilding() instanceof AbstractBridge) &&
                         ((GameruleClient.neutralAggro && getPlayerToBuildingRelationship(preSelBuilding) == Relationship.NEUTRAL) ||
                         getPlayerToBuildingRelationship(preSelBuilding) == Relationship.HOSTILE)) {
                     sendUnitCommand(UnitAction.ATTACK_BUILDING);
@@ -830,12 +801,9 @@ public class UnitClientEvents {
                 }
                 // right click -> build or repair preselected building
                 else if (hudSelectedEntity instanceof WorkerUnit && preSelBuilding != null &&
-                        (getPlayerToBuildingRelationship(preSelBuilding) == Relationship.OWNED || AlliancesClient.canControlAlly(hudSelectedEntity)) ||
-                        (preSelBuilding != null && preSelBuilding.getBuilding() instanceof AbstractBridge)) {
+                        (getPlayerToBuildingRelationship(preSelBuilding) == Relationship.OWNED || AlliancesClient.canControlAlly(hudSelectedEntity))) {
 
-                    if (preSelBuilding.getBuilding() instanceof AbstractFarm && preSelBuilding.isBuilt)
-                        sendUnitCommand(UnitAction.FARM);
-                    else if (BuildingUtils.isBuildingBuildable(true, preSelBuilding))
+                    if (BuildingUtils.isBuildingBuildable(true, preSelBuilding))
                         sendUnitCommand(UnitAction.BUILD_REPAIR);
                     else
                         resolveMoveActionDeferred();
@@ -1074,12 +1042,6 @@ public class UnitClientEvents {
                 }
                 });
             }
-            // render items in front of face for eating units
-            for (LivingEntity entity : getAllUnits()) {
-                if (entity instanceof Unit unit && unit.isEatingFood()) {
-                    MyRenderer.renderItemInFrontOfEntityFace(evt.getPoseStack(), entity, evt.getPartialTick().getGameTimeDeltaPartialTick(false), new ItemStack(unit.getFoodBeingEaten()));
-                }
-            }
         }
 
         if (OrthoviewClientEvents.isEnabled() && evt.getStage() == AFTER_ENTITIES) {
@@ -1216,8 +1178,7 @@ public class UnitClientEvents {
         if (evt.getKeyCode() == GLFW.GLFW_KEY_DELETE || (evt.getKeyCode() == GLFW.GLFW_KEY_D && Keybindings.altMod.isDown() && Keybindings.ctrlMod.isDown())) {
             boolean isSandboxPlayer = MC.player != null && SandboxClientEvents.isSandboxPlayer(MC.player.getName().getString());
             LivingEntity entity = hudSelectedEntity;
-            if ((entity != null && getPlayerToEntityRelationship(entity) == Relationship.OWNED || isSandboxPlayer) &&
-                    !(entity instanceof CreeperUnit)) {
+            if ((entity != null && getPlayerToEntityRelationship(entity) == Relationship.OWNED || isSandboxPlayer)) {
                 if (entity != null && !entity.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.PARTIALLY_POSSESSED.get()))) {
                     sendUnitCommand(UnitAction.DELETE);
                 }
@@ -1366,25 +1327,7 @@ public class UnitClientEvents {
     public static void syncUnitAnimation(UnitAnimationAction animAction, boolean startAnimation, int entityId, int targetId,
                                          BlockPos buildingBp) {
         for (LivingEntity entity : getAllUnits()) {
-            if (entity instanceof EvokerUnit eUnit && eUnit.getId() == entityId) {
-                if (eUnit.getCastFangsGoal() != null) {
-                    if (startAnimation)
-                        eUnit.getCastFangsGoal().startCasting();
-                    else
-                        eUnit.getCastFangsGoal().stop();
-                }
-            } else if (entity instanceof WardenUnit wUnit && wUnit.getId() == entityId) {
-                if (wUnit.getSonicBoomGoal() != null) {
-                    if (startAnimation)
-                        wUnit.startSonicBoomAnimation();
-                    else
-                        wUnit.stopSonicBoomAnimation();
-                }
-            } else if (entity instanceof GhastUnit gUnit && gUnit.getId() == entityId && startAnimation) {
-                gUnit.showShootingFace();
-            } else if (entity instanceof BruteUnit bUnit && bUnit.getId() == entityId) {
-                bUnit.setHoldingUpShield(startAnimation);
-            } else if (entity instanceof WorkerUnit wUnit && entity instanceof AttackerUnit aUnit && entity.getId() == entityId) {
+            if (entity instanceof WorkerUnit wUnit && entity instanceof AttackerUnit aUnit && entity.getId() == entityId) {
                 if (startAnimation && MC.level != null) {
                     if (entity instanceof VillagerUnit vUnit && vUnit.getUnitProfession() == VillagerUnitProfession.HUNTER && vUnit.isVeteran())
                         entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.STONE_SWORD));
@@ -1396,7 +1339,7 @@ public class UnitClientEvents {
                     entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.AIR));
                     aUnit.setUnitAttackTarget(null);
                 }
-            } else if ((entity instanceof VindicatorUnit || entity instanceof MilitiaUnit) && entity.getId() == entityId) {
+            } else if (entity instanceof VindicatorUnit && entity.getId() == entityId) {
                 if (startAnimation && MC.level != null) {
                     if (targetId > 0) {
                         ((AttackerUnit) entity).setUnitAttackTarget((LivingEntity) MC.level.getEntity(targetId)); // set itself as a target just for animation purposes, doesn't tick clientside anyway
@@ -1424,15 +1367,6 @@ public class UnitClientEvents {
     public static void playAttackAnimation(int entityId) {
         for (LivingEntity entity : getAllUnits()) {
             if (entity.getId() == entityId) {
-                if (entity instanceof IronGolemUnit ||
-                    entity instanceof HoglinUnit ||
-                    entity instanceof ZoglinUnit ||
-                    entity instanceof RavagerUnit ||
-                    entity instanceof WardenUnit) {
-                    entity.handleEntityEvent((byte) 4);
-                } else if (entity instanceof PolarBearUnit polarBearUnit) {
-                    polarBearUnit.doAttackAnimationAndSound();
-                }
             }
         }
     }
@@ -1465,8 +1399,6 @@ public class UnitClientEvents {
             return null;
         if (!((Unit) passenger).getOwnerName().equals(((Unit) vehicle).getOwnerName()))
             return null;
-        if (hudSelectedEntity instanceof Unit && vehicle instanceof SpiderUnit && entityIsRiding)
-            return UnitAction.MOUNT_SPIDER;
         return null;
     }
 
@@ -1485,7 +1417,6 @@ public class UnitClientEvents {
                     entity instanceof Unit unit &&
                     !(entity instanceof WorkerUnit) &&
                     entity instanceof AttackerUnit &&
-                    !unit.isScout() &&
                     GarrisonableBuildingAddon.getGarrison(unit) == null &&
                     getPlayerToEntityRelationship(entity) == Relationship.OWNED
             )
