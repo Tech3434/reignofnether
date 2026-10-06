@@ -22,7 +22,6 @@
         "StructureBlockEntityMixin",
         "UnitInventoryMobMixin",
         "VexMixin",
-        "WebBlockMixin",
         "WitchMixin",
         "fire.WalkNodeEvaluatorMixin",
         "goals.MobMixin",
