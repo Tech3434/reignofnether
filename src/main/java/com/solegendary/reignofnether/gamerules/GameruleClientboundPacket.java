@@ -22,6 +22,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import com.solegendary.reignofnether.gamerules.GameruleClientboundPacket;
 import com.solegendary.reignofnether.gamerules.GameruleClient;
 import com.solegendary.reignofnether.gamerules.GameruleAction;
+import com.solegendary.reignofnether.items.RandomItemDropRule;
 
 public class GameruleClientboundPacket  implements RTSSimplePayload {
 

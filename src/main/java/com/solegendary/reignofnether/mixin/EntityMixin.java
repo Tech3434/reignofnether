@@ -1,5 +1,7 @@
 package com.solegendary.reignofnether.mixin;
 
+import com.solegendary.reignofnether.resources.ResourceSources;
+
 import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;

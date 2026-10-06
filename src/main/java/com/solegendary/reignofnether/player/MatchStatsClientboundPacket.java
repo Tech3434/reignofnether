@@ -80,12 +80,7 @@ public class MatchStatsClientboundPacket  implements RTSSimplePayload {
     }
 
     public void handle(IPayloadContext ctx) {
-        ctx.enqueueWork(() -> {
-            DistHelper.unsafeRunWhenOn(Dist.CLIENT,
-                    () -> () -> {
-                        MatchEndClientEvents.receive(gameDurationTicks, rows);
-                    });
-        });
-        return;
+        // the end-of-match screen was removed with matchstart; the rows are still
+        // broadcast so a client-side presentation can be reattached later
     }
 }

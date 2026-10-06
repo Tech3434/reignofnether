@@ -54,8 +54,6 @@ public abstract class HeroAbility extends Ability {
             hero.setSkillPoints(hero.getSkillPoints() - 1);
             if (((LivingEntity) hero).level().isClientSide)
                 hero.updateAbilityButtons();
-            else
-                hero.syncToClients();
             return true;
         }
         return false;

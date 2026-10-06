@@ -3,6 +3,7 @@ package com.solegendary.reignofnether.unit;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import com.mojang.datafixers.util.Pair;
 
+import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
@@ -39,7 +40,7 @@ public class NonUnitServerEvents {
     public static final List<Pair<PathfinderMob, BlockPos>> nonUnitMoveTargets = Collections.synchronizedList(new ArrayList<>());
 
     public static boolean canControlAllMobs(Level level, String playerName) {
-        return ResearchServerEvents.playerHasCheat(playerName, "wouldyoukindly");
+        return Cheats.playerHasCheat(playerName, "wouldyoukindly");
     }
 
     @SubscribeEvent
@@ -96,28 +97,12 @@ public class NonUnitServerEvents {
         }
     }
 
-    public static String getNonUnitFaction(LivingEntity le) {
-        if (le instanceof IronGolem || le instanceof AbstractIllager || le instanceof AbstractVillager)
-            return "villagers";
-        else if (le instanceof AbstractPiglin || le instanceof Hoglin || le instanceof Ghast || le instanceof Blaze || le instanceof WitherSkeleton)
-            return "piglins";
-        else if (le instanceof AbstractSkeleton || le instanceof Zombie || le instanceof Creeper || le instanceof Spider || le instanceof Slime || le instanceof Warden)
-            return "monsters";
-        return "";
-    }
-
     @SubscribeEvent
     public static void onChangeTarget(LivingChangeTargetEvent evt) {
-        LivingEntity le = evt.getEntity();
-
-        // prevent vanilla mobs attacking their RoN faction equivalents
-        if (!(le instanceof Unit) && evt.getNewAboutToBeSetTarget() instanceof Unit unit)
-            if (unit.getFaction().equals(getNonUnitFaction(le)))
-                evt.setCanceled(true);
+        // the faction check this used to make went away with the factions
     }
 
     private static boolean shouldMobBeAggressive(Mob mob) {
-        return !(mob instanceof Vex) &&
-                !(mob instanceof PhantomSummon);
+        return !(mob instanceof Vex);
     }
 }

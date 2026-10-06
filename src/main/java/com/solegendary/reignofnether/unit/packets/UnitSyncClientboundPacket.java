@@ -61,13 +61,6 @@ public class UnitSyncClientboundPacket  implements RTSSimplePayload {
         );
     }
 
-    public static void sendSyncScenarioRoleIndexPacket(Unit unit) {
-        PacketHandler.send(PacketHandler.allPlayers(),
-                new UnitSyncClientboundPacket(UnitSyncAction.SYNC_SCENARIO_ROLE_INDEX,
-                        ((LivingEntity) unit).getId(), unit.getScenarioRoleIndex(),0,0,0,0,0,0,0,0,0,0, "")
-        );
-    }
-
     public static void sendSyncStatsPacket(List<ServerPlayer> players, LivingEntity entity) {
         String owner = "";
         if (entity instanceof Unit unit)

@@ -78,10 +78,6 @@ public class BuildRepairGoal extends MoveToTargetBlockGoal {
         }
         if (!BuildingUtils.isBuildingBuildable(this.mob.level().isClientSide(), buildingTarget)) {
             if (!startNextQueuedBuilding()) {
-                if (buildingTarget instanceof FarmPlacement && mob instanceof WorkerUnit) {
-                    ((WorkerUnit) mob).getGatherResourceGoal().setTargetResourceName(ResourceName.FOOD);
-                    ((WorkerUnit) mob).getGatherResourceGoal().setTargetFarm(buildingTarget);
-                }
                 stopBuilding();
             }
             return;
@@ -110,8 +106,7 @@ public class BuildRepairGoal extends MoveToTargetBlockGoal {
     // Re-pick the approach cell only if it got built over (non-bridge), mirroring getClosestGroundPos's own
     // exclusion. Bridges have special over-water geometry, so their cell is held until the target changes.
     private boolean isApproachInvalid(BlockPos bp) {
-        return !(buildingTarget.getBuilding() instanceof AbstractBridge)
-                && BuildingUtils.isPosInsideAnyBuilding(this.mob.level().isClientSide(), bp);
+        return BuildingUtils.isPosInsideAnyBuilding(this.mob.level().isClientSide(), bp);
     }
 
     // only count as building if in range of the target - building is actioned in Building.tick()
@@ -124,7 +119,7 @@ public class BuildRepairGoal extends MoveToTargetBlockGoal {
 
         if (buildingTarget != null) {
             Relationship rs = BuildingServerEvents.getUnitToBuildingRelationship((Unit) this.mob, buildingTarget);
-            if (rs == Relationship.OWNED || buildingTarget.getBuilding() instanceof AbstractBridge) {
+            if (rs == Relationship.OWNED) {
                 return buildingTarget.isPosInsideBuilding(mob.getOnPos(), 2);
             }
         }

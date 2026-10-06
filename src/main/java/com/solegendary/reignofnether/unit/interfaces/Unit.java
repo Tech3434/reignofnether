@@ -15,6 +15,7 @@ import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.debug.RtsDebugClientEvents;
 import com.solegendary.reignofnether.debug.RtsDebugPathPreview;
 import com.solegendary.reignofnether.hud.buttons.Button;
+import com.solegendary.reignofnether.hud.effecticons.MobEffectIcon;
 
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.player.PlayerClientEvents;
@@ -767,7 +768,7 @@ public interface Unit {
         ArrayList<Button> icons = new ArrayList<>();
         LivingEntity entity = (LivingEntity) this;
         synchronized (UnitClientEvents.mobEffectIcons) {
-            HashMap<Holder<MobEffect>, Button> mobEffects = UnitClientEvents.mobEffectIcons.get(entity.getId());
+            HashMap<Holder<MobEffect>, MobEffectIcon> mobEffects = UnitClientEvents.mobEffectIcons.get(entity.getId());
             if (mobEffects != null) {
                 for (Holder<MobEffect> effect : mobEffects.keySet()) {
                     if (mobEffects.get(effect) != null)

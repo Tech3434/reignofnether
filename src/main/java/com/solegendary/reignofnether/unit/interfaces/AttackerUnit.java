@@ -237,7 +237,7 @@ public interface AttackerUnit {
         Mob unitMob = (Mob) attackerUnit;
         Unit unit = (Unit) attackerUnit;
 
-        if (!unitMob.level().isClientSide && !unit.isEatingFood()) {
+        if (!unitMob.level().isClientSide) {
             if (attackerUnit.getAttackGoal() instanceof AbstractMeleeAttackUnitGoal meleeAttackUnitGoal) {
                 meleeAttackUnitGoal.tickAttackCooldown();
                 // doesn't tick on its own for some reason?
@@ -294,7 +294,6 @@ public interface AttackerUnit {
                 if (lastDSEntity instanceof Unit unitDS &&
                     (unitDS.isFlyingUnit() ||
                         GarrisonableBuildingAddon.getGarrison(unitDS) != null ||
-                        unitDS instanceof PhantomSummon ||
                         unitDS instanceof Vex) &&
                     attackerUnit.getAttackGoal() instanceof AbstractMeleeAttackUnitGoal) {
                     isMeleeAttackedByFlyingOrGarrisoned = true;
@@ -376,7 +375,7 @@ public interface AttackerUnit {
             setUnitAttackTarget(entity);
             return;
         }
-        if (canAttackBuildings() && !(this instanceof RavagerUnit && ((LivingEntity) this).isVehicle()) &&
+        if (canAttackBuildings() &&
                 (!(((Unit) this).getOwnerName()).isEmpty() || level.getGameRules().getRule(GameRuleRegistrar.NEUTRAL_AGGRO).get()))
         {
             BuildingPlacement closestBuilding = MiscUtil.findClosestAttackableBuilding((Mob) this, aggroRange);

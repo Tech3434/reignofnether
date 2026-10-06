@@ -592,37 +592,6 @@ public class MyRenderer {
         }
     }
 
-    public static void renderItemEntityTooltip(GuiGraphics guiGraphics, UnitItem unitItem, ItemStack itemStack, int mouseX, int mouseY) {
-        if (unitItem == null || MC.screen == null || !unitItem.enableTooltip)
-            return;
-
-        final int iconSize = 16;
-        int spaceWidth = MC.font.width(" ");
-        int paddingChars = iconSize / Math.max(spaceWidth, 1);
-        String pad = " ".repeat(paddingChars);
-        Component name = unitItem.iconRl != null ? Component.literal(pad).append(unitItem.getName()) : unitItem.getName();
-        List<FormattedCharSequence> lore = unitItem.getEntityTooltip(itemStack);
-
-        List<FormattedCharSequence> lines = new ArrayList<>();
-        lines.add(name.getVisualOrderText());
-        if (lore != null)
-            lines.addAll(lore);
-
-        if (mouseY < MC.screen.height / 2)
-            mouseY += (lines.size() * 10);
-
-        int textY = mouseY - (9 * (lines.size() - 1));
-
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(0, 0, 3000);
-        if (unitItem.iconRl != null)
-            guiGraphics.blit(unitItem.iconRl, mouseX + 19, textY - 15, 0, 0, iconSize-2, iconSize-2, iconSize-2, iconSize-2);
-        guiGraphics.pose().translate(0, 0, -1500);
-        guiGraphics.renderTooltip(MC.font, lines, mouseX + 8, textY);
-        guiGraphics.pose().translate(0, 0, -1500);
-        guiGraphics.pose().popPose();
-    }
-
     public static void renderItemInFrontOfEntityFace(PoseStack poseStack, LivingEntity entity, float partialTicks, ItemStack itemStack) {
         ItemRenderer itemRenderer = MC.getItemRenderer();
         poseStack.pushPose();

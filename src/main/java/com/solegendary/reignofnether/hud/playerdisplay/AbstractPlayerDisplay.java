@@ -20,7 +20,6 @@ public abstract class AbstractPlayerDisplay {
     private static final Minecraft MC = Minecraft.getInstance();
 
     public final String playerName;
-    public final String faction;
     public final @Nullable AbstractClientPlayer player;
 
     private int color;
@@ -42,14 +41,12 @@ public abstract class AbstractPlayerDisplay {
         } else {
             this.player = null;
         }
-        this.faction = rtsPlayer.faction;
         this.playerName = rtsPlayer.name;
     }
 
     // survival/adventure player
     public AbstractPlayerDisplay(AbstractClientPlayer clientPlayer) {
         this.player = clientPlayer;
-        this.faction = "";
         this.playerName = clientPlayer.getName().getString();
     }
 

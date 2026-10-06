@@ -25,6 +25,7 @@ public class WraithSnowBlockEntity extends BlockEntity {
     private int tickAge = 0;
 
     public WraithSnowBlockEntity(BlockPos pos, BlockState state) {
+        super(BlockEntityRegistrar.WRAITH_SNOW_BLOCK_ENTITY.get(), pos, state);
         randomiseLifeTicks();
     }
 
@@ -58,9 +59,8 @@ public class WraithSnowBlockEntity extends BlockEntity {
     }
 
     public boolean cannotMelt() {
-        return level != null && level.getEntity(ownerId) instanceof WretchedWraithUnit wraith &&
-                ((wraith.isBlizzardInProgress() && worldPosition.distSqr(wraith.blockPosition()) < Blizzard.RADIUS * Blizzard.RADIUS) ||
-                (worldPosition.distSqr(wraith.blockPosition()) < BitterFrostPassive.SNOW_NO_MELT_RANGE * BitterFrostPassive.SNOW_NO_MELT_RANGE));
+        // the wraith that used to hold this snow at bay was removed with the faction content
+        return false;
     }
 
     private void melt(Level level, BlockPos pos, BlockState state) {

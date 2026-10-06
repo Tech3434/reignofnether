@@ -33,13 +33,13 @@ public class PathNavigationMixin {
 
     @Unique
     private boolean reignofnether$isWideUnit() {
-        if (mob instanceof SpiderUnit spider && spider.isWallClimbing()) return false;
         return mob instanceof Unit && mob.getBbWidth() > 1.0f;
     }
 
     @Unique
     private boolean reignofnether$isClimbingSpider() {
-        return mob instanceof SpiderUnit spider && spider.isWallClimbing();
+        // wall-climbing spiders went away with the faction content
+        return false;
     }
 
     // Vanilla auto-recompute must never touch an RTS-pathed unit. On any block change,

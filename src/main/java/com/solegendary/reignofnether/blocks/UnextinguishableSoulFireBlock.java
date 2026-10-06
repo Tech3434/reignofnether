@@ -48,16 +48,6 @@ public class UnextinguishableSoulFireBlock extends BaseFireBlock {
 
     @Override
     public void randomTick(BlockState pState, ServerLevel pLevel, BlockPos pPos, RandomSource pRandom) {
-        boolean inRangeOfWildfireUlt = false;
-        for (LivingEntity unit : UnitServerEvents.getAllUnits()) {
-            if (unit instanceof WildfireUnit wildfireUnit && wildfireUnit.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.SOULS_AFLAME.get())) &&
-                pPos.distToCenterSqr(wildfireUnit.position()) <= SoulsAflame.RANGE * SoulsAflame.RANGE) {
-                inRangeOfWildfireUlt = true;
-                break;
-            }
-        }
-        if (!inRangeOfWildfireUlt) {
-            pLevel.setBlockAndUpdate(pPos, Blocks.FIRE.defaultBlockState());
-        }
+        pLevel.setBlockAndUpdate(pPos, Blocks.FIRE.defaultBlockState());
     }
 }

@@ -4,6 +4,7 @@ import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.hud.buttons.Button;
 
 import com.solegendary.reignofnether.keybinds.Keybinding;
+import com.solegendary.reignofnether.items.RandomItemDropRule;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.resources.ResourceCosts;
 
@@ -55,7 +56,7 @@ public class GameruleClient {
                 (Keybinding) null,
                 () -> gamerulesMenuOpen,
                 () -> scenarioMode,
-                () -> !StartPosClientEvents.isStarting,
+                () -> true,
                 () -> gamerulesMenuOpen = !gamerulesMenuOpen,
                 null,
                 MC.player != null && MC.player.hasPermissions(4) ?
@@ -79,7 +80,7 @@ public class GameruleClient {
                     (Keybinding) null,
                     () -> false,
                     () -> false,
-                    () -> MC.player != null && MC.player.hasPermissions(4) && !StartPosClientEvents.isStarting,
+                    () -> MC.player != null && MC.player.hasPermissions(4),
                     onLeftClick,
                     null,
                     List.of(fcs(tooltip))
@@ -110,7 +111,7 @@ public class GameruleClient {
                 (Keybinding) null,
                 () -> false,
                 () -> false,
-                () -> MC.player != null && MC.player.hasPermissions(4) && !StartPosClientEvents.isStarting,
+                () -> MC.player != null && MC.player.hasPermissions(4),
                 onLeftClick,
                 onRightClick,
                 tooltipLines

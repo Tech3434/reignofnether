@@ -125,26 +125,6 @@ public class AbilityClientboundPacket  implements RTSSimplePayload {
                     }
                     if (this.unitAction == UnitAction.BLOOD_MOON) {
                         TimeClientEvents.setBloodMoonTicks((int) value, this.pos);
-                    } else if (this.unitAction == UnitAction.SOUL_SIPHON_UPDATE) {
-                        if (unit instanceof NecromancerUnit necromancer) {
-                            necromancer.souls = (int) value;
-                            necromancer.updateAbilityButtons();
-                        }
-                    } else if (this.unitAction == UnitAction.SET_ATTACK_COUNT) {
-                        if (unit instanceof MarauderUnit marauderUnit) {
-                            marauderUnit.attacksToNextBigHit = (int) value;
-                        }
-                    } else if (this.unitAction == UnitAction.MARCH_OF_PROGRESS_SET) {
-                        boolean enable = value == 1f;
-                        if (unit instanceof EnchanterUnit enchanterUnit) {
-                            enchanterUnit.setAuraEnabled(enable);
-                            if (enable) {
-                                enchanterUnit.playSingleAnimation(UnitAnimationAction.ULTIMATE);
-                            }
-                        }
-                    } else if (this.unitAction == UnitAction.BLIZZARD) {
-                        if (unit instanceof WretchedWraithUnit wraithUnit)
-                            wraithUnit.blizzard();
                     }
                 });
         });

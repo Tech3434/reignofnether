@@ -1,5 +1,7 @@
 package com.solegendary.reignofnether.blocks;
 
+import com.solegendary.reignofnether.resources.ResourceSources;
+
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.registrars.BlockRegistrar;

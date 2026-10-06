@@ -78,7 +78,6 @@ public class ClientEventRegistrar {
         vanillaEventBus.register(BlockClientEvents.class);
         vanillaEventBus.register(ResourcesClientEvents.class);
         vanillaEventBus.register(PlayerClientEvents.class);
-        vanillaEventBus.register(com.solegendary.reignofnether.matchstart.MatchEndClientEvents.class);
         vanillaEventBus.register(NonUnitClientEvents.class);
         vanillaEventBus.register(CustomBuildingClientEvents.class);
         vanillaEventBus.register(SoundClientEvents.class);

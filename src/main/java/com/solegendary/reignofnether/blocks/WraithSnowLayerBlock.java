@@ -81,6 +81,7 @@ public class WraithSnowLayerBlock extends BaseEntityBlock {
                 ? null
                 : createTickerHelper(
                 type,
+                BlockEntityRegistrar.WRAITH_SNOW_BLOCK_ENTITY.get(),
                 WraithSnowBlockEntity::tick
         );
     }
@@ -102,7 +103,7 @@ public class WraithSnowLayerBlock extends BaseEntityBlock {
         int dmgIncreaseAmp = (pState.getValue(LAYERS) * DMG_TAKEN_INCREASE_AMP_PER_LAYER) - 1;
         int attackSlowdownAmp = (pState.getValue(LAYERS) * ATTACK_SLOWDOWN_AMP_PER_LAYER) - 1;
         if (pEntity instanceof LivingEntity livingEntity && pEntity.tickCount % 5 == 0 &&
-                !(pEntity instanceof WretchedWraithUnit) && !pLevel.isClientSide() &&
+                !pLevel.isClientSide() &&
                 be instanceof WraithSnowBlockEntity snowBe) {
 
             Relationship rs = Relationship.NEUTRAL;

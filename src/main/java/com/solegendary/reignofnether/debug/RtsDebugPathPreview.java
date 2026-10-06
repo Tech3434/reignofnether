@@ -1,5 +1,7 @@
 package com.solegendary.reignofnether.debug;
 
+import com.solegendary.reignofnether.debug.RtsDebugClientEvents.DebugDisplayMode;
+
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.solegendary.reignofnether.alliance.AlliancesClient;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;

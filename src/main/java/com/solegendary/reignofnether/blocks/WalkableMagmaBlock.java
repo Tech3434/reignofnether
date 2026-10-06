@@ -1,6 +1,6 @@
 package com.solegendary.reignofnether.blocks;
 
-import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
+import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,9 +36,8 @@ public class WalkableMagmaBlock extends Block {
 
         if (!pEntity.isSteppingCarefully() &&
                 pEntity instanceof LivingEntity &&
-                !(pEntity instanceof VillagerUnit) &&
                 EnchantmentHelper.getItemEnchantmentLevel(
-                        Enchantments.FROST_WALKER,
+                        EnchantmentRegistrar.vanilla(Enchantments.FROST_WALKER),
                         ((LivingEntity) pEntity).getItemBySlot(EquipmentSlot.FEET)) == 0 &&
                 isDamageTick) {
             pEntity.hurt(pEntity.damageSources().hotFloor(), DAMAGE);

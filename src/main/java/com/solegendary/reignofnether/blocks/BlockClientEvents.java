@@ -77,15 +77,6 @@ public class BlockClientEvents {
                 }
             }
         }
-        if (HudClientEvents.hudSelectedEntity != null && ItemClientEvents.actionableUnitItem != null && MC.level != null) {
-            RangeIndicator ri = ItemClientEvents.actionableUnitItem;
-            for (BlockPos bp : ri.getHighlightBps()) {
-                int snowLayers = BlockUtils.getSnowLayers(MC.level.getBlockState(bp.above()));
-                float yOffset = snowLayers * 0.125f;
-                MyRenderer.drawBlockFace(evt.getPoseStack(), vertexConsumer, Direction.UP, yOffset, bp, 0f, 0.8f, 0f, 0.3f);
-            }
-        }
-
         // early returns below would otherwise leave the range indicators queued in the shared
         // builder for the GUI pass to flush with an orthographic matrix (see LevelRenderCompat)
         if (MC.player == null || MC.level == null) return;
@@ -128,10 +119,6 @@ public class BlockClientEvents {
         if (nightSourcesUpdateTicks % 2 == 0) {
             if (nsa0 != null) {
                 tempMouseCircleOrigin = new Pair<>(CursorClientEvents.getPreselectedBlockPos(), nsa0.getDefaultNightRange() - VISIBLE_BORDER_ADJ);
-            } else if (BuildingClientEvents.getPreselectedBuilding() instanceof SculkCatalystPlacement scp &&
-                        CursorClientEvents.getLeftClickAction() == UnitAction.CAST_SONIC_BOOM &&
-                        MC.player != null && scp.ownerName.equals(MC.player.getName().getString())) {
-                tempMouseCircleOrigin = new Pair<>(scp.centrePos, ResearchSculkAmplifiers.SPLIT_BOOM_RANGE);
             } else {
                 tempMouseCircleOrigin = null;
             }

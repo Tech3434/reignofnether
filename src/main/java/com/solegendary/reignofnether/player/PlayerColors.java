@@ -240,7 +240,7 @@ public class PlayerColors {
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/icon_frame.png"),
                 null,
                 () -> false,
-                () -> !TutorialClientEvents.isAtOrPastStage(TutorialStage.MINIMAP_CLICK) || !MinimapClientEvents.isLargeMap(),
+                () -> !MinimapClientEvents.isLargeMap(),
                 PlayerClientEvents::isRTSPlayer,
                 PlayerColors::toggleColorMode,
                 null,

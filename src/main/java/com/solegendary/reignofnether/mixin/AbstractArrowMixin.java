@@ -166,12 +166,6 @@ public abstract class AbstractArrowMixin extends Projectile {
                         !unit1.getTargetGoal().getTarget().equals(unit2));
     }
 
-    @Unique
-    private boolean reignofnether$boggedArrowCollidedWithPoisonedEnemy(Entity entity) {
-        return this.getOwner() instanceof BoggedUnit boggedUnit && entity instanceof LivingEntity le && le.hasEffect(MobEffects.POISON) &&
-                !(boggedUnit.getTargetGoal().forced && boggedUnit.getTargetGoal().getTarget() == entity);
-    }
-
     // Overwrites AbstractArrow#canHitEntity to add the unit-specific exclusions. Mixin merges an
     // unannotated method of a matching signature as an implicit overwrite, which is fragile and
     // invisible; declare it so a rename upstream fails loudly instead of silently.
@@ -179,8 +173,7 @@ public abstract class AbstractArrowMixin extends Projectile {
     protected boolean canHitEntity(Entity entity) {
         return super.canHitEntity(entity) &&
                 (this.piercingIgnoreEntityIds == null || !this.piercingIgnoreEntityIds.contains(entity.getId())) &&
-                !reignofnether$collidedWithUntargetedAlly(entity) &&
-                !reignofnether$boggedArrowCollidedWithPoisonedEnemy(entity);
+                !reignofnether$collidedWithUntargetedAlly(entity);
     }
 
     // replace bounce logic (on hitting an enemy at the time as another arrow) with pierce logic instead
@@ -293,16 +286,6 @@ public abstract class AbstractArrowMixin extends Projectile {
             this.piercingIgnoreEntityIds.add(entity.getId());
         }
 
-        if (this.getOwner() instanceof PillagerUnit pUnit &&
-            !pUnit.level().isClientSide() && pUnit.isPassenger()) {
-            pUnit.level().explode(this.getOwner(), damagesource, null,
-                    pResult.getEntity().getEyePosition().x,
-                    pResult.getEntity().getEyePosition().y,
-                    pResult.getEntity().getEyePosition().z,
-                    1f,
-                    false,
-                    Level.ExplosionInteraction.BLOCK);
-        }
     }
 
     @Inject(
@@ -311,17 +294,6 @@ public abstract class AbstractArrowMixin extends Projectile {
             cancellable = true
     )
     protected void onHitBlock(BlockHitResult pResult, CallbackInfo ci) {
-        if (this.getOwner() instanceof PillagerUnit pUnit &&
-                !pUnit.level().isClientSide() && pUnit.isPassenger()) {
-            pUnit.level().explode(this.getOwner(), null, null,
-                    pResult.getLocation().x,
-                    pResult.getLocation().y,
-                    pResult.getLocation().z,
-                    1f,
-                    false,
-                    Level.ExplosionInteraction.TNT);
-        }
-
         if (this.getOwner() instanceof AttackerUnit aUnit) {
             // garrisoned unit -> ground
             BuildingPlacement building = GarrisonableBuildingAddon.getGarrison((Unit) aUnit);

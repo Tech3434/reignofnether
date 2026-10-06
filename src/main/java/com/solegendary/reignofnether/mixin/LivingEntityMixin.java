@@ -2,6 +2,7 @@ package com.solegendary.reignofnether.mixin;
 
 import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
+import com.solegendary.reignofnether.resources.ResourceSources;
 
 import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
@@ -69,13 +70,6 @@ public abstract class LivingEntityMixin extends Entity {
             cancellable = true
     )
     protected void onChangedBlock(ServerLevel pLevel, BlockPos pPos, CallbackInfo ci) {
-        Entity entity = pLevel.getEntity(this.getId());
-
-        if (!pLevel.isClientSide() && entity instanceof Unit unit)
-            if (SurvivalServerEvents.isEnabled() && SurvivalServerEvents.ENEMY_OWNER_NAME.equals(unit.getOwnerName())) {
-                ci.cancel();
-                FrostWalkerOnEntityMoved((LivingEntity) entity, this.level(), pPos, 1);
-            }
     }
 
     // copied from FrostWalkerEnchantment.onEntityMoved
@@ -190,9 +184,7 @@ public abstract class LivingEntityMixin extends Entity {
             dmg += AttackerUnit.getWeaponDamageModifier(attackerUnit);
 
         if (isHuntableAnimal) {
-            if (pDamageSource.getEntity() instanceof MilitiaUnit)
-                dmg = 1f;
-            else if (pDamageSource.getEntity() instanceof VillagerUnit vUnit &&
+            if (pDamageSource.getEntity() instanceof VillagerUnit vUnit &&
                     vUnit.getUnitProfession() == VillagerUnitProfession.HUNTER) {
                 dmg = vUnit.isVeteran() ? 2f : 1.5f;
             } else if (!(pDamageSource.getEntity() instanceof WorkerUnit)) {

@@ -149,7 +149,7 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
     }
 
     public PlayerServerboundPacket(PlayerAction action, int playerId) {
-        this(action, playerId, 0, 0, 0);
+        this(action, playerId, 0d, 0d, 0d);
     }
 
     public PlayerServerboundPacket(RegistryFriendlyByteBuf buffer) {

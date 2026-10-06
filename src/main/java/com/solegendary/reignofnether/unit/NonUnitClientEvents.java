@@ -2,6 +2,7 @@ package com.solegendary.reignofnether.unit;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
+import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.LevelRenderCompat;
 import com.solegendary.reignofnether.util.MiscUtil;
@@ -32,7 +33,7 @@ public class NonUnitClientEvents {
 
     public static boolean canControlAllMobs() {
         return MC.player != null &&
-                (ResearchClient.hasCheat("wouldyoukindly"));
+                (Cheats.hasCheat("wouldyoukindly"));
     }
 
     public static boolean canAttack(LivingEntity le) {

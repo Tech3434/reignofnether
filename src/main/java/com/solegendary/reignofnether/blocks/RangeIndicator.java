@@ -57,12 +57,6 @@ public interface RangeIndicator {
                     bp = ((LivingEntity) unit).getOnPos();
                     showRangeCircle = true;
                 }
-                MobEffectInstance mei2 = ((LivingEntity) unit).getEffect(MobEffectHelpers.holder(MobEffectRegistrar.VILLAGER_INSPIRATION.get()));
-                if (mei2 != null) {
-                    range = UnitItems.BELL_OF_ARMS_RANGE;
-                    bp = ((LivingEntity) unit).getOnPos();
-                    showRangeCircle = true;
-                }
             }
         } else if (this instanceof BuildingPlacement bpl) {
             for (Ability ability : bpl.getAbilities()) {
@@ -74,17 +68,6 @@ public interface RangeIndicator {
                     showRadiusCircle = ability.showRadiusCircle;
                     showRangeCircle = ability.showRangeCircle;
                 }
-            }
-        } else if (this instanceof UnitItem unitItem) {
-            if ((ItemClientEvents.actionableUnitItem == unitItem) &&
-                    HudClientEvents.hudSelectedEntity != null) {
-                range = unitItem.range;
-                radius = unitItem.radius;
-                bp = HudClientEvents.hudSelectedEntity.getOnPos();
-                showRangeLine = unitItem.showRangeLine;
-                showRadiusCircle = unitItem.showRadiusCircle;
-                showRangeCircle = unitItem.showRangeCircle;
-                showRadiusAtCursor = unitItem.showRadiusAtCursor;
             }
         }
         Set<BlockPos> highlightBps = new HashSet<>();

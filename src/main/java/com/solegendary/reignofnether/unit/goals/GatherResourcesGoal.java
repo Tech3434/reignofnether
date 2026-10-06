@@ -16,6 +16,7 @@ import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 import com.solegendary.reignofnether.unit.units.villagers.VillagerUnitProfession;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -89,7 +90,7 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
      * escalation and {@link #MAX_FAILED_SEARCHES} above. A faction that wants the index back should key it off
      * {@code ResourceSources#getFromBlockState}, which is what decides a match here.
      */
-    private static Optional<BlockPos> findClosest(LevelAccessor level, BlockPos origin, int range, ResourceName resourceName, Predicate<BlockPos> condition) {
+    private static Optional<BlockPos> findClosest(Level level, BlockPos origin, int range, ResourceName resourceName, Predicate<BlockPos> condition) {
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         for (int r = 1; r <= range; r++) {
             for (int dx = -r; dx <= r; dx++) {

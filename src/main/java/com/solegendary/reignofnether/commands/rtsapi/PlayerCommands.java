@@ -224,72 +224,6 @@ public class PlayerCommands {
 					)
 				)
 				
-				.then(Commands.literal("research")
-					.then(Commands.literal("add")
-						.then(Commands.argument("researchItem", ResourceLocationArgument.id())
-							.suggests((ctx, builder) -> SharedSuggestionProvider.suggestResource(
-								ReignOfNetherRegistries.PRODUCTION_ITEM.keySet().stream(), builder))
-							.then(Commands.argument("player", PlayerNameArgument.player())
-								.executes(ctx -> {
-									String playerName = PlayerNameArgument.getPlayerName(ctx, "player");
-									ResourceLocation researchItem = ResourceLocationArgument.getId(ctx, "researchItem");
-									ResearchServerEvents.addResearch(playerName, researchItem);
-									ResearchServerEvents.syncResearch(playerName);
-									ctx.getSource().sendSuccess(
-										() -> Component.translatable("commands.reignofnether.research.add.success",researchItem, playerName),
-										true
-									);
-									return 1;
-								})
-							)
-						)
-					)
-					.then(Commands.literal("remove")
-						.then(Commands.argument("researchItem", ResourceLocationArgument.id())
-							.suggests((ctx, builder) -> SharedSuggestionProvider.suggestResource(
-								ReignOfNetherRegistries.PRODUCTION_ITEM.keySet().stream(), builder))
-							.then(Commands.argument("player", PlayerNameArgument.player())
-								.executes(ctx -> {
-									String playerName = PlayerNameArgument.getPlayerName(ctx, "player");
-									ResourceLocation researchItem = ResourceLocationArgument.getId(ctx, "researchItem");
-									ResearchServerEvents.removeResearch(playerName, researchItem);
-									ResearchServerEvents.syncResearch(playerName);
-									ctx.getSource().sendSuccess(
-										() -> Component.translatable("commands.reignofnether.research.remove.success", researchItem, playerName),
-										true
-									);
-									return 1;
-								})
-							)
-						)
-					)
-					.then(Commands.literal("get")
-						.then(Commands.argument("player", PlayerNameArgument.player())
-							.executes(ctx -> {
-								String playerName = PlayerNameArgument.getPlayerName(ctx, "player");
-								List<String> owned = new ArrayList<>();
-								for (ResourceLocation key : ReignOfNetherRegistries.PRODUCTION_ITEM.keySet()) {
-									if (ResearchServerEvents.playerHasResearch(playerName, key)) {
-										owned.add(key.toString());
-									}
-								}
-								if (owned.isEmpty()) {
-									ctx.getSource().sendSuccess(
-										() -> Component.translatable("commands.reignofnether.research.query.na", playerName),
-										false
-									);
-								} else {
-									ctx.getSource().sendSuccess(
-										() -> Component.translatable("commands.reignofnether.research.query.success", playerName, String.join(", ", owned)),
-										false
-									);
-								}
-								return owned.size();
-							})
-						)
-					)
-				)
-				
 				.then(Commands.literal("camera")
 					.then(Commands.literal("move")
 						.then(Commands.argument("pos", BlockPosArgument.blockPos())
@@ -382,16 +316,6 @@ public class PlayerCommands {
 					))
 				)
 				
-				.then(Commands.literal("teammode")
-					.then(Commands.argument("mode", StringArgumentType.word())
-						.executes(ctx -> CommandsServerEvents.setStartingTeamsMode(ctx, StringArgumentType.getString(ctx, "mode")))
-					)
-				)
-				.then(Commands.literal("starting-teams-mode")
-					.then(Commands.argument("mode", StringArgumentType.word())
-						.executes(ctx -> CommandsServerEvents.setStartingTeamsMode(ctx, StringArgumentType.getString(ctx, "mode")))
-					)
-				)
 			);
 	}
 

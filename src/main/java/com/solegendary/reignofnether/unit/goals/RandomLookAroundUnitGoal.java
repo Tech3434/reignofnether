@@ -29,11 +29,6 @@ public class RandomLookAroundUnitGoal extends Goal {
             mob.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.STUN.get())))
             return false;
 
-        if (mob instanceof ScoutDogUnit scoutDogUnit && scoutDogUnit.isInSittingPose())
-            return false;
-        if (mob instanceof ScoutCatUnit scoutCatUnit && scoutCatUnit.isInSittingPose())
-            return false;
-
         if (mob instanceof AttackerUnit attackerUnit)
             if (attackerUnit.getAttackBuildingGoal() instanceof MeleeAttackBuildingGoal mabg && mabg.isAttacking())
                 return false;

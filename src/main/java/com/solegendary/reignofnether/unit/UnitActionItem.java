@@ -254,7 +254,7 @@ public class UnitActionItem {
                     );
 
                     if (unit instanceof WorkerUnit workerUnit && resName != ResourceName.NONE
-                        && (buildingAtPos == null || buildingAtPos.getBuilding() instanceof AbstractBridge)) {
+                        && buildingAtPos == null) {
                         GatherResourcesGoal goal = workerUnit.getGatherResourceGoal();
                         if (goal != null) {
                             goal.setTargetResourceName(resName);
@@ -373,17 +373,6 @@ public class UnitActionItem {
                         if (goal != null) {
                             goal.setTargetResourceName(ResourceName.FOOD);
                             goal.setMoveTarget(preselectedBlockPos);
-                            BuildingPlacement building = BuildingUtils.findBuilding(level.isClientSide(), preselectedBlockPos);
-                            if (building instanceof FarmPlacement) {
-                                goal.setTargetFarm(building);
-                                if (Unit.atMaxResources((Unit) workerUnit)) {
-                                    if (level.isClientSide()) {
-                                        HudClientEvents.showTemporaryMessage(LanguageUtil.getTranslation(
-                                            "hud.reignofnether.worker_inv_full"));
-                                    }
-                                    goal.saveAndReturnResources();
-                                }
-                            }
                         }
                     }
                 }
