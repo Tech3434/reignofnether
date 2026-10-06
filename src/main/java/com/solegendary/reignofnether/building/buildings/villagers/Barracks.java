@@ -39,7 +39,7 @@ public class Barracks extends ProductionBuilding {
         this.productions.add(ProductionItems.VINDICATOR, Keybindings.abilitySlot1);
     }
 
-    public Faction getFaction() {return Faction.VILLAGERS;}
+    public String getFaction() {return "villagers";}
 
     public BuildingPlaceButton getBuildButton(Keybinding hotkey) {
         ResourceLocation key = ReignOfNetherRegistries.BUILDING.getKey(this);

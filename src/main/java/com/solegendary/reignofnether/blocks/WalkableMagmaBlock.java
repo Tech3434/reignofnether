@@ -1,6 +1,6 @@
 package com.solegendary.reignofnether.blocks;
 
-import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantments;
-import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
 
 public class WalkableMagmaBlock extends Block {
     public static final int DAMAGE_DELAY = 20; // higher == damage less often
@@ -33,16 +32,15 @@ public class WalkableMagmaBlock extends Block {
     }
 
     public void stepOn(Level pLevel, BlockPos pPos, BlockState pState, Entity pEntity) {
-        boolean isPiglinFaction = pEntity instanceof Unit unit && unit.getFaction() == Faction.PIGLINS && !pEntity.isOnFire();
         boolean isDamageTick = pEntity.tickCount % DAMAGE_DELAY == 0;
 
         if (!pEntity.isSteppingCarefully() &&
                 pEntity instanceof LivingEntity &&
-                !(pEntity instanceof GruntUnit) &&
+                !(pEntity instanceof VillagerUnit) &&
                 EnchantmentHelper.getItemEnchantmentLevel(
-                        EnchantmentRegistrar.vanilla(Enchantments.FROST_WALKER),
+                        Enchantments.FROST_WALKER,
                         ((LivingEntity) pEntity).getItemBySlot(EquipmentSlot.FEET)) == 0 &&
-                !isPiglinFaction && isDamageTick) {
+                isDamageTick) {
             pEntity.hurt(pEntity.damageSources().hotFloor(), DAMAGE);
         }
     }

@@ -442,12 +442,7 @@ public class OrthoviewClientEvents {
         } else {
             PlayerServerboundPacket.disableOrthoview();
             TopdownGuiServerboundPacket.closeTopdownGui(MC.player.getId());
-            if (StartPosClientEvents.hasReservedPos()) {
-                StartPosClientEvents.selectedFaction = Faction.NONE;
-                StartPosServerboundPacket.unreservePos(StartPosClientEvents.getPos().pos);
-            }
         }
-        TutorialClientEvents.updateStage();
     }
 
     public static void tryToSetCamera(String playerName, boolean value) {

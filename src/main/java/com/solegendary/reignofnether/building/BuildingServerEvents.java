@@ -12,6 +12,8 @@ import com.solegendary.reignofnether.building.addon.NightSourceAddon;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuildingServerEvents;
 import com.solegendary.reignofnether.building.data.DataType;
 import com.solegendary.reignofnether.building.production.ActiveProduction;
+import com.solegendary.reignofnether.building.buildings.placements.CustomBuildingPlacement;
+import com.solegendary.reignofnether.building.buildings.placements.ProductionPlacement;
 import com.solegendary.reignofnether.commands.rtsapi.ResourceObjectiveCriteria;
 
 import com.solegendary.reignofnether.hud.HudClientboundPacket;

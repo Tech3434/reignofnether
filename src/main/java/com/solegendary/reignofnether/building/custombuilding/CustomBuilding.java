@@ -368,7 +368,7 @@ public class CustomBuilding extends ProductionBuilding implements GarrisonableBu
         return BuildingBlockData.getBuildingBlocksFromNbt(structureNbt);
     }
 
-    public Faction getFaction() {return Faction.NONE;}
+    public String getFaction() {return "";}
 
     public BuildingPlaceButton getWorkerBuildButton(Keybinding hotkey) {
         return new BuildingPlaceButton(

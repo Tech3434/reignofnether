@@ -120,7 +120,7 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
     public boolean canGarrison() { return getGarrisonGoal() != null; }
 
 
-    public Faction getFaction() {return Faction.VILLAGERS;}
+    public String getFaction() {return "villagers";}
     public Abilities getAbilities() {return abilities;}
     public List<ItemStack> getItems() {return items;};
     public MoveToTargetBlockGoal getMoveGoal() {return moveGoal;}

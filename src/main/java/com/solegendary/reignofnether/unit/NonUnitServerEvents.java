@@ -96,14 +96,14 @@ public class NonUnitServerEvents {
         }
     }
 
-    public static Faction getNonUnitFaction(LivingEntity le) {
+    public static String getNonUnitFaction(LivingEntity le) {
         if (le instanceof IronGolem || le instanceof AbstractIllager || le instanceof AbstractVillager)
-            return Faction.VILLAGERS;
+            return "villagers";
         else if (le instanceof AbstractPiglin || le instanceof Hoglin || le instanceof Ghast || le instanceof Blaze || le instanceof WitherSkeleton)
-            return Faction.PIGLINS;
+            return "piglins";
         else if (le instanceof AbstractSkeleton || le instanceof Zombie || le instanceof Creeper || le instanceof Spider || le instanceof Slime || le instanceof Warden)
-            return Faction.MONSTERS;
-        return Faction.NONE;
+            return "monsters";
+        return "";
     }
 
     @SubscribeEvent
@@ -112,7 +112,7 @@ public class NonUnitServerEvents {
 
         // prevent vanilla mobs attacking their RoN faction equivalents
         if (!(le instanceof Unit) && evt.getNewAboutToBeSetTarget() instanceof Unit unit)
-            if (unit.getFaction() == getNonUnitFaction(le))
+            if (unit.getFaction().equals(getNonUnitFaction(le)))
                 evt.setCanceled(true);
     }
 

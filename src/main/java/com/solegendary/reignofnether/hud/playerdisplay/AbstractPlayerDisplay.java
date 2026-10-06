@@ -20,7 +20,7 @@ public abstract class AbstractPlayerDisplay {
     private static final Minecraft MC = Minecraft.getInstance();
 
     public final String playerName;
-    public final Faction faction;
+    public final String faction;
     public final @Nullable AbstractClientPlayer player;
 
     private int color;
@@ -49,8 +49,8 @@ public abstract class AbstractPlayerDisplay {
     // survival/adventure player
     public AbstractPlayerDisplay(AbstractClientPlayer clientPlayer) {
         this.player = clientPlayer;
+        this.faction = "";
         this.playerName = clientPlayer.getName().getString();
-        this.faction = Faction.NONE;
     }
 
     public boolean isPlayerLoggedIn() {
@@ -69,17 +69,6 @@ public abstract class AbstractPlayerDisplay {
                 Button.DEFAULT_ICON_FRAME_SIZE,
                 this.backgroundColor
         );
-        // render faction icon
-        ResourceLocation factionIcon = MiscUtil.getFactionIcon(faction);
-        if(factionIcon != null) {
-            MyRenderer.renderIcon(guiGraphics,
-                    factionIcon,
-                    x + 4,
-                    y + 4,
-                    Button.DEFAULT_ICON_SIZE
-            );
-        }
-
         // render player head
         if (this.player != null) {
             var iconLocation = player.getSkin().texture();

@@ -317,10 +317,6 @@ public class BuildingPlacement {
         return getBuilding().getMeleeDamageMult();
     }
 
-    public Faction getFaction() {
-        return getBuilding().getFaction();
-    }
-
     // fully repairs and rebuilds all the blocks in the building
     // usually used when the structure changes (like when upgrading a building)
     public void refreshBlocks() {

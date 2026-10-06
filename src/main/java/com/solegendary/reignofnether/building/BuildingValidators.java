@@ -116,7 +116,7 @@ public class BuildingValidators {
             return true;
         }
         boolean netherTerrainCustomBuilding = building instanceof CustomBuilding cb && cb.netherTerrainOnly;
-        if (!netherTerrainCustomBuilding && building.getFaction() != Faction.PIGLINS || building instanceof CentralPortal) {
+        if (!netherTerrainCustomBuilding && !"piglins".equals(building.getFaction()) || building instanceof CentralPortal) {
             return true;
         }
         if (building instanceof PortalBasic || building instanceof PortalPocket) {

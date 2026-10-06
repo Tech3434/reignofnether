@@ -18,7 +18,6 @@ public class BuildingSave {
     public boolean isBuilt;
     public boolean isDiagonalBridge;
     public int upgradeLevel; // castle flag, lab rod, etc.
-        public BlockPos portalDestination;
     public int scenarioRoleIndex;
     public DataStorage dataStorage;
     public double partialBlocksDestroyed;
@@ -26,7 +25,7 @@ public class BuildingSave {
 
     public BuildingSave(BlockPos originPos, Level level, Building building, String ownerName, Rotation rotation,
                         BlockPos rallyPoint, boolean isDiagonalBridge, boolean isBuilt, int upgradeLevel,
-                        BlockPos portalDestination, int scenarioRoleIndex,
+                        int scenarioRoleIndex,
                         DataStorage dataStorage, double partialBlocksDestroyed, ListTag commandsNbt) {
         this.originPos = originPos;
         this.level = level;
@@ -37,7 +36,6 @@ public class BuildingSave {
         this.isDiagonalBridge = isDiagonalBridge;
         this.isBuilt = isBuilt;
         this.upgradeLevel = upgradeLevel;
-                this.portalDestination = portalDestination;
         this.scenarioRoleIndex = scenarioRoleIndex;
         this.dataStorage = dataStorage;
         this.partialBlocksDestroyed = partialBlocksDestroyed;
