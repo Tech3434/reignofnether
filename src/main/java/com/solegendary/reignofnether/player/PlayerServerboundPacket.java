@@ -43,7 +43,6 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
     public double x;
     public double y;
     public double z;
-    public String cheatName;
 
     public static void teleportPlayer(Double x, Double y, Double z) {
         Minecraft MC = Minecraft.getInstance();
@@ -127,25 +126,13 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
         PacketHandler.sendToServer(new PlayerServerboundPacket(PlayerAction.RESET_RTS, -1, 0d, 0d, 0d));
     }
 
-    /**
-     * Grants or revokes one operator cheat for yourself.
-     */
-    public static void setCheat(String cheatName) {
-        PacketHandler.sendToServer(new PlayerServerboundPacket(PlayerAction.SET_CHEAT, -1, 0d, 0d, 0d, cheatName));
-    }
-
     // packet-handler functions
     public PlayerServerboundPacket(PlayerAction action, int playerId, Double x, Double y, Double z) {
-        this(action, playerId, x, y, z, "");
-    }
-
-    public PlayerServerboundPacket(PlayerAction action, int playerId, Double x, Double y, Double z, String cheatName) {
         this.action = action;
         this.playerId = playerId;
         this.x = x;
         this.y = y;
         this.z = z;
-        this.cheatName = cheatName;
     }
 
     public PlayerServerboundPacket(PlayerAction action, int playerId) {
@@ -158,7 +145,6 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
         this.x = buffer.readDouble();
         this.y = buffer.readDouble();
         this.z = buffer.readDouble();
-        this.cheatName = buffer.readUtf();
     }
 
     public void encode(RegistryFriendlyByteBuf buffer) {
@@ -167,13 +153,11 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
         buffer.writeDouble(this.x);
         buffer.writeDouble(this.y);
         buffer.writeDouble(this.z);
-        buffer.writeUtf(this.cheatName);
     }
 
     private static final List<PlayerAction> opOnlyActions = List.of(
             PlayerAction.RESET_RTS,
-            PlayerAction.RESET_RTS_HARD,
-            PlayerAction.SET_CHEAT
+            PlayerAction.RESET_RTS_HARD
     );
 
     // server-side packet-consuming functions
@@ -206,15 +190,6 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
                 case UNLOCK_RTS -> PlayerServerEvents.setRTSLock(false);
                 case ENABLE_RTS_SYNCING -> PlayerServerEvents.setRTSSyncingEnabled(true);
                 case DISABLE_RTS_SYNCING -> PlayerServerEvents.setRTSSyncingEnabled(false);
-                case SET_CHEAT -> {
-                    if (!cheatName.isEmpty()) {
-                        if (Cheats.playerHasCheat(player.getName().getString(), cheatName))
-                            Cheats.removeCheat(player.getName().getString(), cheatName);
-                        else
-                            Cheats.addCheat(player.getName().getString(), cheatName);
-                        Cheats.syncCheats(() -> player);
-                    }
-                }
             }
         });
         return;

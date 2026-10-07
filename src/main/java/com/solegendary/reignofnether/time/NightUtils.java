@@ -6,7 +6,6 @@ import com.solegendary.reignofnether.building.addon.NightSourceAddon;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
-import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -64,9 +63,6 @@ public class NightUtils {
     }
     public static boolean isSunBurnTick(Mob mob) {
         if (mob.level().isClientSide)
-            return false;
-
-        if (mob instanceof Unit unit && Cheats.playerHasCheat(unit.getOwnerName(), "slipslopslap"))
             return false;
 
         if (mob.tickCount % 10 == 0 && TimeUtils.isDay(mob.level())) {

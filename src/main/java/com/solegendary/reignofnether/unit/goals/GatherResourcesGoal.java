@@ -5,7 +5,6 @@ import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
 
 import com.solegendary.reignofnether.registrars.BlockRegistrar;
-import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.resources.*;
 import com.solegendary.reignofnether.unit.TargetResourcesSave;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
@@ -335,12 +334,7 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
                     }
                 }
                 else {
-                    float ticksToProgress;
-
-                    if (Cheats.playerHasCheat(((Unit) mob).getOwnerName(), "operationcwal"))
-                        ticksToProgress = (TICK_CD / 2) * 10;
-                    else
-                        ticksToProgress = (TICK_CD / 2);
+                    float ticksToProgress = (TICK_CD / 2);
 
                     if (mob instanceof VillagerUnit vUnit) {
                         if (ResourceSources.getBlockResourceName(getGatherTarget(), mob.level()) == ResourceName.WOOD &&

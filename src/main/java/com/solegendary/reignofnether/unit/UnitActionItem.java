@@ -141,15 +141,12 @@ public class UnitActionItem {
 
             if (entity instanceof Unit unit) {
                 boolean alliedControl;
-                boolean fullControl;
                 if (level.isClientSide()) {
                     alliedControl = AlliancesClient.canControlAlly(unit.getOwnerName());
-                    fullControl = NonUnitClientEvents.canControlAllMobs();
                 } else {
                     alliedControl = AlliancesServerEvents.canControlAlly(this.ownerName, unit.getOwnerName());
-                    fullControl = NonUnitServerEvents.canControlAllMobs(entity.level(), this.ownerName);
                 }
-                if (unit.getOwnerName().equals(this.ownerName) || alliedControl || fullControl) {
+                if (unit.getOwnerName().equals(this.ownerName) || alliedControl) {
                     actionableUnits.add(unit);
                 }
             }
@@ -491,53 +488,5 @@ public class UnitActionItem {
             }
         }
 
-        ArrayList<PathfinderMob> actionableNonUnits = new ArrayList<>();
-        for (int id : unitIds) {
-            Entity entity = level.getEntity(id);
-            if (entity instanceof PathfinderMob mob) {
-                actionableNonUnits.add(mob);
-            }
-        }
-
-        if ((level.isClientSide() && NonUnitClientEvents.canControlAllMobs()) ||
-            (!level.isClientSide() && NonUnitServerEvents.canControlAllMobs(level, ownerName))) {
-
-            for (PathfinderMob mob : actionableNonUnits) {
-                if (mob instanceof Unit)
-                    continue;
-
-                mob.getNavigation().stop();
-                mob.setTarget(null);
-
-                if (!level.isClientSide()) {
-                    synchronized (NonUnitServerEvents.nonUnitMoveTargets) {
-                        NonUnitServerEvents.nonUnitMoveTargets.removeIf(p -> p.getFirst() == mob);
-                    }
-                }
-
-                if (List.of(UnitAction.MOVE, UnitAction.FOLLOW, UnitAction.ATTACK_MOVE).contains(action)) {
-                    BlockPos bp = preselectedBlockPos;
-                    Path path = mob.getNavigation().createPath(bp.getX(), bp.getY(), bp.getZ(), 0);
-                    mob.getNavigation().moveTo(path, 1);
-                    if (!level.isClientSide()) {
-                        synchronized (NonUnitServerEvents.nonUnitMoveTargets) {
-                            NonUnitServerEvents.nonUnitMoveTargets.add(new Pair<>(mob, preselectedBlockPos));
-                        }
-                    }
-                } else if (action == UnitAction.ATTACK) {
-                    if (level.getEntity(unitId) instanceof LivingEntity le) {
-                        mob.setTarget(le);
-                    }
-                }
-                if (!level.isClientSide()) {
-                    if (action != UnitAction.ATTACK_MOVE) {
-                        NonUnitServerEvents.attackSuppressedNonUnits.add(mob);
-                    }
-                    NonUnitServerEvents.moveSuppressedNonUnits.add(mob);
-                } else {
-                    NonUnitClientEvents.isMoveCheckpointGreen = action != UnitAction.ATTACK_MOVE;
-                }
-            }
-        }
     }
 }

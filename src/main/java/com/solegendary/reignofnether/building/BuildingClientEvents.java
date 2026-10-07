@@ -20,7 +20,6 @@ import com.solegendary.reignofnether.hud.TextInputClientEvents;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
-import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.player.PlayerColors;
 import com.solegendary.reignofnether.resources.ResourceName;
 
@@ -82,10 +81,6 @@ public class BuildingClientEvents {
     }
 
     public static int getTotalPopulationSupply(String playerName) {
-        if (Cheats.hasCheat("foodforthought")) {
-            return GameruleClient.maxPopulation;
-        }
-
         // base limit is building-independent; only capitols raise it (Building.populationSupply)
         return GameruleClient.maxPopulation + getPopulationBonusFromCapitols(playerName);
     }

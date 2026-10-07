@@ -34,7 +34,6 @@ import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.player.PlayerClientEvents;
-import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.player.PlayerColors;
 import com.solegendary.reignofnether.resources.ResourceName;
 
@@ -679,7 +678,6 @@ public class HudClientEvents {
 
         for (LivingEntity unit : selUnits) {
             if ((getPlayerToEntityRelationship(unit) == Relationship.OWNED ||
-                    NonUnitClientEvents.canControlAllMobs() ||
                     AlliancesClient.canControlAlly(unit)) &&
                 unitButtons.size() < (buttonsPerRow * 2)) {
                 // mob head icon
@@ -809,7 +807,6 @@ public class HudClientEvents {
         if (selUnits.size() > 0 &&
                 (getPlayerToEntityRelationship(selUnits.get(0)) == Relationship.OWNED ||
                         !PlayerClientEvents.isRTSPlayer() ||
-                        NonUnitClientEvents.canControlAllMobs() ||
                         AlliancesClient.canControlAlly(selUnits.get(0))) &&
                 hudSelectedEntity instanceof Unit unit) {
             blitX = 0;
@@ -871,7 +868,6 @@ public class HudClientEvents {
             // includes worker building buttons
             if (getPlayerToEntityRelationship(selUnits.get(0)) == Relationship.OWNED ||
                     !PlayerClientEvents.isRTSPlayer() ||
-                    Cheats.hasCheat("wouldyoukindly") ||
                     AlliancesClient.canControlAlly(selUnits.get(0))) {
                 List<Button> abilityButtons = List.of();
                 for (LivingEntity livingEntity : selUnits) {
@@ -923,27 +919,6 @@ public class HudClientEvents {
                 }
             }
         }
-        // -----------------
-        // Non-unit controls
-        // -----------------
-        else if (!(hudSelectedEntity instanceof Unit) && !getSelectedUnits().isEmpty() &&
-                NonUnitClientEvents.canControlAllMobs()) {
-            blitX = 0;
-            blitY = screenHeight - iconFrameSize;
-            ArrayList<Button> actionButtons = new ArrayList<>();
-
-            if (NonUnitClientEvents.canAttack(getSelectedUnits().get(0)))
-                actionButtons.add(ActionButtons.attack);
-
-            actionButtons.add(ActionButtons.stop);
-
-            for (Button actionButton : actionButtons) {
-                actionButton.render(evt.getGuiGraphics(), blitX, blitY, mouseX, mouseY);
-                renderedButtons.add(actionButton);
-                blitX += iconFrameSize;
-            }
-        }
-
         // ---------------------------
         // Resources icons and amounts
         // ---------------------------

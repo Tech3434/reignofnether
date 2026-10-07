@@ -8,7 +8,6 @@ import com.solegendary.reignofnether.building.production.ProductionBuilding;
 import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.keybinds.Keybindings;
-import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.resources.ResourceCosts;
 
@@ -51,8 +50,7 @@ public class Barracks extends ProductionBuilding {
                 hotkey,
                 () -> BuildingClientEvents.getBuildingToPlace() == Buildings.BARRACKS,
                 () -> true,
-                () -> BuildingClientEvents.hasFinishedBuilding(Buildings.TOWN_CENTRE) ||
-                        Cheats.hasCheat("modifythephasevariance"),
+                () -> BuildingClientEvents.hasFinishedBuilding(Buildings.TOWN_CENTRE),
                 List.of(
                         FormattedCharSequence.forward(I18n.get("buildings.reignofnether.barracks"), Style.EMPTY.withBold(true)),
                         ResourceCosts.getFormattedCost(cost),

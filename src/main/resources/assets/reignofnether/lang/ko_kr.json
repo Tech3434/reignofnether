@@ -684,11 +684,6 @@
     "server.reignofnether.started_sandbox": "%s이(가) 게임을 시작했습니다 (샌드박스)",
     "server.reignofnether.total_players": "현재 총 %d명의 RTS 플레이어",
     "server.reignofnether.bot_added": "%s (봇)이(가) 게임에 추가되었습니다!",
-    "server.reignofnether.used_cheat_amount": "%s이(가) 치트를 사용했습니다: %s %s",
-    "server.reignofnether.used_cheat": "%s이(가) 치트를 사용했습니다: %s",
-    "server.reignofnether.enabled_cheat": "%s이(가) 치트 %s를 활성화했습니다",
-    "server.reignofnether.disabled_cheat": "%s이(가) 치트 %s를 비활성화했습니다",
-    "server.reignofnether.all_cheats": "%s이(가) 모든 치트를 활성화했습니다",
     "server.reignofnether.revealed": "%s이(가) 거점을 재건하지 않아 드러나고 있습니다!",
 
     "server.resources.reignofnether.not_enough_food": "음식이 부족합니다",

@@ -209,7 +209,6 @@ public class PlayerClientEvents {
 
         MC.gui.setTitle(Component.translatable("titles.reignofnether.defeated"));
         MC.player.playSound(SoundRegistrar.DEFEAT.get(), 0.5f, 1.0f);
-        Cheats.removeAllCheats();
         HudClientEvents.controlGroups.clear();
     }
 
@@ -228,7 +227,6 @@ public class PlayerClientEvents {
             if (MC.player != null && MC.player.getName().getString().equals(playerName)) {
                 GameruleClient.gamerulesMenuOpen = false;
                 MC.getMusicManager().stopPlaying();
-                Cheats.removeAllCheats();
             }
         }
     }
@@ -332,7 +330,6 @@ public class PlayerClientEvents {
             if (entity instanceof Unit unit)
                 unit.setOwnerName("");
         UnitClientEvents.idleWorkerIds.clear();
-        Cheats.removeAllCheats();
         BuildingClientEvents.getSelectedBuildings().clear();
         BuildingClientEvents.getBuildings().removeIf(b -> b.getBuilding().shouldDestroyOnReset || hardReset);
         for (BuildingPlacement building : BuildingClientEvents.getBuildings())

@@ -3,7 +3,6 @@ package com.solegendary.reignofnether.unit;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import com.mojang.datafixers.util.Pair;
 
-import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
@@ -39,9 +38,6 @@ public class NonUnitServerEvents {
 
     public static final List<Pair<PathfinderMob, BlockPos>> nonUnitMoveTargets = Collections.synchronizedList(new ArrayList<>());
 
-    public static boolean canControlAllMobs(Level level, String playerName) {
-        return Cheats.playerHasCheat(playerName, "wouldyoukindly");
-    }
 
     @SubscribeEvent
     public static void onWorldTick(LevelTickEvent.Post evt) {

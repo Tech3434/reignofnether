@@ -21,6 +21,5 @@ public enum PlayerAction {
     DISABLE_START_RTS,
     DISABLE_RTS_SYNCING,
     ENABLE_RTS_SYNCING,
-    SET_RTS_CAMERA,
-    SET_CHEAT
+    SET_RTS_CAMERA
 }

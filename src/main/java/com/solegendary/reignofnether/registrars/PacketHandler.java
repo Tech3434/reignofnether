@@ -27,7 +27,6 @@ import com.solegendary.reignofnether.network.PacketTarget;
 import com.solegendary.reignofnether.network.RTSSimplePayload;
 import com.solegendary.reignofnether.orthoview.CameraClientboundPacket;
 import com.solegendary.reignofnether.orthoview.CameraFadeClientboundPacket;
-import com.solegendary.reignofnether.player.CheatsClientboundPacket;
 import com.solegendary.reignofnether.player.MatchStatsClientboundPacket;
 import com.solegendary.reignofnether.player.PlayerClientboundPacket;
 import com.solegendary.reignofnether.player.PlayerServerboundPacket;
@@ -97,7 +96,6 @@ public final class PacketHandler {
         registerClient(registrar, RtsDebugStatsClientboundPacket.TYPE, RtsDebugStatsClientboundPacket::new);
         registerClient(registrar, RtsDebugChunksClientboundPacket.TYPE, RtsDebugChunksClientboundPacket::new);
         registerClient(registrar, UnitIdleWorkerClientBoundPacket.TYPE, UnitIdleWorkerClientBoundPacket::new);
-        registerClient(registrar, CheatsClientboundPacket.TYPE, CheatsClientboundPacket::new);
         registerServer(registrar, PlayerServerboundPacket.TYPE, PlayerServerboundPacket::new);
         registerClient(registrar, PlayerClientboundPacket.TYPE, PlayerClientboundPacket::new);
         registerServer(registrar, BuildingServerboundPacket.TYPE, BuildingServerboundPacket::new);

@@ -759,11 +759,6 @@
     "server.reignofnether.started_sandbox": "بازیکن %s بازی را شروع کرد! (سندباکس)",
     "server.reignofnether.total_players": "حالا در مجموع %s بازیکن استراتژی وجود دارد",
     "server.reignofnether.bot_added": "بازیکن %s (ربات) به بازی اضافه شد!",
-    "server.reignofnether.used_cheat_amount": "بازیکن %s از تقلب استفاده کرد: %s %s",
-    "server.reignofnether.used_cheat": "بازیکن %s از تقلب استفاده کرد: %s",
-    "server.reignofnether.enabled_cheat": "بازیکن %s تقلب ها را فعال کرد",
-    "server.reignofnether.disabled_cheat": "بازیکن %s تقلب ها را غیرفعال کرد",
-    "server.reignofnether.all_cheats": "بازیکن %s تمامی تقلب ها را فعال کرد",
     "server.reignofnether.revealed": "بازیکن %s کپیتول خود را بازسازی نکرد و افشا شد!",
 
     "server.resources.reignofnether.not_enough_food": "غذا مورد نیاز است",

@@ -820,11 +820,6 @@
     "server.reignofnether.started_sandbox": "%s a commencé sa partie (SANDBOX)",
     "server.reignofnether.total_players": "Il y a maintenant %d joueur(s) RTS total",
     "server.reignofnether.bot_added": "%s (bot) a été ajouté à la partie !",
-    "server.reignofnether.used_cheat_amount": "%s a triché : %s %s",
-    "server.reignofnether.used_cheat": "%s a triché : %s",
-    "server.reignofnether.enabled_cheat": "%s a activé la triche %s",
-    "server.reignofnether.disabled_cheat": "%s a désactivé la triche %s",
-    "server.reignofnether.all_cheats": "%s a activé toutes les triches",
     "server.reignofnether.revealed": "%s n'a pas reconstruit sa capitale et est révélé !",
 
     "server.resources.reignofnether.not_enough_food": "Vous n'avez pas assez de nourriture",

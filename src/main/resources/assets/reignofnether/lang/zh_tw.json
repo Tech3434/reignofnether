@@ -695,11 +695,6 @@
     "server.reignofnether.started_sandbox": "%s已開始遊戲（沙盒模式）",
     "server.reignofnether.total_players": "現有 %d 名 RTS 玩家",
     "server.reignofnether.bot_added": "%s（機器人）已加入遊戲！",
-    "server.reignofnether.used_cheat_amount": "%s使用了作弊：%s %s",
-    "server.reignofnether.used_cheat": "%s使用了作弊：%s",
-    "server.reignofnether.enabled_cheat": "%s啓用了作弊 %s",
-    "server.reignofnether.disabled_cheat": "%s禁用了作弊 %s",
-    "server.reignofnether.all_cheats": "%s啓用了所有作弊",
     "server.reignofnether.revealed": "%s未重建其首都，其行蹤正被暴露在地圖上！",
 
     "server.resources.reignofnether.not_enough_food": "你的食物不足",

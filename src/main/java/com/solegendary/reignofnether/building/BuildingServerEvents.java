@@ -17,7 +17,6 @@ import com.solegendary.reignofnether.building.buildings.placements.ProductionPla
 import com.solegendary.reignofnether.commands.rtsapi.ResourceObjectiveCriteria;
 
 import com.solegendary.reignofnether.hud.HudClientboundPacket;
-import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.resources.*;
@@ -422,21 +421,15 @@ buildingData.buildings.forEach(b -> {
                     if (block.getBlockPos().getY() == minY && !block.getBlockState().isAir())
                         placeScaffoldingUnder(block, newBuilding);
 
-            boolean hasFastBuildCheat = Cheats.playerHasCheat(ownerName, "warpten");
-            if (hasFastBuildCheat) {
-                newBuilding.maxBlocksPerTick = 4;
-                newBuilding.queueAllBlocks(serverLevel);
-            } else {
-                // speed up first capitol
-                if (newBuilding.isCapitol && BuildingUtils.getTotalCompletedBuildingsOwned(false, ownerName) == 0) {
-                    newBuilding.blocksPerBuild = 2;
-                    newBuilding.maxBlocksPerTick = 2;
-                }
-                for (BuildingBlock block : newBuilding.blocks) {
-                    if (block.getBlockPos().getY() <= minY + (newBuilding.getBuilding().foundationYLayers - 1)
-                            && newBuilding.getBuilding().startingBlockTypes.contains(block.getBlockState().getBlock())) {
-                        newBuilding.addToBlockPlaceQueue(block);
-                    }
+            // speed up first capitol
+            if (newBuilding.isCapitol && BuildingUtils.getTotalCompletedBuildingsOwned(false, ownerName) == 0) {
+                newBuilding.blocksPerBuild = 2;
+                newBuilding.maxBlocksPerTick = 2;
+            }
+            for (BuildingBlock block : newBuilding.blocks) {
+                if (block.getBlockPos().getY() <= minY + (newBuilding.getBuilding().foundationYLayers - 1)
+                        && newBuilding.getBuilding().startingBlockTypes.contains(block.getBlockState().getBlock())) {
+                    newBuilding.addToBlockPlaceQueue(block);
                 }
             }
 
@@ -657,10 +650,6 @@ buildingData.buildings.forEach(b -> {
     }
 
     public static int getTotalPopulationSupply(String ownerName) {
-        if (Cheats.playerHasCheat(ownerName, "foodforthought")) {
-            return UnitServerEvents.maxPopulation;
-        }
-
         // base limit is building-independent; only capitols raise it (Building.populationSupply)
         return UnitServerEvents.maxPopulation + UnitServerEvents.getPopulationBonusFromCapitols(ownerName);
     }

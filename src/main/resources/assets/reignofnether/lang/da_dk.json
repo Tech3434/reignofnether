@@ -377,10 +377,6 @@
   "server.reignofnether.started": "%s har startet deres spil!",
   "server.reignofnether.total_players": "Der er nu %d samlede RTS spiller(e)",
   "server.reignofnether.bot_added": "%s (bot) er blevet tilføjet til spillet!",
-  "server.reignofnether.used_cheat": "%s brugte snyd: %s %s",
-  "server.reignofnether.enabled_cheat": "%s aktiverede snyd %s",
-  "server.reignofnether.disabled_cheat": "%s deaktiverede snyd %s",
-  "server.reignofnether.all_cheats": "%s aktiverede alle snyd",
   "server.reignofnether.revealed": "%s har ikke genopbygget deres hovedbygning og bliver afsløret!",
 
   "server.resources.reignofnether.not_enough_food": "Du har ikke nok mad",

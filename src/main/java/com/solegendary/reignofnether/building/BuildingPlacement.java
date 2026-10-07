@@ -26,7 +26,6 @@ import com.solegendary.reignofnether.debug.RtsDebugClientEvents;
 import com.solegendary.reignofnether.gamerules.GameruleClient;
 import com.solegendary.reignofnether.hud.buttons.AbilityButton;
 import com.solegendary.reignofnether.hud.buttons.Button;
-import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.resources.ResourceSources;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.player.RTSPlayer;
@@ -923,8 +922,6 @@ public class BuildingPlacement {
                 builderCount += 1;
         }
 
-        boolean hasFastBuildCheat = Cheats.playerHasCheat(this.ownerName, "warpten");
-
         // place a block if the tick has run down
         if (blocksPlaced < blocksTotal) {
             if (builderCount > 0) {
@@ -952,11 +949,7 @@ public class BuildingPlacement {
 
                 msToNextBuild = Math.min(msToNextBuild, msPerBuild);
 
-                if (hasFastBuildCheat) {
-                    msToNextBuild -= 500;
-                } else {
-                    msToNextBuild -= 50;
-                }
+                msToNextBuild -= 50;
 
                 if (msToNextBuild <= 0) {
                     msToNextBuild += msPerBuild;
@@ -977,7 +970,7 @@ public class BuildingPlacement {
                         queueNextBlock(serverLevel, ownerName);
                     }
                 }
-            } else if ((selfBuilding || hasFastBuildCheat) && !isBuilt) {
+            } else if (selfBuilding && !isBuilt) {
                 queueNextBlock(serverLevel, ownerName);
             }
         } else {

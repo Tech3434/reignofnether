@@ -681,11 +681,6 @@
     "server.reignofnether.started_sandbox": "%s đã bắt đầu trận đấu của họ (Chế độ Sandbox)",
     "server.reignofnether.total_players": "Hiện tại có %d người chơi RTS",
     "server.reignofnether.bot_added": "%s (bot) đã được thêm vào trận đấu!",
-    "server.reignofnether.used_cheat_amount": "%s sử dụng gian lận: %s %s",
-    "server.reignofnether.used_cheat": "%s đã sử dụng gian lận: %s %s",
-    "server.reignofnether.enabled_cheat": "%s đã bật gian lận %s",
-    "server.reignofnether.disabled_cheat": "%s đã tắt gian lận %s",
-    "server.reignofnether.all_cheats": "%s đã bật tất cả gian lận",
     "server.reignofnether.revealed": "%s chưa xây lại nhà chính của họ và đang bị lộ!",
 
     "server.resources.reignofnether.not_enough_food": "Bạn không có đủ thức ăn",

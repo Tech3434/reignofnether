@@ -436,7 +436,6 @@ public class CursorClientEvents {
                 int ownedEntities = 0;
                 for (LivingEntity unit : preselectedUnit)
                     if (UnitClientEvents.getPlayerToEntityRelationship(unit) == Relationship.OWNED ||
-                            NonUnitClientEvents.canControlAllMobs() ||
                             AlliancesClient.canControlAlly(unit))
                         ownedEntities += 1;
 
@@ -444,7 +443,6 @@ public class CursorClientEvents {
                     ArrayList<LivingEntity> unitsToAdd = new ArrayList<>();
                     for (LivingEntity unit : preselectedUnit)
                         if (UnitClientEvents.getPlayerToEntityRelationship(unit) == Relationship.OWNED ||
-                                NonUnitClientEvents.canControlAllMobs() ||
                                 AlliancesClient.canControlAlly(unit))
                             unitsToAdd.add(unit);
 

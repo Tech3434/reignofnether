@@ -647,11 +647,6 @@
     "server.reignofnether.started_sandbox": "%s розпочав гру (ПІСОЧНИЦЯ)",
     "server.reignofnether.total_players": "Всього гравців у RTS зараз %d",
     "server.reignofnether.bot_added": "%s До гри додано бота!",
-    "server.reignofnether.used_cheat_amount": "%s використав чит: %s %s",
-    "server.reignofnether.used_cheat": "%s використаний чит: %s %s",
-    "server.reignofnether.enabled_cheat": "%s увімкнений чит %s",
-    "server.reignofnether.disabled_cheat": "%s відключений чит %s",
-    "server.reignofnether.all_cheats": "%s ввімкнено всі чити",
     "server.reignofnether.revealed": "%s не відбудував свою ратушу і розкривається!",
 
     "server.resources.reignofnether.max_pop": "Ви досягли максимальної чисельності населення",

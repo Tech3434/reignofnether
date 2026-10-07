@@ -371,7 +371,7 @@ public class UnitClientEvents {
                     for (Ability ability : unit.getAbilities().get()) {
                         if (ability.isCasting(unit) && ability.oneClickOneUse && ability.action == action) continue loop;
                     }
-                } else if (!NonUnitClientEvents.canControlAllMobs()) {
+                } else {
                     continue;
                 }
                 if (includeUnit == null || includeUnit.test(livingEntity))
@@ -664,7 +664,6 @@ public class UnitClientEvents {
                         MC.level
                 );
                 if (getPlayerToEntityRelationship(selectedUnit) == Relationship.OWNED ||
-                        NonUnitClientEvents.canControlAllMobs() ||
                         AlliancesClient.canControlAlly(selectedUnit)) {
 
                     for (LivingEntity entity : nearbyEntities) {
@@ -678,7 +677,6 @@ public class UnitClientEvents {
                         boolean garrionStatusMatches = (garrisoned1 && garrisoned2) || (!garrisoned1 && !garrisoned2);
                         if (entity == selectedUnit) continue;
                         if ((getPlayerToEntityRelationship(entity) == Relationship.OWNED ||
-                                NonUnitClientEvents.canControlAllMobs() ||
                                 AlliancesClient.canControlAlly(entity)) &&
                                 (!bothVillagers || sameProfession) && garrionStatusMatches) {
                             addSelectedUnit(entity);
@@ -713,8 +711,7 @@ public class UnitClientEvents {
 
                 if (Keybindings.shiftMod.isDown() && !deselected &&
                     ((preselectedUnits.get(0) instanceof Unit && getPlayerToEntityRelationship(preselectedUnits.get(0)) == Relationship.OWNED) ||
-                    AlliancesClient.canControlAlly(preselectedUnits.get(0)) ||
-                    NonUnitClientEvents.canControlAllMobs())) {
+                    AlliancesClient.canControlAlly(preselectedUnits.get(0)))) {
                         addSelectedUnit(preselectedUnits.get(0));
                 }
                 else if (!deselected &&
@@ -728,7 +725,7 @@ public class UnitClientEvents {
             // and disallow selecting > 1 non-owned unit or the client player
             if (selectedUnits.size() > 1) {
                 selectedUnits.removeIf(e ->
-                    (getPlayerToEntityRelationship(e) != Relationship.OWNED && !NonUnitClientEvents.canControlAllMobs() && !AlliancesClient.canControlAlly(e)) ||
+                    (getPlayerToEntityRelationship(e) != Relationship.OWNED && !AlliancesClient.canControlAlly(e)) ||
                             e.getId() == MC.player.getId()
                 );
             }
@@ -836,7 +833,6 @@ public class UnitClientEvents {
         ArrayList<LivingEntity> actionableUnits = new ArrayList<>();
         for (LivingEntity unit : selUnits) {
             if ((getPlayerToEntityRelationship(unit) == Relationship.OWNED ||
-                    NonUnitClientEvents.canControlAllMobs() ||
                     AlliancesClient.canControlAlly(unit)) && unit instanceof Unit) {
                 actionableUnits.add(unit);
             }
@@ -869,7 +865,6 @@ public class UnitClientEvents {
                 ArrayList<LivingEntity> actionableUnits = new ArrayList<>();
                 for (LivingEntity unit : selUnits) {
                     if ((getPlayerToEntityRelationship(unit) == Relationship.OWNED ||
-                            NonUnitClientEvents.canControlAllMobs() ||
                             AlliancesClient.canControlAlly(unit)) && unit instanceof Unit) {
                         actionableUnits.add(unit);
                     }

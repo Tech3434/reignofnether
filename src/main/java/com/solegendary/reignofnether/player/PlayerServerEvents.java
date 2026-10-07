@@ -53,7 +53,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.ServerChatEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
@@ -111,26 +110,6 @@ public class PlayerServerEvents {
     public static long rtsGameTicks = 0; // ticks up as long as there is at least 1 rtsPlayer
 
     public static ServerLevel serverLevel = null;
-
-    // warpten - faster building/unit production
-    // operationcwal - faster resource gathering
-    // modifythephasevariance - ignore building requirements
-    // medievalman - get all research (cannot reverse)
-    // greedisgood X - gain X of each resource
-    // foodforthought - ignore soft population caps
-    // thereisnospoon - allow changing survival wave by clicking the wave indicator and using debug commands
-    // slipslopslap - monster units are unaffected by sunlight
-    // wouldyoukindly - allow control of non-unit mobs in RTS mode
-    public static final List<String> singleWordCheats = List.of(
-        "warpten",
-        "operationcwal",
-        "modifythephasevariance",
-        "medievalman",
-        "foodforthought",
-        "thereisnospoon",
-        "slipslopslap",
-        "wouldyoukindly"
-    );
 
     public static void saveRTSPlayers() {
         if (serverLevel == null) {
@@ -296,7 +275,6 @@ public class PlayerServerEvents {
             } else {
                 syncUnits();
             }
-            Cheats.syncCheats(() -> serverPlayer);
         }
 
         boolean inOrthoviewList = false;
@@ -454,7 +432,6 @@ public class PlayerServerEvents {
                 }
             }
 
-            enableAllCheats(playerName);
             ResourcesServerEvents.resetResources(playerName, readiedStart);
 
             if (readiedStart) {
@@ -540,97 +517,6 @@ public class PlayerServerEvents {
             sendMessageToAllPlayers("server.reignofnether.total_players", false, rtsPlayers.size());
             saveRTSPlayers();
         }
-    }
-
-    @SubscribeEvent
-    public static void onPlayerChat(ServerChatEvent evt) {
-        if (evt.getPlayer().hasPermissions(4)) {
-            String msg = evt.getMessage().getString();
-            String[] words = msg.split(" ");
-            String playerName = evt.getPlayer().getName().getString();
-
-            if (words.length == 2) {
-                try {
-                    if (words[0].equalsIgnoreCase("greedisgood")) {
-                        int amount = Integer.parseInt(words[1]);
-                        if (amount > 0) {
-                            ResourcesServerEvents.addSubtractResources(new Resources(playerName,
-                                    amount,
-                                    amount,
-                                    amount,
-                                    amount
-                            ));
-                            evt.setCanceled(true);
-                            sendMessageToAllPlayers("server.reignofnether.used_cheat_amount",
-                                    false,
-                                    playerName,
-                                    words[0],
-                                    Integer.toString(amount)
-                            );
-                        }
-                    }
-                } catch (NumberFormatException err) {
-                    ReignOfNether.LOGGER.error(err);
-                }
-            }
-
-            if (words.length == 3) {
-                try {
-                    if (words[0].equalsIgnoreCase("greedisgood")) {
-                        int amount = Integer.parseInt(words[2]);
-                        if (amount > 0 && List.of("food", "wood", "ore", "emerald").contains(words[1].toLowerCase())) {
-                            switch (words[1].toLowerCase()) {
-                                case "food" -> ResourcesServerEvents.addSubtractResources(new Resources(playerName, amount, 0, 0,0));
-                                case "wood" -> ResourcesServerEvents.addSubtractResources(new Resources(playerName, 0, amount, 0,0));
-                                case "ore" -> ResourcesServerEvents.addSubtractResources(new Resources(playerName, 0, 0, amount,0));
-                                case "emerald" -> ResourcesServerEvents.addSubtractResources(new Resources(playerName, 0, 0,0, amount));
-                            }
-                            evt.setCanceled(true);
-                            sendMessageToAllPlayers("server.reignofnether.used_cheat_amount",
-                                    false,
-                                    playerName,
-                                    words[0] + " " + words[1],
-                                    Integer.toString(amount)
-                            );
-                        }
-                    }
-                } catch (NumberFormatException err) {
-                    ReignOfNether.LOGGER.error(err);
-                }
-            }
-
-            for (String cheatName : singleWordCheats) {
-                if (words.length == 1 && words[0].equalsIgnoreCase(cheatName)) {
-                    if (Cheats.playerHasCheat(playerName, cheatName)) {
-                        Cheats.removeCheat(playerName, cheatName);
-                    } else {
-                        Cheats.addCheat(playerName, cheatName);
-                    }
-                    Cheats.syncCheats(() -> evt.getPlayer());
-                    evt.setCanceled(true);
-                    sendMessageToAllPlayers(Cheats.playerHasCheat(playerName, cheatName) ?
-                            "server.reignofnether.enabled_cheat" : "server.reignofnether.disabled_cheat",
-                            false, playerName, cheatName);
-                }
-            }
-
-            // apply all cheats - NOTE can cause concurrentModificationException clientside
-            // Cheats already require permission 4 to type, so no name allowlist here: hardcoding
-            // two account names meant the cheat was unreachable for everyone else, including other
-            // operators.
-            if (words.length == 1 && words[0].equalsIgnoreCase("allcheats")) {
-                ResourcesServerEvents.addSubtractResources(new Resources(playerName, 99999, 99999, 99999));
-                UnitServerEvents.maxPopulation = 99999;
-                enableAllCheats(playerName);
-                evt.setCanceled(true);
-                sendMessageToAllPlayers("server.reignofnether.all_cheats", false, playerName);
-            }
-        }
-    }
-
-    public static void enableAllCheats(String playerName) {
-        for (String cheatName : singleWordCheats)
-            Cheats.addCheat(playerName, cheatName);
     }
 
     public static void enableOrthoview(int id) {
@@ -875,7 +761,6 @@ public class PlayerServerEvents {
 
             // Remove resources associated with the defeated player
             saveRTSPlayers();
-            Cheats.removeAllCheatsFor(playerName);
             ResourcesServerEvents.resourcesList.removeIf(rl -> rl.ownerName.equals(playerName));
 
             // Check if only allied players are left or if a single player remains
@@ -992,7 +877,6 @@ public class PlayerServerEvents {
             for (BuildingPlacement building : BuildingServerEvents.getBuildings())
                 building.ownerName = "";
 
-            Cheats.removeAllCheats();
             PlayerClientboundPacket.resetRTS(hardReset);
             if (hardReset)
                 sendMessageToAllPlayers("server.reignofnether.match_reset_hard", true);

@@ -5,7 +5,6 @@ import com.solegendary.reignofnether.building.buildings.placements.ProductionPla
 import com.solegendary.reignofnether.debug.RtsDebugClientEvents;
 import com.solegendary.reignofnether.gamerules.GameruleClient;
 import com.solegendary.reignofnether.keybinds.Keybinding;
-import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.player.RTSPlayer;
 import com.solegendary.reignofnether.player.RTSPlayerScoresEnum;
@@ -178,19 +177,10 @@ public abstract class ProductionItem {
     // return true if the tick finished
     public boolean tick(ProductionPlacement placement, ActiveProduction active) {
         if (active.ticksLeft > 0 && isBelowPopulationSupply(placement) && placement.isBuilt) {
-            if ((placement.getLevel().isClientSide() && Cheats.hasCheat("warpten")) ||
-                (!placement.getLevel().isClientSide() && Cheats.playerHasCheat(placement.ownerName, "warpten"))) {
-                if (placement.getLevel().isClientSide())
-                    active.ticksLeft -= (RtsDebugClientEvents.getCappedTPS() / 20D) * 10;
-                else
-                    active.ticksLeft -= 10;
-            }
-            else {
-                if (placement.getLevel().isClientSide())
-                    active.ticksLeft -= (RtsDebugClientEvents.getCappedTPS() / 20D);
-                else
-                    active.ticksLeft -= 1;
-            }
+            if (placement.getLevel().isClientSide())
+                active.ticksLeft -= (RtsDebugClientEvents.getCappedTPS() / 20D);
+            else
+                active.ticksLeft -= 1;
 
             if (active.ticksLeft < 0)
                 active.ticksLeft = 0;
