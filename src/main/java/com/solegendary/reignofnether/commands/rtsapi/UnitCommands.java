@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.solegendary.reignofnether.commands.CommandsServerEvents;
 import com.solegendary.reignofnether.commands.rtsapi.argument.PlayerNameArgument;
 import com.solegendary.reignofnether.commands.rtsapi.argument.UnitArgument;
-import com.solegendary.reignofnether.sandbox.SandboxServer;
 import com.solegendary.reignofnether.unit.EnemySearchBehaviour;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitActionItem;
@@ -161,7 +160,7 @@ public class UnitCommands {
 								.executes((ctx) -> {
 									List<? extends Unit> units = UnitArgument.getUnits(ctx, "targets", null);
 									int[] ids = units.stream().mapToInt(u -> ((LivingEntity) u).getId()).toArray();
-									SandboxServer.removeAnchor(ids);
+									CommandsServerEvents.removeAnchors(ids);
 									ctx.getSource().sendSuccess(
 										() -> Component.translatable("commands.reignofnether.unit.anchor.remove.success", ids.length), true);
 									return ids.length;
@@ -170,7 +169,7 @@ public class UnitCommands {
 									.executes((ctx) -> {
 										List<? extends Unit> units = UnitArgument.getUnits(ctx, "targets", PlayerNameArgument.getPlayerName(ctx, "ownerName"));
 										int[] ids = units.stream().mapToInt(u -> ((LivingEntity) u).getId()).toArray();
-										SandboxServer.removeAnchor(ids);
+										CommandsServerEvents.removeAnchors(ids);
 										ctx.getSource().sendSuccess(
 											() -> Component.translatable("commands.reignofnether.unit.anchor.remove.success", ids.length), true);
 										return ids.length;

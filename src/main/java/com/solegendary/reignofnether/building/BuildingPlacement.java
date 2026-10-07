@@ -43,8 +43,6 @@ import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesClientboundPacket;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
-import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
-import com.solegendary.reignofnether.sandbox.SandboxServer;
 
 import com.solegendary.reignofnether.sounds.SoundClientEvents;
 
@@ -366,10 +364,6 @@ public class BuildingPlacement {
     }
 
     public boolean canAfford(String ownerName) {
-        if (SandboxServer.isAnyoneASandboxPlayer() &&
-            (ownerName.isEmpty() || ownerName.equals("Enemy")))
-            return true;
-
         for (Resources resources : ResourcesServerEvents.resourcesList)
             if (resources.ownerName.equals(ownerName)) {
                 return (
@@ -697,8 +691,7 @@ public class BuildingPlacement {
         }
 
         if (!this.level.isClientSide() && isRTSPlayer(this.ownerName)) {
-            if (BuildingUtils.getTotalCompletedBuildingsOwned(false, this.ownerName) == 0 &&
-                !SandboxServer.isSandboxPlayer(this.ownerName)) {
+            if (BuildingUtils.getTotalCompletedBuildingsOwned(false, this.ownerName) == 0) {
                 PlayerServerEvents.defeat(this.ownerName, Component.translatable("server.reignofnether.lost_buildings").getString());
             } else if (this.isCapitol) {
                 var flag = false;
@@ -1228,8 +1221,7 @@ public class BuildingPlacement {
                 boolean capturedByAlly = AlliancesServerEvents.isAllied(ownerName, highestPopPlayer);
 
                 if (!highestPopPlayer.equals(ownerName) &&
-                    BuildingUtils.getTotalCompletedBuildingsOwned(false, ownerName) == 1 && // this one is about to change, making it 0
-                    !SandboxServer.isSandboxPlayer(ownerName)) {
+                    BuildingUtils.getTotalCompletedBuildingsOwned(false, ownerName) == 1) { // this one is about to change, making it 0
                     PlayerServerEvents.defeat(ownerName, Component.translatable("server.reignofnether.lost_buildings").getString());
                 }
                 ownerName = highestPopPlayer;

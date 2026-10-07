@@ -4,7 +4,6 @@ import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.hud.buttons.ActionButtons;
 import com.solegendary.reignofnether.hud.buttons.HelperButtons;
-import com.solegendary.reignofnether.sandbox.SandboxActionButtons;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.client.ResourceLoadStateTracker;
@@ -31,7 +30,6 @@ public abstract class ResourceLoadStateTrackerMixin {
             building.updateButtons();
 
         ActionButtons.updateButtons();
-        SandboxActionButtons.updateButtons();
         HelperButtons.updateButtons();
     }
 }

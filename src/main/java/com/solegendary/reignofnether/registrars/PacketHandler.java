@@ -34,7 +34,6 @@ import com.solegendary.reignofnether.player.PlayerServerboundPacket;
 import com.solegendary.reignofnether.resources.ResourcesClientboundPacket;
 import com.solegendary.reignofnether.resources.ResourcesServerboundPacket;
 
-import com.solegendary.reignofnether.sandbox.SandboxServerboundPacket;
 
 import com.solegendary.reignofnether.sounds.SoundClientboundPacket;
 
@@ -118,7 +117,6 @@ public final class PacketHandler {
         registerServer(registrar, GameModeServerboundPacket.TYPE, GameModeServerboundPacket::new);
         registerClient(registrar, GameModeClientboundPacket.TYPE, GameModeClientboundPacket::new);
         registerClient(registrar, ClientboundSyncResourceCostPacket.TYPE, ClientboundSyncResourceCostPacket::decode);
-        registerServer(registrar, SandboxServerboundPacket.TYPE, SandboxServerboundPacket::new);
         registerServer(registrar, GameruleServerboundPacket.TYPE, GameruleServerboundPacket::new);
         registerClient(registrar, GameruleClientboundPacket.TYPE, GameruleClientboundPacket::new);
         registerClient(registrar, CustomBuildingClientboundPacket.TYPE, CustomBuildingClientboundPacket::new);

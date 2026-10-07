@@ -19,7 +19,6 @@ import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.registrars.SoundRegistrar;
 import com.solegendary.reignofnether.resources.ResourcesClientEvents;
 
-import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
 import com.solegendary.reignofnether.sounds.SoundClientEvents;
 
 import com.solegendary.reignofnether.time.TimeClientEvents;
@@ -208,10 +207,8 @@ public class PlayerClientEvents {
         if (!MC.player.getName().getString().equals(playerName))
             return;
 
-        if (!SandboxClientEvents.isSandboxPlayer(playerName)) {
-            MC.gui.setTitle(Component.translatable("titles.reignofnether.defeated"));
-            MC.player.playSound(SoundRegistrar.DEFEAT.get(), 0.5f, 1.0f);
-        }
+        MC.gui.setTitle(Component.translatable("titles.reignofnether.defeated"));
+        MC.player.playSound(SoundRegistrar.DEFEAT.get(), 0.5f, 1.0f);
         Cheats.removeAllCheats();
         HudClientEvents.controlGroups.clear();
     }
@@ -322,7 +319,6 @@ public class PlayerClientEvents {
     }
 
     public static void resetRTS(boolean hardReset) {
-        boolean isSandbox = SandboxClientEvents.isSandboxPlayer();
         rtsPlayers.clear();
 
         HelperButtons.updateButtons();
@@ -331,20 +327,16 @@ public class PlayerClientEvents {
         HudClientEvents.controlGroups.clear();
         UnitClientEvents.getSelectedUnits().clear();
         UnitClientEvents.getPreselectedUnits().clear();
-        if (!isSandbox)
-            UnitClientEvents.getAllUnits().removeIf(u -> (hardReset || (u instanceof Unit unit && !Unit.hasAnchor(unit))));
-        if (!isSandbox)
-            for (LivingEntity entity : UnitClientEvents.getAllUnits())
-                if (entity instanceof Unit unit)
-                    unit.setOwnerName("");
+        UnitClientEvents.getAllUnits().removeIf(u -> (hardReset || (u instanceof Unit unit && !Unit.hasAnchor(unit))));
+        for (LivingEntity entity : UnitClientEvents.getAllUnits())
+            if (entity instanceof Unit unit)
+                unit.setOwnerName("");
         UnitClientEvents.idleWorkerIds.clear();
         Cheats.removeAllCheats();
         BuildingClientEvents.getSelectedBuildings().clear();
-        if (!isSandbox)
-            BuildingClientEvents.getBuildings().removeIf(b -> b.getBuilding().shouldDestroyOnReset || hardReset);
-        if (!isSandbox)
-            for (BuildingPlacement building : BuildingClientEvents.getBuildings())
-                building.ownerName = "";
+        BuildingClientEvents.getBuildings().removeIf(b -> b.getBuilding().shouldDestroyOnReset || hardReset);
+        for (BuildingPlacement building : BuildingClientEvents.getBuildings())
+            building.ownerName = "";
         ResourcesClientEvents.resourcesList.clear();
         ClientGameModeHelper.gameMode = ClientGameModeHelper.DEFAULT_GAMEMODE;
         ClientGameModeHelper.gameModeLocked = false;

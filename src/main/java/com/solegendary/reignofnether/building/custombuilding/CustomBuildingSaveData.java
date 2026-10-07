@@ -36,6 +36,20 @@ public class CustomBuildingSaveData extends SavedData {
         return SavedDataCompat.computeIfAbsent(server, "saved-custom-building-data", CustomBuildingSaveData::create, CustomBuildingSaveData::load);
     }
 
+    /** Read-only accessor for world load: no entry is created when the world has none. */
+    @Nonnull
+    public static CustomBuildingSaveData getLoaded(LevelAccessor level) {
+        MinecraftServer server = level.getServer();
+        if (server == null)
+            return create();
+        return SavedDataCompat.getLoaded(server, "saved-custom-building-data", CustomBuildingSaveData::create, CustomBuildingSaveData::load);
+    }
+
+    public static boolean isStored(LevelAccessor level) {
+        MinecraftServer server = level.getServer();
+        return server != null && SavedDataCompat.isStored(server, "saved-custom-building-data", CustomBuildingSaveData::create, CustomBuildingSaveData::load);
+    }
+
     public static CustomBuildingSaveData load(CompoundTag tag) {
         ReignOfNether.LOGGER.info("CustomBuildingSaveData.load");
 

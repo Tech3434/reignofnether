@@ -4,7 +4,6 @@ import com.solegendary.reignofnether.ReignOfNether;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 
 import com.solegendary.reignofnether.unit.units.villagers.*;
@@ -30,15 +29,6 @@ public class EntityRegistrar {
                     .sized(EntityType.VINDICATOR.getWidth(), EntityType.VINDICATOR.getHeight())
                     .clientTrackingRange(UNIT_CLIENT_TRACKING_RANGE)
                     .build(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "vindicator_unit").toString()));
-
-    /** Maps a production-item name onto the entity that item summons. */
-    public static EntityType<? extends Mob> getEntityType(String id) {
-        return switch (id) {
-            case "Villager" -> EntityRegistrar.VILLAGER_UNIT.get();
-            case "Vindicator" -> EntityRegistrar.VINDICATOR_UNIT.get();
-            default -> null;
-        };
-    }
 
     public static void init(ModContainer container) {
         ENTITIES.register(container.getEventBus());

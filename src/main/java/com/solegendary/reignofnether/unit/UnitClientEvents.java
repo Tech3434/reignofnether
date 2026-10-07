@@ -39,7 +39,6 @@ import com.solegendary.reignofnether.resources.ResourceCosts;
 import com.solegendary.reignofnether.resources.ResourceName;
 
 import com.solegendary.reignofnether.resources.Resources;
-import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
 
 import com.solegendary.reignofnether.unit.goals.*;
 import com.solegendary.reignofnether.unit.interfaces.*;
@@ -359,10 +358,6 @@ public class UnitClientEvents {
         BlockPos bp = getPreselectedBlockPos();
 
         if (action.name().toLowerCase().contains("startrts")) {
-            PlayerServerboundPacket.startRTS((double) bp.getX(), (double) bp.getY(), (double) bp.getZ());
-            return;
-        }
-        else if (action.name().toLowerCase().contains("sandbox_spawn")) {
             PlayerServerboundPacket.startRTS((double) bp.getX(), (double) bp.getY(), (double) bp.getZ());
             return;
         }
@@ -1085,7 +1080,7 @@ public class UnitClientEvents {
                     }
 
                     // draw anchor pos
-                    if (SandboxClientEvents.isSandboxPlayer() && unit.getAnchor() != null && !unit.getAnchor().equals(new BlockPos(0,0,0))) {
+                    if (unit.getAnchor() != null && !unit.getAnchor().equals(new BlockPos(0,0,0))) {
                         BlockPos ap = unit.getAnchor();
                         float a = MiscUtil.getOscillatingFloat(0.25f, 0.75f);
                         Vec3 apVec3 = new Vec3(ap.getX() + 0.5f, ap.getY() + 1.0f, ap.getZ() + 0.5f);
@@ -1176,9 +1171,8 @@ public class UnitClientEvents {
         if (TextInputClientEvents.isAnyInputFocused())
             return;
         if (evt.getKeyCode() == GLFW.GLFW_KEY_DELETE || (evt.getKeyCode() == GLFW.GLFW_KEY_D && Keybindings.altMod.isDown() && Keybindings.ctrlMod.isDown())) {
-            boolean isSandboxPlayer = MC.player != null && SandboxClientEvents.isSandboxPlayer(MC.player.getName().getString());
             LivingEntity entity = hudSelectedEntity;
-            if ((entity != null && getPlayerToEntityRelationship(entity) == Relationship.OWNED || isSandboxPlayer)) {
+            if ((entity != null && getPlayerToEntityRelationship(entity) == Relationship.OWNED)) {
                 if (entity != null && !entity.hasEffect(MobEffectHelpers.holder(MobEffectRegistrar.PARTIALLY_POSSESSED.get()))) {
                     sendUnitCommand(UnitAction.DELETE);
                 }

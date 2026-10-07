@@ -31,18 +31,6 @@ public class MobEffectIcons {
             "uncontrollable"
     );
 
-    public static final MobEffectIcon ZOMBIE_INFECTED = new MobEffectIcon(
-            MobEffectHelpers.holder(MobEffectRegistrar.ZOMBIE_INFECTED.get()),
-            ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/drowned.png"),
-            "zombie_infected"
-    );
-
-    public static final MobEffectIcon SLIME_INFECTED = new MobEffectIcon(
-            MobEffectHelpers.holder(MobEffectRegistrar.SLIME_INFECTED.get()),
-            ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/slime.png"),
-            "slime_infected"
-    );
-
     public static final MobEffectIcon MINOR_SPEED = new MobEffectIcon(
             MobEffectHelpers.holder(MobEffectRegistrar.MINOR_MOVEMENT_SPEED.get()),
             ResourceLocation.fromNamespaceAndPath("minecraft", "textures/mob_effect/speed.png"),
@@ -103,12 +91,6 @@ public class MobEffectIcons {
             "bloodlust"
     );
 
-    public static final MobEffectIcon FROST_DAMAGE = new MobEffectIcon(
-            MobEffectHelpers.holder(MobEffectRegistrar.FROST_DAMAGE.get()),
-            ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/abilities/bitter_frost.png"),
-            "frost_damage"
-    );
-
     public static final MobEffectIcon ENCHANTMENT_AMPLIFIER = new MobEffectIcon(
             MobEffectHelpers.holder(MobEffectRegistrar.ENCHANTMENT_AMPLIFIER.get()),
             ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/abilities/march_of_progress.png"),
@@ -125,12 +107,6 @@ public class MobEffectIcons {
             MobEffectHelpers.holder(MobEffectRegistrar.SOULS_AFLAME.get()),
             ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/abilities/souls_aflame.png"),
             "souls_aflame"
-    );
-
-    public static final MobEffectIcon WARM = new MobEffectIcon(
-            MobEffectHelpers.holder(MobEffectRegistrar.WARM.get()),
-            ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/blocks/fire.png"),
-            "warm"
     );
 
     public static final MobEffectIcon VIGOR = new MobEffectIcon(
@@ -217,12 +193,6 @@ public class MobEffectIcons {
             "invincible"
     );
 
-    public static final MobEffectIcon VILLAGER_INSPIRATION = new MobEffectIcon(
-            MobEffectHelpers.holder(MobEffectRegistrar.VILLAGER_INSPIRATION.get()),
-            ResourceLocation.fromNamespaceAndPath("minecraft", "textures/mob_effect/hero_of_the_village.png"),
-            "villager_inspiration"
-    );
-
     public static final MobEffectIcon LIMITED_LIFESPAN = new MobEffectIcon(
             MobEffectHelpers.holder(MobEffectRegistrar.LIMITED_LIFESPAN.get()),
             ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/items/clock.png"),
@@ -241,8 +211,6 @@ public class MobEffectIcons {
             STUN,
             FREEZE,
             UNCONTROLLABLE,
-            ZOMBIE_INFECTED,
-            SLIME_INFECTED,
             MINOR_SPEED,
             SPEED,
             MINOR_SLOW,
@@ -254,11 +222,9 @@ public class MobEffectIcons {
             ATTACK_SLOWDOWN,
             TEMPORARY_EFFICIENCY,
             BLOODLUST,
-            FROST_DAMAGE,
             ENCHANTMENT_AMPLIFIER,
             DISARM,
             SOULS_AFLAME,
-            WARM,
             VIGOR,
             NIGHT_WARPING,
             COLD,
@@ -272,7 +238,6 @@ public class MobEffectIcons {
             LEVITATION,
             FIRE_RESISTANCE,
             INVINCIBLE,
-            VILLAGER_INSPIRATION,
             LIMITED_LIFESPAN
     );
 }

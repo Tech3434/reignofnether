@@ -47,6 +47,7 @@ public class TownCentre extends ProductionBuilding implements RangeIndicatorAddo
         this.maxHealth = 380d;
         this.buildTimeModifier = 0.328f; // 60s total build time with 3 villagers
         this.canAcceptResources = true;
+        this.populationSupply = 10; // each built capitol raises the owner's army limit by this much
 
         this.startingBlockTypes.add(Blocks.STONE_BRICK_STAIRS);
         this.startingBlockTypes.add(Blocks.GRASS_BLOCK);

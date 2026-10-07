@@ -8,7 +8,6 @@ import com.solegendary.reignofnether.building.buildings.placements.ProductionPla
 import com.solegendary.reignofnether.building.custombuilding.CustomBuilding;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuildingServerEvents;
 import com.solegendary.reignofnether.registrars.PacketHandler;
-import com.solegendary.reignofnether.sandbox.SandboxServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -176,7 +175,6 @@ public class BuildingServerboundPacket  implements RTSSimplePayload {
                     !player.getName().getString().equals(ownerName)) ||
                     (existingBuildingAuthActions.contains(this.action) && building != null &&
                             !player.getName().getString().equals(building.ownerName))) &&
-                    !SandboxServer.isAnyoneASandboxPlayer() &&
                     !AlliancesServerEvents.canControlAlly(player.getName().getString(), ownerName)) {
 
                 ReignOfNether.LOGGER.warn("BuildingServerboundPacket: Tried to process packet from " + player.getName() + " for " + ownerName);

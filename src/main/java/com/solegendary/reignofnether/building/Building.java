@@ -30,6 +30,9 @@ public abstract class Building {
     public final boolean isCapitol;
     public Block portraitBlock; // block rendered in the portrait GUI to represent this building
     public boolean canAcceptResources = false; // can workers drop off resources here?
+    // Army capacity this building grants its owner while it is built. Capitols raise the base
+    // population limit through this field, not through ResourceCost.population.
+    public int populationSupply = 0;
 
     // chance for a mini explosion to destroy extra blocks if a player is breaking it
     // should be higher for large fragile buildings so players don't take ages to destroy it

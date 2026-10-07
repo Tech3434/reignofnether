@@ -41,9 +41,6 @@ import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourceSources;
 import com.solegendary.reignofnether.resources.ResourcesClientEvents;
-import com.solegendary.reignofnether.sandbox.SandboxActionButtons;
-import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
-import com.solegendary.reignofnether.sandbox.SandboxMenuType;
 
 import com.solegendary.reignofnether.unit.NonUnitClientEvents;
 import com.solegendary.reignofnether.unit.Relationship;
@@ -318,8 +315,7 @@ public class HudClientEvents {
 
         if (hudSelectedPlacement != null) {
             boolean hudSelBuildingOwned =
-                BuildingClientEvents.getPlayerToBuildingRelationship(hudSelectedPlacement) == Relationship.OWNED ||
-                        SandboxClientEvents.isSandboxPlayer();
+                BuildingClientEvents.getPlayerToBuildingRelationship(hudSelectedPlacement) == Relationship.OWNED;
                         //AlliancesClient.canControlAlly(hudSelectedPlacement.ownerName) ||
 
             // -----------------
@@ -807,38 +803,6 @@ public class HudClientEvents {
                 buttonsRendered += 1;
             }
         }
-
-        // ---------------------------
-        // Unit sandbox buttons
-        // ---------------------------
-        if (SandboxClientEvents.isSandboxPlayer() && (hudSelectedEntity != null || hudSelectedPlacement != null)) {
-            blitX = 0;
-            blitY = screenHeight - iconFrameSize;
-
-            blitY -= iconFrameSize * buildingProdRows;
-            if (hudSelectedEntity != null || !hudSelectedPlacement.getAbilities().isEmpty() || !hudSelectedPlacement.isBuilt) {
-                blitY -= iconFrameSize;
-            }
-            ArrayList<Button> actionButtons = new ArrayList<>();
-
-            actionButtons.add(SandboxActionButtons.getSetRelationshipButton());
-            if (hudSelectedPlacement != null) {
-                actionButtons.add(SandboxActionButtons.removeBuildingPlacement);
-            }
-            if (hudSelectedEntity instanceof Unit) {
-                actionButtons.add(SandboxActionButtons.setAnchor);
-                actionButtons.add(SandboxActionButtons.resetToAnchor);
-                actionButtons.add(SandboxActionButtons.removeAnchor);
-            }
-            for (Button actionButton : actionButtons) {
-                if (!actionButton.isHidden.get()) {
-                    actionButton.render(evt.getGuiGraphics(), blitX, blitY, mouseX, mouseY);
-                    renderedButtons.add(actionButton);
-                    blitX += iconFrameSize;
-                }
-            }
-        }
-
         // --------------------------------------------------------
         // Unit action buttons (attack, stop, move, abilities etc.)
         // --------------------------------------------------------
@@ -920,8 +884,6 @@ public class HudClientEvents {
 
                 int rowsUp = (int) Math.floor((float) (unitAbilities.size() - 1) / MAX_BUTTONS_PER_ROW);
                 rowsUp = Math.max(0, rowsUp);
-                if (SandboxClientEvents.isSandboxPlayer() && (hudSelectedEntity != null || hudSelectedPlacement != null))
-                    rowsUp += 1;
 
                 blitY -= iconFrameSize * rowsUp;
 
@@ -957,63 +919,6 @@ public class HudClientEvents {
                     if (!rankUpMenuButton.isHidden.get()) {
                         rankUpMenuButton.render(evt.getGuiGraphics(), 0, blitY - iconFrameSize, mouseX, mouseY);
                         renderedButtons.add(rankUpMenuButton);
-                    }
-                }
-            }
-        }
-        else if (MC.player != null && SandboxClientEvents.isSandboxPlayer(MC.player.getName().getString()) && selUnits.isEmpty() && selBuildings.isEmpty()) {
-            blitX = 0;
-            blitY = screenHeight - iconFrameSize;
-
-            ArrayList<Button> actionButtons = new ArrayList<>();
-            actionButtons.add(SandboxClientEvents.getCycleBuildingOrUnitsButton());
-            actionButtons.add(SandboxClientEvents.getToggleRelationshipButton());
-
-            if (SandboxClientEvents.sandboxMenuType == SandboxMenuType.UNITS) {
-                actionButtons.add(SandboxClientEvents.getToggleUnitCheatsButton());
-            } else {
-                actionButtons.add(SandboxClientEvents.getToggleBuildingCheatsButton());
-            }
-            actionButtons.add(SandboxClientEvents.getToggleNonUnitControlButton());
-            actionButtons.add(SandboxClientEvents.getSortCustomBuildingsButton());
-
-            for (Button actionButton : actionButtons) {
-                if (!actionButton.isHidden.get()) {
-                    actionButton.render(evt.getGuiGraphics(), blitX, blitY, mouseX, mouseY);
-                    renderedButtons.add(actionButton);
-                    blitX += iconFrameSize;
-                }
-            }
-            blitX = 0;
-            blitY = screenHeight - (iconFrameSize * 2) - 4;
-
-            List<Button> abilityButtons = switch(SandboxClientEvents.sandboxMenuType) {
-                case UNITS -> List.copyOf(SandboxClientEvents.getUnitButtons());
-                case BUILDINGS -> List.copyOf(SandboxClientEvents.getBuildingButtons());
-                case CUSTOM_BUILDINGS -> List.copyOf(SandboxClientEvents.getCustomBuildingButtons());
-            };
-
-            List<Button> shownAbilities = abilityButtons.stream()
-                    .filter(b -> !b.isHidden.get())
-                    .toList();
-
-            int rowsUp = (int) Math.floor((float) (shownAbilities.size() - 1) / MAX_BUTTONS_PER_ROW);
-            rowsUp = Math.max(0, rowsUp);
-            if (SandboxClientEvents.isSandboxPlayer() && (hudSelectedEntity != null || hudSelectedPlacement != null))
-                rowsUp += 1;
-
-            blitY -= iconFrameSize * rowsUp;
-
-            int i = 0;
-            for (Button button : shownAbilities) {
-                if (!button.isHidden.get()) {
-                    i += 1;
-                    button.render(evt.getGuiGraphics(), blitX, blitY, mouseX, mouseY);
-                    renderedButtons.add(button);
-                    blitX += iconFrameSize;
-                    if (i % MAX_BUTTONS_PER_ROW == 0) {
-                        blitX = 0;
-                        blitY += iconFrameSize;
                     }
                 }
             }
@@ -1063,14 +968,14 @@ public class HudClientEvents {
             isSelPlayer = true;
         }
 
-        if (selPlayerName != null && (isSelPlayer || alliedWithSelPlayer || !PlayerClientEvents.isRTSPlayer() || SandboxClientEvents.isSandboxPlayer())) {
+        if (selPlayerName != null && (isSelPlayer || alliedWithSelPlayer || !PlayerClientEvents.isRTSPlayer())) {
             resources = ResourcesClientEvents.getResources(selPlayerName);
         }
 
         blitX = 0;
         blitY = 0;
 
-        if ((!PlayerClientEvents.isRTSPlayer() || alliedWithSelPlayer || SandboxClientEvents.isSandboxPlayer()) && !isSelPlayer) {
+        if ((!PlayerClientEvents.isRTSPlayer() || alliedWithSelPlayer) && !isSelPlayer) {
             if (resources != null) {
                 evt.getGuiGraphics().drawString(
                     MC.font,
@@ -1272,12 +1177,11 @@ public class HudClientEvents {
             }
         }
 
-        // global production queue - visible to yourself, observers, sandbox players and allies
+        // global production queue - visible to yourself, observers and allies
         int queuePanelStartX = 0;
         int queuePanelStartY = resourcePanelBottomY + 6;
         if (isSelPlayer ||
             !PlayerClientEvents.isRTSPlayer() ||
-            SandboxClientEvents.isSandboxPlayer() ||
             AlliancesClient.isAllied(MC.player.getName().getString(), selPlayerName)) {
             Pair<RectZone, List<Button>> renderedElements = GlobalProductionQueueRenderer.renderQueue(evt.getGuiGraphics(),
                     selPlayerName,
@@ -1541,23 +1445,10 @@ public class HudClientEvents {
                 renderedButtons.add(startButton);
             }
         }
-        else if (SandboxClientEvents.isSandboxPlayer(MC.player.getName().getString())) {
-            Button exitButton = SandboxClientEvents.getExitSandboxButton();
-            if (!exitButton.isHidden.get()) {
-                exitButton.render(evt.getGuiGraphics(),
-                        (int) (screenWidth - (START_BUTTON_ICON_SIZE * 2f)),
-                        START_BUTTON_ICON_SIZE / 2,
-                        mouseX,
-                        mouseY
-                );
-                renderedButtons.add(exitButton);
-            }
-        }
-
         // -------------------------------------------
-        // Game rules menu (spectator or sandbox only)
+        // Game rules menu (spectator only)
         // -------------------------------------------
-        if (SandboxClientEvents.isSandboxPlayer() || !PlayerClientEvents.isRTSPlayer()) {
+        if (!PlayerClientEvents.isRTSPlayer()) {
             Button gamerulesButton = GameruleClient.getGamerulesButton();
             if (MC.player != null && !gamerulesButton.isHidden.get()) {
                 int xr = screenWidth - (START_BUTTON_ICON_SIZE * 2);
@@ -1960,7 +1851,7 @@ public class HudClientEvents {
     public static void onRenderOverLay(RenderGuiLayerEvent.Pre evt) {
         if (!GuiLayerCompat.isTopLayer(evt))
             return;
-        if (MC.screen != null && MC.level != null && SandboxClientEvents.isSandboxPlayer() && showPreselectedBlockInfo) {
+        if (MC.screen != null && MC.level != null && showPreselectedBlockInfo) {
             int y = 5;
             for (ControlGroup controlGroup : controlGroups) {
                 if (!controlGroup.buildingBps.isEmpty() || !controlGroup.entityIds.isEmpty()) {

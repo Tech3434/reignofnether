@@ -1498,7 +1498,6 @@
     "effect.reignofnether.stun": "Étourdissement",
     "effect.reignofnether.freeze": "Gel",
     "effect.reignofnether.uncontrollable": "Incontrôlable",
-    "effect.reignofnether.zombie_infected": "Infecté par Zombie",
     "effect.reignofnether.minor_speed": "Vitesse mineure",
     "effect.reignofnether.minor_slowdown": "Ralentissement mineur",
     "effect.reignofnether.damage_taken_increase": "Dégâts subis accrus",
@@ -1506,7 +1505,6 @@
     "effect.reignofnether.attack_slowdown": "Ralentissement d'attaque",
     "effect.reignofnether.temporary_efficiency": "Efficacité Temporaire",
     "effect.reignofnether.bloodlust": "Soif de sang",
-    "effect.reignofnether.frost_damage": "Dégâts de givre",
     "effect.reignofnether.enchantment_amplifier": "Amplificateur d'enchantement",
     "effect.reignofnether.disarm": "Désarmement"
 }

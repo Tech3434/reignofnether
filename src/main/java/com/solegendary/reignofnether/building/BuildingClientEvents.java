@@ -24,7 +24,6 @@ import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.player.PlayerColors;
 import com.solegendary.reignofnether.resources.ResourceName;
 
-import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
 
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitAction;
@@ -73,18 +72,22 @@ public class BuildingClientEvents {
 
     static final Minecraft MC = Minecraft.getInstance();
 
+    /** Army capacity granted by this player's built capitols, on top of the base limit. */
+    public static int getPopulationBonusFromCapitols(String playerName) {
+        int bonus = 0;
+        for (BuildingPlacement building : buildings)
+            if (building.ownerName.equals(playerName) && building.isBuilt && building.isCapitol)
+                bonus += building.getBuilding().populationSupply;
+        return bonus;
+    }
+
     public static int getTotalPopulationSupply(String playerName) {
         if (Cheats.hasCheat("foodforthought")) {
             return GameruleClient.maxPopulation;
         }
 
-        int totalPopulationSupply = 0;
-        for (BuildingPlacement building : buildings)
-            if (building.ownerName.equals(playerName) && building.isBuilt) {
-                totalPopulationSupply += building.getBuilding().cost.population;
-            }
-
-        return Math.min(GameruleClient.maxPopulation, totalPopulationSupply);
+        // base limit is building-independent; only capitols raise it (Building.populationSupply)
+        return GameruleClient.maxPopulation + getPopulationBonusFromCapitols(playerName);
     }
 
     // clientside buildings used for tracking position (for cursor selection)
@@ -136,7 +139,7 @@ public class BuildingClientEvents {
         if (!true) {
             return;
         }
-        if (!SandboxClientEvents.isSandboxPlayer() && building.isOutsideWorldBorder()) {
+        if (building.isOutsideWorldBorder()) {
             return;
         }
         selectedBuildings.add(building);
@@ -235,7 +238,7 @@ public class BuildingClientEvents {
 
         boolean valid = BuildingValidators.isPlacementValid(
                 MC.level, buildingToPlace, originPos, MC.player.getName().getString(), buildingRotation,
-                isBridgeDiagonal(), SandboxClientEvents.isSandboxPlayer(), true
+                isBridgeDiagonal(), false, true
         );
         boolean yellowUnderline = false;
         drawBuilding(blocksToDraw, matrix, originPos, forceColour, valid, yellowUnderline);
@@ -395,7 +398,7 @@ matrix.pushPose();
         for (BuildingPlacement building : buildings) {
 
             boolean isInBrightChunk = true;
-            boolean inWorldBorderOrInSandbox = SandboxClientEvents.isSandboxPlayer() || !building.isOutsideWorldBorder();
+            boolean inWorldBorder = !building.isOutsideWorldBorder();
 
             // minCorner/maxCorner are inclusive block positions, so the footprint runs to maxCorner + 1.
             // Build it from the lower corners, not BlockPos#getCenter(): the latter spans the two
@@ -410,7 +413,7 @@ matrix.pushPose();
             float g = colorHex.getGreen() / 255.0f;
             float b = colorHex.getBlue() / 255.0f;
 
-            if (isInBrightChunk && inWorldBorderOrInSandbox) {
+            if (isInBrightChunk && inWorldBorder) {
                 if (selectedBuildings.contains(building)) {
                     MyRenderer.drawLineBox(evt.getPoseStack(), aabb, 1.0f, 1.0f, 1.0f, 1.0f);
                 } else if (building.equals(preselectedBuilding) && !HudClientEvents.isMouseOverAnyButtonOrHud()) {
@@ -425,7 +428,7 @@ matrix.pushPose();
                     }
                 }
             }
-            if (MinimapClientEvents.shouldUnderline() && inWorldBorderOrInSandbox)
+            if (MinimapClientEvents.shouldUnderline() && inWorldBorder)
                 MyRenderer.drawBoxBottom(evt.getPoseStack(), aabb, r, g, b, 0.5f);
         }
 
@@ -513,7 +516,7 @@ matrix.pushPose();
             BuildingPlacement preSelBuilding = getPreselectedBuilding();
 
             String errorMsgKey = BuildingValidators.getPlacementValidityError(
-                    MC.level, buildingToPlace, originPos, MC.player.getName().getString(), buildingRotation, isBridgeDiagonal(), SandboxClientEvents.isSandboxPlayer(), true
+                    MC.level, buildingToPlace, originPos, MC.player.getName().getString(), buildingRotation, isBridgeDiagonal(), false, true
             );
             boolean valid = errorMsgKey == null;
             boolean inFog = !BuildingValidators.isInBrightChunk(MC.level, preSelPos, MC.player.getName().getString());
@@ -538,10 +541,6 @@ matrix.pushPose();
                 }
                 if (Keybindings.shiftMod.isDown()) {
                     String ownerName = MC.player.getName().getString();
-                    if (SandboxClientEvents.relationship == Relationship.NEUTRAL)
-                        ownerName = "";
-                    else if (SandboxClientEvents.relationship == Relationship.HOSTILE)
-                        ownerName = "Enemy";
 
                     BuildingServerboundPacket.placeAndQueueBuilding(building,
                         BuildingUtils.isBridge(buildingToPlace) && bridgePlaceState == 2 ? originPos.offset(-5, 0, -5) : originPos,
@@ -581,13 +580,6 @@ matrix.pushPose();
                         }
                     }
                     String ownerName = MC.player.getName().getString();
-                    if (SandboxClientEvents.isSandboxPlayer(ownerName) && !hasSelectedWorkers &&
-                        true) {
-                        if (SandboxClientEvents.relationship == Relationship.NEUTRAL)
-                            ownerName = "";
-                        else if (SandboxClientEvents.relationship == Relationship.HOSTILE)
-                            ownerName = "Enemy";
-                    }
                     var builderArray = new int[builderIds.size()];
                     for (int i = 0; i < builderIds.size(); i++) {
                         builderArray[i] = builderIds.get(i);
@@ -718,12 +710,11 @@ matrix.pushPose();
             buildingToPlace = null;
         }
         if (evt.getKeyCode() == GLFW.GLFW_KEY_DELETE) {
-            boolean isSandboxPlayer = MC.player != null && SandboxClientEvents.isSandboxPlayer(MC.player.getName().getString());
             BuildingPlacement building = HudClientEvents.hudSelectedPlacement;
-            if (building != null && building.getBuilding().capturable && !isSandboxPlayer) {
+            if (building != null && building.getBuilding().capturable) {
                 HudClientEvents.showTemporaryMessage(I18n.get("server.reignofnether.cannot_delete_capturable"));
             } else if (building != null &&
-                ((building.isBuilt && getPlayerToBuildingRelationship(building) == Relationship.OWNED) || isSandboxPlayer)) {
+                (building.isBuilt && getPlayerToBuildingRelationship(building) == Relationship.OWNED)) {
                 HudClientEvents.hudSelectedPlacement = null;
                 BuildingServerboundPacket.cancelBuilding(building.minCorner, MC.player.getName().getString());
             }
@@ -746,8 +737,7 @@ matrix.pushPose();
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post evt) {
 
-        if (!SandboxClientEvents.isSandboxPlayer())
-            selectedBuildings.removeIf(BuildingPlacement::isOutsideWorldBorder);
+        selectedBuildings.removeIf(BuildingPlacement::isOutsideWorldBorder);
 
         ticksToNextVisCheck -= 1;
         if (ticksToNextVisCheck <= 0) {

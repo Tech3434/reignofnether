@@ -40,6 +40,20 @@ public class BuildingSaveData extends SavedData {
         return SavedDataCompat.computeIfAbsent(server, "saved-building-data", BuildingSaveData::create, tag -> BuildingSaveData.load(tag, server));
     }
 
+    /** Read-only accessor for world load: no entry is created when the world has none. */
+    @Nonnull
+    public static BuildingSaveData getLoaded(LevelAccessor level) {
+        MinecraftServer server = level.getServer();
+        if (server == null)
+            return create();
+        return SavedDataCompat.getLoaded(server, "saved-building-data", BuildingSaveData::create, tag -> BuildingSaveData.load(tag, server));
+    }
+
+    public static boolean isStored(LevelAccessor level) {
+        MinecraftServer server = level.getServer();
+        return server != null && SavedDataCompat.isStored(server, "saved-building-data", BuildingSaveData::create, tag -> BuildingSaveData.load(tag, server));
+    }
+
     public static BuildingSaveData load(CompoundTag tag, MinecraftServer server) {
         ReignOfNether.LOGGER.info("BuildingSaveData.load");
 

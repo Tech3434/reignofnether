@@ -31,6 +31,20 @@ public class NetherZoneSaveData extends SavedData {
         return SavedDataCompat.computeIfAbsent(server, "saved-netherzone-data", NetherZoneSaveData::create, NetherZoneSaveData::load);
     }
 
+    /** Read-only accessor for world load: no entry is created when the world has none. */
+    @Nonnull
+    public static NetherZoneSaveData getLoaded(LevelAccessor level) {
+        MinecraftServer server = level.getServer();
+        if (server == null)
+            return create();
+        return SavedDataCompat.getLoaded(server, "saved-netherzone-data", NetherZoneSaveData::create, NetherZoneSaveData::load);
+    }
+
+    public static boolean isStored(LevelAccessor level) {
+        MinecraftServer server = level.getServer();
+        return server != null && SavedDataCompat.isStored(server, "saved-netherzone-data", NetherZoneSaveData::create, NetherZoneSaveData::load);
+    }
+
     public static NetherZoneSaveData load(CompoundTag tag) {
         ReignOfNether.LOGGER.info("NetherZoneSaveData.load");
 

@@ -2,7 +2,6 @@ package com.solegendary.reignofnether.building.production;
 
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.api.ReignOfNetherRegistries;
-import com.solegendary.reignofnether.registrars.EntityRegistrar;
 import com.solegendary.reignofnether.unit.units.villagers.*;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
@@ -26,13 +25,20 @@ public class ProductionItems {
     public static void init() {}
 
     public static final List<ProductionItem> ALL = List.of(VILLAGER, VINDICATOR);
+
     @Nullable
     public static ProductionItem getProductionItem(EntityType<? extends Mob> entityType) {
-        for (ProductionItem prodItem : ALL) {
-            String itemName = prodItem.getItemName();
-            if (itemName != null && EntityRegistrar.getEntityType(prodItem.getItemName()) == entityType)
+        for (ProductionItem prodItem : ALL)
+            if (prodItem.getEntityType() == entityType)
                 return prodItem;
-        }
+        return null;
+    }
+
+    @Nullable
+    public static ProductionItem getProductionItem(String itemName) {
+        for (ProductionItem prodItem : ALL)
+            if (prodItem.getItemName().equals(itemName))
+                return prodItem;
         return null;
     }
 }

@@ -21,7 +21,6 @@ import com.solegendary.reignofnether.player.Cheats;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.resources.*;
-import com.solegendary.reignofnether.sandbox.SandboxServer;
 
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitAction;
@@ -177,6 +176,11 @@ public class BuildingServerEvents {
     public static void saveBuildings(ServerLevel level) {
         if (level == null)
             return;
+        // don't create an empty save file in a world that has no buildings and none stored
+        if (getBuildings().isEmpty() && !BuildingSaveData.isStored(level)) {
+            level.getDataStorage().save();
+            return;
+        }
         BuildingSaveData buildingData = BuildingSaveData.getInstance(level);
         buildingData.buildings.clear();
 
@@ -213,6 +217,11 @@ getBuildings().forEach(b -> {
     }
 
     public static void saveNetherZones(ServerLevel level) {
+        // don't create an empty save file in a world that has no nether zones and none stored
+        if (netherZones.isEmpty() && !NetherZoneSaveData.isStored(level)) {
+            level.getDataStorage().save();
+            return;
+        }
         NetherZoneSaveData netherData = NetherZoneSaveData.getInstance(level);
         netherData.netherZones.clear();
         netherData.netherZones.addAll(netherZones);
@@ -228,8 +237,8 @@ getBuildings().forEach(b -> {
 
         if (level != null) {
             CustomBuildingServerEvents.loadCustomBuildings(level);
-            BuildingSaveData buildingData = BuildingSaveData.getInstance(level);
-            NetherZoneSaveData netherData = NetherZoneSaveData.getInstance(level);
+            BuildingSaveData buildingData = BuildingSaveData.getLoaded(level);
+            NetherZoneSaveData netherData = NetherZoneSaveData.getLoaded(level);
             ArrayList<BlockPos> placedNZs = new ArrayList<>();
             BuildingServerEvents.getBuildings().clear();
 buildingData.buildings.forEach(b -> {
@@ -379,8 +388,7 @@ buildingData.buildings.forEach(b -> {
                 return null;
             }
 
-            boolean isSandbox = SandboxServer.isAnyoneASandboxPlayer();
-            if (!fromCommand && !isSandbox && !BuildingValidators.isInBrightChunk(serverLevel, newBuilding.centrePos, ownerName) && !ignoreFog) {
+            if (!fromCommand && !BuildingValidators.isInBrightChunk(serverLevel, newBuilding.centrePos, ownerName) && !ignoreFog) {
                 for (int id : builderUnitIds) {
                     Entity entity = serverLevel.getEntity(id);
                     if (entity instanceof WorkerUnit workerUnit) {
@@ -392,7 +400,7 @@ buildingData.buildings.forEach(b -> {
                 }
                 return null;
             } else if (!fromCommand) {
-                String errorMsgKey = BuildingValidators.getPlacementValidityError(serverLevel, newBuilding.getBuilding(), originPos, ownerName, rotation, isDiagonalBridge, isSandbox, true);
+                String errorMsgKey = BuildingValidators.getPlacementValidityError(serverLevel, newBuilding.getBuilding(), originPos, ownerName, rotation, isDiagonalBridge, false, true);
                 if (errorMsgKey != null) {
                     HudClientboundPacket.showTempMessageI18n(ownerName, errorMsgKey);
                     FogBuildingClientboundPacket.removeFogQueuedBuilding(originPos);
@@ -415,7 +423,7 @@ buildingData.buildings.forEach(b -> {
                         placeScaffoldingUnder(block, newBuilding);
 
             boolean hasFastBuildCheat = Cheats.playerHasCheat(ownerName, "warpten");
-            if (SandboxServer.isAnyoneASandboxPlayer() && hasFastBuildCheat) {
+            if (hasFastBuildCheat) {
                 newBuilding.maxBlocksPerTick = 4;
                 newBuilding.queueAllBlocks(serverLevel);
             } else {
@@ -450,9 +458,6 @@ buildingData.buildings.forEach(b -> {
                 ));
             }
 
-            if (SandboxServer.isAnyoneASandboxPlayer() && (ownerName.isEmpty() || ownerName.equals("Enemy")))
-                newBuilding.selfBuilding = true;
-
             assignBuilderUnits(builderUnitIds, queue, newBuilding);
 
             for (LivingEntity entity : UnitServerEvents.getAllUnits()) {
@@ -468,10 +473,6 @@ buildingData.buildings.forEach(b -> {
             if (false)
                 newBuilding.ownerName = "";
 
-            if (SandboxServer.isAnyoneASandboxPlayer() && builderUnitIds.length == 0) {
-                newBuilding.getBuilding().shouldDestroyOnReset = false;
-                saveBuildings(serverLevel);
-            }
             return newBuilding;
         }
         return null;
@@ -591,17 +592,17 @@ buildingData.buildings.forEach(b -> {
     public static void cancelBuilding(BuildingPlacement building, String playerName) {
         if (building == null)
             return;
-        if (building.isBuilt && !SandboxServer.isSandboxPlayer(playerName) &&
+        if (building.isBuilt &&
             BuildingUtils.getTotalCompletedBuildingsOwned(false, building.ownerName) == 1) {
             HudClientboundPacket.showTempMessageI18n(playerName,"hud.helperbuttons.reignofnether.cancel.error");
             return;
         }
-        if (building.getBuilding().capturable && !SandboxServer.isAnyoneASandboxPlayer()) {
+        if (building.getBuilding().capturable) {
             HudClientboundPacket.showTempMessageI18n(playerName,"hud.helperbuttons.reignofnether.cancel.error");
             return;
         }
         NightSourceAddon nsa = building.getBuilding().getActiveAddon(NightSourceAddon.class);
-        if (nsa != null && nsa.getNightRange(building) > 0 && building.isBuilt && !SandboxServer.isAnyoneASandboxPlayer()) {
+        if (nsa != null && nsa.getNightRange(building) > 0 && building.isBuilt) {
             HudClientboundPacket.showTempMessageI18n(playerName,"hud.helperbuttons.reignofnether.cancel.error");
             return;
         }
@@ -640,17 +641,28 @@ buildingData.buildings.forEach(b -> {
         building.destroy((ServerLevel) building.getLevel());
     }
 
+    // removes a placed building without destroying its blocks, telling clients; a nether zone under it starts restoring
+    public static void removeBuildingPlacement(BlockPos pos) {
+        buildings.removeIf(b -> {
+            if (b.originPos.equals(pos)) {
+                BuildingClientboundPacket.removeBuilding(pos);
+                NetherConvertingAddon ncb;
+                if ((ncb = b.getBuilding().getActiveAddon(NetherConvertingAddon.class)) != null
+                        && ncb.getMaxNetherRange(b) > 0 && ncb.getNetherZone(b) != null)
+                    ncb.getNetherZone(b).startRestoring();
+                return true;
+            }
+            return false;
+        });
+    }
+
     public static int getTotalPopulationSupply(String ownerName) {
         if (Cheats.playerHasCheat(ownerName, "foodforthought")) {
             return UnitServerEvents.maxPopulation;
         }
 
-        int totalPopulationSupply = 0;
-        for (BuildingPlacement building : buildings)
-            if (building.ownerName.equals(ownerName) && building.isBuilt) {
-                totalPopulationSupply += building.getBuilding().cost.population;
-            }
-        return Math.min(UnitServerEvents.maxPopulation, totalPopulationSupply);
+        // base limit is building-independent; only capitols raise it (Building.populationSupply)
+        return UnitServerEvents.maxPopulation + UnitServerEvents.getPopulationBonusFromCapitols(ownerName);
     }
 
     // similar to BuildingClientEvents getPlayerToBuildingRelationship: given a Unit and Building, what is the

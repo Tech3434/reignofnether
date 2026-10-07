@@ -2,9 +2,9 @@ package com.solegendary.reignofnether.building.custombuilding;
 
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.registrars.PacketHandler;
-import com.solegendary.reignofnether.sandbox.SandboxServer;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.network.RTSSimplePayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -90,7 +90,8 @@ public class CustomBuildingServerboundPacket  implements RTSSimplePayload {
     // server-side packet-consuming functions
     public void handle(IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
-            if (!SandboxServer.isAnyoneASandboxPlayer())
+            // editing custom buildings is an operator (mapmaker) tool
+            if (!(ctx.player() instanceof ServerPlayer player) || !player.hasPermissions(2))
                 return;
 
             ReignOfNether.LOGGER.info("[CustomBuilding] action={}, buildingName={}, boolValue={}, intValue={}, strValue={}", this.action, this.buildingName, this.boolValue, this.intValue, this.strValue);

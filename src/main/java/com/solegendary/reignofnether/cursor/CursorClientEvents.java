@@ -15,7 +15,6 @@ import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 
-import com.solegendary.reignofnether.sandbox.SandboxAction;
 import com.solegendary.reignofnether.unit.NonUnitClientEvents;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitAction;
@@ -98,7 +97,6 @@ public class CursorClientEvents {
     private static final int DRAG_THRESHOLD = 10;
     // action that is performed on the next left click
     private static UnitAction leftClickAction = null;
-    private static SandboxAction leftClickSandboxAction = null;
 
     public static Vector3d getCursorWorldPos() {
         return cursorWorldPos;
@@ -110,10 +108,6 @@ public class CursorClientEvents {
 
     public static UnitAction getLeftClickAction() {
         return leftClickAction;
-    }
-
-    public static SandboxAction getLeftClickSandboxAction() {
-        return leftClickSandboxAction;
     }
 
     public static boolean isRightClickDown() {
@@ -137,8 +131,6 @@ public class CursorClientEvents {
     }
 
     public static void setLeftClickAction(UnitAction actionName) {
-        if (actionName != null)
-            leftClickSandboxAction = null;
         if (actionName != null &&
                 List.of(UnitAction.STARTRTS_VILLAGERS,
                         UnitAction.STARTRTS_MONSTERS,
@@ -159,12 +151,6 @@ public class CursorClientEvents {
         }
         if (actionName != null)
             ItemClientEvents.resetActions();
-    }
-
-    public static void setLeftClickSandboxAction(SandboxAction actionName) {
-        if (actionName != null)
-            leftClickAction = null;
-        leftClickSandboxAction = actionName;
     }
 
     private static final ResourceLocation TEXTURE_CURSOR = ResourceLocation.fromNamespaceAndPath("reignofnether", "textures/cursors/customcursor.png");
@@ -221,7 +207,7 @@ public class CursorClientEvents {
         } else if (leftClickAction != null && leftClickAction.equals(UnitAction.BUILD_REPAIR)) {
             RenderSystem.setShaderTexture(0, TEXTURE_SHOVEL);
             texture = TEXTURE_SHOVEL;
-        } else if (leftClickAction != null || leftClickSandboxAction != null || ItemClientEvents.hasLeftClickAction()) {
+        } else if (leftClickAction != null || ItemClientEvents.hasLeftClickAction()) {
             RenderSystem.setShaderTexture(0, TEXTURE_CROSS);
             texture = TEXTURE_CROSS;
             cursorXoffset = -8;
@@ -540,7 +526,7 @@ public class CursorClientEvents {
                     UnitClientEvents.getPreselectedUnits().size() == 0 &&
                     BuildingClientEvents.getPreselectedBuilding() == null &&
                     ItemClientEvents.getPreselectedItems().isEmpty() &&
-                    !buildingTargetedByWorker && !buildingTargetedByAttacker) || isLeftClickActionStartRTS || getLeftClickSandboxAction() != null) {
+                    !buildingTargetedByWorker && !buildingTargetedByAttacker) || isLeftClickActionStartRTS) {
 
                 // see LevelRenderCompat: at AFTER_CUTOUT_BLOCKS RenderSystem's model-view does not have
                 // the camera rotation yet, so the draw and the flush both have to happen under it

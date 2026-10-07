@@ -24,7 +24,6 @@ import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
 
-import com.solegendary.reignofnether.sandbox.SandboxServer;
 
 import com.solegendary.reignofnether.unit.EnemySearchBehaviour;
 import com.solegendary.reignofnether.unit.UnitAction;
@@ -720,7 +719,12 @@ public class CommandsServerEvents {
 		for (int i = 0; i < idArray.length; i++) {
 			idArray[i] = ids.get(i);
 		}
-		SandboxServer.setUnitOwner(idArray, ownerName);
+		for (LivingEntity entity : UnitServerEvents.getAllUnits())
+			for (int id : idArray)
+				if (entity.getId() == id && entity instanceof Unit unit) {
+					unit.setOwnerName(ownerName);
+					UnitSyncClientboundPacket.sendSyncOwnerNamePacket(unit);
+				}
 		ctx.getSource().sendSuccess(
 			() -> Component.translatable("commands.reignofnether.unit.assign.success", ids.size(), ownerName),
 			true
@@ -762,7 +766,12 @@ public class CommandsServerEvents {
 		BlockPos anchor
 	) {
 		int[] ids = collectUnitIds(from, to);
-		SandboxServer.setAnchor(ids, anchor);
+		for (LivingEntity entity : UnitServerEvents.getAllUnits())
+			for (int id : ids)
+				if (entity.getId() == id && entity instanceof Unit unit) {
+					unit.setAnchor(anchor);
+					UnitSyncClientboundPacket.sendSyncAnchorPosPacket(entity, unit.getAnchor());
+				}
 		ctx.getSource().sendSuccess(
 			() -> Component.translatable("commands.reignofnether.unit.anchor.set.success", ids.length),
 			true
@@ -770,13 +779,23 @@ public class CommandsServerEvents {
 		return ids.length;
 	}
 	
+	/** Clears the anchor on every unit in the id list, telling clients. Shared by the command tree. */
+	public static void removeAnchors(int[] ids) {
+		for (LivingEntity entity : UnitServerEvents.getAllUnits())
+			for (int id : ids)
+				if (entity.getId() == id && entity instanceof Unit unit) {
+					unit.setAnchor(null);
+					UnitSyncClientboundPacket.sendRemoveAnchorPosPacket(entity);
+				}
+	}
+
 	public static int removeAnchor(
 		CommandContext<CommandSourceStack> ctx,
 		BlockPos from,
 		BlockPos to
 	) {
 		int[] ids = collectUnitIds(from, to);
-		SandboxServer.removeAnchor(ids);
+		removeAnchors(ids);
 		ctx.getSource().sendSuccess(
 			() -> Component.translatable("commands.reignofnether.unit.anchor.remove.success", ids.length),
 			true

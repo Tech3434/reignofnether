@@ -21,7 +21,6 @@ import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
-import com.solegendary.reignofnether.sandbox.SandboxServer;
 
 import com.solegendary.reignofnether.time.TimeServerEvents;
 import com.solegendary.reignofnether.time.TimeUtils;
@@ -122,8 +121,6 @@ public class PlayerServerEvents {
     // thereisnospoon - allow changing survival wave by clicking the wave indicator and using debug commands
     // slipslopslap - monster units are unaffected by sunlight
     // wouldyoukindly - allow control of non-unit mobs in RTS mode
-    // thebeastofcaerbannog - spawns the Killer Rabbit
-    // elitetaurenchieftain - levels all owned heroes to 10
     public static final List<String> singleWordCheats = List.of(
         "warpten",
         "operationcwal",
@@ -139,6 +136,11 @@ public class PlayerServerEvents {
         if (serverLevel == null) {
             return;
         }
+        // don't create an empty save file in a world that has no RTS players and none stored
+        if (rtsPlayers.isEmpty() && !RTSPlayerSaveData.isStored(serverLevel)) {
+            serverLevel.getDataStorage().save();
+            return;
+        }
         RTSPlayerSaveData data = RTSPlayerSaveData.getInstance(serverLevel);
         data.rtsPlayers.clear();
         data.rtsPlayers.addAll(rtsPlayers);
@@ -151,19 +153,12 @@ public class PlayerServerEvents {
         ServerLevel level = evt.getServer().getLevel(Level.OVERWORLD);
 
         if (level != null) {
-            RTSPlayerSaveData data = RTSPlayerSaveData.getInstance(level);
+            RTSPlayerSaveData data = RTSPlayerSaveData.getLoaded(level);
 
             rtsPlayers.clear();
             rtsPlayers.addAll(data.rtsPlayers);
             
 
-            for (RTSPlayer rtsPlayer : rtsPlayers) {
-                if (SandboxServer.isSandboxPlayer(rtsPlayer.name)) {
-                    GameModeClientboundPacket.setAndLockAllClientGameModes(GameMode.CLASSIC);
-                    enableAllCheats(rtsPlayer.name);
-                    break;
-                }
-            }
             UnitServerEvents.maxPopulation = level.getGameRules().getInt(GameRuleRegistrar.MAX_POPULATION);
         }
     }
@@ -459,11 +454,7 @@ public class PlayerServerEvents {
                 }
             }
 
-            if (SandboxServer.isSandboxPlayer(playerName)) {
-                Cheats.removeAllCheatsFor(playerName);
-            } else {
-                enableAllCheats(playerName);
-            }
+            enableAllCheats(playerName);
             ResourcesServerEvents.resetResources(playerName, readiedStart);
 
             if (readiedStart) {
@@ -557,11 +548,6 @@ public class PlayerServerEvents {
             String msg = evt.getMessage().getString();
             String[] words = msg.split(" ");
             String playerName = evt.getPlayer().getName().getString();
-
-            if (words.length == 1 && words[0].equalsIgnoreCase("thebeastofcaerbannog")) {
-                UnitServerEvents.spawnMob(EntityRegistrar.getEntityType("Killer Rabbit"), serverLevel, evt.getPlayer().getOnPos(), playerName);
-                sendMessageToAllPlayers("server.reignofnether.used_cheat",false, playerName, words[0]);
-            }
 
             if (words.length == 2) {
                 try {
@@ -713,10 +699,6 @@ public class PlayerServerEvents {
                     ReignOfNether.LOGGER.warn("No original game mode found for player {}", playerName);
                 }
 
-                if (SandboxServer.isSandboxPlayer(playerName)) {
-                    serverPlayer.setGameMode(GameType.CREATIVE);
-                }
-
                 // Mark that the GUI is now closed
                 playerGuiOpenStatus.remove(playerName);
             } else {
@@ -833,9 +815,6 @@ public class PlayerServerEvents {
     }
 
     public static void defeat(String playerName, String reason) {
-        if (SandboxServer.isSandboxPlayer(playerName))
-            return;
-
         boolean playerExists = false;
         for (RTSPlayer rtsPlayer : rtsPlayers) {
             if (rtsPlayer.name.equals(playerName)) {
@@ -989,35 +968,29 @@ public class PlayerServerEvents {
     public static int resetRTS(boolean hardReset) {
         ReignOfNether.LOGGER.info("[Player] resetRTS: hardReset={}", hardReset);
 
-        boolean isSandbox = SandboxServer.isAnyoneASandboxPlayer();
-
         synchronized (rtsPlayers) {
             rtsPlayers.clear();
 
             for (LivingEntity entity : UnitServerEvents.getAllUnits())
-                if (hardReset || (entity instanceof Unit unit && !Unit.hasAnchor(unit) && !isSandbox))
+                if (hardReset || (entity instanceof Unit unit && !Unit.hasAnchor(unit)))
                     entity.kill();
 
-            if (!isSandbox)
-                UnitServerEvents.getAllUnits().removeIf(u -> (hardReset || (u instanceof Unit unit && !Unit.hasAnchor(unit))));
+            UnitServerEvents.getAllUnits().removeIf(u -> (hardReset || (u instanceof Unit unit && !Unit.hasAnchor(unit))));
 
-            if (!isSandbox)
-                for (LivingEntity entity : UnitServerEvents.getAllUnits())
-                    if (entity instanceof Unit unit)
-                        unit.setOwnerName("");
+            for (LivingEntity entity : UnitServerEvents.getAllUnits())
+                if (entity instanceof Unit unit)
+                    unit.setOwnerName("");
 
             for (BuildingPlacement building : BuildingServerEvents.getBuildings()) {
                 if (building instanceof ProductionPlacement productionBuilding)
                     productionBuilding.productionQueue.clear();
-                if ((building.getBuilding().shouldDestroyOnReset || hardReset) && !isSandbox)
+                if (building.getBuilding().shouldDestroyOnReset || hardReset)
                     building.destroy((ServerLevel) building.getLevel());
             }
-            if (!isSandbox)
-                BuildingServerEvents.getBuildings().removeIf(b -> b.getBuilding().shouldDestroyOnReset || hardReset);
+            BuildingServerEvents.getBuildings().removeIf(b -> b.getBuilding().shouldDestroyOnReset || hardReset);
 
-            if (!isSandbox)
-                for (BuildingPlacement building : BuildingServerEvents.getBuildings())
-                    building.ownerName = "";
+            for (BuildingPlacement building : BuildingServerEvents.getBuildings())
+                building.ownerName = "";
 
             Cheats.removeAllCheats();
             PlayerClientboundPacket.resetRTS(hardReset);

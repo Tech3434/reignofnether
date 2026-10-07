@@ -17,7 +17,7 @@ import com.solegendary.reignofnether.building.custombuilding.CustomBuildingServe
 import com.solegendary.reignofnether.commands.CommandsServerEvents;
 import com.solegendary.reignofnether.commands.rtsapi.argument.BuildingArgument;
 import com.solegendary.reignofnether.commands.rtsapi.argument.PlayerNameArgument;
-import com.solegendary.reignofnether.sandbox.SandboxServer;
+import com.solegendary.reignofnether.building.BuildingServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import net.minecraft.commands.CommandSourceStack;
@@ -119,7 +119,7 @@ public class BuildingCommands {
 							.then(Commands.argument("preserved", BoolArgumentType.bool())
 								.executes(
 									(ctx) -> withBuildings(
-										b -> SandboxServer.removeBuilding(b.originPos),
+										b -> BuildingServerEvents.removeBuildingPlacement(b.originPos),
 										ctx,
 										Component.translatable("commands.reignofnether.building.destroy_preserve.success")
 									)

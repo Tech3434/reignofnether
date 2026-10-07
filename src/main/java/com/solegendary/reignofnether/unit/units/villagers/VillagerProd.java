@@ -4,7 +4,6 @@ import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.building.buildings.placements.ProductionPlacement;
 import com.solegendary.reignofnether.building.production.ProductionItem;
 import com.solegendary.reignofnether.building.production.StopProductionButton;
-import com.solegendary.reignofnether.hud.buttons.UnitSpawnButton;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.registrars.EntityRegistrar;
 import com.solegendary.reignofnether.resources.ResourceCost;
@@ -15,6 +14,8 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
@@ -36,18 +37,9 @@ public class VillagerProd extends ProductionItem {
         return VillagerProd.itemName;
     }
 
-    public UnitSpawnButton getPlaceButton() {
-        return new UnitSpawnButton(
-                itemName,
-                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/villager.png"),
-                List.of(
-                        FormattedCharSequence.forward(I18n.get("entity.reignofnether.villager_unit"), Style.EMPTY.withBold(true)),
-                        FormattedCharSequence.forward("", Style.EMPTY),
-                        FormattedCharSequence.forward(I18n.get("entity.reignofnether.villager_unit.tooltip1"), Style.EMPTY),
-                        FormattedCharSequence.forward(I18n.get("entity.reignofnether.villager_unit.tooltip2"), Style.EMPTY),
-                        FormattedCharSequence.forward(I18n.get("entity.reignofnether.villager_unit.tooltip3"), Style.EMPTY)
-                )
-        );
+    @Override
+    public EntityType<? extends Mob> getEntityType() {
+        return EntityRegistrar.VILLAGER_UNIT.get();
     }
     
     public StartProductionButton getStartButton(ProductionPlacement prodBuilding, Keybinding hotkey) {

@@ -43,11 +43,6 @@ public class MobEffectRegistrar {
     public static final Supplier<MobEffect> PARTIALLY_POSSESSED = MOB_EFFECTS.register("partially_possessed", () -> new MyMobEffect(MobEffectCategory.HARMFUL, 0x1A001A)
             .addAttributeModifier(Attributes.MOVEMENT_SPEED, ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "34787f7c-2718-415f-b15d-9c22ab6d7e84"), -0.20, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
 
-    // Causes a mob to turn into a zombie villager, drowned, zombie piglin or zoglin upon death depending on the unit type
-    public static final Supplier<MobEffect> ZOMBIE_INFECTED = MOB_EFFECTS.register("zombie_infected", () -> new InstantenousMobEffect(MobEffectCategory.HARMFUL, 0x000000));
-
-    public static final Supplier<MobEffect> SLIME_INFECTED = MOB_EFFECTS.register("slime_infected", () -> new InstantenousMobEffect(MobEffectCategory.HARMFUL, 0x000000));
-
     public static final Supplier<MobEffect> MINOR_MOVEMENT_SPEED = MOB_EFFECTS.register("minor_speed", () -> new InstantenousMobEffect(MobEffectCategory.BENEFICIAL, 3402751)
             .addAttributeModifier(Attributes.MOVEMENT_SPEED, ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "e6b9720b-131d-4c17-b029-ab8161e8da97"), 0.05, AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
 
@@ -82,17 +77,11 @@ public class MobEffectRegistrar {
             .addAttributeModifier(Attributes.MOVEMENT_SPEED, ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "b9da3d7f-da19-4860-9daa-328be5911517"), 0.20, AttributeModifier.Operation.ADD_MULTIPLIED_BASE)
             .addAttributeModifier(Attributes.ATTACK_SPEED, ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "52f887cb-3048-44fc-b176-98314b5467bd"), 0.60, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
 
-    // Causes a unit to take 1dmg/s per layer of Wraith snow they're standing on
-    public static final Supplier<MobEffect> FROST_DAMAGE = MOB_EFFECTS.register("frost_damage", () -> new InstantenousMobEffect(MobEffectCategory.HARMFUL, 3402751));
-
     // Doubles the effect of all unit enchantments (does not affect players)
     public static final Supplier<MobEffect> ENCHANTMENT_AMPLIFIER = MOB_EFFECTS.register("enchantment_amplifier", () -> new InstantenousMobEffect(MobEffectCategory.BENEFICIAL, 0x000000));
 
     public static final Supplier<MobEffect> DISARM = MOB_EFFECTS.register("disarm", () -> new InstantenousMobEffect(MobEffectCategory.HARMFUL, 3402751)
             .addAttributeModifier(Attributes.ATTACK_SPEED, ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "a5faf34d-0155-49cf-9c6e-73f16ad41a42"), -1.0f, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
-
-    // for striders to maintain visuals slightly off terrain
-    public static final Supplier<MobEffect> WARM = MOB_EFFECTS.register("warm", () -> new InstantenousMobEffect(MobEffectCategory.BENEFICIAL, 0xFF0000));
 
     public static final Supplier<MobEffect> VIGOR = MOB_EFFECTS.register("vigor", () -> new InstantenousMobEffect(MobEffectCategory.BENEFICIAL, 0x0000FF));
 
@@ -109,8 +98,6 @@ public class MobEffectRegistrar {
             .addAttributeModifier(Attributes.ARMOR, ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "f16f1e7e-3f89-4ac8-b918-621366dc13bc"), 100, AttributeModifier.Operation.ADD_VALUE)
             .addAttributeModifier(AttributeHelpers.holder(AttributeRegistrar.MAGIC_DAMAGE_RESIST.get()), ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "4c9d4fd6-6354-420c-a21b-4b6810f2d07b"), 100, AttributeModifier.Operation.ADD_VALUE)
             .addAttributeModifier(Attributes.KNOCKBACK_RESISTANCE, ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "f89ff503-070c-4a85-9512-44fe0ec3b153"), 1, AttributeModifier.Operation.ADD_VALUE));
-
-    public static final Supplier<MobEffect> VILLAGER_INSPIRATION = MOB_EFFECTS.register("villager_inspiration", () -> new InstantenousMobEffect(MobEffectCategory.BENEFICIAL, 0x66ffcc));
 
     public static final Supplier<MobEffect> LIMITED_LIFESPAN = MOB_EFFECTS.register("limited_lifespan", () -> new InstantenousMobEffect(MobEffectCategory.NEUTRAL, 0xffffff));
 

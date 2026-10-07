@@ -13,7 +13,6 @@ import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.player.RTSPlayer;
 import com.solegendary.reignofnether.registrars.BlockRegistrar;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
-import com.solegendary.reignofnether.sandbox.SandboxServer;
 
 import com.solegendary.reignofnether.sounds.SoundAction;
 import com.solegendary.reignofnether.sounds.SoundClientboundPacket;
@@ -74,12 +73,7 @@ public class ResourcesServerEvents {
     public static void resetResources(String playerName, boolean readiedStart) {
         for (Resources resources : resourcesList) {
             if (resources.ownerName.equals(playerName)) {
-                if (SandboxServer.isSandboxPlayer(playerName)) {
-                    resources.food = STARTING_FOOD_SANDBOX;
-                    resources.wood = STARTING_WOOD_SANDBOX;
-                    resources.ore = STARTING_ORE_SANDBOX;
-                    resources.emerald = STARTING_EMERALD_SANDBOX;
-                } else if (readiedStart) {
+                if (readiedStart) {
                     resources.food = STARTING_FOOD_READIED;
                     resources.wood = STARTING_WOOD_READIED;
                     resources.ore = STARTING_ORE_READIED;
@@ -180,9 +174,6 @@ public class ResourcesServerEvents {
     // if a tree is touched, destroy any adjacent logs that are above the ground after some time to avoid leaving
     // tall trees behind
     public static void fellAdjacentLogs(BlockPos bp, ArrayList<BlockPos> bpsExcluded, Level level) {
-        if (SandboxServer.isAnyoneASandboxPlayer())
-            return;
-
         if (!level.getGameRules().getRule(GameRuleRegistrar.LOG_FALLING).get())
             return;
 

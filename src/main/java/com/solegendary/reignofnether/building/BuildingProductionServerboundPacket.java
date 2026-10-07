@@ -9,7 +9,6 @@ import com.solegendary.reignofnether.building.production.ActiveProduction;
 import com.solegendary.reignofnether.building.production.ProductionItem;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.registrars.PacketHandler;
-import com.solegendary.reignofnether.sandbox.SandboxServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -108,7 +107,6 @@ public class BuildingProductionServerboundPacket  implements RTSSimplePayload {
                 return;
             }
             else if (!player.getName().getString().equals(building.ownerName) &&
-                    !SandboxServer.isAnyoneASandboxPlayer() &&
                     !AlliancesServerEvents.canControlAlly(player.getName().getString(), "")) {
 
                 ReignOfNether.LOGGER.warn("BuildingProductionServerboundPacket: Tried to process packet from " + player.getName() + " for " + building.ownerName);

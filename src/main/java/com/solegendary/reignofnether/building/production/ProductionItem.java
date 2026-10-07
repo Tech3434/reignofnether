@@ -14,6 +14,8 @@ import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
@@ -60,6 +62,12 @@ public abstract class ProductionItem {
 
     public abstract String getItemName();
 
+    /** The entity this item summons, or null if it produces something else (eg. tech). */
+    @Nullable
+    public EntityType<? extends Mob> getEntityType() {
+        return null;
+    }
+
     public boolean canAfford(ProductionPlacement pp) {
         for (Resources resources : ResourcesServerEvents.resourcesList)
             if (resources.ownerName.equals(pp.ownerName))
@@ -105,16 +113,11 @@ public abstract class ProductionItem {
             return true;
 
         int currentPop = UnitServerEvents.getCurrentPopulation(pp.ownerName);
-
-        for (Resources resources : ResourcesServerEvents.resourcesList) {
-            if (resources.ownerName.equals(pp.ownerName)) {
-                if (pp.getLevel().isClientSide())
-                    return (currentPop + getCost(pp.getLevel().isClientSide(), pp.ownerName).population) <= GameruleClient.maxPopulation;
-                else
-                    return (currentPop + getCost(pp.getLevel().isClientSide(), pp.ownerName).population) <= UnitServerEvents.maxPopulation;
-            }
-        }
-        return false;
+        // the limit is the base (maxPopulation gamerule) plus what the owner's capitols grant
+        int popLimit = pp.getLevel().isClientSide()
+                ? GameruleClient.maxPopulation + BuildingClientEvents.getPopulationBonusFromCapitols(pp.ownerName)
+                : UnitServerEvents.maxPopulation + UnitServerEvents.getPopulationBonusFromCapitols(pp.ownerName);
+        return (currentPop + getCost(pp.getLevel().isClientSide(), pp.ownerName).population) <= popLimit;
     }
 
     // some items (eg. research) are enabled only if the item doesn't exist in any existing clientside queue

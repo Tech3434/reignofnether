@@ -107,6 +107,11 @@ public class CustomBuildingServerEvents {
     public static void saveCustomBuildings(ServerLevel level) {
         if (level == null)
             return;
+        // don't create an empty save file in a world that has no custom buildings and none stored
+        if (customBuildings.isEmpty() && !CustomBuildingSaveData.isStored(level)) {
+            level.getDataStorage().save();
+            return;
+        }
         CustomBuildingSaveData customBuildingData = CustomBuildingSaveData.getInstance(level);
         customBuildingData.customBuildings.clear();
         customBuildings.forEach(b -> {
@@ -128,7 +133,7 @@ public class CustomBuildingServerEvents {
         if (!retainBuildings)
             customBuildings.clear();
 
-        CustomBuildingSaveData customBuildingData = CustomBuildingSaveData.getInstance(level);
+        CustomBuildingSaveData customBuildingData = CustomBuildingSaveData.getLoaded(level);
         customBuildingData.customBuildings.forEach(bSave -> {
             CustomBuilding building = new CustomBuilding(bSave.buildingName, bSave.structureSize, Blocks.COMMAND_BLOCK, bSave.structureNbt, bSave.attributesNbt, bSave.commandsNbt);
             boolean buildingExists = false;

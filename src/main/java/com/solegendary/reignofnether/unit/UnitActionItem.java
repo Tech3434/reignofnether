@@ -15,8 +15,6 @@ import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import com.solegendary.reignofnether.resources.ResourceName;
 
-import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
-import com.solegendary.reignofnether.sandbox.SandboxServer;
 import com.solegendary.reignofnether.unit.goals.*;
 import com.solegendary.reignofnether.unit.interfaces.*;
 import com.solegendary.reignofnether.util.LanguageUtil;
@@ -136,12 +134,6 @@ public class UnitActionItem {
     public void action(Level level) {
         Ability usedAbility = null;
 
-        boolean isSandboxPlayer;
-        if (level.isClientSide())
-            isSandboxPlayer = SandboxClientEvents.isSandboxPlayer(this.ownerName);
-        else
-            isSandboxPlayer = SandboxServer.isSandboxPlayer(this.ownerName);
-
         // filter out unowned units and non-unit entities
         ArrayList<Unit> actionableUnits = new ArrayList<>();
         for (int id : unitIds) {
@@ -157,7 +149,7 @@ public class UnitActionItem {
                     alliedControl = AlliancesServerEvents.canControlAlly(this.ownerName, unit.getOwnerName());
                     fullControl = NonUnitServerEvents.canControlAllMobs(entity.level(), this.ownerName);
                 }
-                if (unit.getOwnerName().equals(this.ownerName) || isSandboxPlayer || alliedControl || fullControl) {
+                if (unit.getOwnerName().equals(this.ownerName) || alliedControl || fullControl) {
                     actionableUnits.add(unit);
                 }
             }
@@ -482,7 +474,6 @@ public class UnitActionItem {
 
         if (actionableBuilding != null && (
             actionableBuilding.ownerName.equals(ownerName) ||
-            SandboxServer.isSandboxPlayer(ownerName) ||
             AlliancesServerEvents.canControlAlly(ownerName, actionableBuilding.ownerName))
         ) {
             for (Ability ability : actionableBuilding.getAbilities()) {

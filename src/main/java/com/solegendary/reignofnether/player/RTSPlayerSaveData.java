@@ -31,6 +31,20 @@ public class RTSPlayerSaveData extends SavedData {
         return SavedDataCompat.computeIfAbsent(server, "saved-rtsplayer-data", RTSPlayerSaveData::create, RTSPlayerSaveData::load);
     }
 
+    /** Read-only accessor for world load: no entry is created when the world has none. */
+    @Nonnull
+    public static RTSPlayerSaveData getLoaded(LevelAccessor level) {
+        MinecraftServer server = level.getServer();
+        if (server == null)
+            return create();
+        return SavedDataCompat.getLoaded(server, "saved-rtsplayer-data", RTSPlayerSaveData::create, RTSPlayerSaveData::load);
+    }
+
+    public static boolean isStored(LevelAccessor level) {
+        MinecraftServer server = level.getServer();
+        return server != null && SavedDataCompat.isStored(server, "saved-rtsplayer-data", RTSPlayerSaveData::create, RTSPlayerSaveData::load);
+    }
+
     public static RTSPlayerSaveData load(CompoundTag tag) {
         ReignOfNether.LOGGER.info("RTSPlayerSaveData.load");
 

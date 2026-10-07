@@ -16,8 +16,10 @@ public class ResourceCosts {
     public static final int REDUCED_REPLANT_WOOD_COST = 0;
     public static final int DEFAULT_MAX_POPULATION = 1;
 
-    public static final ResourceCost VILLAGER = ResourceCost.Unit(50, 0, 0, 15, 0);
-    public static final ResourceCost VINDICATOR = ResourceCost.Unit(160, 0, 0, 32, 0);
+    // population is army capacity used: the base limit is 1 (ResourceCosts.DEFAULT_MAX_POPULATION),
+    // and every built capitol raises it (see Building.populationSupply)
+    public static final ResourceCost VILLAGER = ResourceCost.Unit(50, 0, 0, 15, 1);
+    public static final ResourceCost VINDICATOR = ResourceCost.Unit(160, 0, 0, 32, 3);
     public static final ResourceCost TOWN_CENTRE = ResourceCost.Building(0, 350, 250, 0);
     public static final ResourceCost BARRACKS = ResourceCost.Building(0, 150, 0, 0);
 

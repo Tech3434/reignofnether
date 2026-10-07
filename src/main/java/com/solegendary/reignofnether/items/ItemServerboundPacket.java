@@ -3,7 +3,6 @@ package com.solegendary.reignofnether.items;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.registrars.PacketHandler;
-import com.solegendary.reignofnether.sandbox.SandboxServer;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.core.BlockPos;
@@ -179,7 +178,6 @@ public class ItemServerboundPacket  implements RTSSimplePayload {
                 ReignOfNether.LOGGER.warn("Unit for item action packet was null");
             }
             else if (!player.getName().getString().equals(actionableUnit.getOwnerName()) &&
-                    !SandboxServer.isSandboxPlayer(actionableUnit.getOwnerName()) &&
                     !AlliancesServerEvents.canControlAlly(player.getName().getString(), actionableUnit.getOwnerName())) {
                 ReignOfNether.LOGGER.warn("ItemServerboundPacket: Tried to process packet from " + player.getName() + " for " + actionableUnit.getOwnerName());
             }

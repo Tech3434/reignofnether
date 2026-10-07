@@ -28,7 +28,6 @@ import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
 import com.solegendary.reignofnether.registrars.EntityRegistrar;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import com.solegendary.reignofnether.resources.*;
-import com.solegendary.reignofnether.sandbox.SandboxServer;
 import com.solegendary.reignofnether.sounds.SoundAction;
 import com.solegendary.reignofnether.sounds.SoundClientboundPacket;
 import com.solegendary.reignofnether.unit.interfaces.*;
@@ -162,7 +161,6 @@ public class UnitServerEvents {
         isServerStopping = true;
         ServerLevel level = evt.getServer().getLevel(Level.OVERWORLD);
         if (level != null) {
-            saveFallenHeroUnits(level);
             saveGatherTargets(level);
             allUnits.clear();
             forcedUnitChunks.clear();
@@ -173,34 +171,30 @@ public class UnitServerEvents {
         MiscUtil.addParticleExplosion(ParticleTypes.POOF, 35, level, entity.position());
     }
 
-    public static void saveFallenHeroUnits(ServerLevel level) {
-        HeroUnitSaveData data = HeroUnitSaveData.getInstance(level);
-        data.heroUnits.clear();
-        data.save();
-        level.getDataStorage().save();
-        ReignOfNether.LOGGER.info("Saved " + getAllUnits().size() + " fallen hero units");
-    }
-
     public static void saveGatherTargets(ServerLevel level) {
-        TargetResourcesSaveData data = TargetResourcesSaveData.getInstance(level);
-        data.targetData.clear();
-        AtomicInteger numWorkersSaved = new AtomicInteger();
+        ArrayList<TargetResourcesSave> toSave = new ArrayList<>();
         getAllUnits().forEach(e -> { // if currently gathering, save that gather data
             if (e instanceof WorkerUnit wUnit) {
                 if (wUnit.getGatherResourceGoal().data.hasData()) {
                     wUnit.getGatherResourceGoal().data.unitUUID = e.getStringUUID();
-                    data.targetData.add(wUnit.getGatherResourceGoal().data);
-                    numWorkersSaved.addAndGet(1);
+                    toSave.add(wUnit.getGatherResourceGoal().data);
                 } else if (wUnit.getGatherResourceGoal().saveData.hasData()) {
                     wUnit.getGatherResourceGoal().saveData.unitUUID = e.getStringUUID();
-                    data.targetData.add(wUnit.getGatherResourceGoal().saveData);
-                    numWorkersSaved.addAndGet(1);
+                    toSave.add(wUnit.getGatherResourceGoal().saveData);
                 }
             }
         });
+        // nothing to store and nothing stored: don't create an empty save file
+        if (toSave.isEmpty() && !TargetResourcesSaveData.isStored(level)) {
+            level.getDataStorage().save();
+            return;
+        }
+        TargetResourcesSaveData data = TargetResourcesSaveData.getInstance(level);
+        data.targetData.clear();
+        data.targetData.addAll(toSave);
         data.save();
         level.getDataStorage().save();
-        //ReignOfNether.LOGGER.info("Saved " + numWorkersSaved + " gatherTargets");
+        //ReignOfNether.LOGGER.info("Saved " + toSave.size() + " gatherTargets");
     }
 
     @SubscribeEvent
@@ -209,11 +203,8 @@ public class UnitServerEvents {
         isServerStopping = false;
 
         if (level != null) {
-            HeroUnitSaveData heroData = HeroUnitSaveData.getInstance(level);
-            ReignOfNether.LOGGER.info("Loaded " + heroData.heroUnits.size() + " hero units in serverevents");
-
             synchronized (savedTargetResources) {
-                TargetResourcesSaveData data = TargetResourcesSaveData.getInstance(level);
+                TargetResourcesSaveData data = TargetResourcesSaveData.getLoaded(level);
                 savedTargetResources.addAll(data.targetData); // actually assign the data in TickEvent as entities don't exist here yet
                 ReignOfNether.LOGGER.info("Loaded " + data.targetData.size() + " gatherTargets in serverevents");
             }
@@ -265,6 +256,15 @@ public class UnitServerEvents {
                 }
             }
         return currentPopulation;
+    }
+
+    /** Army capacity granted by this owner's built capitols, on top of the base limit. */
+    public static int getPopulationBonusFromCapitols(String ownerName) {
+        int bonus = 0;
+        for (BuildingPlacement building : BuildingServerEvents.getBuildings())
+            if (building.ownerName.equals(ownerName) && building.isBuilt && building.isCapitol)
+                bonus += building.getBuilding().populationSupply;
+        return bonus;
     }
 
     // manually provide all the variables required to do unit actions
@@ -466,8 +466,7 @@ public class UnitServerEvents {
                     for (LivingEntity u : allUnits) {
                         if ((u instanceof Unit unit1 && unit1.getOwnerName().equals(unit.getOwnerName()))) unitsOwned++;
                     }
-                    if (!SandboxServer.isSandboxPlayer(unit.getOwnerName()) &&
-                            unitsOwned == 0 && isRTSPlayer(unit.getOwnerName())
+                    if (unitsOwned == 0 && isRTSPlayer(unit.getOwnerName())
                             && BuildingUtils.getTotalCompletedBuildingsOwned(false, unit.getOwnerName()) == 0) {
                         PlayerServerEvents.defeat(unit.getOwnerName(), Component.translatable("server.reignofnether.lost_all").getString());
                     }

@@ -10,7 +10,6 @@ import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.player.PlayerClientEvents;
 import com.solegendary.reignofnether.player.PlayerServerboundPacket;
-import com.solegendary.reignofnether.sandbox.SandboxClientEvents;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
@@ -109,9 +108,7 @@ public class HelperButtons {
                 () -> {
                     if (hudSelectedPlacement == null)
                         return false;
-                    boolean isSandboxPlayer = MC.player != null && SandboxClientEvents.isSandboxPlayer(MC.player.getName().getString());
-                    return BuildingUtils.getTotalCompletedBuildingsOwned(true, hudSelectedPlacement.ownerName) == 0 &&
-                            !isSandboxPlayer;
+                    return BuildingUtils.getTotalCompletedBuildingsOwned(true, hudSelectedPlacement.ownerName) == 0;
                 },
                 () -> true,
                 () -> {
@@ -187,7 +184,7 @@ public class HelperButtons {
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/blocks/command_block_side.png"),
                 (Keybinding) null,
                 () -> false,
-                () -> SandboxClientEvents.isSandboxPlayer() || PlayerClientEvents.rtsLocked,
+                () -> PlayerClientEvents.rtsLocked,
                 () -> true,
                 () -> {
                     if (MC.player == null)

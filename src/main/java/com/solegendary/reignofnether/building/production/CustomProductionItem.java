@@ -5,6 +5,8 @@ import com.solegendary.reignofnether.building.buildings.placements.ProductionPla
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -16,12 +18,14 @@ public class CustomProductionItem extends ProductionItem {
     public final String itemName;
     public final BiFunction<ProductionPlacement, Keybinding, StartProductionButton> getStartButton;
     public final BiFunction<ProductionPlacement, Boolean, StopProductionButton> getCancelButton;
+    private final EntityType<? extends Mob> entityType;
     private List<FormattedCharSequence> newTooltip;
     private boolean useOriginalTitle;
 
     public CustomProductionItem(ResourceCost cost, String itemName, ProductionItem productionItem, List<FormattedCharSequence> newTooltip, boolean useOriginalTitle) {
         super(cost, productionItem.dupeRule, productionItem.onComplete);
         this.itemName = itemName;
+        this.entityType = productionItem.getEntityType();
         this.getStartButton = productionItem::getStartButton;
         this.getCancelButton = productionItem::getCancelButton;
         this.newTooltip = newTooltip;
@@ -30,6 +34,11 @@ public class CustomProductionItem extends ProductionItem {
 
     public String getItemName() {
         return itemName;
+    }
+
+    @Override
+    public EntityType<? extends Mob> getEntityType() {
+        return entityType;
     }
 
     public StartProductionButton getStartButton(ProductionPlacement prodBuilding, Keybinding keybinding) {
