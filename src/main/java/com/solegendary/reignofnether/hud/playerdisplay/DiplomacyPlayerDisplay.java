@@ -313,10 +313,6 @@ public class DiplomacyPlayerDisplay extends AbstractPlayerDisplay {
             MC.player.sendSystemMessage(Component.translatable("alliance.reignofnether.alliances_lock"));
             return;
         }
-        if (GameruleClient.coopMode && MC.player != null) {
-            MC.player.sendSystemMessage(Component.translatable("alliance.reignofnether.alliances_lock_coop"));
-            return;
-        }
         AllianceServerboundPacket.doAllianceAction(AllianceAction.REQUEST, playerName);
         AlliancesClient.outboundPendingAlliances.add(playerName);
     }
@@ -333,10 +329,6 @@ public class DiplomacyPlayerDisplay extends AbstractPlayerDisplay {
     private void disbandAlliance() {
         if (GameruleClient.lockAlliances && MC.player != null) {
             MC.player.sendSystemMessage(Component.translatable("alliance.reignofnether.alliances_lock"));
-            return;
-        }
-        if (GameruleClient.coopMode && MC.player != null) {
-            MC.player.sendSystemMessage(Component.translatable("alliance.reignofnether.alliances_lock_coop"));
             return;
         }
         AllianceServerboundPacket.doAllianceAction(AllianceAction.DISBAND, playerName);

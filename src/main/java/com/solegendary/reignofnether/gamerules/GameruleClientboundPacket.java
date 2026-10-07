@@ -86,14 +86,6 @@ public class GameruleClientboundPacket  implements RTSSimplePayload {
         PacketHandler.send(PacketHandler.allPlayers(),
                 new GameruleClientboundPacket(GameruleAction.SET_LOCK_ALLIANCES, "", lockAlliances ? 1L : 0L));
     }
-    public static void setScenarioMode(boolean scenarioMode) {
-        PacketHandler.send(PacketHandler.allPlayers(),
-                new GameruleClientboundPacket(GameruleAction.SET_SCENARIO_MODE, "", scenarioMode ? 1L : 0L));
-    }
-    public static void setCoopMode(boolean coopMode) {
-        PacketHandler.send(PacketHandler.allPlayers(),
-                new GameruleClientboundPacket(GameruleAction.SET_COOP_MODE, "", coopMode ? 1L : 0L));
-    }
     public static void setBuildingsOutsideBorder(boolean buildingsOutsideBorder) {
         PacketHandler.send(PacketHandler.allPlayers(),
                 new GameruleClientboundPacket(GameruleAction.SET_BUILDINGS_OUTSIDE_BORDER, "", buildingsOutsideBorder ? 1L : 0L));
@@ -163,8 +155,6 @@ public class GameruleClientboundPacket  implements RTSSimplePayload {
                                 }
                             }
                             case SET_LOCK_ALLIANCES -> GameruleClient.lockAlliances = value == 1L;
-                            case SET_SCENARIO_MODE -> GameruleClient.scenarioMode = value == 1L;
-                            case SET_COOP_MODE -> GameruleClient.coopMode = value == 1L;
                             case SET_BUILDINGS_OUTSIDE_BORDER -> GameruleClient.buildingsOutsideBorder = value == 1L;
                             case SET_RTS_PATHFINDING -> GameruleClient.rtsPathfinding = value == 1L;
                             case SET_ANIMAL_SPAWN_Y_DIFF -> GameruleClient.animalSpawnYDiff = Math.toIntExact(value);

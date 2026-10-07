@@ -91,8 +91,6 @@ public class CustomBuilding extends ProductionBuilding implements GarrisonableBu
     public int nightRadius = 0;
     public int netherRadius = 0;
     public boolean buildableByVillagers = false;
-    public boolean buildableByMonsters = false;
-    public boolean buildableByPiglins = false;
     public boolean netherTerrainOnly = false;
     public int garrisonCapacity = 0;
     public int garrisonRange = 20;
@@ -304,8 +302,6 @@ public class CustomBuilding extends ProductionBuilding implements GarrisonableBu
         attributesNbt.putInt("nightRadius", this.nightRadius);
         attributesNbt.putInt("netherRadius", this.netherRadius);
         attributesNbt.putBoolean("buildableByVillagers", this.buildableByVillagers);
-        attributesNbt.putBoolean("buildableByMonsters", this.buildableByMonsters);
-        attributesNbt.putBoolean("buildableByPiglins", this.buildableByPiglins);
         attributesNbt.putBoolean("netherTerrainOnly", this.netherTerrainOnly);
         attributesNbt.putInt("foodCost", this.cost.food);
         attributesNbt.putInt("woodCost", this.cost.wood);
@@ -324,8 +320,6 @@ public class CustomBuilding extends ProductionBuilding implements GarrisonableBu
 		this.nightRadius = attributesNbt.getInt("nightRadius");
 		this.netherRadius = attributesNbt.getInt("netherRadius");
 		this.buildableByVillagers = attributesNbt.getBoolean("buildableByVillagers");
-		this.buildableByMonsters = attributesNbt.getBoolean("buildableByMonsters");
-		this.buildableByPiglins = attributesNbt.getBoolean("buildableByPiglins");
 		this.netherTerrainOnly = attributesNbt.getBoolean("netherTerrainOnly");
 		this.cost.food = attributesNbt.getInt("foodCost");
 		this.cost.wood = attributesNbt.getInt("woodCost");

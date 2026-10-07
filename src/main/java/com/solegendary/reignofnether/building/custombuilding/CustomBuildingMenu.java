@@ -185,22 +185,6 @@ public class CustomBuildingMenu {
             I18n.get("sandbox.reignofnether.custom_buildings.set_buildable_by_villagers.tooltip1")
         ));
         buttonsCol1.add(new BooleanButton(
-            I18n.get("sandbox.reignofnether.custom_buildings.set_buildable_by_monsters.label"), customBuilding.buildableByMonsters,
-            () -> {
-                CustomBuildingServerboundPacket.customiseBuilding(CustomBuildingAction.SET_BUILDABLE_BY_MONSTERS, customBuilding.name, !customBuilding.buildableByMonsters);
-                customBuilding.buildableByMonsters = !customBuilding.buildableByMonsters;
-            },
-            I18n.get("sandbox.reignofnether.custom_buildings.set_buildable_by_monsters.tooltip1")
-        ));
-        buttonsCol1.add(new BooleanButton(
-            I18n.get("sandbox.reignofnether.custom_buildings.set_buildable_by_piglins.label"), customBuilding.buildableByPiglins,
-            () -> {
-                CustomBuildingServerboundPacket.customiseBuilding(CustomBuildingAction.SET_BUILDABLE_BY_PIGLINS, customBuilding.name, !customBuilding.buildableByPiglins);
-                customBuilding.buildableByPiglins = !customBuilding.buildableByPiglins;
-            },
-            I18n.get("sandbox.reignofnether.custom_buildings.set_buildable_by_piglins.tooltip1")
-        ));
-        buttonsCol1.add(new BooleanButton(
             I18n.get("sandbox.reignofnether.custom_buildings.set_nether_terrain_only.label"), customBuilding.netherTerrainOnly,
             () -> {
                 CustomBuildingServerboundPacket.customiseBuilding(CustomBuildingAction.SET_NETHER_TERRAIN_ONLY, customBuilding.name, !customBuilding.netherTerrainOnly);

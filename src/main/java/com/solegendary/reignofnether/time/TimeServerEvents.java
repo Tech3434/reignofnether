@@ -31,10 +31,6 @@ public class TimeServerEvents {
         if (serverStartTime == 0)
             serverStartTime = evt.getLevel().getDayTime();
 
-        if (PlayerServerEvents.rtsPlayers.isEmpty() && evt.getLevel().getGameRules().getRule(GameRuleRegistrar.SCENARIO_MODE).get()) {
-            ((ServerLevel) evt.getLevel()).setDayTime(serverStartTime);
-        }
-
         long normTime = TimeUtils.normaliseTime(evt.getLevel().getDayTime());
         if (!PlayerServerEvents.rtsPlayers.isEmpty() && lastTime >= 0) {
             if (lastTime <= TimeUtils.DUSK && normTime > TimeUtils.DUSK) {

@@ -36,8 +36,6 @@ public class GameruleClient {
     public static boolean slantedBuilding = true;
     public static int allowedHeroes = 2;
     public static boolean lockAlliances = false;
-    public static boolean scenarioMode = false;
-    public static boolean coopMode = false;
     public static boolean buildingsOutsideBorder = false;
     public static boolean rtsPathfinding = false; // only for GUI
     public static int animalSpawnYDiff = 5;
@@ -55,7 +53,7 @@ public class GameruleClient {
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/blocks/repeating_command_block_back.png"),
                 (Keybinding) null,
                 () -> gamerulesMenuOpen,
-                () -> scenarioMode,
+                () -> false,
                 () -> true,
                 () -> gamerulesMenuOpen = !gamerulesMenuOpen,
                 null,
@@ -165,10 +163,6 @@ public class GameruleClient {
         buttons.add(new GameruleBooleanButton("lockAlliances", lockAlliances,
                 () -> GameruleServerboundPacket.setLockAlliances(!lockAlliances),
                 I18n.get("commands.reignofnether.gamerule.lock_alliances")
-        ));
-        buttons.add(new GameruleBooleanButton("coopMode", coopMode,
-                () -> GameruleServerboundPacket.setCoopMode(!coopMode),
-                I18n.get("commands.reignofnether.gamerule.coop_mode")
         ));
         buttons.add(new GameruleBooleanButton("rtsPathfinding", rtsPathfinding,
                 () -> GameruleServerboundPacket.setRtsPathfinding(!rtsPathfinding),

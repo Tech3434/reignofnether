@@ -66,11 +66,6 @@ public class AllyCommand {
             player.sendSystemMessage(Component.translatable("alliance.reignofnether.alliances_lock"));
             return 0;
         }
-        if (context.getSource().getLevel().getGameRules().getRule(GameRuleRegistrar.COOP_MODE).get() &&
-            (PlayerServerEvents.isRTSPlayer(playerName) || PlayerServerEvents.isRTSPlayer(allyPlayerName))) {
-            player.sendSystemMessage(Component.translatable("alliance.reignofnether.alliances_lock_coop"));
-            return 0;
-        }
 
         if (player.equals(allyPlayer)) {
             player.sendSystemMessage(Component.translatable("alliance.reignofnether.ally_self", playerName));
@@ -157,11 +152,6 @@ public class AllyCommand {
         if (context.getSource().getLevel().getGameRules().getRule(GameRuleRegistrar.LOCK_ALLIANCES).get() &&
             (PlayerServerEvents.isRTSPlayer(playerName) || PlayerServerEvents.isRTSPlayer(allyPlayerName))) {
             player.sendSystemMessage(Component.translatable("alliance.reignofnether.alliances_lock"));
-            return 0;
-        }
-        if (context.getSource().getLevel().getGameRules().getRule(GameRuleRegistrar.COOP_MODE).get() &&
-            (PlayerServerEvents.isRTSPlayer(playerName) || PlayerServerEvents.isRTSPlayer(allyPlayerName))) {
-            player.sendSystemMessage(Component.translatable("alliance.reignofnether.alliances_lock_coop"));
             return 0;
         }
 

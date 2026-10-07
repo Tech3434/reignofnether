@@ -81,10 +81,6 @@ public class GameruleServerboundPacket  implements RTSSimplePayload {
         PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_LOCK_ALLIANCES, "", lockAlliances ? 1L : 0L));
     }
-    public static void setCoopMode(boolean coopMode) {
-        PacketDistributor.sendToServer(
-                new GameruleServerboundPacket(GameruleAction.SET_COOP_MODE, "", coopMode ? 1L : 0L));
-    }
     public static void setRtsPathfinding(boolean rtsPathfinding) {
         PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_RTS_PATHFINDING, "", rtsPathfinding ? 1L : 0L));
@@ -183,10 +179,6 @@ public class GameruleServerboundPacket  implements RTSSimplePayload {
                 case SET_LOCK_ALLIANCES -> {
                     gameRules.getRule(GameRuleRegistrar.LOCK_ALLIANCES).set(booleanValue, server);
                     GameruleClientboundPacket.setLockAlliances(booleanValue);
-                }
-                case SET_COOP_MODE -> {
-                    gameRules.getRule(GameRuleRegistrar.COOP_MODE).set(booleanValue, server);
-                    GameruleClientboundPacket.setCoopMode(booleanValue);
                 }
                 case SET_RTS_PATHFINDING -> {
                     gameRules.getRule(GameRuleRegistrar.RTS_PATHFINDING).set(booleanValue, server);
