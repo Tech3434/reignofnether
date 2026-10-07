@@ -45,6 +45,8 @@ import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -327,8 +329,20 @@ public interface Unit {
             le.heal(1);
         }
 
-        if (!le.level().getWorldBorder().isWithinBounds(le.getOnPos()))
-            le.kill();
+        // H.6: a unit outside the world border used to be killed outright, so on a server with a
+        // border an army simply died out at the edge. Push it back inside instead.
+        WorldBorder unitBorder = le.level().getWorldBorder();
+        if (!unitBorder.isWithinBounds(le.getOnPos())) {
+            double borderMargin = 2.0D;
+            double minBorderX = unitBorder.getMinX() + borderMargin;
+            double maxBorderX = unitBorder.getMaxX() - borderMargin;
+            double minBorderZ = unitBorder.getMinZ() + borderMargin;
+            double maxBorderZ = unitBorder.getMaxZ() - borderMargin;
+            if (maxBorderX > minBorderX && maxBorderZ > minBorderZ)
+                le.setPos(Mth.clamp(le.getX(), minBorderX, maxBorderX), le.getY(), Mth.clamp(le.getZ(), minBorderZ, maxBorderZ));
+            else
+                le.kill(); // degenerate border, nothing to clamp to
+        }
 
         if (unitMob.tickCount % 50 == 0)
             checkAndRetreatToAnchor(unit);

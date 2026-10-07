@@ -103,6 +103,15 @@ public class PlayerServerEvents {
     public static boolean rtsLocked = false; // can players join as RTS players or not?
     public static boolean rtsSyncingEnabled = true; // will logging in players sync units and buildings?
 
+    // H.1: the RTS pass is ordinary operator permission level 2. Nothing new carries it - no entity,
+    // no capability, no saved field - so any op already has it and no new concept enters the game.
+    public static final int RTS_PASS_OP_LEVEL = 2;
+
+    /** Whether this player is allowed to enter RTS mode. */
+    public static boolean hasRTSPass(ServerPlayer player) {
+        return player != null && player.hasPermissions(RTS_PASS_OP_LEVEL);
+    }
+
     private static final int MONSTER_START_TIME_OF_DAY = 500; // 500 = dawn, 6500 = noon, 12500 = dusk
 
     public static final int TICKS_TO_REVEAL = 60 * ResourceCost.TICKS_PER_SECOND;
@@ -353,6 +362,16 @@ public class PlayerServerEvents {
      */
     public static final EntityType<? extends Unit> STARTING_WORKER_TYPE = EntityRegistrar.VILLAGER_UNIT.get();
 
+    /**
+     * H.8: the army a player is handed when a match starts, one entry per unit. The default is a
+     * single worker, because the base army limit is one unit (decision 13) - a bigger starting army
+     * would have nowhere to live until a capitol raises the cap. A faction overrides this list with
+     * its own units.
+     */
+    public static final List<EntityType<? extends Unit>> STARTING_ARMY = List.<EntityType<? extends Unit>>of(
+            EntityRegistrar.VILLAGER_UNIT.get()
+    );
+
     public static void startRTS(int playerId, Vec3 pos) {
         startRTS(playerId, pos, 0);
     }
@@ -372,6 +391,11 @@ public class PlayerServerEvents {
                     serverPlayer = player;
 
             if (serverPlayer == null) {
+                return;
+            }
+            // H.1/H.2: entering RTS mode needs the pass. Without it nothing happens at all - no
+            // message, no error - so the entry is invisible to players who may not use it.
+            if (!hasRTSPass(serverPlayer)) {
                 return;
             }
             if (rtsLocked) {
@@ -411,15 +435,11 @@ public class PlayerServerEvents {
             ServerLevel level = (ServerLevel) serverPlayer.level();
             ArrayList<Entity> startingWorkers = new ArrayList<>();
 
-            List<BlockPos> nonReadiedWorkerBps = List.of(
-                    new BlockPos((int) pos.x,0,(int) pos.z),
-                    new BlockPos((int) pos.x+1,0,(int) pos.z),
-                    new BlockPos((int) pos.x,0,(int) pos.z+1),
-                    new BlockPos((int) pos.x-1,0,(int) pos.z),
-                    new BlockPos((int) pos.x,0,(int) pos.z-1)
-            );
-            for (BlockPos bp0 : nonReadiedWorkerBps) {
-                Entity entity = STARTING_WORKER_TYPE != null ? STARTING_WORKER_TYPE.create(level) : null;
+            // H.8: one spawn position per starting unit, spread out along x from the start position
+            for (int startUnitIdx = 0; startUnitIdx < STARTING_ARMY.size(); startUnitIdx++) {
+                EntityType<? extends Unit> startUnitType = STARTING_ARMY.get(startUnitIdx);
+                BlockPos bp0 = new BlockPos((int) pos.x + startUnitIdx, 0, (int) pos.z);
+                Entity entity = startUnitType != null ? startUnitType.create(level) : null;
                 if (entity != null) {
                     BlockPos bp = MiscUtil.getHighestNonAirBlock(level, bp0)
                             .above()
@@ -513,6 +533,11 @@ public class PlayerServerEvents {
 
     public static void enableOrthoview(int id) {
         ServerPlayer player = getPlayerById(id);
+        // H.1: the server side of the camera entry is gated too, so a client that asks for RTS mode
+        // without the pass simply stays where it is.
+        if (!hasRTSPass(player)) {
+            return;
+        }
 
         orthoviewPlayers.removeIf(p -> p.getId() == id);
         orthoviewPlayers.add(player);
@@ -537,6 +562,10 @@ public class PlayerServerEvents {
 
     public static void openTopdownGui(int playerId) {
         ServerPlayer serverPlayer = getPlayerById(playerId);
+        // H.1: same pass on the GUI entry, so RTS mode cannot be forced on a player who may not use it
+        if (!hasRTSPass(serverPlayer)) {
+            return;
+        }
 
         if (serverPlayer != null) {
             // Open GUI server-side
@@ -679,6 +708,16 @@ public class PlayerServerEvents {
         }
     }
 
+    /**
+     * H.4: a match only ends for a player who actually had something to lose. Without this a player
+     * who has not built anything yet would be defeated the moment their starting units die, even
+     * though they still have a whole match ahead of them.
+     */
+    public static boolean canBeDefeated(String playerName) {
+        RTSPlayer rtsPlayer = getRTSPlayer(playerName);
+        return rtsPlayer != null && rtsPlayer.hasEverOwnedBuilding;
+    }
+
     // defeat a player, giving them a defeat screen, removing all their unit/building control and removing them from
     // rtsPlayers
     public static void defeat(int playerId, String reason) {
@@ -812,6 +851,19 @@ public class PlayerServerEvents {
     public static void onRegisterCommand(RegisterCommandsEvent evt) {
         AllyCommand.register(evt.getDispatcher());
         RTSPlayerScoresCommand.register(evt.getDispatcher());
+
+        // H.5: force a player's loss by hand, for running the defeat scenario. Use it as the player
+        // itself with "/execute as <player> run rts-force-loose".
+        evt.getDispatcher().register(Commands.literal("rts-force-loose")
+            .requires(command -> command.hasPermission(RTS_PASS_OP_LEVEL))
+            .executes((command) -> {
+                ServerPlayer player = command.getSource().getPlayer();
+                if (player == null) {
+                    return 0;
+                }
+                defeat(player.getName().getString(), Component.translatable("server.reignofnether.surrendered").getString());
+                return 1;
+            }));
 
         evt.getDispatcher().register(Commands.literal("rts-lock").then(Commands.literal("enable").executes((command) -> {
             if ((command.getSource() != null &&

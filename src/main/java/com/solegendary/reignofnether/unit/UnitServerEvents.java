@@ -388,9 +388,9 @@ public class UnitServerEvents {
             mob.setPathfindingMalus(PathType.STICKY_HONEY, 1.0f);
         }
 
-        // a freshly joined unit with no owner yet belongs to the nearest RTS player
-        if (!evt.getLevel().isClientSide() && evt.getEntity() instanceof Unit unit && unit.getOwnerName() == null)
-            assignOwnerFromNearestPlayer(evt.getEntity());
+        // H.7: a unit used to be handed to the nearest RTS player on spawn. That turned spawning an
+        // enemy next to an ally into a gift to the ally, so it is gone; an ownerless unit now stays
+        // neutral and is adopted only explicitly.
 
         // for some reason some units need to be nudged a little on spawn or they can.t move
         if (!evt.getLevel().isClientSide() && evt.getEntity() instanceof Unit && evt.getEntity() instanceof LivingEntity le) {
@@ -466,8 +466,10 @@ public class UnitServerEvents {
                     for (LivingEntity u : allUnits) {
                         if ((u instanceof Unit unit1 && unit1.getOwnerName().equals(unit.getOwnerName()))) unitsOwned++;
                     }
+                    // H.4: only end the match for a player who actually had a building to lose
                     if (unitsOwned == 0 && isRTSPlayer(unit.getOwnerName())
-                            && BuildingUtils.getTotalCompletedBuildingsOwned(false, unit.getOwnerName()) == 0) {
+                            && BuildingUtils.getTotalCompletedBuildingsOwned(false, unit.getOwnerName()) == 0
+                            && PlayerServerEvents.canBeDefeated(unit.getOwnerName())) {
                         PlayerServerEvents.defeat(unit.getOwnerName(), Component.translatable("server.reignofnether.lost_all").getString());
                     }
                 }
@@ -680,30 +682,6 @@ public class UnitServerEvents {
                 actionItem.action(evt.getLevel());
             unitActionFastQueue.clear();
         }
-    }
-
-    // assign unit owner to a freshly joined unit based on whoever is closest
-    // (1.21.1 removed MobSpawnEvent.FinalizeSpawn, so this runs on level join instead;
-    //  spawn-egg detection is gone with it)
-    private static void assignOwnerFromNearestPlayer(Entity entity) {
-            Vec3 pos = entity.position();
-            List<Player> nearbyPlayers = MiscUtil.getEntitiesWithinRange(new Vector3d(pos.x, pos.y, pos.z),
-                10,
-                Player.class,
-                entity.level()
-            );
-
-            float closestPlayerDist = 10;
-            Player closestPlayer = null;
-            for (Player player : nearbyPlayers) {
-                if (player.distanceTo(entity) < closestPlayerDist && isRTSPlayer(player.getName().getString())) {
-                    closestPlayerDist = player.distanceTo(entity);
-                    closestPlayer = player;
-                }
-            }
-            if (closestPlayer != null) {
-                ((Unit) entity).setOwnerName(closestPlayer.getName().getString());
-            }
     }
 
     private static boolean shouldIgnoreKnockback(LivingDamageEvent.Pre evt) {

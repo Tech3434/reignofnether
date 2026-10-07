@@ -19,6 +19,12 @@ public class RTSPlayer {
     public int ticksWithoutCapitol = 0;
     public int startPosColorId = 0;
     public RTSPlayerScores scores = new RTSPlayerScores();
+    /**
+     * H.4: whether this player ever owned a building. A match only ends for a player who had
+     * something to lose, so a player who never built is not defeated the moment their starting
+     * units die.
+     */
+    public boolean hasEverOwnedBuilding = false;
 
     public static RTSPlayer getNewPlayer(String playerName, int id, int startPosColorId) {
         return new RTSPlayer(playerName, id, startPosColorId);
@@ -45,10 +51,11 @@ public class RTSPlayer {
         this.name = name;
     }
 
-    public static RTSPlayer getFromSave(String name, int id, int ticksWithoutCapitol, int startPosColorId, int[] scores) {
+    public static RTSPlayer getFromSave(String name, int id, int ticksWithoutCapitol, int startPosColorId, int[] scores, boolean hasEverOwnedBuilding) {
         RTSPlayer rtsPlayer = new RTSPlayer(name, id, startPosColorId);
         rtsPlayer.ticksWithoutCapitol = ticksWithoutCapitol;
         rtsPlayer.scores.setScoreListFromArray(scores);
+        rtsPlayer.hasEverOwnedBuilding = hasEverOwnedBuilding;
         return rtsPlayer;
     }
 
@@ -66,6 +73,10 @@ public class RTSPlayer {
             if (buildingPlacement.isCapitol)
                 numCapitolsOwned++;
         }
+
+        // H.4: remember that this player had a building, so the match only ends on a real loss
+        if (numBuildingsOwned > 0)
+            this.hasEverOwnedBuilding = true;
 
         // Losing the last capitol is what hides a player from the minimap; see isRevealed().
         if (numBuildingsOwned > 0 && numCapitolsOwned == 0) {

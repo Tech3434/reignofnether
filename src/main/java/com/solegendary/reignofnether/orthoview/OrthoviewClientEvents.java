@@ -15,6 +15,7 @@ import com.solegendary.reignofnether.hud.buttons.Button;
 import com.solegendary.reignofnether.hud.TextInputClientEvents;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
+import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.player.PlayerServerboundPacket;
 
 import com.solegendary.reignofnether.unit.UnitClientEvents;
@@ -534,6 +535,11 @@ public class OrthoviewClientEvents {
     }
 
     public static void tryToToggleEnable() {
+        // H.1/H.3: entering RTS mode needs the pass. The F12 hotkey and the /rts-camera command
+        // both come through here, and without the pass nothing happens - not even a message.
+        if (MC.player == null || !MC.player.hasPermissions(PlayerServerEvents.RTS_PASS_OP_LEVEL))
+            return;
+
         if (!OrthoviewClientEvents.isCameraLocked() && MC.gameMode != null) {
             if (MC.player != null && (
                     MC.gameMode.getPlayerMode() == GameType.ADVENTURE

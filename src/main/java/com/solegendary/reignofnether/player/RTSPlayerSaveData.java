@@ -60,8 +60,9 @@ public class RTSPlayerSaveData extends SavedData {
                 int ticksWithoutCapitol = ptag.getInt("ticksWithoutCapitol");
                 int startPosColorId = ptag.getInt("startPosColorId");
                 int[] scores = ptag.contains("scores") ? ptag.getIntArray("scores") : new RTSPlayerScores().getScoreListAsArray();
+                boolean hasEverOwnedBuilding = ptag.getBoolean("hasEverOwnedBuilding");
 
-                data.rtsPlayers.add(RTSPlayer.getFromSave(name, id, ticksWithoutCapitol, startPosColorId, scores));
+                data.rtsPlayers.add(RTSPlayer.getFromSave(name, id, ticksWithoutCapitol, startPosColorId, scores, hasEverOwnedBuilding));
 
                 ReignOfNether.LOGGER.info("RTSPlayerSaveData.load: " + name + "|" + id);
             }
@@ -80,6 +81,7 @@ public class RTSPlayerSaveData extends SavedData {
             cTag.putInt("id", p.id);
             cTag.putInt("ticksWithoutCapitol", p.ticksWithoutCapitol);
             cTag.putInt("startPosColorId", p.startPosColorId);
+            cTag.putBoolean("hasEverOwnedBuilding", p.hasEverOwnedBuilding);
             cTag.putIntArray("scores", p.scores.getScoreListAsArray());
             list.add(cTag);
         });
