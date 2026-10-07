@@ -31,6 +31,14 @@ public class Ability {
     public boolean isAutocasting(BuildingPlacement placement) { return placement.hasAutocast(this); }
     protected Keybinding defaultHotkey = Keybindings.abilitySlot1;
 
+    /**
+     * Abilities this ability opens as a submenu. An ability with a non-empty submenu behaves as a
+     * menu button: clicking it opens the list instead of running {@link #use}. This is what turns a
+     * unit or building into "an entity with a set of abilities" (plan §14.1) and makes
+     * menu-in-menu possible without any per-class code in the HUD.
+     */
+    public final java.util.List<Ability> subAbilities = new java.util.ArrayList<>();
+
     public boolean showRangeLine = false;
     public boolean showRadiusCircle = false;
     public boolean showRangeCircle = true;
@@ -51,6 +59,20 @@ public class Ability {
         this.radius = radius;
         this.canTargetEntities = canTargetEntities;
         this.oneClickOneUse = oneClickOneUse;
+    }
+
+    public boolean isMenu() {
+        return !subAbilities.isEmpty();
+    }
+
+    public java.util.List<Ability> getSubAbilities() {
+        return subAbilities;
+    }
+
+    /** Adds a sub-ability and returns this ability so menus can be built fluently. */
+    public Ability addSubAbility(Ability subAbility) {
+        subAbilities.add(subAbility);
+        return this;
     }
 
     public boolean usesCharges() {

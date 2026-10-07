@@ -234,6 +234,11 @@
     "sounds.reignofnether.blood_moon": "Blood Moon",
 
     "abilities.reignofnether.attack_ground": "Attack Ground",
+    "abilities.reignofnether.dig_block": "Dig Block",
+    "abilities.reignofnether.dig_area": "Dig Area",
+    "abilities.reignofnether.worker_orders": "Orders",
+    "abilities.reignofnether.gather": "Gather",
+    "abilities.reignofnether.return_resources": "Return Resources",
     "abilities.reignofnether.call_lightning": "Call Lightning",
     "abilities.reignofnether.call_lightning.tooltip1": "\uE004  %ds  \uE005  %d",
     "abilities.reignofnether.call_lightning.tooltip2": "Summon a bolt of lightning at the target location.",
@@ -1103,6 +1108,7 @@
     "hud.orthoview.reignofnether.color_type_toggle": "(Click to change)",
     "hud.orthoview.reignofnether.locked_for_observers": "(Locked for observers)",
 
+    "hud.reignofnether.ability_back": "Back",
     "hud.reignofnether.drop_off_resources": "Drop off resources",
     "hud.reignofnether.gather_resources": "Gather Resources (%s)",
     "hud.reignofnether.change_target_resource": "Click to change target resource",

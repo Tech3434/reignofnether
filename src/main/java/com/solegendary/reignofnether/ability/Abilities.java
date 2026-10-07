@@ -41,7 +41,9 @@ public class Abilities {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             for (int i = 0; i < abilities.size(); i++) {
                 Pair<Ability, Keybinding> ability = abilities.get(i);
-                buttons.add(ability.getA().getButton(ability.getB() != null ? ability.getB() : keybindings.get(i) , placement));
+                AbilityButton button = ability.getA().getButton(ability.getB() != null ? ability.getB() : keybindings.get(i) , placement);
+                if (button != null)
+                    buttons.add(button);
             }
         }
         return buttons;
@@ -60,7 +62,9 @@ public class Abilities {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             for (int i = 0; i < abilities.size(); i++) {
                 Pair<Ability, Keybinding> ability = abilities.get(i);
-                buttons.add(ability.getA().getButton(ability.getB() != null ? ability.getB() : keybindings.get(i) , unit));
+                Button button = ability.getA().getButton(ability.getB() != null ? ability.getB() : keybindings.get(i) , unit);
+                if (button != null)
+                    buttons.add(button);
             }
         }
         return buttons;

@@ -6,9 +6,9 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-# Dev-run game directory (worlds, logs, crash reports, options)
+# Dev-run game directories (worlds, logs, crash reports, options)
 run/
-run/
+run-game-test-server/
 
 # Port tooling and scratch output - local only, not part of the mod.
 # tools/ holds the throwaway analysis and migration scripts; *.log / *.txt / *.err are

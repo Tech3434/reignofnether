@@ -6,6 +6,9 @@ import com.mojang.serialization.Dynamic;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
+import com.solegendary.reignofnether.ability.DigAbility;
+import com.solegendary.reignofnether.ability.MenuAbility;
+import com.solegendary.reignofnether.ability.OrderAbility;
 
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.building.Buildings;
@@ -27,6 +30,7 @@ import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.resources.ResourceCosts;
 import com.solegendary.reignofnether.unit.Checkpoint;
 import com.solegendary.reignofnether.unit.EnemySearchBehaviour;
+import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.goals.*;
 import com.solegendary.reignofnether.unit.interfaces.*;
@@ -39,6 +43,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -87,6 +92,23 @@ import com.solegendary.reignofnether.util.EnchantmentUtil;
 
 public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, AttackerUnit, ArmSwingingUnit, VillagerDataHolder, ConvertableUnit {
     public static final Abilities ABILITIES = new Abilities();
+
+    // §14.2: the worker's orders are abilities. Digging is exposed directly; the rest live behind a
+    // menu-in-menu, which is the shape a new faction's units follow - behaviour comes from a set of
+    // abilities rather than from hard-coded per-class HUD branches.
+    static {
+        ABILITIES.add(new DigAbility(UnitAction.DIG_BLOCK));
+        ABILITIES.add(new DigAbility(UnitAction.DIG_AREA));
+        MenuAbility orders = new MenuAbility("abilities.reignofnether.worker_orders",
+                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/items/hoe.png"));
+        orders.addSubAbility(new OrderAbility(UnitAction.TOGGLE_GATHER_TARGET,
+                "abilities.reignofnether.gather",
+                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/items/hoe.png"), false));
+        orders.addSubAbility(new OrderAbility(UnitAction.RETURN_RESOURCES_TO_CLOSEST,
+                "abilities.reignofnether.return_resources",
+                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/items/hopper.png"), false));
+        ABILITIES.add(orders);
+    }
 
     //region
     @Override

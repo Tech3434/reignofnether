@@ -109,6 +109,48 @@ public class HudClientEvents {
     // buttons which are rendered at the moment in RenderEvent
     private static final ArrayList<Button> renderedButtons = new ArrayList<>();
 
+    // ---------------------------------------------------------------
+    // Ability submenus (plan §14.1): an ability that has sub-abilities opens as a menu.
+    // A stack, so menu-in-menu works; each frame remembers who opened it, so the
+    // sub-abilities can be built against the right unit or building.
+    // ---------------------------------------------------------------
+    public record AbilityMenuFrame(Ability menu, Unit unit, BuildingPlacement placement) { }
+    private static final ArrayDeque<AbilityMenuFrame> abilityMenus = new ArrayDeque<>();
+
+    public static boolean isSubmenuOpenFor(Ability menu, Unit unit, BuildingPlacement placement) {
+        if (abilityMenus.isEmpty())
+            return false;
+        AbilityMenuFrame frame = abilityMenus.peek();
+        return frame.menu() == menu &&
+                ((unit != null && frame.unit() == unit) ||
+                 (placement != null && frame.placement() == placement));
+    }
+
+    public static void openSubmenu(Ability menu, Unit unit) {
+        if (isSubmenuOpenFor(menu, unit, null)) {
+            closeSubmenu();
+            return;
+        }
+        abilityMenus.push(new AbilityMenuFrame(menu, unit, null));
+    }
+
+    public static void openSubmenu(Ability menu, BuildingPlacement placement) {
+        if (isSubmenuOpenFor(menu, null, placement)) {
+            closeSubmenu();
+            return;
+        }
+        abilityMenus.push(new AbilityMenuFrame(menu, null, placement));
+    }
+
+    public static void closeSubmenu() {
+        if (!abilityMenus.isEmpty())
+            abilityMenus.pop();
+    }
+
+    public static void clearSubmenus() {
+        abilityMenus.clear();
+    }
+
     // unit that is selected in the list of unit icons
     public static LivingEntity hudSelectedEntity = null;
     // building that is selected in the list of unit icons
@@ -164,6 +206,7 @@ public class HudClientEvents {
         if (entity != hudSelectedEntity) {
             CursorClientEvents.setLeftClickAction(null);
             ItemClientEvents.resetActions();
+            clearSubmenus();
         }
         hudSelectedEntity = entity;
     }
@@ -1523,11 +1566,78 @@ public class HudClientEvents {
         }
 
         // ------------------------------------------------------
+        // Open ability submenu (plan §14.1)
+        // ------------------------------------------------------
+        if (!abilityMenus.isEmpty()) {
+            AbilityMenuFrame frame = abilityMenus.peek();
+            boolean ownerMatches = (frame.unit() != null && frame.unit() == hudSelectedEntity)
+                    || (frame.placement() != null && frame.placement() == hudSelectedPlacement);
+            if (!ownerMatches) {
+                clearSubmenus();
+            } else {
+                renderAbilitySubmenu(evt, frame, mouseX, mouseY);
+            }
+        }
+
+        // ------------------------------------------------------
         // Button tooltips (has to be rendered last to be on top)
         // ------------------------------------------------------
         for (Button button : renderedButtons)
             if (button.isMouseOver(mouseX, mouseY))
                 button.renderTooltip(evt.getGuiGraphics(), mouseX, mouseY);
+    }
+
+    // Renders the open ability menu at the top-left, above everything except tooltips. The back
+    // button closes one level; a sub-ability that is itself a menu opens another level (plan §14.1).
+    private static void renderAbilitySubmenu(ScreenEvent.Render.Post evt, AbilityMenuFrame frame, int mouseX, int mouseY) {
+        List<Ability> subs = frame.menu().getSubAbilities();
+        int subIconFrame = Button.DEFAULT_ICON_FRAME_SIZE;
+        int fx = 4;
+        int fy = 4;
+        int total = subs.size() + 1; // includes the back button
+        int rows = Math.max(1, (int) Math.ceil((double) total / MAX_BUTTONS_PER_ROW));
+        int cols = Math.min(MAX_BUTTONS_PER_ROW, total);
+        hudZones.add(MyRenderer.renderFrameWithBg(evt.getGuiGraphics(),
+                fx - 4, fy - 4,
+                subIconFrame * cols + 8,
+                subIconFrame * rows + 8,
+                frameBgColour));
+
+        List<Keybinding> slots = List.of(
+                Keybindings.abilitySlot1, Keybindings.abilitySlot2, Keybindings.abilitySlot3,
+                Keybindings.abilitySlot4, Keybindings.abilitySlot5, Keybindings.abilitySlot6,
+                Keybindings.abilitySlot7, Keybindings.abilitySlot8
+        );
+
+        Button back = new Button(
+                I18n.get("hud.reignofnether.ability_back"),
+                Button.itemIconSize,
+                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/cross2.png"),
+                null,
+                () -> false,
+                () -> false,
+                () -> true,
+                HudClientEvents::closeSubmenu,
+                null,
+                List.of()
+        );
+        back.render(evt.getGuiGraphics(), fx, fy, mouseX, mouseY);
+        renderedButtons.add(back);
+
+        int i = 1;
+        for (Ability sub : subs) {
+            int gx = fx + (i % MAX_BUTTONS_PER_ROW) * subIconFrame;
+            int gy = fy + (i / MAX_BUTTONS_PER_ROW) * subIconFrame;
+            Keybinding hk = slots.get(Math.min(i - 1, slots.size() - 1));
+            AbilityButton btn = frame.unit() != null
+                    ? sub.getButton(hk, frame.unit())
+                    : sub.getButton(hk, frame.placement());
+            if (btn != null) {
+                btn.render(evt.getGuiGraphics(), gx, gy, mouseX, mouseY);
+                renderedButtons.add(btn);
+            }
+            i += 1;
+        }
     }
 
     public static boolean isMouseOverAnyButton() {
