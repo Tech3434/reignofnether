@@ -521,8 +521,6 @@ public class PlayerServerEvents {
 
     public static void enableOrthoview(int id) {
         ServerPlayer player = getPlayerById(id);
-        if (player != null)
-            player.removeAllEffects();
 
         orthoviewPlayers.removeIf(p -> p.getId() == id);
         orthoviewPlayers.add(player);

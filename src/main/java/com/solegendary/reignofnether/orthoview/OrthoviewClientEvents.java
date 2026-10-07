@@ -12,7 +12,6 @@ import com.solegendary.reignofnether.config.ReignOfNetherClientConfigs;
 import com.solegendary.reignofnether.guiscreen.TopdownGui;
 import com.solegendary.reignofnether.guiscreen.TopdownGuiServerboundPacket;
 import com.solegendary.reignofnether.hud.buttons.Button;
-import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.hud.TextInputClientEvents;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
@@ -33,7 +32,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.Mth;
@@ -439,7 +437,6 @@ public class OrthoviewClientEvents {
             MC.options.cloudStatus().set(CloudStatus.OFF);
             MC.options.hideGui = false; // for some reason, when gui is hidden, shape rendering goes whack
             MC.options.setCameraType(CameraType.FIRST_PERSON);
-            switchToEasyIfPeaceful();
         } else {
             PlayerServerboundPacket.disableOrthoview();
             TopdownGuiServerboundPacket.closeTopdownGui(MC.player.getId());
@@ -580,23 +577,6 @@ public class OrthoviewClientEvents {
                         fcs(I18n.get("hud.orthoview.reignofnether.disabled_hiding_leaves"), hideLeavesMethod == LeafHideMethod.NONE)
                 )
         );
-    }
-
-    // Method to switch difficulty to Easy if it is currently set to Peaceful
-    private static void switchToEasyIfPeaceful() {
-        Minecraft minecraft = Minecraft.getInstance();
-
-        // Ensure this only runs in single-player mode
-        if (minecraft.getSingleplayerServer() != null) {
-            Difficulty currentDifficulty = minecraft.level.getDifficulty();
-
-            // If the current difficulty is Peaceful, switch to Easy
-            if (currentDifficulty == Difficulty.PEACEFUL) {
-                minecraft.getSingleplayerServer().setDifficulty(Difficulty.EASY, true);
-                HudClientEvents.showTemporaryMessage(
-                    "RTS units cannot spawn in Peaceful. Your difficulty has been set to Easy.");
-            }
-        }
     }
 
     @SubscribeEvent
