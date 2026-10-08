@@ -1,171 +1,41 @@
 package com.solegendary.reignofnether.unit.interfaces;
 
-import com.solegendary.reignofnether.util.AttributeHelpers;
-import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
-import com.solegendary.reignofnether.building.*;
-import com.solegendary.reignofnether.hud.TooltipColours;
-import com.solegendary.reignofnether.registrars.AttributeRegistrar;
+import com.solegendary.reignofnether.building.BuildingClientEvents;
+import com.solegendary.reignofnether.building.BuildingServerEvents;
+import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
-import com.solegendary.reignofnether.sounds.SoundAction;
 import com.solegendary.reignofnether.unit.EnemySearchBehaviour;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.goals.*;
 
-import com.solegendary.reignofnether.util.MiscUtil;
-import com.solegendary.reignofnether.util.MyMath;
-import net.minecraft.core.BlockPos;
+import com.solegendary.reignofnether.util.MobEffectHelpers;
+
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
+/**
+ * Attacker helper statics. The instance contract (goal accessors, damage/range defaults) was collapsed
+ * into {@link Unit} (plan CONTENT_JSON_PLAN.md); what is left are the statics used by attacker ticks.
+ */
 public interface AttackerUnit extends Unit {
-
-    public static final float ATTACK_DAMAGE_REDUCTION_PER_WEAK = 0.2f;
-    public static final float ATTACK_DAMAGE_INCREASE_PER_STRENGTH = 0.2f;
-
-    public default float getAttacksPerSecond() {
-        return 20f / getAttackCooldown();
-    }
-    public default float getAttackCooldown() {
-        return ((20 / getNonBaseAttacksPerSecond()) * getAttackCooldownMultiplier());
-    }
-    public default float getNonBaseAttacksPerSecond() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.ATTACKS_PER_SECOND.get()));
-        return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.ATTACKS_PER_SECOND.get().getDefaultValue());
-    }
-    public default float getBaseAttacksPerSecond() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.ATTACKS_PER_SECOND.get()));
-        return (float) (attr != null ?  attr.getBaseValue() : AttributeRegistrar.ATTACKS_PER_SECOND.get().getDefaultValue());
-    }
-    public default float getAggroRange() {
-        float attackRange = getAttackRange();
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.AGGRO_RANGE.get()));
-        float aggroRange = (float) (attr != null ?  attr.getValue() : AttributeRegistrar.AGGRO_RANGE.get().getDefaultValue());
-        return Math.max(attackRange, aggroRange);
-    }
-    public default float getAttackRange() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.ATTACK_RANGE.get()));
-        return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.ATTACK_RANGE.get().getDefaultValue());
-    }
-    public default float getBaseAttackRange() {
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.ATTACK_RANGE.get()));
-        return (float) (attr != null ?  attr.getBaseValue() : AttributeRegistrar.ATTACK_RANGE.get().getDefaultValue());
-    }
-    public default float getBaseUnitAttackDamage() {
-        float bonus = 0;
-        if (this instanceof HeroUnit heroUnit) {
-            bonus = heroUnit.getAttackBonusPerLevel() * heroUnit.getHeroLevel();
-        }
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE.get()));
-        return (float) (attr != null ?  attr.getBaseValue() : AttributeRegistrar.ATTACK_DAMAGE.get().getDefaultValue()) + bonus;
-    }
-    public default float getUnitAttackDamage() {
-        float bonus = 0;
-        if (this instanceof HeroUnit heroUnit) {
-            bonus = heroUnit.getAttackBonusPerLevel() * heroUnit.getHeroLevel();
-        }
-        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE.get()));
-        float value = (float) (attr != null ?  attr.getValue() : AttributeRegistrar.ATTACK_DAMAGE.get().getDefaultValue()) + bonus;
-
-        MobEffectInstance weakMei = ((LivingEntity) this).getEffect(MobEffects.WEAKNESS);
-        float weak = 0;
-        if (weakMei != null && weakMei.getDuration() > 0) {
-            weak = (weakMei.getAmplifier() + 1) * ATTACK_DAMAGE_REDUCTION_PER_WEAK;
-        }
-        MobEffectInstance strMei = ((LivingEntity) this).getEffect(MobEffects.DAMAGE_BOOST);
-        float str = 0;
-        if (strMei != null && strMei.getDuration() > 0) {
-            str = (strMei.getAmplifier() + 1) * ATTACK_DAMAGE_INCREASE_PER_STRENGTH;
-        }
-        return Math.max(0, value * (1 - weak + str));
-    }
-
-    // chase and attack the target ignoring all else until it is dead or out of sight
-    public default void setUnitAttackTarget(@Nullable LivingEntity target) {
-        if (target != null) {
-            MiscUtil.addUnitCheckpoint(((Unit) this), target.getId(), false);
-            Goal attackBuildingGoal = this.getAttackBuildingGoal();
-            if (attackBuildingGoal instanceof RangedAttackBuildingGoal<?> rabg)
-                rabg.stop();
-            else if (attackBuildingGoal instanceof MeleeAttackBuildingGoal mabg)
-                mabg.stopAttacking();
-        }
-        ((Unit) this).getTargetGoal().setTarget(target);
-    }
-
-    // chase and attack the target ignoring all else until it is dead or out of sight
-    public default void setUnitAttackTargetForced(@Nullable LivingEntity target) {
-        setUnitAttackTarget(target);
-        if (target != null) {
-            Goal attackBuildingGoal = this.getAttackBuildingGoal();
-            if (attackBuildingGoal instanceof RangedAttackBuildingGoal<?> rabg)
-                rabg.stop();
-            else if (attackBuildingGoal instanceof MeleeAttackBuildingGoal mabg)
-                mabg.stopAttacking();
-            ((Unit) this).getTargetGoal().forced = true;
-        }
-    }
-
-    public default void setAttackBuildingTarget(BlockPos preselectedBlockPos) {
-        setAttackBuildingTarget(preselectedBlockPos, true);
-    }
-
-    // move to a building and start attacking it
-    public default void setAttackBuildingTarget(BlockPos preselectedBlockPos, boolean forced) {
-        if (this.canAttackBuildings()) {
-            Goal attackBuildingGoal = this.getAttackBuildingGoal();
-            if (attackBuildingGoal instanceof RangedAttackBuildingGoal<?> rabg) {
-                rabg.setBuildingTarget(preselectedBlockPos);
-                rabg.forced = forced;
-            } else if (attackBuildingGoal instanceof MeleeAttackBuildingGoal mabg) {
-                mabg.setBuildingTarget(preselectedBlockPos);
-                mabg.forced = forced;
-            }
-        } else {
-            Level level = ((LivingEntity) this).level();
-            BuildingPlacement building = BuildingUtils.findBuilding(level.isClientSide(), preselectedBlockPos);
-
-            if (building != null) {
-                BlockPos groundCentrePos = new BlockPos(building.centrePos.getX(), building.originPos.getY() + 1, building.centrePos.getZ());
-                BlockPos targetPos = MyMath.getXZRangeLimitedBlockPos(
-                        new BlockPos(groundCentrePos),
-                        ((LivingEntity) this).getOnPos(),
-                        getAttackRange() - 5
-                );
-                while (!level.getBlockState(targetPos.above()).isAir())
-                    targetPos = targetPos.above();
-
-                ((Unit) this).setMoveTarget(targetPos);
-                if (((LivingEntity) this).level().isClientSide)
-                    MiscUtil.addUnitCheckpoint((Unit) this, groundCentrePos, false);
-            }
-        }
-    }
 
     static void resetBehaviours(AttackerUnit unit) {
         unit.setUnitAttackTarget(null);
@@ -183,9 +53,6 @@ public interface AttackerUnit extends Unit {
 
         unit.setEnemySearchBehaviour(EnemySearchBehaviour.NONE);
     }
-
-    // this setter sets a Unit field and so can't be defaulted
-    // move to a block but chase/attack a target if there is one close by (for a limited distance)
 
     static boolean isAttackingBuilding(AttackerUnit attackerUnit) {
         boolean isAttackingBuilding = false;
@@ -255,13 +122,6 @@ public interface AttackerUnit extends Unit {
                 Entity lastDSEntity = unitMob.getLastDamageSource().getEntity();
 
                 boolean isMeleeAttackedByFlyingOrGarrisoned = false;
-                if (lastDSEntity instanceof Unit unitDS && unitDS.isRtsUnit() &&
-                    (unitDS.isFlyingUnit() ||
-                        GarrisonableBuildingAddon.getGarrison(unitDS) != null ||
-                        unitDS instanceof Vex) &&
-                    attackerUnit.getAttackGoal() instanceof AbstractMeleeAttackUnitGoal) {
-                    isMeleeAttackedByFlyingOrGarrisoned = true;
-                }
                 Relationship rs = UnitServerEvents.getUnitToEntityRelationship(unit, lastDSEntity);
 
                 if (!isMeleeAttackedByFlyingOrGarrisoned &&
@@ -302,61 +162,10 @@ public interface AttackerUnit extends Unit {
         }
     }
 
-    // if the nearest target is closer than the current target, retarget to the nearest
-    default void retargetToClosestUnit(ServerLevel level) {
-        float aggroRange = this.getAggroRange();
-        BuildingPlacement garrPlacement = GarrisonableBuildingAddon.getGarrison((Unit) this);
-        GarrisonableBuildingAddon garr = garrPlacement != null ? garrPlacement.getBuilding().getActiveAddon(GarrisonableBuildingAddon.class) : null;
-        if (garr != null) {
-            aggroRange = garr.getAttackRange();
-        }
-        boolean isAttackingBuilding = isAttackingBuilding(this);
-        LivingEntity currentTarget = ((Mob) this).getTarget();
-        if (currentTarget == null && !isAttackingBuilding) return;
-        LivingEntity closestTarget = MiscUtil.findClosestAttackableEntity((Mob) this, aggroRange, level);
-        if (closestTarget == null) return;
-        double distClosestTarget =  ((Mob) this).distanceToSqr(closestTarget.position());
-        double distCurrentTarget = isAttackingBuilding ? (aggroRange / 2) : ((Mob) this).distanceToSqr(currentTarget.position());
-
-        if (distClosestTarget < distCurrentTarget) {
-            if (!((LivingEntity) this).isPassenger())
-                ((Unit) this).getMoveGoal().stopMoving();
-            setUnitAttackTarget(closestTarget);
-        }
-    }
-
-    default void attackClosestEnemy(ServerLevel level) {
-        float aggroRange = this.getAggroRange();
-        BuildingPlacement garrPlacement = GarrisonableBuildingAddon.getGarrison((Unit) this);
-        GarrisonableBuildingAddon garr = garrPlacement != null ? garrPlacement.getBuilding().getActiveAddon(GarrisonableBuildingAddon.class) : null;
-        if (garr != null) {
-            aggroRange = garr.getAttackRange();
-        }
-        LivingEntity entity = MiscUtil.findClosestAttackableEntity((Mob) this, aggroRange, level);
-        if (entity != null) {
-            if (!((LivingEntity) this).isPassenger())
-                ((Unit) this).getMoveGoal().stopMoving();
-            setUnitAttackTarget(entity);
-            return;
-        }
-        if (canAttackBuildings() &&
-                (!(((Unit) this).getOwnerName()).isEmpty() || level.getGameRules().getRule(GameRuleRegistrar.NEUTRAL_AGGRO).get()))
-        {
-            BuildingPlacement closestBuilding = MiscUtil.findClosestAttackableBuilding((Mob) this, aggroRange);
-            if (closestBuilding != null) {
-                if (!((LivingEntity) this).isPassenger())
-                    ((Unit) this).getMoveGoal().stopMoving();
-                setAttackBuildingTarget(closestBuilding.originPos, false);
-            }
-        }
-    }
-
     static double getWeaponDamageModifier(AttackerUnit attackerUnit) {
         ItemStack itemStack = ((LivingEntity) attackerUnit).getItemBySlot(EquipmentSlot.MAINHAND);
 
         if (!itemStack.isEmpty()) {
-            // 1.21.1 moved attribute modifiers into an ItemAttributeModifiers component; the
-            // per-slot lookup is gone, so the flat entry list is filtered by slot group here.
             ItemAttributeModifiers mods = itemStack.get(DataComponents.ATTRIBUTE_MODIFIERS);
             if (mods == null) return 0;
             for (ItemAttributeModifiers.Entry entry : mods.modifiers()) {
@@ -367,83 +176,5 @@ public interface AttackerUnit extends Unit {
             }
         }
         return 0;
-    }
-
-    public default @Nullable SoundAction getAttackSound() { return null; }
-
-    default float getBonusMeleeRange() {
-        return 0f;
-    }
-
-    public default int getDamageTooltipColour() {
-        return TooltipColours.WHITE;
-    }
-
-    public default boolean hasBonusRange() {
-        return getAttackRange() > getBaseAttackRange();
-    }
-
-    public default float getAttackCooldownMultiplier() {
-        MobEffectInstance disarm = ((LivingEntity) (this)).getEffect(MobEffectHelpers.holder(MobEffectRegistrar.DISARM.get()));
-        if (disarm != null) {
-            return 999999;
-        }
-        MobEffectInstance attackSlowdown = ((LivingEntity) (this)).getEffect(MobEffectHelpers.holder(MobEffectRegistrar.ATTACK_SLOWDOWN.get()));
-        int attackSlowdownAmp = attackSlowdown != null ? attackSlowdown.getAmplifier() + 1 : 0;
-
-        MobEffectInstance bloodlust = ((LivingEntity) (this)).getEffect(MobEffectHelpers.holder(MobEffectRegistrar.BLOODLUST.get()));
-
-        return (1 + (attackSlowdownAmp * 0.05f)) / (bloodlust != null ? 1.6f : 1.0f);
-    }
-
-    public default void attackMoveNearestEnemyBuilding() {
-        Mob mob = (Mob) this;
-        Unit unit = (Unit) this;
-        List<BuildingPlacement> buildings;
-        if (mob.level().isClientSide())
-            buildings = BuildingClientEvents.getBuildings();
-        else
-            buildings = BuildingServerEvents.getBuildings();
-
-        ArrayList<BuildingPlacement> eligibleTargets = new ArrayList<>();
-        List<BuildingPlacement> buildingsCopy = new ArrayList<>(buildings); // defensive copy
-        for (BuildingPlacement buildingPlacement : buildingsCopy) {
-            if (!unit.getOwnerName().equals(buildingPlacement.ownerName) &&
-                    !AlliancesServerEvents.isAllied(unit.getOwnerName(), buildingPlacement.ownerName) &&
-                    !buildingPlacement.ownerName.isBlank() &&
-                    buildingPlacement.isAttackable()) {
-                eligibleTargets.add(buildingPlacement);
-            }
-        }
-        eligibleTargets.sort(Comparator.comparing(b -> b.centrePos.distToCenterSqr(((Entity) unit).position())));
-
-        if (!eligibleTargets.isEmpty())
-            setAttackMoveTarget(eligibleTargets.get(0).getClosestGroundPos(((Entity) unit).getOnPos(), 1));
-    }
-
-    public default void attackMoveNearestEnemyUnit(boolean workersOnly) {
-        Mob mob = (Mob) this;
-        Unit unit = (Unit) this;
-        List<LivingEntity> units;
-        if (mob.level().isClientSide())
-            units = UnitClientEvents.getAllUnits();
-        else
-            units = UnitServerEvents.getAllUnits();
-
-        ArrayList<LivingEntity> eligibleTargets = new ArrayList<>();
-        List<LivingEntity> unitsCopy = new ArrayList<>(units); // defensive copy
-        for (LivingEntity entity : unitsCopy) {
-            if (entity instanceof Unit otherUnit && otherUnit.isRtsUnit() &&
-                    (!workersOnly || Unit.isWorker(entity)) &&
-                    !unit.getOwnerName().equals(otherUnit.getOwnerName()) &&
-                    !AlliancesServerEvents.isAllied(unit.getOwnerName(), otherUnit.getOwnerName()) &&
-                    !otherUnit.getOwnerName().isBlank()) {
-                eligibleTargets.add(entity);
-            }
-        }
-        eligibleTargets.sort(Comparator.comparing(e -> e.position().distanceToSqr(((Entity) unit).position())));
-
-        if (!eligibleTargets.isEmpty())
-            setAttackMoveTarget(eligibleTargets.get(0).getOnPos());
     }
 }
