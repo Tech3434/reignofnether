@@ -67,6 +67,14 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
     @Unique private Object2ObjectArrayMap<Ability, Integer> ron$charges;
     @Unique private Set<Ability> ron$autocast;
     @Unique private ResourceLocation ron$definitionId;
+    @Unique private int ron$experience = 0;
+    @Unique private float ron$mana = 0;
+    @Unique private float ron$maxMana = 0;
+    @Unique private int ron$skillPoints = 0;
+    @Unique private boolean ron$needsStatSync = false;
+    @Unique private boolean ron$rankUpMenuOpen = false;
+    @Unique private int ron$saveCharges = 0;
+    @Unique private it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap<com.solegendary.reignofnether.ability.HeroAbility, Integer> ron$heroAbilityRanks;
 
     protected UnitMobMixin(EntityType<? extends LivingEntity> type, Level level) {
         super(type, level);
@@ -98,6 +106,29 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
     @Override
     public boolean isHero() {
         return ron$role() == com.solegendary.reignofnether.unit.UnitDefinition.Role.HERO;
+    }
+
+    // ---- hero state (plan CONTENT_JSON_PLAN.md: role: hero) ----
+    @Override public boolean needsStatSync() { return ron$needsStatSync; }
+    @Override public void setNeedsStatSync(boolean value) { ron$needsStatSync = value; }
+    @Override public float getMana() { return ron$mana; }
+    @Override public void setMana(float amount) { ron$mana = amount; }
+    @Override public float getMaxMana() { return ron$maxMana; }
+    @Override public void setMaxMana(float amount) { ron$maxMana = amount; }
+    @Override public int getSkillPoints() { return ron$skillPoints; }
+    @Override public void setSkillPoints(int points) { ron$skillPoints = points; }
+    @Override public boolean isRankUpMenuOpen() { return ron$rankUpMenuOpen; }
+    @Override public void showRankUpMenu(boolean show) { ron$rankUpMenuOpen = show; }
+    @Override public int getExperience() { return ron$experience; }
+    @Override public void setExperience(int experience) { ron$experience = experience; }
+    @Override public int getChargesForSaveData() { return ron$saveCharges; }
+    @Override public void setChargesFromSaveData(int charges) { ron$saveCharges = charges; }
+
+    @Override
+    public it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap<com.solegendary.reignofnether.ability.HeroAbility, Integer> getHeroAbilityRanks() {
+        if (ron$heroAbilityRanks == null)
+            ron$heroAbilityRanks = new it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap<>();
+        return ron$heroAbilityRanks;
     }
 
     @Unique private com.solegendary.reignofnether.unit.UnitDefinition.Role ron$roleCache;
@@ -330,6 +361,10 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
             ron$willRetaliate = true;
             ron$aggressiveWhenIdle = true;
         }
+
+        // a hero starts at level 1: apply its per-level stats once
+        if (role == com.solegendary.reignofnether.unit.UnitDefinition.Role.HERO)
+            me.setStatsForLevel(true);
 
         if (melee) {
             if (ron$attackGoal == null) {
