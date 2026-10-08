@@ -21,6 +21,28 @@ public class Ability {
     public float radius; // if <= 0, is single target
     public final boolean canTargetEntities;
     public boolean oneClickOneUse; // if true, a group of units/buildings will use their abilities one by one
+
+    /**
+     * Researches that must be satisfied before this ability can be used (empty = always available).
+     * Conditions carry {@code invert}, so an ability can also be locked while a research IS present.
+     */
+    public java.util.List<com.solegendary.reignofnether.research.ResearchCondition> requiredResearch = java.util.List.of();
+
+    /** Fluent setter for abilities locked behind research. */
+    public Ability requireResearch(com.solegendary.reignofnether.research.ResearchCondition... conditions) {
+        this.requiredResearch = java.util.List.of(conditions);
+        return this;
+    }
+
+    /** Whether {@code ownerName} satisfies this ability's research requirements (server or client). */
+    public boolean meetsResearch(Level level, String ownerName) {
+        if (requiredResearch.isEmpty())
+            return true;
+        if (level.isClientSide())
+            return com.solegendary.reignofnether.research.ResearchUtils.meetsClient(ownerName, requiredResearch);
+        return com.solegendary.reignofnether.research.ResearchUtils.meets(level, ownerName, requiredResearch);
+    }
+
     public UnitAction autocastEnableAction = null;
     public UnitAction autocastDisableAction = null;
     public int maxCharges = 1;

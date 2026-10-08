@@ -49,6 +49,24 @@ public abstract class Building {
     public boolean shouldDestroyOnReset = true;
     public boolean drawAggro = true;
 
+    /** Researches required before this building can be placed (empty = always available). */
+    public List<com.solegendary.reignofnether.research.ResearchCondition> requiredResearch = List.of();
+
+    /** Fluent setter for buildings locked behind research. */
+    public Building requireResearch(com.solegendary.reignofnether.research.ResearchCondition... conditions) {
+        this.requiredResearch = List.of(conditions);
+        return this;
+    }
+
+    /** Whether {@code ownerName} satisfies this building's research requirements (server or client). */
+    public boolean meetsResearch(LevelAccessor level, String ownerName) {
+        if (requiredResearch.isEmpty())
+            return true;
+        if (level.isClientSide())
+            return com.solegendary.reignofnether.research.ResearchUtils.meetsClient(ownerName, requiredResearch);
+        return com.solegendary.reignofnether.research.ResearchUtils.meets(level, ownerName, requiredResearch);
+    }
+
     public static final int CAPITOL_SIGHT_RANGE = 32;
     public static final int DEFAULT_SIGHT_RANGE = 16;
     public static final int GARRISONED_BONUS_SIGHT_RANGE = 16;

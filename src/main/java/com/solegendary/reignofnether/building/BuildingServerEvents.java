@@ -350,6 +350,12 @@ buildingData.buildings.forEach(b -> {
         if (serverLevel == null)
             return null;
 
+        // a building gated behind research cannot be started until its owner has it (GM commands bypass)
+        if (!fromCommand && !building.meetsResearch(serverLevel, ownerName)) {
+            PlayerServerEvents.sendMessageToAllPlayers("server.reignofnether.research_required", false, building.name);
+            return null;
+        }
+
         BuildingPlacement newBuilding = BuildingUtils.getNewBuildingPlacement(building,
             serverLevel,
             originPos,

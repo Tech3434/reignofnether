@@ -108,7 +108,11 @@
   per-player), `ResearchUtils` (серверный гейт + клиентское зеркало), `ResearchClientboundPacket` +
   `ResearchClientEvents`, команды `/research grant|revoke|clear|list`, синк при входе
   (`ResearchServerEvents`), сброс при поражении и в `resetRTS`. Гейты 1–4 зелёные.
-- [ ] Фаза 2 — гейты способностей/производства/строительства
+- [x] Фаза 2 — гейты: `Ability`/`ProductionItem`/`Building` несут `requiredResearch`; серверные
+  проверки при использовании способности (`UnitActionItem`, `BuildingAbilityServerboundPacket`),
+  старте производства (`ProductionItem.canProduce` ← `ProductionPlacement.startProductionItem`) и
+  постановке здания (`BuildingServerEvents.placeBuilding`, GM-команды обходят); HUD-блокировка кнопок
+  способностей (`Abilities.getButtons`) и строительного меню (`VillagerUnit.getBuildingButtons`).
 - [ ] Фаза 3 — атрибутные апгрейды
 - [ ] Фаза 4 — JSON-контент (исследования, способности, юниты/здания)
 - [ ] Фаза 5 — UI исследований

@@ -44,8 +44,10 @@ public class Abilities {
             for (int i = 0; i < abilities.size(); i++) {
                 Pair<Ability, Keybinding> ability = abilities.get(i);
                 AbilityButton button = ability.getA().getButton(ability.getB() != null ? ability.getB() : keybindings.get(i) , placement);
-                if (button != null)
+                if (button != null) {
+                    applyResearchGate(button, ability.getA(), placement.level, placement.ownerName);
                     buttons.add(button);
+                }
             }
         }
         return buttons;
@@ -67,11 +69,27 @@ public class Abilities {
             for (int i = 0; i < abilities.size(); i++) {
                 Pair<Ability, Keybinding> ability = abilities.get(i);
                 Button button = ability.getA().getButton(ability.getB() != null ? ability.getB() : keybindings.get(i) , unit);
-                if (button != null)
+                if (button != null) {
+                    applyResearchGate(button, ability.getA(),
+                            ((net.minecraft.world.entity.Entity) unit).level(), unit.getOwnerName());
                     buttons.add(button);
+                }
             }
         }
         return buttons;
+    }
+
+    /**
+     * Disables a freshly built ability button while the owner has not satisfied the ability's
+     * required researches. Server-side use is re-checked independently, so this is presentation only.
+     */
+    private static void applyResearchGate(Button button, Ability ability,
+                                          net.minecraft.world.level.Level level, String ownerName) {
+        if (ability.requiredResearch.isEmpty())
+            return;
+        java.util.function.Supplier<Boolean> original = button.isEnabled;
+        button.isEnabled = () -> (original == null || Boolean.TRUE.equals(original.get()))
+                && ability.meetsResearch(level, ownerName);
     }
 
     public List<Ability> get() {

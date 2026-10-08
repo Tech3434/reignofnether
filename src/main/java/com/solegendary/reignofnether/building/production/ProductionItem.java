@@ -30,6 +30,23 @@ public abstract class ProductionItem {
     public BiConsumer<Level, ProductionPlacement> onComplete;
     public ProdDupeRule dupeRule;
 
+    /** Researches required before this can be produced (empty = always available). */
+    public List<com.solegendary.reignofnether.research.ResearchCondition> requiredResearch = List.of();
+
+    /** Fluent setter for production items locked behind research. */
+    public ProductionItem requireResearch(com.solegendary.reignofnether.research.ResearchCondition... conditions) {
+        this.requiredResearch = List.of(conditions);
+        return this;
+    }
+
+    public boolean meetsResearch(ProductionPlacement pp) {
+        if (requiredResearch.isEmpty())
+            return true;
+        if (pp.getLevel().isClientSide())
+            return com.solegendary.reignofnether.research.ResearchUtils.meetsClient(pp.ownerName, requiredResearch);
+        return com.solegendary.reignofnether.research.ResearchUtils.meets(pp.getLevel(), pp.ownerName, requiredResearch);
+    }
+
     public ProductionItem(ResourceCost cost, ProdDupeRule dupeRule, BiConsumer<Level, ProductionPlacement> onComplete) {
         this.defaultCost = cost;
         this.dupeRule = dupeRule;
@@ -48,7 +65,7 @@ public abstract class ProductionItem {
 
     // is the player allowed to start this production item?
     public boolean canProduce(ProductionPlacement pp) {
-        return getProduceErrorMsg(pp) == null;
+        return meetsResearch(pp) && getProduceErrorMsg(pp) == null;
     }
 
     @Nullable

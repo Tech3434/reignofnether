@@ -91,8 +91,11 @@ public class BuildingAbilityServerboundPacket implements RTSSimplePayload {
             ReignOfNether.LOGGER.info("[BuildingAbility] {} performed {} at {}", player.getName(), abilityAction, buildingPos);
 
             for (Ability abl : building.getAbilities())
-                if (abl.action == abilityAction)
+                if (abl.action == abilityAction) {
+                    if (!abl.meetsResearch(building.level, building.ownerName))
+                        return;
                     toggleAutoCast(building, abl);
+                }
         });
     }
 }

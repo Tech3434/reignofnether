@@ -152,6 +152,15 @@ H.1–H.8 сделаны (`15bd1a69`): пропуск = право операт�
 `runServer` ✅ `Done (0.909s)!`. Гейты контента (способности/производство/строительство) и
 JSON-загрузчик — фазы 2/4.
 
+**Фаза 2 исследований (2026-10-08).** `requiredResearch` добавлен в `Ability`, `ProductionItem` и
+`Building`. Серверные гейты: использование способности юнита (`UnitActionItem`), способность здания
+(`BuildingAbilityServerboundPacket`), старт производства (`ProductionItem.canProduce`), постановка
+здания (`BuildingServerEvents.placeBuilding`; GM-команды обходят). HUD: кнопки способностей
+(`Abilities.getButtons`) и строительного меню (`VillagerUnit.getBuildingButtons`) блокируются через
+`isEnabled`. Ланг-ключ `server.reignofnether.research_required`. Гейты `compileJava`/`validateMixins`/
+`runData` ✅; `runServer` доходит до `Done (...)`, но dev-сервер в этой среде сам не завершается —
+`runServer` больше не поднимаю (см. AGENTS.md). JSON-загрузчик (фаза 4) — следующий шаг.
+
 ### Документация
 
 * `FEATURES.md` и `INTRUSION_AUDIT.md` — актуализировать (снять удалённое, отметить читы/туман).
@@ -183,6 +192,10 @@ JAVA="/c/Program Files/Java/jdk-21/bin/java.exe"
    character`. Только `cmd /c "git show ... > file"`.
 3. **`validateMixins` не ловит часть mixin-ошибок** — они всплывают в рантайме. Надёжный гейт —
    `runServer` / `runClient`.
+4. **Сервер.** Поднимать сервер можно, но **обязательно завершать в течение 15 секунд** — иначе
+   процесс висит до ручного вмешательства владельца. Единственный безопасный вариант — `runServer
+   --offline` при закрытом stdin: он печатает `Done (...)` и сам делает `Stopping server`. Любые
+   интерактивные/долгоживущие серверные процессы запускать нельзя.
 
 ---
 

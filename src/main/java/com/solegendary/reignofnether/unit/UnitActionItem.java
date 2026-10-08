@@ -408,6 +408,7 @@ public class UnitActionItem {
                     for (Ability ability : unit.getAbilities().get()) {
                         if (ability.action == action &&
                             (ability.isOffCooldown(unit) || ability.canBypassCooldown(unit)) &&
+                            ability.meetsResearch(level, unit.getOwnerName()) &&
                             canAffordManaCost(ability, unit)
                         ) {
                             if (ability.canTargetEntities && this.unitId > 0) {

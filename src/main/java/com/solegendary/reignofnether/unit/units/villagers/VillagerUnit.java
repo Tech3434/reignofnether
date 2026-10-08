@@ -264,15 +264,33 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
 
     public static List<Button> getBuildingButtons() {
         List<Button> buttons = new ArrayList<>();
-        buttons.add(Buildings.TOWN_CENTRE.getBuildButton(null));
-        buttons.add(Buildings.BARRACKS.getBuildButton(null));
+        buttons.add(gateResearch(Buildings.TOWN_CENTRE.getBuildButton(null), Buildings.TOWN_CENTRE));
+        buttons.add(gateResearch(Buildings.BARRACKS.getBuildButton(null), Buildings.BARRACKS));
 
         CustomBuildingClientEvents.customBuildings.forEach(cb -> {
             if (cb.buildableByVillagers)
-                buttons.add(cb.getWorkerBuildButton(null));
+                buttons.add(gateResearch(cb.getWorkerBuildButton(null), cb));
         });
 
         return buttons;
+    }
+
+    /**
+     * Disables a building-place button while the local player has not satisfied the building's
+     * required researches. The server re-checks on placement, so this is presentation only.
+     */
+    private static Button gateResearch(Button button, com.solegendary.reignofnether.building.Building building) {
+        if (button == null || building == null || building.requiredResearch.isEmpty())
+            return button;
+        java.util.function.Supplier<Boolean> original = button.isEnabled;
+        button.isEnabled = () -> {
+            if (original != null && !Boolean.TRUE.equals(original.get()))
+                return false;
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            return mc.level == null || mc.player == null
+                    || building.meetsResearch(mc.level, mc.player.getName().getString());
+        };
+        return button;
     }
 
     public VillagerUnit(EntityType<? extends Vindicator> entityType, Level level) {
