@@ -60,6 +60,49 @@
 Герой (`role: hero`) добавляет блок прокачки (макс. уровень, опыт/уровень, приросты HP/маны/урона) и
 ранги способностей.
 
+## Здания (полностью JSON)
+
+`data/<namespace>/building/<name>.json`, id = `<namespace>:<name>`.
+
+* **Структура** — NBT-файл (`structureName`, автор строит в игре Structure Block-ом; как сейчас).
+  Параметры: `cost`, `maxHealth`, `buildTimeModifier`, `repairTimeModifier`, `isCapitol`,
+  `populationSupply`, `captureRange`, `capturable`, `invulnerable`, `repairable`, `faction`,
+  `scaffoldFill`/`scaffoldBlock`, `requiredResearch`, `icon`/`portrait`.
+* **Производство** — на здании: `production: [ { "unit": "…", "key": "abilitySlot1", "costOverride": {…} } ]`.
+* **Исследования** — на здании (см. `RESEARCH_AND_EXTENSIBILITY_PLAN.md` §«Отложено»):
+  `researches: [ "…", … ]` — какие исследования здание предлагает; очередь общая с производством.
+* **Аддоны** — `addons: [ { "type": "garrison", …params }, { "type": "night_source", … }, … ]`
+  (реестр код-типов аддонов с Codec'ами, как способности).
+* **Апгрейды** — `upgrades: [ { "structure": "…", "name": "…", "icon": "…", "cost": {…},
+  "attributes"/"maxHealth"/"populationSupply": …, "production": …, "abilities"/"addons": …,
+  "researches": … }, … ]`. Апгрейд меняет: структуру, имя/иконку, стоимость, характеристики,
+  производство, способности/аддоны, исследования. Один фундамент, цепочка уровней.
+
+## Способности (класс — код, инстанс — JSON)
+
+Общие поля инстанса: `type` (id код-класса), `cooldown`, `mana`, `requiredResearch`,
+`heroLevel`/`rank` (для героев), `autocast`, `range`, `submenu`, `row` (см. ниже). Классовый `Codec`
+добавляет свои параметры (напр. `poison_on_hit` → `amount`).
+
+## Сабменю (меню способностей)
+
+Способность типа «меню» открывает список элементов; элемент объявляет **вид** и **ряд** (чтобы
+управлять раскладкой — «первый ряд / второй»):
+
+```json
+"submenu": [
+  { "row": 0, "building": "myns:barracks" },
+  { "row": 0, "ability": { "type": "myns:rally", "cooldown": 200 } },
+  { "row": 1, "menu": "myns:advanced" },
+  { "row": 1, "production": "myns:villager" },
+  { "row": 1, "command": "attack" }
+]
+```
+
+Виды элементов: **способность** (инлайн `{type,…}` или ссылка `"myns:id"`), **постановка здания**,
+**производство юнита**, **вложенное меню**, **команда** (stop/hold/attack/…). Строительное меню —
+это подменю с **явным списком ссылок** на здания.
+
 ## Реализация (код, один раз)
 
 * `unit/UnitDefinition` (Codec) + датапак-реестр `reignofnether:unit` (`DataPackRegistryEvent`).
