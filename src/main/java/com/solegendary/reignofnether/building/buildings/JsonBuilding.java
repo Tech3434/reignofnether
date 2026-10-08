@@ -45,6 +45,8 @@ public class JsonBuilding extends ProductionBuilding {
                 .orElse(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/stone.png"));
         this.portraitBlock = Blocks.STONE;
         this.maxHealth = definition.maxHealth();
+        this.populationSupply = definition.populationSupply();
+        this.requiredResearch = definition.requiredResearch();
 
         for (ResourceLocation unitId : definition.production())
             this.productions.add(new JsonProductionItem(unitId, cost, unitId.getPath()), Keybindings.abilitySlot1);

@@ -255,6 +255,9 @@ cd ___temp
 с `Building.onBuilt`/`tick`, иначе `CustomBuilding` как addon рекурсировал бы). Демо: `garrison` на
 `barracks.json`. Гейты зелёные; **`runClient` не проверялся**.
 
+**Багфикс JSON-зданий:** `JsonBuilding` применяет `populationSupply` и `requiredResearch` из определения
+(раньше — нет: JSON-капитолий не давал лимит армии, а `requiredResearch` игнорировался). Гейты зелёные.
+
 ---
 
 ## 5. Что осталось (по приоритету)
