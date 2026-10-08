@@ -114,6 +114,19 @@ this.productions.add(ProductionItems.X_UNIT, Keybindings.abilitySlot1);
 Вызывать в конструкторе. Список — `building/production/ProductionItemList`, это
 `LinkedHashMap<ProductionItem, Keybinding>`.
 
+### Производство и исследования в JSON-зданиях
+
+У data-driven здания (`JsonBuilding`) состав берётся из определения:
+
+```json
+"production": [ "myns:some_unit" ],
+"researches": [ "myns:some_research" ]
+```
+
+`production` → `JsonProductionItem` (спавн юнита по id определения), `researches` → `ResearchProductionItem`
+(общая очередь с производством, отмена с возвратом, по завершении — грант исследования владельцу).
+Оба — обычные `ProductionItem`, поэтому их кнопки автоматически появляются в UI выбранного здания.
+
 ## 5. Аддоны
 
 Маркер-интерфейс `building/addon/BuildingAddon` пустой. Здание и `implements` интерфейс, и

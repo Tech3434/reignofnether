@@ -85,12 +85,17 @@ cd ___temp
   "researches": [], "addons": [ { "type": "myns:garrison", "params": {} } ],
   "requiredResearch": [] }
 ```
-- `JsonBuilding extends ProductionBuilding`; `JsonProductionItem` спавнит юнит по id определения.
+- `JsonBuilding extends ProductionBuilding`; `JsonProductionItem` спавнит юнит по id определения, а
+  `research/ResearchProductionItem` (из `researches`) кладётся в ту же очередь производств и выдаёт
+  исследование владельцу по завершении (см. §«Исследования»).
 - `JsonBuildingManager.reload(server)` (из `FactionServerEvents.onServerStarted`) строит по одному `JsonBuilding`
   на каждое определение в **собственном** map (кодовый `ReignOfNetherRegistries.BUILDING` уже заморожен на момент
   загрузки датапака — писать туда нельзя).
 - Размещение: `BuildingServerboundPacket.resolveBuilding` — сначала код-реестр, затем `JsonBuildingManager`;
-  клиентский `placeBuilding` шлёт `definitionId` для `JsonBuilding`.
+  клиентский `placeBuilding` шлёт `definitionId` для `JsonBuilding`. Синхронизация сервер→клиент —
+  `BuildingAction.PLACE_JSON` + `JsonBuildingManager.getOrCreate(level, id)` (клиент строит из синхронизированного
+  датапак-реестра). `ProductionItem.getNetworkId()` — стабильный id для очереди/кнопок (`JsonProductionItem` →
+  id определения, `ResearchProductionItem` → id исследования). `BuildingUtils.getKeyString` — null-safe id для HUD.
 - Строится `structureName` (`.nbt`); оставлены `town_centre.nbt`/`barracks.nbt`.
 
 ### Аддоны зданий — `addons: [{type, params}]` (готово)
@@ -125,8 +130,11 @@ cd ___temp
 `Ability`/`ProductionItem`/`Building.requiredResearch` (серверные проверки + HUD). Состояние на игрока
 (`ResearchSaveData`), обнуляется при поражении и в `resetRTS`. `ResearchAttributeApplier` (ATTRIBUTE_BOOST,
 идемпотентно, `unitFilter` по типу сущности). Команды `/research grant|revoke|clear|list`.
-Панель `ResearchMenu` — **только статус**. Запуск/очередь исследований **отложены** в фазу JSON-зданий
-(исследования у здания, очередь общая с производством, отмена с возвратом).
+Панель `ResearchMenu` — **только статус**. Запуск/очередь исследований **реализованы** на зданиях:
+`researches: [ "id", … ]` у `BuildingDefinition` → `ResearchProductionItem` в очереди производств
+здания (общая очередь, отмена с возвратом, кнопки в UI выбранного здания через `ProductionAbility`).
+По завершении — грант владельцу, синк, пересчёт атрибутов. Демо: `data/reignofnether/research/example_research.json`
+привязано к `barracks.json`.
 
 ---
 
@@ -195,15 +203,22 @@ cd ___temp
 `Building.addActiveAddon(...)`; движковый тип `reignofnether:night_source` зарегистрирован и прописан в
 `town_centre.json`. Гейты `compileJava`/`validateMixins`/`runData` зелёные; `runClient` не проверялся.
 
+**Исследования у зданий (`research/ResearchProductionItem`):** исследование — это `ProductionItem`, поэтому
+делит очередь и UI производства здания. `JsonBuilding` добавляет по одному item на `BuildingDefinition.researches()`
+(общий кэш по id для защиты от дублей между зданиями). Заодно починена сетевая идентификация производств
+(`ProductionItem.getNetworkId`, дефолтная кнопка отмены, JSON-ветки в clientbound/serverbound пакетах) и
+клиентская синхронизация JSON-зданий (`PLACE_JSON` + `JsonBuildingManager.getOrCreate`), плюс null-safe
+`BuildingUtils.getKeyString` в HUD (раньше `BUILDING.getKey(jsonBldg).toString()` падал). Демо:
+`research/example_research.json` + `barracks.json`. Гейты зелёные; **`runClient` не проверялся**.
+
 ---
 
 ## 5. Что осталось (по приоритету)
 
 1. ✅ **Аддоны доведены** (`addon/Addons`+`NightSourceBuildingAddon`, навешивание в `JsonBuilding`).
    Дальше: новые движковые типы (garrison/night/nether/range_indicator обобщённо) — по мере надобности.
-2. **Здания из JSON, продолжение:**
-   - `researches` — общая очередь с производством, отмена с возвратом (`RESEARCH_AND_EXTENSIBILITY_PLAN.md`
-     §«Отложено»); запуск исследований из UI выбранного здания.
+2. ✅ **Исследования у зданий** (`ResearchProductionItem` как `ProductionItem`, `researches` в JSON,
+   демо `example_research` на казарме). Дальше по зданиям:
    - `upgrades` — цепочка уровней (структура/имя/стоимость/характеристики/производство/способности/аддоны/
      исследования). В `BuildingDefinition.CODEC` пока НЕТ.
    - ⚠ `JsonBuilding` без капитолий-специфики, которая была у `TownCentre` (`populationSupply`/`isCapitol`
@@ -233,7 +248,11 @@ cd ___temp
   инициализация в геттерах).
 - **Датапак-реестры** (`unit`, `building`, `faction`, `rts_buttons`) регистрируются в `loadDatapacks` и
   синхронизируются клиентам. `ReignOfNetherRegistries.BUILDING` (кодовый) **заморожен** к моменту загрузки
-  датапака — не писать туда из JSON-логики.
+  датапака — не писать туда из JSON-логики. У `JsonBuilding` нет код-ключа, поэтому нейтрально к null:
+  `ReignOfNetherRegistries.BUILDING.getKey(jsonBuilding) == null` (использовать `BuildingUtils.getKeyString`).
+- **Производство/исследования по сети** идентифицируются `ProductionItem.getNetworkId()`, а не код-реестром
+  `PRODUCTION_ITEM` (JSON/исследования там не зарегистрированы). При добавлении новых `ProductionItem`
+  переопределять `getNetworkId`, если предмет не в код-реестре.
 - **`validateMixins` не ловит часть mixin-ошибок** — всплывают в рантайме. Надёжный гейт — `runServer`/`runClient`.
 - **`runServer`.** Запускать только через `background_process` monitor (`ready.pattern: "Done \\("`), затем
   `stop` в пределах 15 с. Не оставлять висящий процесс.
@@ -250,7 +269,7 @@ cd ___temp
 - `research/`: Research, ResearchCondition (Codec), ResearchType, ResearchAttributeModifier, ResearchRegistry,
   ResearchSaveData, ResearchUtils (+ client mirror), ResearchClientEvents, ResearchClientboundPacket,
   ResearchDefinitionsClientboundPacket, ResearchJsonLoader, ResearchCommand, ResearchServerEvents, ResearchMenu,
-  ResearchAttributeApplier.
+  ResearchAttributeApplier, ResearchProductionItem.
 - `faction/`: StartingUnit, Faction (Codec), FactionRegistries, FactionClientboundPacket, FactionClientEvents,
   FactionMenu, FactionCommand, FactionServerEvents.
 - `unit/`: UnitDefinition, UnitDefinitions, UnitDefinitionRuntime; `interfaces/DefinedUnit`.

@@ -3,5 +3,5 @@
   "maxHealth": 150,
   "populationSupply": 0,
   "production": [ "reignofnether:vindicator_unit" ],
-  "researches": []
+  "researches": [ "reignofnether:example_research" ]
 }

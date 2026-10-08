@@ -1,0 +1,6 @@
+{
+  "name": "research.reignofnether.example",
+  "icon": "reignofnether:textures/icons/blocks/repeating_command_block_back.png",
+  "type": "unlock",
+  "cost": { "food": 0, "wood": 50, "ore": 0, "seconds": 10 }
+}

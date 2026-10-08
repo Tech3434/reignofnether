@@ -69,8 +69,10 @@
   `populationSupply`, `captureRange`, `capturable`, `invulnerable`, `repairable`,
   `scaffoldFill`/`scaffoldBlock`, `requiredResearch`, `icon`/`portrait`.
 * **Производство** — на здании: `production: [ { "unit": "…", "key": "abilitySlot1", "costOverride": {…} } ]`.
-* **Исследования** — на здании (см. `RESEARCH_AND_EXTENSIBILITY_PLAN.md` §«Отложено»):
-  `researches: [ "…", … ]` — какие исследования здание предлагает; очередь общая с производством.
+* **Исследования** (реализовано) — на здании:
+  `researches: [ "…", … ]` — какие исследования здание предлагает; очередь общая с производством
+  (`ResearchProductionItem`), отмена с возвратом, завершение выдаёт исследование владельцу и пересчитывает
+  атрибуты. В демо: `example_research` у `barracks`.
 * **Аддоны** (реализовано) — `addons: [ { "type": "garrison", …params }, { "type": "night_source", … }, … ]`
   (реестр код-типов аддонов с Codec'ами, как способности). Движковый пример — `reignofnether:night_source`
   (`params`: `range`, `showOnlyWhenSelected`).
