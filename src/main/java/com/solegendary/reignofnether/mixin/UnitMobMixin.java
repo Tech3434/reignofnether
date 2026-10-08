@@ -100,14 +100,42 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
         return ron$role() == com.solegendary.reignofnether.unit.UnitDefinition.Role.HERO;
     }
 
+    @Unique private com.solegendary.reignofnether.unit.UnitDefinition.Role ron$roleCache;
+    @Unique private boolean ron$roleResolved = false;
+
     @Unique
     private com.solegendary.reignofnether.unit.UnitDefinition.Role ron$role() {
+        if (ron$roleResolved)
+            return ron$roleCache;
+        ron$roleResolved = true;
         if (ron$definitionId == null)
             return null;
         com.solegendary.reignofnether.unit.UnitDefinition def = level().registryAccess()
                 .registryOrThrow(com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY)
                 .get(ron$definitionId);
-        return def == null ? null : def.role();
+        ron$roleCache = def == null ? null : def.role();
+        return ron$roleCache;
+    }
+
+    /**
+     * Data-driven units tick themselves: cooldowns/checkpoints plus the role-specific tick
+     * (worker/attacker/hero). The old code unit classes did this in their own tick() overrides.
+     */
+    @org.spongepowered.asm.mixin.injection.Inject(
+            method = "tick",
+            at = @org.spongepowered.asm.mixin.injection.At("TAIL")
+    )
+    private void ron$tickUnit(org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        if (ron$definitionId == null)
+            return;
+        Unit self = (Unit) (Object) this;
+        Unit.tick(self);
+        if (isWorker())
+            Unit.tickWorker(self);
+        if (isAttacker())
+            Unit.tickAttacker(self);
+        if (isHero())
+            Unit.tickHero(self);
     }
 
     @Override
@@ -118,6 +146,8 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
     @Override
     public void setUnitDefinitionId(ResourceLocation id) {
         ron$definitionId = id;
+        ron$roleResolved = false;
+        ron$roleCache = null;
     }
 
     @Shadow protected net.minecraft.world.entity.ai.goal.GoalSelector goalSelector;
