@@ -1,6 +1,8 @@
 package com.solegendary.reignofnether.research;
 
 import net.minecraft.resources.ResourceLocation;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 /**
  * One requirement of a {@link Research}: another research that must (or, with {@code invert}, must
@@ -10,6 +12,11 @@ import net.minecraft.resources.ResourceLocation;
  * on the ABSENCE of a technology as on its presence.
  */
 public record ResearchCondition(ResourceLocation researchId, boolean invert) {
+
+    public static final Codec<ResearchCondition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            ResourceLocation.CODEC.fieldOf("research").forGetter(ResearchCondition::researchId),
+            Codec.BOOL.optionalFieldOf("invert", false).forGetter(ResearchCondition::invert)
+    ).apply(instance, ResearchCondition::new));
 
     public static ResearchCondition of(ResourceLocation researchId) {
         return new ResearchCondition(researchId, false);

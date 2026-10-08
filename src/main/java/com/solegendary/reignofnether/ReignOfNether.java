@@ -118,6 +118,11 @@ public class ReignOfNether {
             com.solegendary.reignofnether.faction.Faction.CODEC,
             com.solegendary.reignofnether.faction.Faction.CODEC
         );
+        evt.dataPackRegistry(
+            com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY,
+            com.solegendary.reignofnether.unit.UnitDefinition.CODEC,
+            com.solegendary.reignofnether.unit.UnitDefinition.CODEC
+        );
     }
 
     public static void reloadListener(AddReloadListenerEvent evt) {
