@@ -1,5 +1,8 @@
 # Производство, стоимости, ресурсы
 
+> Гейт по исследованию: `ProductionItem.requireResearch(ResearchCondition...)` учитывается в
+> `canProduce` (см. `07_research.md`).
+
 ## Цепочка
 
 ```

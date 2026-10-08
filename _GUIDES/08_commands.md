@@ -24,7 +24,16 @@ UnitCommands.register(RTSApiBuilder);
 | `player owner/ally/resources/victory/defeat/research/camera/teammode` | `commands/rtsapi/PlayerCommands.java` |
 | `execute rts-related ...` | `commands/rtsapi/ExecuteCommands.java` |
 
-Легаси-команды `/rtsapi-*` (17 штук в `CommandsServerEvents.java`) удаляются.
+Легаси-команды `/rtsapi-*` удаляются.
+
+### Отдельные команды (не под `/rtsapi`)
+
+| Команда | Что |
+|---|---|
+| `/startrts [<faction>]` | открыть меню выбора фракции при входе в РТС (см. `01_faction.md`) |
+| `/research grant\|revoke\|clear\|list <player> [<ns:id>]` | управление исследованиями игрока (право 2, см. `07_research.md`) |
+
+Читы удалены (этапы C/D плана).
 
 ## Аргумент-типы
 
