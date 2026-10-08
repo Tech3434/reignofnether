@@ -891,6 +891,11 @@ public interface Unit {
         return true;
     }
 
+    /** True only for actual RTS units (code units, or a mob carrying a UnitDefinition). */
+    static boolean isUnit(@Nullable Object o) {
+        return o instanceof Unit unit && unit.isRtsUnit();
+    }
+
     // if true, will ignore all commands except for stop (S)
     // used for things like channeling blizzard on the wraith to prevent accidental cancels
     default boolean ignoreNonStopCommands() {

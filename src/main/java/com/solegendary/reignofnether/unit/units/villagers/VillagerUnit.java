@@ -491,6 +491,12 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
         this.entityData.set(VILLAGER_DATA, data);
     }
 
+    // Code unit class: always an RTS unit, regardless of the generic Mob-mixin definition flag.
+    @Override
+    public boolean isRtsUnit() {
+        return true;
+    }
+
     @Override
     public List<Button> getAbilityButtons() {
         // includes the standard commands (attack/build/gather/stop/hold...) from Unit.getCommandAbilities

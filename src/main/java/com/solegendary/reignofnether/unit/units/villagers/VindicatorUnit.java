@@ -87,6 +87,11 @@ public class VindicatorUnit extends Vindicator implements Unit, AttackerUnit {
 
 
     public String getFaction() {return "villagers";}
+    @Override
+    public boolean isRtsUnit() {
+        return true;
+    }
+
     public Abilities getAbilities() {return abilities;}
     public List<ItemStack> getItems() {return items;};
     public MoveToTargetBlockGoal getMoveGoal() {return moveGoal;}
