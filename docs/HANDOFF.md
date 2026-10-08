@@ -87,7 +87,8 @@ cd ___temp
 ### Здания — `data/<ns>/building/<name>.json` (реестр `reignofnether:building`)
 ```json
 { "structure": "reignofnether:barracks", "maxHealth": 150, "populationSupply": 0,
-  "isCapitol": false, "production": [ "reignofnether:vindicator_unit" ],
+  "isCapitol": false, "canAcceptResources": false, "buildTimeModifier": 1.0,
+  "production": [ "reignofnether:vindicator_unit" ],
   "researches": [], "addons": [ { "type": "myns:garrison", "params": {} } ],
   "requiredResearch": [] }
 ```
@@ -247,6 +248,10 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 синк `BuildingAction.SET_UPGRADE_LEVEL` + `CHANGE_STRUCTURE`, уровень сохраняется. Демо: `barracks.json` →
 «Barracks II» (+maxHealth, +night_source — замена аддонов). Гейты зелёные; **`runClient` не проверялся**.
 
+**Капитолий-специфика JSON-зданий:** `BuildingDefinition` получил `canAcceptResources` и `buildTimeModifier`;
+`JsonBuilding` их применяет. `town_centre.json` → `canAcceptResources: true`, `buildTimeModifier: 0.328`
+(раньше JSON-столица НЕ принимала ресурсы — экономика была сломана). Гейты зелёные.
+
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)
 спавнит снаряд на сервере (owner, урон = `damage` или `getUnitAttackDamage()`), дефолт — стрела.
@@ -272,8 +277,8 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 2. ✅ **Исследования у зданий** (`ResearchProductionItem`, демо `example_research`). ✅ **Апгрейды (полностью)**
    (`UpgradeSpec`/`upgrades` + `JsonBuilding`-варианты на уровень; per-level производство/исследования/аддоны/
    способности/имя/иконка/структура). Дальше по зданиям:
-   - ⚠ `JsonBuilding` без капитолий-специфики, которая была у `TownCentre` (аддонных фич сверх `populationSupply`/
-     `isCapitol` нет).
+   - Капитолий-специфика: `isCapitol`/`populationSupply`/`canAcceptResources`/`buildTimeModifier` из
+     определения (дроп-офф ресурсов работает). Не портировано: милиция (система удалена), захват (`capturable`).
 3. ✅ **Ranged-юнит:** `equipment` + `projectile` (`ProjectileSpec`) в определении; спавн в
    `UnitMobMixin.performUnitRangedAttack`; демо `skeleton_unit` (лук+стрела) в казарме.
 4. **lang-дочистка:** `entity.reignofnether.villager_unit*` (используется тултипами `VillagerProd`/`VindicatorProd`);

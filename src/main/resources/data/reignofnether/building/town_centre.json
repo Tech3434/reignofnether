@@ -2,6 +2,8 @@
   "structure": "reignofnether:town_centre",
   "isCapitol": true,
   "populationSupply": 10,
+  "canAcceptResources": true,
+  "buildTimeModifier": 0.328,
   "maxHealth": 380,
   "production": [ "reignofnether:villager_unit" ],
   "researches": [],

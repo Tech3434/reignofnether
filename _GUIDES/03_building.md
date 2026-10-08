@@ -106,7 +106,6 @@ public static final XBuilding X = register(
 заглушка, вызываемая из конструктора мода.
 
 ## 4. Производство (если здание производит)
-
 ```java
 this.productions.add(ProductionItems.X_UNIT, Keybindings.abilitySlot1);
 ```
@@ -114,10 +113,17 @@ this.productions.add(ProductionItems.X_UNIT, Keybindings.abilitySlot1);
 Вызывать в конструкторе. Список — `building/production/ProductionItemList`, это
 `LinkedHashMap<ProductionItem, Keybinding>`.
 
+### Определение здания (JSON, актуально)
+
+`data/<ns>/building/<name>.json` (реестр `reignofnether:building`). Реализованные поля: `structure` (NBT),
+`name`, `icon`, `cost`, `maxHealth`, `populationSupply`, `isCapitol`, `canAcceptResources` (дроп-офф
+ресурсов — нужно столице), `buildTimeModifier`, `production`, `researches`, `addons`, `upgrades`,
+`requiredResearch`. Планируются: `repairable`/`invulnerable`/`capturable`/`captureRange`/`repairTimeModifier`/
+`portrait`. Идентичность — id определения; апгрейды создают варианты уровней (см. «Апгрейды»).
+
 ### Производство и исследования в JSON-зданиях
 
 У data-driven здания (`JsonBuilding`) состав берётся из определения:
-
 ```json
 "production": [ "myns:some_unit" ],
 "researches": [ "myns:some_research" ]

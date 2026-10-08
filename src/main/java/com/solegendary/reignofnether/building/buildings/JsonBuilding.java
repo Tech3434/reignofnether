@@ -56,6 +56,8 @@ public class JsonBuilding extends ProductionBuilding {
         this.maxHealth = definition.maxHealth();
         this.populationSupply = definition.populationSupply();
         this.requiredResearch = definition.requiredResearch();
+        this.canAcceptResources = definition.canAcceptResources();
+        this.buildTimeModifier = (float) definition.buildTimeModifier();
 
         for (ResourceLocation unitId : definition.production())
             this.productions.add(new JsonProductionItem(unitId, cost, unitId.getPath()), Keybindings.abilitySlot1);
