@@ -636,6 +636,13 @@ public class UnitClientEvents {
         // and consume in onWorldTick; we also can't add entities directly as they will not have goals populated
         if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_1) {
 
+            // §14.4: DIG_AREA is a drag - remember the first corner and let the release handle it
+            // (the usual path would clear the cursor action on press)
+            if (CursorClientEvents.getLeftClickAction() == UnitAction.DIG_AREA) {
+                CursorClientEvents.setDigAreaStartBp(CursorClientEvents.getPreselectedBlockPos());
+                return;
+            }
+
             if (!selectedUnits.isEmpty() && isLeftClickAttack()) {
                 // A + left click -> force attack single unit (even if friendly)
                 if (preselectedUnits.size() == 1 && !targetingSelf()) {

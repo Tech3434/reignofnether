@@ -98,6 +98,17 @@ public class CursorClientEvents {
     // action that is performed on the next left click
     private static UnitAction leftClickAction = null;
 
+    // §14.4: first corner of a DIG_AREA drag, captured on press and completed on release
+    private static BlockPos digAreaStartBp = new BlockPos(0, 0, 0);
+
+    public static BlockPos getDigAreaStartBp() {
+        return digAreaStartBp;
+    }
+
+    public static void setDigAreaStartBp(BlockPos bp) {
+        digAreaStartBp = bp == null ? new BlockPos(0, 0, 0) : bp;
+    }
+
     public static Vector3d getCursorWorldPos() {
         return cursorWorldPos;
     }
@@ -426,11 +437,24 @@ public class CursorClientEvents {
         if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_1) {
             leftClickDown = false;
 
+            // §14.4: finish a DIG_AREA drag - send the rectangle the player outlined
+            boolean wasDigArea = leftClickAction == UnitAction.DIG_AREA;
+            if (wasDigArea) {
+                BlockPos start = getDigAreaStartBp();
+                BlockPos end = getPreselectedBlockPos();
+                if (!start.equals(new BlockPos(0, 0, 0)) && !end.equals(new BlockPos(0, 0, 0))) {
+                    int[] ids = UnitClientEvents.getSelectedUnits().stream().mapToInt(LivingEntity::getId).toArray();
+                    UnitClientEvents.sendUnitCommandManual(UnitAction.DIG_AREA, -1, ids, start, end);
+                }
+                setDigAreaStartBp(new BlockPos(0, 0, 0));
+                setLeftClickAction(null);
+            }
+
             // enact box selection, excluding non-unit mobs
             // for single-click selection, see UnitClientEvents
             // except if attack-moving or no owned units are preselected (to prevent deselection)
             ArrayList<LivingEntity> preselectedUnit = UnitClientEvents.getPreselectedUnits();
-            if (preselectedUnit.size() > 0 && !cursorLeftClickDownPos.equals(cursorLeftClickDragPos)) {
+            if (!wasDigArea && preselectedUnit.size() > 0 && !cursorLeftClickDownPos.equals(cursorLeftClickDragPos)) {
 
                 // only act if there is at least 1 owned entity so we don't deselect things by box selecting only non-owned entities
                 int ownedEntities = 0;

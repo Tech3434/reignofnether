@@ -27,23 +27,23 @@ import java.util.List;
  * The DIG_BLOCK / DIG_AREA worker orders (plan §14.4) expressed as abilities, so they show up in
  * the HUD just like every other unit ability instead of needing their own switch branch.
  *
- * <p>Effect: the targeted block (or, for DIG_AREA, a small square around it) is removed and its
- * drops go into the unit's six-slot inventory; if that is full the remainder drops on the ground.
- * Blocks that belong to a building are never dug - those are handled through the attack system, so
- * digging can never carve a hole in a faction's own structures (the building-HP variant is §14.5
+ * <p>Effect: the targeted block is removed and its drops go into the unit's six-slot inventory; if
+ * that is full the remainder drops on the ground. DIG_AREA carries an outlined rectangle (two
+ * corners, plumbed through UnitActionItem) and digs every non-building block inside it, up to a
+ * hard cap so a wide drag cannot flatten a mountain.
+ *
+ * <p>Blocks that belong to a building are never dug - those are handled through the attack system,
+ * so digging can never carve a hole in a faction's own structures (the building-HP variant is §14.5
  * and is deliberately not implemented yet).
  */
 public class DigAbility extends Ability {
 
     public static final float DIG_RANGE = 12f;
-    /** Half-width of the DIG_AREA square. A real box-select frame is a later step. */
-    public static final int AREA_RADIUS = 2;
-
-    private final int areaRadius;
+    /** Cap on blocks a single DIG_AREA may remove. */
+    public static final int MAX_AREA_BLOCKS = 256;
 
     public DigAbility(UnitAction action) {
         super(action, 20, DIG_RANGE, 0, false);
-        this.areaRadius = action == UnitAction.DIG_AREA ? AREA_RADIUS : 0;
     }
 
     @Override
@@ -59,24 +59,44 @@ public class DigAbility extends Ability {
         if (le.distanceToSqr(Vec3.atCenterOf(centre)) > DIG_RANGE * DIG_RANGE)
             return;
 
-        if (areaRadius <= 0) {
-            digBlock(serverLevel, unitUsing, centre);
-        } else {
-            for (int dx = -areaRadius; dx <= areaRadius; dx++)
-                for (int dz = -areaRadius; dz <= areaRadius; dz++)
-                    digBlock(serverLevel, unitUsing, centre.offset(dx, 0, dz));
-        }
+        digBlock(serverLevel, unitUsing, centre);
     }
 
-    private void digBlock(ServerLevel level, Unit unit, BlockPos bp) {
-        if (BuildingUtils.isPosInsideAnyBuilding(false, bp))
+    @Override
+    public void useArea(Level level, Unit unitUsing, BlockPos corner1, BlockPos corner2) {
+        if (!(level instanceof ServerLevel serverLevel) || corner1 == null || corner2 == null)
             return;
+
+        LivingEntity le = (LivingEntity) unitUsing;
+        int minX = Math.min(corner1.getX(), corner2.getX());
+        int maxX = Math.max(corner1.getX(), corner2.getX());
+        int minY = Math.min(corner1.getY(), corner2.getY());
+        int maxY = Math.max(corner1.getY(), corner2.getY());
+        int minZ = Math.min(corner1.getZ(), corner2.getZ());
+        int maxZ = Math.max(corner1.getZ(), corner2.getZ());
+
+        int dug = 0;
+        for (int y = minY; y <= maxY && dug < MAX_AREA_BLOCKS; y++)
+            for (int x = minX; x <= maxX && dug < MAX_AREA_BLOCKS; x++)
+                for (int z = minZ; z <= maxZ && dug < MAX_AREA_BLOCKS; z++) {
+                    BlockPos bp = new BlockPos(x, y, z);
+                    if (le.distanceToSqr(Vec3.atCenterOf(bp)) > DIG_RANGE * DIG_RANGE)
+                        continue;
+                    if (digBlock(serverLevel, unitUsing, bp))
+                        dug += 1;
+                }
+    }
+
+    /** Removes one block and hands its drops to the unit. Returns true if a block was removed. */
+    private boolean digBlock(ServerLevel level, Unit unit, BlockPos bp) {
+        if (BuildingUtils.isPosInsideAnyBuilding(false, bp))
+            return false;
 
         BlockState bs = level.getBlockState(bp);
         if (bs.isAir())
-            return;
+            return false;
         if (bs.getDestroySpeed(level, bp) < 0) // bedrock and other unbreakables
-            return;
+            return false;
 
         List<ItemStack> drops = Block.getDrops(bs, level, bp, null);
         level.destroyBlock(bp, false);
@@ -87,6 +107,7 @@ public class DigAbility extends Ability {
             if (!(unit instanceof UnitInventory inv) || !inv.tryAdding(drop))
                 Block.popResource(level, bp, drop);
         }
+        return true;
     }
 
     @Override

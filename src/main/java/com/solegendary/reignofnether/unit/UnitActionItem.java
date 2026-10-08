@@ -396,6 +396,16 @@ public class UnitActionItem {
                         cUnit.setShouldDiscard(true);
                     }
                 }
+                // §14.4: DIG_AREA carries an outlined rectangle - preselectedBlockPos and
+                // selectedBuildingPos are its two opposite corners
+                case DIG_AREA -> {
+                    for (Ability ability : unit.getAbilities().get()) {
+                        if (ability.action == UnitAction.DIG_AREA &&
+                            (ability.isOffCooldown(unit) || ability.canBypassCooldown(unit))) {
+                            ability.useArea(level, unit, preselectedBlockPos, selectedBuildingPos);
+                        }
+                    }
+                }
                 // any other Ability not explicitly defined here
                 default -> {
                     for (Ability ability : unit.getAbilities().get()) {

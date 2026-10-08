@@ -154,6 +154,11 @@ public class Ability {
 
     public void use(Level level, Unit unitUsing, BlockPos targetBp) { }
 
+    /** Area variant of {@link #use}: two opposite corners of an outlined region (plan §14.4). */
+    public void useArea(Level level, Unit unitUsing, BlockPos corner1, BlockPos corner2) {
+        use(level, unitUsing, corner1);
+    }
+
     public void use(Level level, BuildingPlacement buildingUsing, BlockPos targetBp) { }
 
     // assigns a default hotkey
