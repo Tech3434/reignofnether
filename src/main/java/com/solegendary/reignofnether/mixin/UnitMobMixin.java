@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ import java.util.Set;
  * now the state is inert defaults.
  */
 @Mixin(Mob.class)
-public abstract class UnitMobMixin extends LivingEntity implements Unit {
+public abstract class UnitMobMixin extends LivingEntity implements Unit, com.solegendary.reignofnether.unit.interfaces.DefinedUnit {
 
     @Unique private String ron$ownerName = "";
     @Unique private BlockPos ron$anchor;
@@ -69,15 +70,18 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit {
         return ron$definitionId != null;
     }
 
-    @Unique
-    public void ron$setDefinition(ResourceLocation id) {
+    @Override
+    public ResourceLocation getUnitDefinitionId() {
+        return ron$definitionId;
+    }
+
+    @Override
+    public void setUnitDefinitionId(ResourceLocation id) {
         ron$definitionId = id;
     }
 
-    @Unique
-    public ResourceLocation ron$getDefinition() {
-        return ron$definitionId;
-    }
+    @Shadow protected net.minecraft.world.entity.ai.goal.GoalSelector goalSelector;
+    @Shadow protected net.minecraft.world.entity.ai.goal.GoalSelector targetSelector;
 
     @Override
     public void setAnchor(BlockPos bp) {
@@ -187,7 +191,24 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit {
 
     @Override
     public void initialiseGoals() {
-        // definition-driven: built in a later phase
+        if (ron$definitionId == null)
+            return;
+        com.solegendary.reignofnether.unit.UnitDefinition def = level().registryAccess()
+                .registryOrThrow(com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY)
+                .get(ron$definitionId);
+        if (def == null)
+            return;
+        Mob self = (Mob) (Object) this;
+        // base RTS goals every unit needs; combat/gather goals (which need AttackerUnit/WorkerUnit)
+        // are wired in a later phase.
+        if (ron$moveGoal == null) {
+            ron$moveGoal = new MoveToTargetBlockGoal(self, false, 0);
+            this.goalSelector.addGoal(5, ron$moveGoal);
+        }
+        if (ron$targetGoal == null) {
+            ron$targetGoal = new SelectedTargetGoal<>(self, false, true);
+            this.targetSelector.addGoal(5, ron$targetGoal);
+        }
     }
 
     @Override
