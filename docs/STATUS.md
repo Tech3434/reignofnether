@@ -205,6 +205,13 @@ JSON для юнитов/зданий/способностей — отложе�
 `buildings.<ns>.<path>`. Гайд `_GUIDES/03_building.md` поправлен (`scaffoldFill`/`scaffoldBlock`,
 `getFaction` как строка, `requiredResearch`).
 
+**Unit-на-Mob: ядро готово (2026-10-08).** `Unit.isRtsUnit()` (у код-юнитов `true`), хелпер
+`Unit.isUnit(...)`, `@Mixin(Mob) UnitMobMixin` (дженерик-состояние; `isRtsUnit()` = есть
+`UnitDefinition`) — **включён**; ~197 проверок `instanceof Unit` переведены на `isRtsUnit()`; реестр
+`unit` (датапак). Проверено `runServer` (`Done (1.082s)!`, миксин применяется без ошибок; зомби/овцы
+юнитами не становятся). Осталось: движок определений (goals/атрибуты/способности из `UnitDefinition`)
+и миграция `VillagerUnit`/`VindicatorUnit` в JSON.
+
 **П5 (2026-10-08).** `1.21.1-clean` fast-forward'нут на текущую работу (`wip/stage-d-deletions`);
 обе ветки указывали на `ec35ca7d`.
 
