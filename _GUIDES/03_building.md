@@ -130,6 +130,28 @@ this.productions.add(ProductionItems.X_UNIT, Keybindings.abilitySlot1);
 Состояние аддонов пишется через `building/data/DataType` и сохраняется в
 `BuildingSaveData.dataStorage` автоматически.
 
+### JSON-аддоны (data-driven, готово)
+
+У data-driven зданий (`JsonBuilding`) аддоны задаются прямо в JSON:
+
+```json
+"addons": [ { "type": "reignofnether:night_source", "params": { "range": 24 } } ]
+```
+
+Тип — id в реестре `building/addon/AddonTypes`. `JsonBuilding` создаёт аддон через
+`AddonTypes.create(spec, building)` и навешивает `Building.addActiveAddon(...)`, который регистрирует его
+под **всеми** реализуемыми `BuildingAddon`-интерфейсами (поэтому `getActiveAddon(RangeIndicatorAddon.class)`
+и т.п. находят его). Движковые типы регистрируются в `building/addon/Addons.init()` (вызывается из
+конструктора мода); автор фракции регистрирует свои так же:
+
+```java
+AddonTypes.register(ResourceLocation.fromNamespaceAndPath("myns", "my_addon"),
+        (spec, building) -> new MyAddon(spec));
+```
+
+Движковый пример — `reignofnether:night_source` (`NightSourceBuildingAddon` implements
+`NightSourceAddon`+`RangeIndicatorAddon`; params `range`, `showOnlyWhenSelected`).
+
 ## 6. Блок лесов
 
 Когда под фундаментом пропасть глубже пары блоков, мод заполняет её. Поведение задаётся

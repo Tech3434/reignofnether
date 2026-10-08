@@ -71,8 +71,9 @@
 * **Производство** — на здании: `production: [ { "unit": "…", "key": "abilitySlot1", "costOverride": {…} } ]`.
 * **Исследования** — на здании (см. `RESEARCH_AND_EXTENSIBILITY_PLAN.md` §«Отложено»):
   `researches: [ "…", … ]` — какие исследования здание предлагает; очередь общая с производством.
-* **Аддоны** — `addons: [ { "type": "garrison", …params }, { "type": "night_source", … }, … ]`
-  (реестр код-типов аддонов с Codec'ами, как способности).
+* **Аддоны** (реализовано) — `addons: [ { "type": "garrison", …params }, { "type": "night_source", … }, … ]`
+  (реестр код-типов аддонов с Codec'ами, как способности). Движковый пример — `reignofnether:night_source`
+  (`params`: `range`, `showOnlyWhenSelected`).
 * **Апгрейды** — `upgrades: [ { "structure": "…", "name": "…", "icon": "…", "cost": {…},
   "attributes"/"maxHealth"/"populationSupply": …, "production": …, "abilities"/"addons": …,
   "researches": … }, … ]`. Апгрейд меняет: структуру, имя/иконку, стоимость, характеристики,

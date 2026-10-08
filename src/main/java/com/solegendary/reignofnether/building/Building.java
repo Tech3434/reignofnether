@@ -168,6 +168,33 @@ public abstract class Building {
         return activeAddons.containsKey(addonClass);
     }
 
+    /** Registers a data-driven addon under every {@link BuildingAddon} interface it implements. */
+    public void addActiveAddon(BuildingAddon addon) {
+        for (Class<?> addonInterface : addonInterfaces(addon.getClass()))
+            putActiveAddon(addonInterface, addon);
+        putActiveAddon(addon.getClass(), addon);
+    }
+
+    private static java.util.Set<Class<?>> addonInterfaces(Class<?> type) {
+        java.util.Set<Class<?>> result = new java.util.HashSet<>();
+        collectAddonInterfaces(type, result);
+        return result;
+    }
+
+    private static void collectAddonInterfaces(Class<?> type, java.util.Set<Class<?>> result) {
+        for (Class<?> iface : type.getInterfaces()) {
+            if (iface == BuildingAddon.class || !BuildingAddon.class.isAssignableFrom(iface))
+                continue;
+            result.add(iface);
+            collectAddonInterfaces(iface, result);
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void putActiveAddon(Class<?> addonClass, BuildingAddon addon) {
+        activeAddons.put((Class<BuildingAddon>) (Class) addonClass, addon);
+    }
+
     public boolean canDestroyBlock(BlockPos relativeBp, BuildingPlacement placement) {
         return true;
     }

@@ -3,6 +3,9 @@ package com.solegendary.reignofnether.building.buildings;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingDefinition;
 import com.solegendary.reignofnether.building.BuildingPlaceButton;
+import com.solegendary.reignofnether.building.addon.AddonSpec;
+import com.solegendary.reignofnether.building.addon.AddonTypes;
+import com.solegendary.reignofnether.building.addon.BuildingAddon;
 import com.solegendary.reignofnether.building.production.JsonProductionItem;
 import com.solegendary.reignofnether.building.production.ProductionBuilding;
 import com.solegendary.reignofnether.keybinds.Keybinding;
@@ -41,6 +44,12 @@ public class JsonBuilding extends ProductionBuilding {
 
         for (ResourceLocation unitId : definition.production())
             this.productions.add(new JsonProductionItem(unitId, cost, unitId.getPath()), Keybindings.abilitySlot1);
+
+        for (AddonSpec spec : definition.addons()) {
+            BuildingAddon addon = AddonTypes.create(spec, this);
+            if (addon != null)
+                addActiveAddon(addon);
+        }
     }
 
     public ResourceLocation getDefinitionId() {

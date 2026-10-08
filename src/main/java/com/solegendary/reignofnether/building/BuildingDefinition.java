@@ -2,6 +2,7 @@ package com.solegendary.reignofnether.building;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.solegendary.reignofnether.building.addon.AddonSpec;
 import com.solegendary.reignofnether.research.ResearchCondition;
 import com.solegendary.reignofnether.unit.UnitDefinition;
 
@@ -30,6 +31,7 @@ public record BuildingDefinition(
         boolean isCapitol,
         List<ResourceLocation> production,
         List<ResourceLocation> researches,
+        List<AddonSpec> addons,
         List<ResearchCondition> requiredResearch
 ) {
 
@@ -43,6 +45,7 @@ public record BuildingDefinition(
             Codec.BOOL.optionalFieldOf("isCapitol", false).forGetter(BuildingDefinition::isCapitol),
             ResourceLocation.CODEC.listOf().optionalFieldOf("production", List.of()).forGetter(BuildingDefinition::production),
             ResourceLocation.CODEC.listOf().optionalFieldOf("researches", List.of()).forGetter(BuildingDefinition::researches),
+            AddonSpec.CODEC.listOf().optionalFieldOf("addons", List.of()).forGetter(BuildingDefinition::addons),
             ResearchCondition.CODEC.listOf().optionalFieldOf("requiredResearch", List.of()).forGetter(BuildingDefinition::requiredResearch)
     ).apply(instance, BuildingDefinition::new));
 }

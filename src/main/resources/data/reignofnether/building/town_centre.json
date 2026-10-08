@@ -4,5 +4,6 @@
   "populationSupply": 10,
   "maxHealth": 380,
   "production": [ "reignofnether:villager_unit" ],
-  "researches": []
+  "researches": [],
+  "addons": [ { "type": "reignofnether:night_source", "params": { "range": 24 } } ]
 }

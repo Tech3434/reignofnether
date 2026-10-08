@@ -1,6 +1,7 @@
 package com.solegendary.reignofnether;
 
 import com.solegendary.reignofnether.building.Buildings;
+import com.solegendary.reignofnether.building.addon.Addons;
 import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.commands.rtsapi.ResourceObjectiveCriteria;
 import com.solegendary.reignofnether.commands.rtsapi.argument.options.BuildingSelectorOptions;
@@ -65,6 +66,7 @@ public class ReignOfNether {
         BlockEntityRegistrar.init(container);
         GameRuleRegistrar.init();
         Buildings.init();
+        Addons.init();
         ProductionItems.init();
         MobEffectRegistrar.init(container);
         ParticleRegistrar.init(container);
