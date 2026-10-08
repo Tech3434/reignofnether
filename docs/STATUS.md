@@ -161,6 +161,11 @@ JSON-загрузчик — фазы 2/4.
 `runData` ✅; `runServer` доходит до `Done (...)`, но dev-сервер в этой среде сам не завершается —
 `runServer` больше не поднимаю (см. AGENTS.md). JSON-загрузчик (фаза 4) — следующий шаг.
 
+**Фаза 3 исследований (2026-10-08).** `ResearchAttributeApplier` применяет `ATTRIBUTE_BOOST` к
+юнитам владельца (модификаторы именованы по id исследования — идемпотентно; `unitFilter` — по типу
+сущности). Хуки: спавн (`UnitServerEvents.onEntityJoin`), grant/revoke/clear (`ResearchCommand`),
+сброс при поражении и в `resetRTS`. Гейты `compileJava`/`validateMixins`/`runData` ✅.
+
 ### Документация
 
 * `FEATURES.md` и `INTRUSION_AUDIT.md` — актуализировать (снять удалённое, отметить читы/туман).

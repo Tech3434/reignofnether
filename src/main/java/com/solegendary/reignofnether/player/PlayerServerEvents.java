@@ -833,6 +833,7 @@ public class PlayerServerEvents {
         for (LivingEntity entity : new ArrayList<>(UnitServerEvents.getAllUnits())) {
             if (!(entity instanceof Unit unit) || !unit.getOwnerName().equals(playerName))
                 continue;
+            com.solegendary.reignofnether.research.ResearchAttributeApplier.removeFor(unit);
             unit.setOwnerName("");
             try {
                 unit.resetBehaviours();
@@ -924,8 +925,10 @@ public class PlayerServerEvents {
             UnitServerEvents.getAllUnits().removeIf(u -> (hardReset || (u instanceof Unit unit && !Unit.hasAnchor(unit))));
 
             for (LivingEntity entity : UnitServerEvents.getAllUnits())
-                if (entity instanceof Unit unit)
+                if (entity instanceof Unit unit) {
+                    com.solegendary.reignofnether.research.ResearchAttributeApplier.removeFor(unit);
                     unit.setOwnerName("");
+                }
 
             for (BuildingPlacement building : BuildingServerEvents.getBuildings()) {
                 if (building instanceof ProductionPlacement productionBuilding)

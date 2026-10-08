@@ -403,6 +403,7 @@ public class UnitServerEvents {
         if (evt.getEntity() instanceof Unit unit && evt.getEntity() instanceof LivingEntity entity
             && !evt.getLevel().isClientSide) {
             allUnits.add(entity);
+            com.solegendary.reignofnether.research.ResearchAttributeApplier.applyFor(evt.getLevel(), unit);
 
             if (unit instanceof WorkerUnit wUnit) {
                 synchronized (savedTargetResources) {
