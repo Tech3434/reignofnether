@@ -361,7 +361,7 @@ public class PlayerServerEvents {
      * which capitol message to print. Factions are gone, so the starting unit and the capitol come from
      * the constants below - a new faction overrides them where it defines its own units.
      */
-    public static final EntityType<? extends Unit> STARTING_WORKER_TYPE = EntityRegistrar.VILLAGER_UNIT.get();
+    public static final ResourceLocation STARTING_WORKER_DEF = ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "villager_unit");
 
     /**
      * H.8: the army a player is handed when a match starts, one entry per unit. The default is a
@@ -369,9 +369,7 @@ public class PlayerServerEvents {
      * would have nowhere to live until a capitol raises the cap. A faction overrides this list with
      * its own units.
      */
-    public static final List<EntityType<? extends Unit>> STARTING_ARMY = List.<EntityType<? extends Unit>>of(
-            EntityRegistrar.VILLAGER_UNIT.get()
-    );
+    public static final List<ResourceLocation> STARTING_ARMY = List.of(STARTING_WORKER_DEF);
 
     public static void startRTS(int playerId, Vec3 pos) {
         startRTS(playerId, pos, 0, com.solegendary.reignofnether.faction.FactionRegistries.getDefaultFactionId());
@@ -445,17 +443,13 @@ public class PlayerServerEvents {
             // built-in constants when the faction or one of its entries is missing
             com.solegendary.reignofnether.faction.Faction faction =
                     com.solegendary.reignofnether.faction.FactionRegistries.get(level.getServer(), factionId);
-            List<EntityType<? extends Unit>> startTypes = new ArrayList<>();
-            if (faction != null && !faction.startingUnits().isEmpty()) {
-                for (com.solegendary.reignofnether.faction.StartingUnit su : faction.startingUnits()) {
-                    EntityType<?> et = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.get(su.entityType());
-                    if (et != null)
-                        for (int c = 0; c < Math.max(1, su.count()); c++)
-                            startTypes.add((EntityType<? extends Unit>) et);
-                }
-            }
-            if (startTypes.isEmpty())
-                startTypes.addAll(STARTING_ARMY);
+            List<ResourceLocation> startUnitDefs = new ArrayList<>();
+            if (faction != null && !faction.startingUnits().isEmpty())
+                for (com.solegendary.reignofnether.faction.StartingUnit su : faction.startingUnits())
+                    for (int c = 0; c < Math.max(1, su.count()); c++)
+                        startUnitDefs.add(su.entityType());
+            if (startUnitDefs.isEmpty())
+                startUnitDefs.addAll(STARTING_ARMY);
             Building capitolBuilding = faction != null
                     ? com.solegendary.reignofnether.api.ReignOfNetherRegistries.BUILDING.get(faction.capitol())
                     : null;
@@ -463,15 +457,14 @@ public class PlayerServerEvents {
                 capitolBuilding = Buildings.TOWN_CENTRE;
 
             // H.8: one spawn position per starting unit, spread out along x from the start position
-            for (int startUnitIdx = 0; startUnitIdx < startTypes.size(); startUnitIdx++) {
-                EntityType<? extends Unit> startUnitType = startTypes.get(startUnitIdx);
+            for (int startUnitIdx = 0; startUnitIdx < startUnitDefs.size(); startUnitIdx++) {
                 BlockPos bp0 = new BlockPos((int) pos.x + startUnitIdx, 0, (int) pos.z);
-                Entity entity = startUnitType != null ? startUnitType.create(level) : null;
+                Entity entity = com.solegendary.reignofnether.unit.UnitDefinitionRuntime.create(
+                        level, startUnitDefs.get(startUnitIdx), playerName);
                 if (entity != null) {
                     BlockPos bp = MiscUtil.getHighestNonAirBlock(level, bp0)
                             .above()
                             .above();
-                    ((Unit) entity).setOwnerName(playerName);
                     entity.moveTo(bp, 0, 0);
                     if (!readiedStart)
                         level.addFreshEntity(entity);
@@ -533,19 +526,18 @@ public class PlayerServerEvents {
                 level = (ServerLevel) players.get(0).level();
             }
 
-            EntityType<? extends Unit> entityType = STARTING_WORKER_TYPE;
             RTSPlayer bot = RTSPlayer.getNewBot(name);
             rtsPlayers.add(bot);
 
             ResourcesServerEvents.assignResources(bot.name);
 
             for (int i = -1; i <= 1; i++) {
-                Entity entity = entityType != null ? entityType.create(level) : null;
+                BlockPos bp = MiscUtil.getHighestNonAirBlock(level, new BlockPos((int) (pos.x + i), 0, (int) pos.z))
+                    .above()
+                    .above();
+                Entity entity = com.solegendary.reignofnether.unit.UnitDefinitionRuntime.create(
+                        level, STARTING_WORKER_DEF, bot.name);
                 if (entity != null) {
-                    BlockPos bp = MiscUtil.getHighestNonAirBlock(level, new BlockPos((int) (pos.x + i), 0, (int) pos.z))
-                        .above()
-                        .above();
-                    ((Unit) entity).setOwnerName(bot.name);
                     entity.moveTo(bp, 0, 0);
                     level.addFreshEntity(entity);
                 }

@@ -165,6 +165,41 @@ public class ProductionPlacement extends BuildingPlacement {
         return entity;
     }
 
+    /** Data-driven spawn: resolves the base EntityType from a UnitDefinition and applies it. */
+    public Entity produceUnit(ServerLevel level, net.minecraft.resources.ResourceLocation unitDefinitionId, String ownerName, boolean spawnIndoors, Vec3i spawnOffset) {
+        com.solegendary.reignofnether.unit.UnitDefinition def = level.registryAccess()
+                .registryOrThrow(com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY).get(unitDefinitionId);
+        if (def == null)
+            return null;
+        EntityType<?> base = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.get(def.base());
+        if (base == null)
+            return null;
+
+        ProductionBuilding building = (ProductionBuilding) getBuilding();
+        BlockPos spawnPoint;
+        if (spawnIndoors)
+            spawnPoint = getIndoorSpawnPoint(level);
+        else if (!rallyPoints.isEmpty())
+            spawnPoint = getClosestGroundPos(rallyPoints.get(0), (int) building.spawnRadiusOffset);
+        else if (rallyPointEntity != null)
+            spawnPoint = getClosestGroundPos(rallyPointEntity.getOnPos(), (int) building.spawnRadiusOffset);
+        else
+            spawnPoint = getDefaultOutdoorSpawnPoint();
+        spawnPoint = spawnPoint.offset(spawnOffset);
+
+        Entity entity = base.spawn(level, ItemStack.EMPTY, null, spawnPoint, MobSpawnType.SPAWNER, true, false);
+        if (entity instanceof com.solegendary.reignofnether.unit.interfaces.DefinedUnit definedUnit)
+            definedUnit.setUnitDefinitionId(unitDefinitionId);
+        if (entity instanceof Unit unit && entity instanceof net.minecraft.world.entity.Mob mob) {
+            com.solegendary.reignofnether.unit.UnitDefinitionRuntime.applyAttributes(def, mob);
+            unit.setOwnerName(ownerName);
+            unit.initialiseGoals();
+            unit.setupEquipmentAndUpgradesServer();
+            setDelayedRally(unit);
+        }
+        return entity;
+    }
+
     protected void setDelayedRally(Unit unit) {
         Entity entity = (Entity) unit;
         LivingEntity rallyEntity = getRallyPointEntity();

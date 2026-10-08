@@ -29,7 +29,9 @@ public class VillagerProd extends ProductionItem {
         super(cost);
         this.onComplete = (Level level, ProductionPlacement placement) -> {
             if (!level.isClientSide())
-                placement.produceUnit((ServerLevel) level, EntityRegistrar.VILLAGER_UNIT.get(), placement.ownerName, true);
+                placement.produceUnit((ServerLevel) level,
+                        ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "villager_unit"),
+                        placement.ownerName, true, new net.minecraft.core.Vec3i(0, 0, 0));
         };
     }
 

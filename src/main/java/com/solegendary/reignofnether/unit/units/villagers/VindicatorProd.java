@@ -30,7 +30,9 @@ public class VindicatorProd extends ProductionItem {
         super(cost);
         this.onComplete = (Level level, ProductionPlacement placement) -> {
             if (!level.isClientSide())
-                placement.produceUnit((ServerLevel) level, EntityRegistrar.VINDICATOR_UNIT.get(), placement.ownerName, true);
+                placement.produceUnit((ServerLevel) level,
+                        ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "vindicator_unit"),
+                        placement.ownerName, true, new net.minecraft.core.Vec3i(0, 0, 0));
         };
     }
 
