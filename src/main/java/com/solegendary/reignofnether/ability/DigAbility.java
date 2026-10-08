@@ -33,17 +33,21 @@ import java.util.List;
  * corners, plumbed through UnitActionItem) and digs every non-building block inside it, up to a
  * hard cap so a wide drag cannot flatten a mountain.
  *
- * <p>Blocks that belong to a building are never dug - those are handled through the attack system,
- * so digging can never carve a hole in a faction's own structures (the building-HP variant is §14.5
- * and is deliberately not implemented yet).
+ * <p>Blocks that belong to a building are never dug: the dig is refused outright so it can never
+ * carve a hole in any structure. Instead the hit deals percentage damage to the building's HP
+ * (§14.5), so the building collapses from the top down.
  */
 public class DigAbility extends Ability {
 
     public static final float DIG_RANGE = 12f;
     /** Cap on blocks a single DIG_AREA may remove. */
     public static final int MAX_AREA_BLOCKS = 256;
-    /** §14.5: fixed building damage per dig hit. */
-    public static final double BUILDING_DAMAGE_PER_HIT = 30d;
+    /**
+     * §14.5: fraction of a building's max HP dealt per dig hit. Digging a block that belongs to a
+     * building never removes the block - the dig is cancelled and the building takes this
+     * percentage of its max HP instead. Tunable design value.
+     */
+    public static final double BUILDING_DAMAGE_PERCENT_PER_HIT = 0.05d;
 
     public DigAbility(UnitAction action) {
         super(action, 20, DIG_RANGE, 0, false);
@@ -92,12 +96,13 @@ public class DigAbility extends Ability {
 
     /** Removes one block and hands its drops to the unit. Returns true if a block was removed. */
     private boolean digBlock(ServerLevel level, Unit unit, BlockPos bp) {
-        // §14.5: a block that belongs to a building cannot be dug - digging it damages the
-        // building instead, and the building collapses from the top down.
+        // §14.5: a block that belongs to a building cannot be dug - the dig is cancelled and the
+        // building instead takes percentage damage (a fixed fraction of its max HP), collapsing
+        // from the top down.
         if (BuildingUtils.isPosInsideAnyBuilding(false, bp)) {
             BuildingPlacement building = BuildingUtils.findBuilding(false, bp);
             if (building != null && building.isAttackable())
-                building.demolishTopDown(BUILDING_DAMAGE_PER_HIT);
+                building.demolishTopDown(building.getMaxHealth() * BUILDING_DAMAGE_PERCENT_PER_HIT);
             return false;
         }
 

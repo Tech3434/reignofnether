@@ -627,8 +627,9 @@ public class BuildingPlacement {
 
     /**
      * §14.5: like {@link #destroyRandomBlocks} but removes the topmost blocks first, so a building
-     * being dug away visibly collapses from the roof down. Damage is a fixed amount per hit; once the
-     * normal destruction threshold is reached the remaining blocks are cleared as usual.
+     * being dug away visibly collapses from the roof down. {@code amount} is an HP amount chosen by
+     * the caller (a DIG hit passes a percentage of the building's max HP); once the normal
+     * destruction threshold is reached the remaining blocks are cleared as usual.
      */
     public void demolishTopDown(double amount) {
         if (getLevel().isClientSide())
