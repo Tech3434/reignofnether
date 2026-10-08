@@ -68,6 +68,11 @@ public class BuildingSaveData extends SavedData {
                 if (btag.contains("customStructureName")) {
                     building = CustomBuildingServerEvents.getCustomBuilding(btag.getString("customStructureName"));
                 }
+                else if (btag.contains("jsonDefinitionId")) {
+                    ResourceLocation jsonId = ResourceLocation.tryParse(btag.getString("jsonDefinitionId"));
+                    building = jsonId == null ? null
+                            : com.solegendary.reignofnether.building.buildings.JsonBuildingManager.getOrCreate(level, jsonId);
+                }
                 else if (btag.contains("buildingKey")) {
                     building = ReignOfNetherRegistries.BUILDING.get(ResourceLocation.tryParse(btag.getString("buildingKey")));
                 } else {
@@ -121,7 +126,11 @@ public class BuildingSaveData extends SavedData {
             if (b.building instanceof CustomBuilding) {
                 cTag.putString("customStructureName", b.building.name);
             }
-            if (!(b.building instanceof CustomBuilding)) {
+            if (b.building instanceof com.solegendary.reignofnether.building.buildings.JsonBuilding jsonBuilding) {
+                cTag.putString("jsonDefinitionId", jsonBuilding.getDefinitionId().toString());
+            }
+            if (!(b.building instanceof CustomBuilding) &&
+                    !(b.building instanceof com.solegendary.reignofnether.building.buildings.JsonBuilding)) {
                 cTag.putString("buildingKey", ReignOfNetherRegistries.BUILDING.getKey(b.building).toString());
             }
             cTag.putInt("x", b.originPos.getX());

@@ -25,17 +25,19 @@ public final class JsonBuildingManager {
 
     private JsonBuildingManager() { }
 
-    /** Rebuilds every JSON building from the server's datapack registry. */
+    /**
+     * Ensures one {@link JsonBuilding} exists per datapack definition. Existing instances are kept:
+     * a building placement holds its Building instance, and {@code BuildingSaveData.load} may create it
+     * first, so this is safe whether it runs before or after world building load.
+     */
     public static void reload(MinecraftServer server) {
-        BUILDINGS.clear();
-        com.solegendary.reignofnether.research.ResearchProductionItem.clearCache();
         if (server == null)
             return;
         for (Map.Entry<net.minecraft.resources.ResourceKey<BuildingDefinition>, BuildingDefinition> entry
                 : BuildingDefinitions.get(server).entrySet()) {
-            BuildingDefinition def = entry.getValue();
             ResourceLocation id = entry.getKey().location();
-            BUILDINGS.put(id, create(id, def));
+            if (!BUILDINGS.containsKey(id))
+                BUILDINGS.put(id, create(id, entry.getValue()));
         }
     }
 

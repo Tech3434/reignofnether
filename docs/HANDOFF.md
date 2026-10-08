@@ -88,9 +88,12 @@ cd ___temp
 - `JsonBuilding extends ProductionBuilding`; `JsonProductionItem` спавнит юнит по id определения, а
   `research/ResearchProductionItem` (из `researches`) кладётся в ту же очередь производств и выдаёт
   исследование владельцу по завершении (см. §«Исследования»).
-- `JsonBuildingManager.reload(server)` (из `FactionServerEvents.onServerStarted`) строит по одному `JsonBuilding`
-  на каждое определение в **собственном** map (кодовый `ReignOfNetherRegistries.BUILDING` уже заморожен на момент
-  загрузки датапака — писать туда нельзя).
+- `JsonBuildingManager.reload(server)` (из `FactionServerEvents.onServerStarted`) создаёт по одному `JsonBuilding`
+  на определение в **собственном** map, **не пересоздавая уже существующие** (идентичность важна: размещение
+  держит ссылку на `Building`, а `BuildingSaveData.load` может создать его раньше). Кодовый
+  `ReignOfNetherRegistries.BUILDING` заморожен — писать туда нельзя.
+- Персистентность: `BuildingSaveData.save` пишет `jsonDefinitionId` (а не код-ключ) для `JsonBuilding`, при
+  загрузке — `JsonBuildingManager.getOrCreate(level, id)` (из датапак-реестра; не зависит от порядка листенеров).
 - Размещение: `BuildingServerboundPacket.resolveBuilding` — сначала код-реестр, затем `JsonBuildingManager`;
   клиентский `placeBuilding` шлёт `definitionId` для `JsonBuilding`. Синхронизация сервер→клиент —
   `BuildingAction.PLACE_JSON` + `JsonBuildingManager.getOrCreate(level, id)` (клиент строит из синхронизированного
@@ -210,6 +213,10 @@ cd ___temp
 клиентская синхронизация JSON-зданий (`PLACE_JSON` + `JsonBuildingManager.getOrCreate`), плюс null-safe
 `BuildingUtils.getKeyString` в HUD (раньше `BUILDING.getKey(jsonBldg).toString()` падал). Демо:
 `research/example_research.json` + `barracks.json`. Гейты зелёные; **`runClient` не проверялся**.
+
+**Персистентность JSON-зданий:** `BuildingSaveData` сохраняет `jsonDefinitionId` и восстанавливает через
+`JsonBuildingManager.getOrCreate` (раньше `BUILDING.getKey(jsonBldg)` падал на сохранении, и здание терялось).
+`JsonBuildingManager.reload` теперь не пересоздаёт существующие инстансы. Гейты зелёные.
 
 ---
 
