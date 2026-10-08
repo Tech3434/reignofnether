@@ -139,7 +139,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
         }
         return !isFreshAnimationsInstalled ||
                 HudClientEvents.hudSelectedEntity instanceof AbstractIllager ||
-                HudClientEvents.hudSelectedEntity instanceof HeroUnit;
+                Unit.isHero(HudClientEvents.hudSelectedEntity);
     }
 
     public void tickAnimation() {
@@ -179,7 +179,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
     // - unit name
     // Must be called from DrawScreenEvent
     public RectZone render(GuiGraphics guiGraphics, String name, int x, int y, int mouseX, int mouseY, LivingEntity entity) {
-        if (entity instanceof HeroUnit)
+        if (Unit.isHero(entity))
             y -= HERO_Y_OFFSET;
 
         Relationship rs = UnitClientEvents.getPlayerToEntityRelationship(entity);
@@ -188,7 +188,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
             bgCol = 0xA0000000 | PlayerColors.getPlayerAllianceColorHex(player.getName().getString());
         }
         int frameHeightPlus = 0;
-        if (entity instanceof HeroUnit) {
+        if (Unit.isHero(entity)) {
             frameHeightPlus = HERO_Y_OFFSET;
         }
         MyRenderer.renderFrameWithBg(guiGraphics, x, y, frameWidth, frameHeight + frameHeightPlus, bgCol);
@@ -197,7 +197,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
         int drawX = x + offsetX;
         int drawY = y + (int) (entity.getEyeHeight() / standardEyeHeight * offsetY);
 
-        //if (entity instanceof HeroUnit)
+        //if (Unit.isHero(entity))
         //    drawY += HERO_Y_OFFSET;
 
         int sizeFinal = size;
@@ -223,13 +223,13 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
         }
 
         // draw name (unless a player, since their nametag will be rendered anyway)
-        if (entity instanceof HeroUnit) {
+        if (Unit.isHero(entity)) {
             y -= 6;
         }
         int xOrig = x;
         if (entity instanceof Unit unit && unit.isRtsUnit()) {
             for (Button passiveIcon : unit.getPassiveIcons()) {
-                int yr = unit instanceof HeroUnit ? y - 18 : y - 16;
+                int yr = Unit.isHero(unit) ? y - 18 : y - 16;
                 passiveIcon.render(guiGraphics, x - 2, yr, mouseX, mouseY);
                 if (passiveIcon.isMouseOver(mouseX, mouseY))
                     passiveIcon.renderTooltip(guiGraphics, mouseX, mouseY);
@@ -242,7 +242,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
             guiGraphics.drawString(Minecraft.getInstance().font, name, x + 4, y - 9, WHITE);
         }
         x = xOrig;
-        if (entity instanceof HeroUnit) {
+        if (Unit.isHero(entity)) {
             y += 14;
         }
 
@@ -316,7 +316,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
             texts.add(manaText);
         }
 
-        renderStatText(texts, entity, x, (entity instanceof HeroUnit ? y - HERO_Y_OFFSET + 2 : y), guiGraphics);
+        renderStatText(texts, entity, x, (Unit.isHero(entity) ? y - HERO_Y_OFFSET + 2 : y), guiGraphics);
 
         if (hasBanner)
             entity.setItemSlot(EquipmentSlot.HEAD, bannerStack);
@@ -370,7 +370,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
 
     public RectZone renderStats(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY, Unit unit) {
         int statsHeightPlus = 0;
-        if (unit instanceof HeroUnit) {
+        if (Unit.isHero(unit)) {
             y -= HERO_Y_OFFSET;
             statsHeightPlus = HERO_Y_OFFSET;
         }
@@ -383,7 +383,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
 
         if (unit instanceof AttackerUnit attackerUnit) {
             double atkDmg = attackerUnit.getUnitAttackDamage() + AttackerUnit.getWeaponDamageModifier(attackerUnit);
-            if (unit instanceof WorkerUnit) {
+            if (Unit.isWorker(unit)) {
                 atkDmg = (int) attackerUnit.getUnitAttackDamage();
             }
             double atkDmgRounded = Math.round(atkDmg);

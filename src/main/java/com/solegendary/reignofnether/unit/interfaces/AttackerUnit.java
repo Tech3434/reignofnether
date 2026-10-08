@@ -446,7 +446,7 @@ public interface AttackerUnit {
         List<LivingEntity> unitsCopy = new ArrayList<>(units); // defensive copy
         for (LivingEntity entity : unitsCopy) {
             if (entity instanceof Unit otherUnit && otherUnit.isRtsUnit() &&
-                    (!workersOnly || entity instanceof WorkerUnit) &&
+                    (!workersOnly || Unit.isWorker(entity)) &&
                     !unit.getOwnerName().equals(otherUnit.getOwnerName()) &&
                     !AlliancesServerEvents.isAllied(unit.getOwnerName(), otherUnit.getOwnerName()) &&
                     !otherUnit.getOwnerName().isBlank()) {

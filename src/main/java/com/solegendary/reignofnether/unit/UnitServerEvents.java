@@ -526,7 +526,7 @@ public class UnitServerEvents {
     @SubscribeEvent
     public static void onDropItem(LivingDropsEvent evt) {
         if (ResourceSources.isHuntableAnimal(evt.getEntity()) && !evt.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO) && evt.getSource()
-            .getEntity() instanceof Unit unit && unit.isRtsUnit() && evt.getSource().getEntity() instanceof WorkerUnit && evt.getSource()
+            .getEntity() instanceof Unit unit && unit.isRtsUnit() && Unit.isWorker(evt.getSource().getEntity()) && evt.getSource()
             .getEntity() instanceof Mob mob && mob.canPickUpLoot()) {
 
             if (!Unit.atMaxResources(unit))
@@ -627,7 +627,7 @@ public class UnitServerEvents {
                     else
                         UnitSyncClientboundPacket.sendRemoveAnchorPosPacket(entity);
                 }
-                if (entity instanceof WorkerUnit) {
+                if (Unit.isWorker(entity)) {
                     UnitSyncWorkerClientBoundPacket.sendSyncWorkerPacket(entity);
                 }
                 if (entity instanceof UnitInventory inv) {
@@ -696,7 +696,7 @@ public class UnitServerEvents {
 
         if (directEntity instanceof AbstractArrow)
             return true;
-        if (sourceEntity instanceof WorkerUnit &&
+        if (Unit.isWorker(sourceEntity) &&
             sourceEntity instanceof Mob mob &&
             ResourceSources.isHuntableAnimal(mob.getTarget()))
             return true;
@@ -755,7 +755,7 @@ public class UnitServerEvents {
         }
 
         // ignore added weapon damage for workers
-        if (evt.getSource().getEntity() instanceof WorkerUnit && evt.getSource()
+        if (Unit.isWorker(evt.getSource().getEntity()) && evt.getSource()
             .getEntity() instanceof AttackerUnit attackerUnit) {
             evt.setNewDamage(attackerUnit.getUnitAttackDamage());
         }

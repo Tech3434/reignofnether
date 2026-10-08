@@ -300,7 +300,7 @@ public class UnitCommands {
 									List<? extends Unit> allUnits = UnitArgument.getUnits(ctx, "targets", PlayerNameArgument.getPlayerName(ctx, "ownerName"));
 									List<Unit> attackers = new ArrayList<>();
 									for (Unit unit : allUnits) {
-										if (unit instanceof AttackerUnit) {
+										if (Unit.isAttacker(unit)) {
 											attackers.add(unit);
 										}
 									}

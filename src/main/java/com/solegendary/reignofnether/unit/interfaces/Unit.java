@@ -158,9 +158,9 @@ public interface Unit {
      */
     default List<Ability> getCommandAbilities() {
         List<Ability> commands = new ArrayList<>();
-        if (this instanceof AttackerUnit)
+        if (Unit.isAttacker(this))
             commands.add(CommandAbilities.ATTACK);
-        if (this instanceof WorkerUnit) {
+        if (Unit.isWorker(this)) {
             commands.add(CommandAbilities.BUILD_REPAIR);
             commands.add(CommandAbilities.GATHER);
         }
@@ -168,7 +168,7 @@ public interface Unit {
             commands.add(CommandAbilities.GARRISON);
         else if (getGarrison() != null)
             commands.add(CommandAbilities.UNGARRISON);
-        if (!(this instanceof WorkerUnit))
+        if (!(Unit.isWorker(this)))
             commands.add(CommandAbilities.HOLD);
         commands.add(CommandAbilities.STOP);
         return commands;
@@ -328,7 +328,7 @@ public interface Unit {
             for (Checkpoint cp : unit.getCheckpoints()) {
                 cp.tick();
                 boolean buildingIsDone = false;
-                if (unit instanceof WorkerUnit && !cp.isForEntity()) {
+                if (Unit.isWorker(unit) && !cp.isForEntity()) {
                     if (cp.placement != null && cp.placement.isBuilt && cp.placement.getHealth() >= cp.placement.getMaxHealth())
                         buildingIsDone = true;
                 }
@@ -413,7 +413,7 @@ public interface Unit {
         }
 
         if (unitMob.tickCount % 10 == 0 &&
-            !(unit instanceof WorkerUnit) &&
+            !(Unit.isWorker(unit)) &&
             !unitMob.level().isClientSide() &&
             !unitMob.level().isDay() &&
             NightUtils.isInRangeOfNightSource(unitMob.getEyePosition(), false)) {
@@ -693,7 +693,7 @@ public interface Unit {
                                 rangedAttackerUnit.getRangedAttackGroundGoal().getGroundTarget() == null;
         }
         boolean idleWorker = true;
-        if (this instanceof WorkerUnit)
+        if (Unit.isWorker(this))
             idleWorker = WorkerUnit.isIdle((WorkerUnit) this);
 
         for (Goal goal : ((Mob) this).goalSelector.getAvailableGoals()) {
@@ -895,6 +895,18 @@ public interface Unit {
     static boolean isUnit(@Nullable Object o) {
         return o instanceof Unit unit && unit.isRtsUnit();
     }
+
+    // ---- Role flags (plan CONTENT_JSON_PLAN.md). ----
+    // Temporary bridge to the sub-interfaces; they will be removed and these become definition-driven.
+    // The static overloads are what `instanceof WorkerUnit/AttackerUnit/...` translates to.
+    default boolean isWorker() { return this instanceof WorkerUnit; }
+    static boolean isWorker(@Nullable Object o) { return o instanceof WorkerUnit; }
+    default boolean isAttacker() { return this instanceof AttackerUnit; }
+    static boolean isAttacker(@Nullable Object o) { return o instanceof AttackerUnit; }
+    default boolean isRangedAttacker() { return this instanceof RangedAttackerUnit; }
+    static boolean isRangedAttacker(@Nullable Object o) { return o instanceof RangedAttackerUnit; }
+    default boolean isHero() { return this instanceof HeroUnit; }
+    static boolean isHero(@Nullable Object o) { return o instanceof HeroUnit; }
 
     // if true, will ignore all commands except for stop (S)
     // used for things like channeling blizzard on the wraith to prevent accidental cancels

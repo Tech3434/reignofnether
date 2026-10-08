@@ -86,7 +86,7 @@ public abstract class LivingEntityMixin extends Entity {
     // comes first; the rest are the target call's own arguments.
     private float ron$skipVanillaArmour(LivingEntity pSelf, DamageSource pDamageSource, float pAmount) {
         // unit armour is applied as a percentage on the incoming damage instead
-        if (pDamageSource.getEntity() instanceof AttackerUnit)
+        if (Unit.isAttacker(pDamageSource.getEntity()))
             return pAmount;
         return this.getDamageAfterArmorAbsorb(pDamageSource, pAmount);
     }
@@ -113,10 +113,10 @@ public abstract class LivingEntityMixin extends Entity {
         boolean isHuntableAnimal = ResourceSources.isHuntableAnimal((LivingEntity) (Object) this);
 
         float dmg = attackerUnit.getUnitAttackDamage();
-        if (isMelee && !(pDamageSource.getEntity() instanceof WorkerUnit))
+        if (isMelee && !(Unit.isWorker(pDamageSource.getEntity())))
             dmg += AttackerUnit.getWeaponDamageModifier(attackerUnit);
 
-        if (isHuntableAnimal && !(pDamageSource.getEntity() instanceof WorkerUnit)) {
+        if (isHuntableAnimal && !(Unit.isWorker(pDamageSource.getEntity()))) {
             dmg *= 0.5f;
         }
 

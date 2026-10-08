@@ -108,7 +108,7 @@ public class ObserverPlayerDisplay extends AbstractPlayerDisplay {
                 continue;
             }
 
-            if (unit instanceof WorkerUnit) {
+            if (Unit.isWorker(unit)) {
                 civilianSupply += unit.getCost().population;
             } else {
                 militarySupply += unit.getCost().population;

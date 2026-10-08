@@ -284,7 +284,7 @@ public class UnitActionItem {
                 case ATTACK -> {
                     LivingEntity le = (LivingEntity) level.getEntity(unitId);
                     if (unit instanceof AttackerUnit attackerUnit) {
-                        if (unit instanceof WorkerUnit && ResourceSources.isHuntableAnimal(le) && Unit.atMaxResources(unit)) {
+                        if (Unit.isWorker(unit) && ResourceSources.isHuntableAnimal(le) && Unit.atMaxResources(unit)) {
                             if (level.isClientSide()) {
                                 HudClientEvents.showTemporaryMessage(LanguageUtil.getTranslation("hud.reignofnether.worker_inv_full"));
                             } else {
@@ -303,7 +303,7 @@ public class UnitActionItem {
                             }
                         } else if (le != null) {
                             attackerUnit.setUnitAttackTargetForced(le);
-                            if (unit instanceof WorkerUnit && ResourceSources.isHuntableAnimal(le)) {
+                            if (Unit.isWorker(unit) && ResourceSources.isHuntableAnimal(le)) {
                                 // insert a drop-off command without disrupting other queued commands
                                 boolean hasDropOffCommandQueued = false;
                                 for (UnitActionItem uai : UnitServerEvents.getUnitActionSlowQueue()) {

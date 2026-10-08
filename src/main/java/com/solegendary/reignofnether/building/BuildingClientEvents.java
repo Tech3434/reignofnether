@@ -412,7 +412,7 @@ matrix.pushPose();
                 if (selectedBuildings.contains(building)) {
                     MyRenderer.drawLineBox(evt.getPoseStack(), aabb, 1.0f, 1.0f, 1.0f, 1.0f);
                 } else if (building.equals(preselectedBuilding) && !HudClientEvents.isMouseOverAnyButtonOrHud()) {
-                    if (hudSelectedEntity instanceof WorkerUnit && MiscUtil.isRightClickDown(MC)) {
+                    if (Unit.isWorker(hudSelectedEntity) && MiscUtil.isRightClickDown(MC)) {
                         MyRenderer.drawLineBox(evt.getPoseStack(), aabb, 1.0f, 1.0f, 1.0f, 1.0f);
                     } else {
                         MyRenderer.drawLineBox(evt.getPoseStack(),
@@ -569,7 +569,7 @@ matrix.pushPose();
                 } else {
                     boolean hasSelectedWorkers = false;
                     for (LivingEntity entity : getSelectedUnits()) {
-                        if (entity instanceof WorkerUnit) {
+                        if (Unit.isWorker(entity)) {
                             hasSelectedWorkers = true;
                             break;
                         }

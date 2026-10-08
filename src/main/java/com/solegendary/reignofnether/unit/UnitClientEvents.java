@@ -174,8 +174,8 @@ public class UnitClientEvents {
         }
         ArrayList<LivingEntity> units = new ArrayList<>(UnitClientEvents.getSelectedUnits());
         units.sort((a, b) -> {
-            var isHeroA = a instanceof HeroUnit;
-            var isHeroB = b instanceof HeroUnit;
+            var isHeroA = Unit.isHero(a);
+            var isHeroB = Unit.isHero(b);
             if (isHeroA && !isHeroB) return -1;
             if (!isHeroA && isHeroB) return 1;
             return HudClientEvents.getModifiedEntityName(a).compareTo(HudClientEvents.getModifiedEntityName(b));
@@ -834,7 +834,7 @@ public class UnitClientEvents {
                 }
                 // right click -> garrison friendly building
                 else if (preSelBuilding != null && preSelBuilding.getBuilding().hasActiveAddon(GarrisonableBuildingAddon.class) &&
-                        hudSelectedEntity instanceof RangedAttackerUnit &&
+                        Unit.isRangedAttacker(hudSelectedEntity) &&
                         hudSelectedEntity instanceof Unit unit && unit.isRtsUnit() && unit.canGarrison() &&
                         preSelBuilding.ownerName.equals(unit.getOwnerName())) {
                     sendUnitCommand(UnitAction.GARRISON);
@@ -852,7 +852,7 @@ public class UnitClientEvents {
                      rightClickActionTaken = true;
                 }
                 // right click -> attack unfriendly building
-                else if (hudSelectedEntity instanceof AttackerUnit &&
+                else if (Unit.isAttacker(hudSelectedEntity) &&
                         (preSelBuilding != null) &&
                         !preSelBuilding.getBuilding().invulnerable &&
                         ((GameruleClient.neutralAggro && getPlayerToBuildingRelationship(preSelBuilding) == Relationship.NEUTRAL) ||
@@ -870,7 +870,7 @@ public class UnitClientEvents {
                     rightClickActionTaken = true;
                 }
                 // right click -> build or repair preselected building
-                else if (hudSelectedEntity instanceof WorkerUnit && preSelBuilding != null &&
+                else if (Unit.isWorker(hudSelectedEntity) && preSelBuilding != null &&
                         (getPlayerToBuildingRelationship(preSelBuilding) == Relationship.OWNED || AlliancesClient.canControlAlly(hudSelectedEntity))) {
 
                     if (BuildingUtils.isBuildingBuildable(true, preSelBuilding))
@@ -1473,8 +1473,8 @@ public class UnitClientEvents {
                     MC.player != null &&
                     entity.getId() != MC.player.getId() &&
                     entity instanceof Unit unit && unit.isRtsUnit() &&
-                    !(entity instanceof WorkerUnit) &&
-                    entity instanceof AttackerUnit &&
+                    !(Unit.isWorker(entity)) &&
+                    Unit.isAttacker(entity) &&
                     GarrisonableBuildingAddon.getGarrison(unit) == null &&
                     getPlayerToEntityRelationship(entity) == Relationship.OWNED
             )

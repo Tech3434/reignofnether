@@ -3,6 +3,7 @@ package com.solegendary.reignofnether.mixin;
 import com.solegendary.reignofnether.items.ItemClientboundPacket;
 import com.solegendary.reignofnether.items.UnitInventory;
 import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.EnchantmentUtil;
 import com.solegendary.reignofnether.util.ItemTagCompat;
 import net.minecraft.core.BlockPos;
@@ -227,7 +228,7 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
     @Inject(method = "dropCustomDeathLoot", at = @At("RETURN"))
     // 1.21.1 passes the ServerLevel instead of the looting level.
     private void ron$dropUnitItemsOnDeath(ServerLevel pLevel, DamageSource source, boolean recentlyHit, CallbackInfo ci) {
-        if ((Object) this instanceof HeroUnit) return; // heroes keep their gear
+        if (Unit.isHero(this)) return; // heroes keep their gear
 
         for (int i = 0; i < this.unitItems.size(); i++) {
             ItemStack stack = this.unitItems.get(i);

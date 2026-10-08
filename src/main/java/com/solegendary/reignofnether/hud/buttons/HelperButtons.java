@@ -73,7 +73,7 @@ public class HelperButtons {
                         UnitClientEvents.clearSelectedUnits();
                         for (int id : idleWorkerIds) {
                             Entity entity = MC.level.getEntity(id);
-                            if (entity instanceof WorkerUnit)
+                            if (Unit.isWorker(entity))
                                 UnitClientEvents.addSelectedUnit((LivingEntity) entity);
                         }
                     } else {
@@ -81,7 +81,7 @@ public class HelperButtons {
                             idleWorkerIndex = 0; // Reset to zero if out of bounds
 
                         Entity entity = MC.level.getEntity(idleWorkerIds.get(idleWorkerIndex));
-                        if (entity instanceof WorkerUnit) {
+                        if (Unit.isWorker(entity)) {
                             OrthoviewClientEvents.centreCameraOnPos(entity.position());
                             UnitClientEvents.clearSelectedUnits();
                             UnitClientEvents.addSelectedUnit((LivingEntity) entity);
@@ -128,7 +128,7 @@ public class HelperButtons {
                 () -> {
                     var flag = false;
                     for (LivingEntity u : UnitClientEvents.getAllUnits()) {
-                        if (!(u instanceof WorkerUnit) &&
+                        if (!(Unit.isWorker(u)) &&
                             GarrisonableBuildingAddon.getGarrison((Unit) u) == null &&
                             getPlayerToEntityRelationship(u) == Relationship.OWNED) {
                             flag = true;
@@ -146,7 +146,7 @@ public class HelperButtons {
                     } else {
                         for (LivingEntity u : UnitClientEvents.getAllUnits()) {
                             if (u instanceof Unit unit && unit.isRtsUnit() &&
-                                !(u instanceof WorkerUnit) &&
+                                !(Unit.isWorker(u)) &&
                                 GarrisonableBuildingAddon.getGarrison(unit) == null &&
                                 getPlayerToEntityRelationship(u) == Relationship.OWNED) {
                                 militaryUnits.add(u);

@@ -276,7 +276,7 @@ public class CursorClientEvents {
         List<LivingEntity> nearbyEntities = MiscUtil.getEntitiesWithinRange(cursorWorldPos, 30, LivingEntity.class, MC.level);
         nearbyEntities.sort(Comparator.comparing((le) -> {
             int priority = 0;
-            if (le instanceof HeroUnit)
+            if (Unit.isHero(le))
                 priority += 5;
             if (le instanceof Unit unit && unit.isRtsUnit()) {
                 priority += 1;
@@ -489,13 +489,13 @@ public class CursorClientEvents {
 
             BuildingPlacement preSelBuilding = BuildingClientEvents.getPreselectedBuilding();
             // don't draw block outline if we've selected a builder unit and are mousing over a building (unless leftClick action is MOVE)
-            boolean buildingTargetedByWorker = (HudClientEvents.hudSelectedEntity instanceof WorkerUnit &&
+            boolean buildingTargetedByWorker = (Unit.isWorker(HudClientEvents.hudSelectedEntity) &&
                     preSelBuilding != null &&
                     CursorClientEvents.getLeftClickAction() != UnitAction.MOVE &&
                     (BuildingClientEvents.getPlayerToBuildingRelationship(preSelBuilding) == Relationship.OWNED ||
                             CursorClientEvents.getLeftClickAction() == UnitAction.BUILD_REPAIR));
             // same for attacker
-            boolean buildingTargetedByAttacker = (HudClientEvents.hudSelectedEntity instanceof AttackerUnit &&
+            boolean buildingTargetedByAttacker = (Unit.isAttacker(HudClientEvents.hudSelectedEntity) &&
                     preSelBuilding != null &&
                     CursorClientEvents.getLeftClickAction() != UnitAction.MOVE &&
                     (BuildingClientEvents.getPlayerToBuildingRelationship(preSelBuilding) != Relationship.OWNED ||

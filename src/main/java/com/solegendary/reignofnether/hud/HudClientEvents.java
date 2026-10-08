@@ -1024,7 +1024,7 @@ public class HudClientEvents {
                 if (resName == ResourceName.NONE) {
                     numWorkersAssigned = UnitClientEvents.getAllUnits()
                         .stream()
-                        .filter(u -> u instanceof WorkerUnit
+                        .filter(u -> Unit.isWorker(u)
                                 && ((Unit) u).getOwnerName().equals(finalSelPlayerName))
                         .toList()
                         .size();
@@ -1100,7 +1100,7 @@ public class HudClientEvents {
                     if (resourceName.equals("population")) {
                         int numWorkers = UnitClientEvents.getAllUnits()
                             .stream()
-                            .filter(u -> u instanceof WorkerUnit
+                            .filter(u -> Unit.isWorker(u)
                                 && ((Unit) u).getOwnerName().equals(finalSelPlayerName))
                             .toList()
                             .size();

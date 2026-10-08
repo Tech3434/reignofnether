@@ -1217,7 +1217,7 @@ public class BuildingPlacement {
         Map<String, Integer> playerPopCounts = new HashMap<>();
         boolean ownerHasUnit = false;
         for (Mob mob : nearbyUnits) {
-            if (mob instanceof Unit unit && unit.isRtsUnit() && !(mob instanceof WorkerUnit)) {
+            if (mob instanceof Unit unit && unit.isRtsUnit() && !(Unit.isWorker(mob))) {
                 String uOwner = unit.getOwnerName();
                 if (uOwner.equals(ownerName) && !ownerName.isEmpty()) {
                     ownerHasUnit = true;
