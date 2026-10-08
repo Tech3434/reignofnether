@@ -1,5 +1,51 @@
 # Добавление юнита
 
+> ⚠ **Актуально (2026-10-08): юниты — полностью data-driven.** Код-классы юнитов удалены, под-интерфейсы
+> (`AttackerUnit`/`WorkerUnit`/`RangedAttackerUnit`/`HeroUnit`) схлопнуты в `Unit`. Юнит — это ванильный/модовый
+> моб (`base`) + `data/<ns>/unit/<name>.json` (`UnitDefinition`). Разделы 1–5 ниже — **legacy** (описывают
+> старый кодовый подход); используйте раздел «Юнит данными» сначала.
+
+## Юнит данными (актуально)
+
+`data/<namespace>/unit/<name>.json`, реестр `reignofnether:unit`; id определения = `<ns>:<name>`
+(идентичность юнита — определение, а не `EntityType`).
+
+```json
+{
+  "base": "minecraft:skeleton",
+  "name": { "en_us": "Skeleton" },
+  "icon": "reignofnether:textures/icons/items/bow.png",
+  "role": "ranged",                       // melee | ranged | worker | flying | hero
+  "flags": { "canGather": false, "canBuild": false, "canGarrison": true, "holdPosition": true },
+  "equipment": "minecraft:bow",           // необязательно: предмет в главную руку при спавне
+  "scale": 1.0,
+  "attributes": {
+    "minecraft:generic.max_health": 40,
+    "reignofnether:attack_damage": 3,
+    "reignofnether:attack_range": 16,
+    "reignofnether:attacks_per_second": 0.6
+  },
+  "projectile": { "entity": "minecraft:arrow", "velocity": 1.6, "damage": 3, "inaccuracy": 1.0 },
+  "cost": { "food": 60, "wood": 0, "ore": 0, "seconds": 15 },
+  "population": 1,
+  "requiredResearch": [ { "research": "myns:x", "invert": false } ],
+  "abilities": [ { "type": "myns:some_ability", "cooldown": 100 } ]
+}
+```
+
+* `role` строит goals (`UnitMobMixin.initialiseGoals`): melee → melee-goals; ranged → `UnitBowAttackGoal`
+  (+ `RangedAttackBuildingGoal`); worker → сбор/стройка; garrison — по флагу.
+* `equipment` — id предмета в главную руку при спавне (нужно ranged-юниту с луком: goal требует оружие в руке).
+* `projectile` (для `role: ranged`) — `entity` (id сущности-снаряда), `velocity` (по умолч. 1.6),
+  `damage` (по умолч. −1 = урон юнита `getUnitAttackDamage()`), `inaccuracy`. Спавнится в
+  `UnitMobMixin.performUnitRangedAttack` (сервер). Без `projectile` ranged-юнит стреляет `minecraft:arrow`.
+* Данные-атрибуты `reignofnether:*` — id модовых атрибутов; `setStatsForLevel`/герой — из `UNIT`-атрибутов.
+* Демо: `skeleton_unit.json` (ranged, лук+стрела) производится в казарме.
+
+---
+
+## Legacy: кодовый юнит (устарело)
+
 > Фракция: `Unit.getFaction()` — **строка-метка** (по умолчанию `""`), не enum; при использовании
 > реестра фракций указывайте id фракции (см. `01_faction.md`).
 

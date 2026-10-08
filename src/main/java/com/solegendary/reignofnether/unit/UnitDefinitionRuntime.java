@@ -61,6 +61,13 @@ public final class UnitDefinitionRuntime {
         if (mob instanceof Unit unit)
             unit.setOwnerName(ownerName);
 
+        def.equipment().ifPresent(itemId -> {
+            net.minecraft.world.item.Item item = BuiltInRegistries.ITEM.get(itemId);
+            if (item != null && item != net.minecraft.world.item.Items.AIR)
+                mob.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                        new net.minecraft.world.item.ItemStack(item));
+        });
+
         applyAttributes(def, mob);
         if (mob instanceof Unit unit)
             unit.initialiseGoals();

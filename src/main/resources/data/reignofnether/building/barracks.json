@@ -2,7 +2,7 @@
   "structure": "reignofnether:barracks",
   "maxHealth": 150,
   "populationSupply": 0,
-  "production": [ "reignofnether:vindicator_unit" ],
+  "production": [ "reignofnether:vindicator_unit", "reignofnether:skeleton_unit" ],
   "researches": [ "reignofnether:example_research" ],
   "upgrades": [
     { "name": { "en_us": "Barracks II" }, "maxHealth": 250,

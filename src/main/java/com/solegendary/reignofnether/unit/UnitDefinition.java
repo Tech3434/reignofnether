@@ -32,6 +32,8 @@ public record UnitDefinition(
         Optional<CostSpec> cost,
         int population,
         List<ResearchCondition> requiredResearch,
+        Optional<ResourceLocation> equipment,
+        Optional<ProjectileSpec> projectile,
         List<AbilitySpec> abilities
 ) {
 
@@ -69,6 +71,19 @@ public record UnitDefinition(
         ).apply(instance, CostSpec::new));
     }
 
+    /**
+     * A ranged unit's projectile (plan CONTENT_JSON_PLAN.md): the entity spawned by
+     * {@code performUnitRangedAttack}. {@code damage < 0} means "use the unit's attack damage".
+     */
+    public record ProjectileSpec(ResourceLocation entity, double velocity, double damage, double inaccuracy) {
+        public static final Codec<ProjectileSpec> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                ResourceLocation.CODEC.fieldOf("entity").forGetter(ProjectileSpec::entity),
+                Codec.DOUBLE.optionalFieldOf("velocity", 1.6).forGetter(ProjectileSpec::velocity),
+                Codec.DOUBLE.optionalFieldOf("damage", -1.0).forGetter(ProjectileSpec::damage),
+                Codec.DOUBLE.optionalFieldOf("inaccuracy", 1.0).forGetter(ProjectileSpec::inaccuracy)
+        ).apply(instance, ProjectileSpec::new));
+    }
+
     public static final Codec<UnitDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ResourceLocation.CODEC.fieldOf("base").forGetter(UnitDefinition::base),
             ResourceLocation.CODEC.optionalFieldOf("inherits").forGetter(UnitDefinition::inherits),
@@ -81,6 +96,8 @@ public record UnitDefinition(
             CostSpec.CODEC.optionalFieldOf("cost").forGetter(UnitDefinition::cost),
             Codec.INT.optionalFieldOf("population", 0).forGetter(UnitDefinition::population),
             ResearchCondition.CODEC.listOf().optionalFieldOf("requiredResearch", List.of()).forGetter(UnitDefinition::requiredResearch),
+            ResourceLocation.CODEC.optionalFieldOf("equipment").forGetter(UnitDefinition::equipment),
+            ProjectileSpec.CODEC.optionalFieldOf("projectile").forGetter(UnitDefinition::projectile),
             AbilitySpec.CODEC.listOf().optionalFieldOf("abilities", List.of()).forGetter(UnitDefinition::abilities)
     ).apply(instance, UnitDefinition::new));
 }

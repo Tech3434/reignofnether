@@ -12,10 +12,16 @@ import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -148,6 +154,67 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
         return ron$roleCache;
     }
 
+    @Unique private com.solegendary.reignofnether.unit.UnitDefinition ron$definitionCache;
+    @Unique private boolean ron$definitionResolved = false;
+
+    @Unique
+    @Nullable
+    private com.solegendary.reignofnether.unit.UnitDefinition ron$definition() {
+        if (ron$definitionResolved)
+            return ron$definitionCache;
+        ron$definitionResolved = true;
+        if (ron$definitionId == null)
+            return null;
+        ron$definitionCache = level().registryAccess()
+                .registryOrThrow(com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY)
+                .get(ron$definitionId);
+        return ron$definitionCache;
+    }
+
+    /**
+     * Data-driven ranged attack (plan CONTENT_JSON_PLAN.md): spawns the definition's {@code projectile}
+     * (default {@code minecraft:arrow}) toward the target, using the unit's attack damage when the spec
+     * does not override it. Server-authoritative.
+     */
+    @Override
+    public void performUnitRangedAttack(double x, double y, double z, float velocity) {
+        if (level().isClientSide())
+            return;
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        com.solegendary.reignofnether.unit.UnitDefinition.ProjectileSpec spec =
+                def != null ? def.projectile().orElse(null) : null;
+
+        EntityType<?> type = spec != null
+                ? BuiltInRegistries.ENTITY_TYPE.get(spec.entity())
+                : EntityType.ARROW;
+        if (type == null)
+            return;
+        Entity projectileEntity = type.create(level());
+        if (projectileEntity == null)
+            return;
+
+        double speed = spec != null && spec.velocity() > 0 ? spec.velocity() : 1.6;
+        double inaccuracy = spec != null ? spec.inaccuracy() : 1.0;
+        double damage = spec != null && spec.damage() >= 0
+                ? spec.damage() : ((Unit) (Object) this).getUnitAttackDamage();
+
+        projectileEntity.setPos(this.getX(), this.getEyeY() - 0.1, this.getZ());
+        if (projectileEntity instanceof Projectile projectile) {
+            projectile.setOwner((LivingEntity) (Object) this);
+            double dx = x - this.getX();
+            double dy = (y + 0.4) - this.getEyeY();
+            double dz = z - this.getZ();
+            double horizontal = Math.sqrt(dx * dx + dz * dz);
+            projectile.shoot(dx, dy + horizontal * 0.2, dz, (float) speed, (float) inaccuracy);
+        }
+        if (projectileEntity instanceof AbstractArrow arrow)
+            arrow.setBaseDamage(damage);
+        level().addFreshEntity(projectileEntity);
+        level().playSound(null, this.getX(), this.getY(), this.getZ(),
+                SoundEvents.ARROW_SHOOT, SoundSource.HOSTILE, 1.0F,
+                1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+    }
+
     /**
      * Data-driven units tick themselves: cooldowns/checkpoints plus the role-specific tick
      * (worker/attacker/hero). The old code unit classes did this in their own tick() overrides.
@@ -179,6 +246,8 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
         ron$definitionId = id;
         ron$roleResolved = false;
         ron$roleCache = null;
+        ron$definitionResolved = false;
+        ron$definitionCache = null;
     }
 
     @Shadow protected net.minecraft.world.entity.ai.goal.GoalSelector goalSelector;

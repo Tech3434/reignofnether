@@ -58,6 +58,8 @@ cd ___temp
 { "base": "minecraft:villager", "role": "worker",
   "flags": { "canGather": true, "canBuild": true, "canGarrison": true },
   "scale": 1.0,
+  "equipment": "minecraft:bow",
+  "projectile": { "entity": "minecraft:arrow", "velocity": 1.6, "damage": -1, "inaccuracy": 1.0 },
   "attributes": { "minecraft:generic.max_health": 25, "reignofnether:attack_damage": 1 },
   "abilities": [ { "type": "myns:some_ability", "cooldown": 100, "params": { "amount": 1 } } ],
   "cost": { "food": 50, "wood": 0, "ore": 0, "emerald": 0, "seconds": 15 },
@@ -69,6 +71,10 @@ cd ___temp
   Worker дополнительно получает `BuildMenuAbility` (`WorkerBuildMenu`). **Герой** при спавне применяет
   характеристики уровня 1 и далее тикается `tickHero` (мана/опыт/ранги).
 - Атрибуты — `UnitDefinitionRuntime.applyAttributes`; `scale` — ванильный `SCALE`.
+- `equipment` — предмет в главную руку при спавне (`UnitDefinitionRuntime.create`).
+- `projectile` (ranged) — `ProjectileSpec` (entity/velocity/damage/inaccuracy); спавн —
+  `UnitMobMixin.performUnitRangedAttack` (раньше был no-op). Без `projectile` — `minecraft:arrow`. Демо:
+  `skeleton_unit.json` (лук+стрела), производится в казарме.
 - `inherits` (id другого определения) — зарезервировано, **разрешение наследования НЕ реализовано**.
 
 ### Способности — класс в коде + инстанс в JSON
@@ -233,6 +239,11 @@ cd ___temp
 Сейв/лоад и клиентский place прокидывают уровень. Демо: `barracks.json` → «Barracks II» (+maxHealth). Гейты
 зелёные; **`runClient` не проверялся**. Не идут по уровням: production/researches/addons/способности/иконка.
 
+**Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
+(`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)
+спавнит снаряд на сервере (owner, урон = `damage` или `getUnitAttackDamage()`), дефолт — стрела.
+Демо `skeleton_unit.json` (база skeleton, лук+стрела) в производстве казармы. Гейты зелёные;**`runClient` не проверялся**.
+
 ---
 
 ## 5. Что осталось (по приоритету)
@@ -246,7 +257,8 @@ cd ___temp
      переопределения шаблона `Building`, т.к. сейчас они общие на определение).
    - ⚠ `JsonBuilding` без капитолий-специфики, которая была у `TownCentre` (`populationSupply`/`isCapitol`
      задаются из определения, но аддонных фич нет).
-3. **Ranged-юнит:** `projectile` + параметры (сейчас `role: ranged` бьёт из лука).
+3. ✅ **Ranged-юнит:** `equipment` + `projectile` (`ProjectileSpec`) в определении; спавн в
+   `UnitMobMixin.performUnitRangedAttack`; демо `skeleton_unit` (лук+стрела) в казарме.
 4. **lang-дочистка:** `entity.reignofnether.villager_unit*` (используется тултипами `VillagerProd`/`VindicatorProd`);
    в остальных локалях — по желанию.
 5. **`runClient` — НИ РАЗУ не запускался с этими изменениями.** Всё клиентское (рендер юнитов/зданий теперь

@@ -39,6 +39,8 @@
   "role": "melee",
   "flags": { "canGather": false, "canBuild": false, "canGarrison": false, "holdPosition": true },
   "scale": 1.5,
+  "equipment": "minecraft:bow",
+  "projectile": { "entity": "minecraft:arrow", "velocity": 1.6, "damage": -1, "inaccuracy": 1.0 },
   "attributes": {
     "minecraft:generic.max_health": 12,
     "minecraft:generic.attack_damage": 4,

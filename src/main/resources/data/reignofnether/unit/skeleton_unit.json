@@ -1,0 +1,24 @@
+{
+  "base": "minecraft:skeleton",
+  "name": { "en_us": "Skeleton" },
+  "icon": "reignofnether:textures/icons/items/bow.png",
+  "role": "ranged",
+  "flags": { "canGarrison": true, "holdPosition": true },
+  "equipment": "minecraft:bow",
+  "attributes": {
+    "minecraft:generic.max_health": 40,
+    "minecraft:generic.attack_damage": 3,
+    "minecraft:generic.movement_speed": 0.26,
+    "minecraft:generic.armor": 0,
+    "reignofnether:attack_damage": 3,
+    "reignofnether:attacks_per_second": 0.6,
+    "reignofnether:attack_range": 16,
+    "reignofnether:aggro_range": 10,
+    "reignofnether:sight_range": 16,
+    "reignofnether:ranged_damage_resist": 0,
+    "reignofnether:magic_damage_resist": 0
+  },
+  "projectile": { "entity": "minecraft:arrow", "velocity": 1.6, "damage": 3 },
+  "cost": { "food": 60, "wood": 0, "ore": 0, "seconds": 15 },
+  "population": 1
+}
