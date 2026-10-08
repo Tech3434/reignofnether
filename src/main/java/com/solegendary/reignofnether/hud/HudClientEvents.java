@@ -1410,6 +1410,19 @@ public class HudClientEvents {
                 renderedButtons.addAll(com.solegendary.reignofnether.faction.FactionMenu.render(
                         evt.getGuiGraphics(), screenWidth, screenHeight, mouseX, mouseY));
             }
+            // research panel (RTS players)
+            if (PlayerClientEvents.isRTSPlayer()) {
+                Button researchButton = com.solegendary.reignofnether.research.ResearchMenu.getToggleButton();
+                if (researchButton != null && !researchButton.isHidden.get()) {
+                    int xr = screenWidth - (START_BUTTON_ICON_SIZE * 2);
+                    researchButton.render(evt.getGuiGraphics(), xr, 64, mouseX, mouseY);
+                    renderedButtons.add(researchButton);
+                    if (com.solegendary.reignofnether.research.ResearchMenu.menuOpen) {
+                        renderedButtons.addAll(com.solegendary.reignofnether.research.ResearchMenu.render(
+                                evt.getGuiGraphics(), screenWidth, screenHeight, mouseX, mouseY));
+                    }
+                }
+            }
         }
 
         // ---------------------------------
