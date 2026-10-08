@@ -98,8 +98,6 @@ import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AF
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import com.solegendary.reignofnether.unit.VirtualUnit;
-import com.solegendary.reignofnether.unit.units.villagers.VindicatorUnit;
-import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.UnitAnimationAction;
 import com.solegendary.reignofnether.unit.UnitActionItem;
@@ -1403,7 +1401,7 @@ public class UnitClientEvents {
                     entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.AIR));
                     aUnit.setUnitAttackTarget(null);
                 }
-            } else if (entity instanceof VindicatorUnit && entity.getId() == entityId) {
+            } else if (entity instanceof Unit && entity.getId() == entityId) {
                 if (startAnimation && MC.level != null) {
                     if (targetId > 0) {
                         ((Unit) entity).setUnitAttackTarget((LivingEntity) MC.level.getEntity(targetId)); // set itself as a target just for animation purposes, doesn't tick clientside anyway

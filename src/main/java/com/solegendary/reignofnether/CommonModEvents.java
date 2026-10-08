@@ -39,8 +39,7 @@ public class CommonModEvents {
 
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent evt) {
-        evt.put(EntityRegistrar.VILLAGER_UNIT.get(), VillagerUnit.createAttributes().build());
-        evt.put(EntityRegistrar.VINDICATOR_UNIT.get(), VindicatorUnit.createAttributes().build());
+        // no mod content entities - units are data-driven over vanilla base mobs
     }
 
     @SubscribeEvent
@@ -55,11 +54,7 @@ public class CommonModEvents {
                 event.accept(item);
             }
         }
-        if(BuiltInRegistries.CREATIVE_MODE_TAB.getKey(event.getTab())==CreativeModeTabs.SPAWN_EGGS.location()){
-            event.accept(ItemRegistrar.VILLAGER_UNIT_SPAWN_EGG.get());
-            event.accept(ItemRegistrar.VINDICATOR_UNIT_SPAWN_EGG.get());
-        }
-        if (BuiltInRegistries.CREATIVE_MODE_TAB.getKey(event.getTab())==CreativeModeTabs.TOOLS_AND_UTILITIES.location()){
+        if(BuiltInRegistries.CREATIVE_MODE_TAB.getKey(event.getTab())==CreativeModeTabs.TOOLS_AND_UTILITIES.location()){
             event.accept(ItemRegistrar.THROWABLE_TNT.get());
         }
     }

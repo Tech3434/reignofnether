@@ -925,8 +925,7 @@ public class MiscUtil {
     }
 
     public static boolean canWearChristmasHat(LivingEntity entity) {
-        return (entity.getType() == EntityRegistrar.VILLAGER_UNIT.get()
-                || entity.getType() == EntityRegistrar.VINDICATOR_UNIT.get())
+        return com.solegendary.reignofnether.unit.interfaces.Unit.isUnit(entity)
                 && !entity.hasItemInSlot(EquipmentSlot.HEAD);
     }
 

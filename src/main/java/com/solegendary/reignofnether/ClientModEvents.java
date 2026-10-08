@@ -10,10 +10,6 @@ import com.solegendary.reignofnether.guiscreen.TopdownGui;
 import com.solegendary.reignofnether.particles.*;
 import com.solegendary.reignofnether.registrars.*;
 import com.solegendary.reignofnether.unit.modelling.models.IllagerArmorModel;
-import com.solegendary.reignofnether.unit.modelling.models.VillagerUnitModel;
-import com.solegendary.reignofnether.unit.modelling.renderers.AbstractVillagerUnitRenderer;
-import com.solegendary.reignofnether.unit.modelling.renderers.VillagerUnitRenderer;
-import com.solegendary.reignofnether.unit.modelling.renderers.VindicatorUnitRenderer;
 
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
@@ -65,9 +61,7 @@ public class ClientModEvents {
 
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers evt) {
-        evt.registerEntityRenderer(EntityRegistrar.VILLAGER_UNIT.get(), VillagerUnitRenderer::new);
-        evt.registerEntityRenderer(EntityRegistrar.VINDICATOR_UNIT.get(), VindicatorUnitRenderer::new);
-
+        // no mod content entities - units use their base mob's renderer
     }
 
     /**
@@ -104,9 +98,6 @@ public class ClientModEvents {
 
     @SubscribeEvent
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition(VillagerUnitModel.LAYER_LOCATION, VillagerUnitModel::createBodyLayer);
-        event.registerLayerDefinition(AbstractVillagerUnitRenderer.VILLAGER_ARMOR_OUTER_LAYER, IllagerArmorModel::createOuterArmorLayer);
-        event.registerLayerDefinition(AbstractVillagerUnitRenderer.VILLAGER_ARMOR_INNER_LAYER, IllagerArmorModel::createInnerArmorLayer);
     }
 
     @SubscribeEvent

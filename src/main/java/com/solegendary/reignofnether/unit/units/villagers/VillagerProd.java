@@ -41,7 +41,7 @@ public class VillagerProd extends ProductionItem {
 
     @Override
     public EntityType<? extends Mob> getEntityType() {
-        return EntityRegistrar.VILLAGER_UNIT.get();
+        return EntityType.VILLAGER;
     }
 
     @Override

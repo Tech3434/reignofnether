@@ -42,7 +42,7 @@ public class VindicatorProd extends ProductionItem {
 
     @Override
     public EntityType<? extends Mob> getEntityType() {
-        return EntityRegistrar.VINDICATOR_UNIT.get();
+        return EntityType.VINDICATOR;
     }
 
     @Override

@@ -65,7 +65,8 @@ public abstract class EquipAbility extends Ability {
     }
 
     public boolean isCorrectUnit(LivingEntity entity) {
-        return entity.getType() == EntityRegistrar.VINDICATOR_UNIT.get();
+        return com.solegendary.reignofnether.unit.interfaces.Unit.isUnit(entity)
+                && ((com.solegendary.reignofnether.unit.interfaces.Unit) entity).isAttacker();
     }
 
     public boolean isWindcaller(LivingEntity entity) {

@@ -73,7 +73,7 @@ public class CreativeModeTabsRegistrar {
             CREATIVE_MODE_TABS.register("unit_spawn_eggs",
                     () -> CreativeModeTab.builder()
                             .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
-                            .icon(() -> new ItemStack(ItemRegistrar.VILLAGER_UNIT_SPAWN_EGG.get()))
+                            .icon(() -> new ItemStack(net.minecraft.world.item.Items.VILLAGER_SPAWN_EGG))
                             .title(Component.translatable("creativetab.reignofnether.unit_spawn_eggs"))
                             .displayItems((parameters, output) -> {
                                 for (Item item : modItems())

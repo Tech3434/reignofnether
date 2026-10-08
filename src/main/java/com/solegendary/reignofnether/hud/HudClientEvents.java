@@ -48,7 +48,6 @@ import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
-import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
@@ -235,9 +234,6 @@ public class HudClientEvents {
             String pName = MiscUtil.getSimpleEntityName(entity.getPassengers().get(0)).replace("_", " ");
             String nameCap = pName.substring(0, 1).toUpperCase() + pName.substring(1);
             name += " & " + nameCap;
-        }
-        if (entity instanceof VillagerUnit) {
-            name = I18n.get("entity.reignofnether.villager_unit");
         }
         return name;
     }

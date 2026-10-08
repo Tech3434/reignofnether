@@ -6,7 +6,6 @@ import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.building.buildings.villagers.TownCentre;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
@@ -31,8 +30,7 @@ public class CallToArmsGoal extends MoveToTargetBlockGoal {
             start();
 
         if (isInRange() && buildingTarget != null && !this.mob.level().isClientSide())
-            if (this.mob instanceof VillagerUnit villagerUnit)
-                villagerUnit.convertToMilitia();
+            ; // militia conversion was removed with the faction content
     }
 
     private void calcMoveTarget() {
