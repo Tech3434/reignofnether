@@ -81,6 +81,15 @@ public final class UnitDefinitionRuntime {
             ability.requiredResearch = spec.requiredResearch();
             unit.getAbilities().add(ability);
         }
+        // a worker always gets the build menu (the buildings it can place)
+        if (unit.isWorker()) {
+            unit.getAbilities().add(new com.solegendary.reignofnether.ability.BuildMenuAbility(
+                    "abilities.reignofnether.build_menu",
+                    net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                            com.solegendary.reignofnether.ReignOfNether.MOD_ID,
+                            "textures/icons/blocks/repeating_command_block_back.png"),
+                    com.solegendary.reignofnether.building.WorkerBuildMenu::buildButtons));
+        }
         unit.updateAbilityButtons();
     }
 
