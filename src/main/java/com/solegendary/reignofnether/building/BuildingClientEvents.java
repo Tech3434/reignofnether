@@ -800,6 +800,7 @@ matrix.pushPose();
         }
         if (newBuilding != null && MC.player != null) {
             newBuilding.isBuilt = isBuilt;
+            newBuilding.setUpgradeLevel(upgradeLevel);
 
             if (isBuilt) {
                 newBuilding.highestBlockCountReached = newBuilding.getBlocksTotal();

@@ -125,6 +125,24 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
         );
     }
 
+    public static void setUpgradeLevel(BlockPos buildingPos, int upgradeLevel) {
+        sendFiltered(buildingPos,
+                new BuildingClientboundPacket(BuildingAction.SET_UPGRADE_LEVEL,
+                        EMPTY,
+                        "",
+                        buildingPos,
+                        Rotation.NONE,
+                        "",
+                        0,
+                        0,
+                        0,
+                        false,
+                        upgradeLevel,
+                        false
+                )
+        );
+    }
+
     public static void removeBuilding(BlockPos buildingPos) {
         sendFiltered(buildingPos,
                 new BuildingClientboundPacket(BuildingAction.REMOVE, EMPTY, "", buildingPos)
@@ -266,6 +284,9 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
                     }
                     case CHANGE_STRUCTURE -> {
                         building.changeStructure(itemName);
+                    }
+                    case SET_UPGRADE_LEVEL -> {
+                        building.setUpgradeLevel(this.upgradeLevel);
                     }
                     case REMOVE -> {
                         BuildingClientEvents.removeBuilding(buildingPos);

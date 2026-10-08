@@ -3,6 +3,8 @@ package com.solegendary.reignofnether.building.buildings;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingDefinition;
 import com.solegendary.reignofnether.building.BuildingPlaceButton;
+import com.solegendary.reignofnether.building.BuildingPlacement;
+import com.solegendary.reignofnether.building.UpgradeSpec;
 import com.solegendary.reignofnether.building.addon.AddonSpec;
 import com.solegendary.reignofnether.building.addon.AddonTypes;
 import com.solegendary.reignofnether.building.addon.BuildingAddon;
@@ -51,6 +53,11 @@ public class JsonBuilding extends ProductionBuilding {
             this.productions.add(com.solegendary.reignofnether.research.ResearchProductionItem.fromId(researchId),
                     Keybindings.abilitySlot1);
 
+        int upgradeLevel = 1;
+        for (UpgradeSpec upgrade : definition.upgrades())
+            this.productions.add(new JsonUpgradeProductionItem(upgradeLevel++, upgrade, this.icon),
+                    Keybindings.abilitySlot1);
+
         for (AddonSpec spec : definition.addons()) {
             BuildingAddon addon = AddonTypes.create(spec, this);
             if (addon != null)
@@ -73,6 +80,35 @@ public class JsonBuilding extends ProductionBuilding {
             if (item.getNetworkId().equals(networkId))
                 return item;
         return null;
+    }
+
+    @Override
+    public String getUpgradedStructureName(int upgradeLevel) {
+        if (upgradeLevel > 0 && upgradeLevel <= definition.upgrades().size()) {
+            UpgradeSpec spec = definition.upgrades().get(upgradeLevel - 1);
+            if (spec.structure().isPresent())
+                return spec.structure().get().getPath();
+        }
+        return super.getUpgradedStructureName(upgradeLevel);
+    }
+
+    @Override
+    public String getUpgradedName(BuildingPlacement placement) {
+        int level = placement.getUpgradeLevel();
+        if (level > 0 && level <= definition.upgrades().size())
+            return definition.upgrades().get(level - 1).displayName().orElseGet(this::getDisplayName);
+        return getDisplayName();
+    }
+
+    @Override
+    public double getMaxHealth(BuildingPlacement placement) {
+        int level = placement.getUpgradeLevel();
+        if (level > 0 && level <= definition.upgrades().size()) {
+            UpgradeSpec spec = definition.upgrades().get(level - 1);
+            if (spec.maxHealth().isPresent())
+                return spec.maxHealth().get();
+        }
+        return super.getMaxHealth(placement);
     }
 
     public String getFaction() {

@@ -76,10 +76,11 @@
 * **Аддоны** (реализовано) — `addons: [ { "type": "garrison", …params }, { "type": "night_source", … }, … ]`
   (реестр код-типов аддонов с Codec'ами, как способности). Движковый пример — `reignofnether:night_source`
   (`params`: `range`, `showOnlyWhenSelected`).
-* **Апгрейды** — `upgrades: [ { "structure": "…", "name": "…", "icon": "…", "cost": {…},
-  "attributes"/"maxHealth"/"populationSupply": …, "production": …, "abilities"/"addons": …,
-  "researches": … }, … ]`. Апгрейд меняет: структуру, имя/иконку, стоимость, характеристики,
-  производство, способности/аддоны, исследования. Один фундамент, цепочка уровней.
+* **Апгрейды** (реализованы частично) — `upgrades: [ { "structure": "…", "name": { "en_us": "…" },
+  "icon": "…", "cost": {…}, "maxHealth": … }, … ]`. Апгрейд — шаг цепочки: `JsonUpgradeProductionItem`
+  в очереди здания, поднимает уровень placement, меняет структуру/имя/maxHealth и синкается клиенту
+  (`SET_UPGRADE_LEVEL` + `CHANGE_STRUCTURE`). **Пока НЕ идут по уровням:** `production`/`researches`/`addons`/
+  способности/иконка (нужны per-placement переопределения шаблона здания).
 
 ## Способности (класс — код, инстанс — JSON)
 

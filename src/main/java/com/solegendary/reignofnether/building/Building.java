@@ -138,7 +138,7 @@ public abstract class Building {
 
 
     public int getUpgradeLevel(BuildingPlacement placement) {
-        return 0;
+        return placement.upgradeLevel;
     }
 
     public abstract BuildingPlaceButton getBuildButton(Keybinding var1);

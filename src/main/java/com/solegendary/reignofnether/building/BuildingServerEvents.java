@@ -258,6 +258,7 @@ buildingData.buildings.forEach(b -> {
 
                     building.scenarioRoleIndex = b.scenarioRoleIndex;
                     building.isBuilt = b.isBuilt;
+                    building.setUpgradeLevel(b.upgradeLevel);
                     BuildingServerEvents.getBuildings().add(building);
                     if (building instanceof ProductionPlacement pb) {
                         pb.setRallyPoint(b.rallyPoint);

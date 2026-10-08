@@ -127,6 +127,20 @@ this.productions.add(ProductionItems.X_UNIT, Keybindings.abilitySlot1);
 (общая очередь с производством, отмена с возвратом, по завершении — грант исследования владельцу).
 Оба — обычные `ProductionItem`, поэтому их кнопки автоматически появляются в UI выбранного здания.
 
+### Апгрейды (JSON)
+
+```json
+"upgrades": [
+  { "structure": "myns:barracks_ii", "name": { "en_us": "Barracks II" },
+    "maxHealth": 250, "cost": { "wood": 75, "seconds": 15 } }
+]
+```
+
+Список — цепочка уровней. Каждый элемент — `JsonUpgradeProductionItem` в очереди здания: покупается из UI,
+поднимает уровень placement на 1, меняет NBT-структуру (`structure`, путь без namespace), имя/иконку и
+`maxHealth`, синкается клиенту. Уровень хранится на `BuildingPlacement.upgradeLevel` и сохраняется
+(`BuildingSaveData`). **Пока не идут по уровням** `production`/`researches`/`addons`/способности.
+
 ## 5. Аддоны
 
 Маркер-интерфейс `building/addon/BuildingAddon` пустой. Здание и `implements` интерфейс, и

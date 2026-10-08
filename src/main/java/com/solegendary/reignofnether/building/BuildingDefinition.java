@@ -32,6 +32,7 @@ public record BuildingDefinition(
         List<ResourceLocation> production,
         List<ResourceLocation> researches,
         List<AddonSpec> addons,
+        List<UpgradeSpec> upgrades,
         List<ResearchCondition> requiredResearch
 ) {
 
@@ -46,6 +47,7 @@ public record BuildingDefinition(
             ResourceLocation.CODEC.listOf().optionalFieldOf("production", List.of()).forGetter(BuildingDefinition::production),
             ResourceLocation.CODEC.listOf().optionalFieldOf("researches", List.of()).forGetter(BuildingDefinition::researches),
             AddonSpec.CODEC.listOf().optionalFieldOf("addons", List.of()).forGetter(BuildingDefinition::addons),
+            UpgradeSpec.CODEC.listOf().optionalFieldOf("upgrades", List.of()).forGetter(BuildingDefinition::upgrades),
             ResearchCondition.CODEC.listOf().optionalFieldOf("requiredResearch", List.of()).forGetter(BuildingDefinition::requiredResearch)
     ).apply(instance, BuildingDefinition::new));
 }

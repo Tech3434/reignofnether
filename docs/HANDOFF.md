@@ -98,7 +98,12 @@ cd ___temp
   клиентский `placeBuilding` шлёт `definitionId` для `JsonBuilding`. Синхронизация сервер→клиент —
   `BuildingAction.PLACE_JSON` + `JsonBuildingManager.getOrCreate(level, id)` (клиент строит из синхронизированного
   датапак-реестра). `ProductionItem.getNetworkId()` — стабильный id для очереди/кнопок (`JsonProductionItem` →
-  id определения, `ResearchProductionItem` → id исследования). `BuildingUtils.getKeyString` — null-safe id для HUD.
+  id определения, `ResearchProductionItem` → id исследования, `JsonUpgradeProductionItem` → `upgrade:<n>`).
+  `BuildingUtils.getKeyString` — null-safe id для HUD.
+- **Апгрейды (частично):** `upgrades: [...]` в определении → `JsonUpgradeProductionItem` в очереди здания;
+  уровень хранится на `BuildingPlacement.upgradeLevel`, синкается `SET_UPGRADE_LEVEL`, структура меняется
+  `CHANGE_STRUCTURE`, сохраняется в `BuildingSave`. Пока поддержаны структура/имя/maxHealth; `production`/
+  `researches`/`addons`/способности по уровням — нет.
 - Строится `structureName` (`.nbt`); оставлены `town_centre.nbt`/`barracks.nbt`.
 
 ### Аддоны зданий — `addons: [{type, params}]` (готово)
@@ -222,16 +227,23 @@ cd ___temp
 `CommandsServerEvents.resolveBuilding`), а `Building.getDisplayName()` даёт имя для HUD/портрета/порядка
 выделения — раньше у `JsonBuilding` имя было пустым, а `getKey(...).toString()` падал. Гейты зелёные.
 
+**Апгрейды зданий (первый срез):** `UpgradeSpec` + `BuildingDefinition.upgrades`; `JsonUpgradeProductionItem`
+в очереди здания поднимает `BuildingPlacement.upgradeLevel` (новое поле, `Building.getUpgradeLevel` читает его),
+меняет структуру/имя/maxHealth и синкается (`BuildingAction.SET_UPGRADE_LEVEL` + существующий `CHANGE_STRUCTURE`).
+Сейв/лоад и клиентский place прокидывают уровень. Демо: `barracks.json` → «Barracks II» (+maxHealth). Гейты
+зелёные; **`runClient` не проверялся**. Не идут по уровням: production/researches/addons/способности/иконка.
+
 ---
 
 ## 5. Что осталось (по приоритету)
 
 1. ✅ **Аддоны доведены** (`addon/Addons`+`NightSourceBuildingAddon`, навешивание в `JsonBuilding`).
    Дальше: новые движковые типы (garrison/night/nether/range_indicator обобщённо) — по мере надобности.
-2. ✅ **Исследования у зданий** (`ResearchProductionItem` как `ProductionItem`, `researches` в JSON,
-   демо `example_research` на казарме). Дальше по зданиям:
-   - `upgrades` — цепочка уровней (структура/имя/стоимость/характеристики/производство/способности/аддоны/
-     исследования). В `BuildingDefinition.CODEC` пока НЕТ.
+2. ✅ **Исследования у зданий** (`ResearchProductionItem`, демо `example_research`). ✅ **Апгрейды (1-й срез)**
+   (`UpgradeSpec`/`upgrades`, `JsonUpgradeProductionItem`, демо «Barracks II»; структура/имя/maxHealth/стоимость).
+   Дальше по зданиям:
+   - `upgrades` — довести per-level `production`/`researches`/`addons`/способности/иконку (нужны per-placement
+     переопределения шаблона `Building`, т.к. сейчас они общие на определение).
    - ⚠ `JsonBuilding` без капитолий-специфики, которая была у `TownCentre` (`populationSupply`/`isCapitol`
      задаются из определения, но аддонных фич нет).
 3. **Ranged-юнит:** `projectile` + параметры (сейчас `role: ranged` бьёт из лука).
@@ -285,9 +297,9 @@ cd ___temp
   FactionMenu, FactionCommand, FactionServerEvents.
 - `unit/`: UnitDefinition, UnitDefinitions, UnitDefinitionRuntime; `interfaces/DefinedUnit`.
 - `ability/`: AbilitySpec, AbilityTypes.
-- `building/`: BuildingDefinition, BuildingDefinitions, WorkerBuildMenu; `buildings/JsonBuilding`,
-  `buildings/JsonBuildingManager`; `production/JsonProductionItem`; `addon/AddonSpec`, `addon/AddonTypes`,
-  `addon/Addons`, `addon/NightSourceBuildingAddon`.
+- `building/`: BuildingDefinition, BuildingDefinitions, UpgradeSpec, WorkerBuildMenu; `buildings/JsonBuilding`,
+  `buildings/JsonBuildingManager`, `buildings/JsonUpgradeProductionItem`; `production/JsonProductionItem`;
+  `addon/AddonSpec`, `addon/AddonTypes`, `addon/Addons`, `addon/NightSourceBuildingAddon`.
 - `mixin/`: UnitMobMixin.
 - Data JSON: `data/reignofnether/faction/villagers.json`, `unit/villager_unit.json`, `unit/vindicator_unit.json`,
   `building/town_centre.json`, `building/barracks.json`.

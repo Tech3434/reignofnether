@@ -1186,6 +1186,7 @@
     "hud.research.reignofnether.already_researched": "Already researched",
     "hud.research.reignofnether.prerequisites_not_met": "Prerequisites not met",
     "research.reignofnether.example": "Example Research",
+    "hud.upgrade.reignofnether.not_next": "This upgrade is not available yet",
     "server.reignofnether.lost_buildings": "lost all their buildings",
     "server.reignofnether.lost_capitol": "%s has lost their capitol and will be revealed in %d seconds unless they rebuild it!",
     "server.reignofnether.lost_all": "lost all their units and buildings",
