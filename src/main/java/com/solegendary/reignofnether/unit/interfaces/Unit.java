@@ -51,6 +51,15 @@ import net.minecraft.world.level.Level;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import com.solegendary.reignofnether.ability.HeroAbility;
+import com.solegendary.reignofnether.registrars.ParticleRegistrar;
+import com.solegendary.reignofnether.sounds.SoundAction;
+import com.solegendary.reignofnether.sounds.SoundClientboundPacket;
+import com.solegendary.reignofnether.util.ParticleUtil;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import org.jetbrains.annotations.NotNull;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
@@ -1210,6 +1219,226 @@ public interface Unit {
     }
 
     default void performUnitRangedAttack(double x, double y, double z, float velocity) { }
+
+    // ==== merged from HeroUnit ====
+    float EXP_REQ_MULTIPLIER = 1.6f;
+    int MAX_LEVEL = 10;
+    int MAX_NEUTRAL_EXP_LEVEL = 5;
+
+    default boolean needsStatSync() { return false; }
+    default void setNeedsStatSync(boolean value) { }
+    default float getMana() { return 0; }
+    default void setMana(float amount) { }
+    default float getMaxMana() { return 0; }
+    default void setMaxMana(float amount) { }
+    default int getSkillPoints() { return 0; }
+    default void setSkillPoints(int points) { }
+    default boolean isRankUpMenuOpen() { return false; }
+    default void showRankUpMenu(boolean show) { }
+    default int getExperience() { return 0; }
+    default void setExperience(int experience) { }
+    default Object2ObjectArrayMap<HeroAbility, Integer> getHeroAbilityRanks() { return new Object2ObjectArrayMap<>(); }
+
+    default float getHealthBonusPerLevel() {
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.MAX_HEALTH_BONUS_PER_LEVEL.get()));
+        return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.MAX_HEALTH_BONUS_PER_LEVEL.get().getDefaultValue());
+    }
+    default float getAttackBonusPerLevel() {
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE_BONUS_PER_LEVEL.get()));
+        return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.ATTACK_DAMAGE_BONUS_PER_LEVEL.get().getDefaultValue());
+    }
+    default float getBaseHealth() {
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.BASE_MAX_HEALTH.get()));
+        return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.BASE_MAX_HEALTH.get().getDefaultValue());
+    }
+    default float getBaseAttack() {
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE.get()));
+        return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.ATTACK_DAMAGE.get().getDefaultValue());
+    }
+    default float getBaseMaxMana() {
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.BASE_MAX_MANA.get()));
+        return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.BASE_MAX_MANA.get().getDefaultValue());
+    }
+    default float getManaRegenPerSecond() {
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.MANA_REGEN_PER_SECOND.get()));
+        return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.MANA_REGEN_PER_SECOND.get().getDefaultValue());
+    }
+    default float getManaBonusPerLevel() {
+        AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.MAX_MANA_BONUS_PER_LEVEL.get()));
+        return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.MAX_MANA_BONUS_PER_LEVEL.get().getDefaultValue());
+    }
+
+    default int getChargesForSaveData() { return 0; }
+    default void setChargesFromSaveData(int charges) { }
+
+    default void setStatsForLevel() {
+        setStatsForLevel(false);
+    }
+
+    default void setStatsForLevel(boolean heal) {
+        AttributeInstance aiMaxHealth = ((LivingEntity) this).getAttribute(Attributes.MAX_HEALTH);
+        if (aiMaxHealth != null)
+            aiMaxHealth.setBaseValue(getBaseHealth() + ((getHeroLevel() - 1) * getHealthBonusPerLevel()));
+        AttributeInstance aiAttackDamage = ((LivingEntity) this).getAttribute(Attributes.ATTACK_DAMAGE);
+        if (aiAttackDamage != null)
+            aiAttackDamage.setBaseValue(getBaseAttack() + ((getHeroLevel() - 1) * getAttackBonusPerLevel()));
+        this.setMaxMana(getBaseMaxMana() + ((getHeroLevel() - 1) * getManaBonusPerLevel()));
+        if (heal)
+            ((LivingEntity) this).setHealth(((LivingEntity) this).getMaxHealth());
+    }
+
+    default void addExperience(int amount) {
+        if (((LivingEntity) this).level().isClientSide())
+            return;
+        int levelBefore = getHeroLevel();
+        if (levelBefore >= MAX_LEVEL)
+            return;
+
+        setExperience(getExperience() + amount);
+        int levelDiff = getHeroLevel() - levelBefore;
+
+        if (levelDiff > 0) {
+            setSkillPoints(getSkillPoints() + levelDiff);
+            SoundClientboundPacket.playSoundAtPos(SoundAction.LEVEL_UP, ((LivingEntity) this).getOnPos());
+            ParticleUtil.addParticleExplosion(ParticleRegistrar.LEVEL_UP.get(), 10,
+                    ((LivingEntity) this).level(), ((LivingEntity) this).getEyePosition());
+            setStatsForLevel();
+            ((LivingEntity) this).heal(levelDiff * getHealthBonusPerLevel());
+        }
+    }
+
+    default int getHeroLevel() {
+        return getHeroLevel(getExperience());
+    }
+
+    static int getHeroLevel(int exp) {
+        int level = 0;
+        int expToNextLevel = (int) (200 * EXP_REQ_MULTIPLIER);
+        do {
+            level += 1;
+            exp -= expToNextLevel;
+            expToNextLevel += (100 * EXP_REQ_MULTIPLIER);
+        } while (exp >= 0 && level < MAX_LEVEL);
+        return level;
+    }
+
+    default int getExpOnCurrentLevel() {
+        if (getHeroLevel() >= MAX_LEVEL)
+            return 0;
+        int expToNextLevel = (int) (200 * EXP_REQ_MULTIPLIER);
+        int expCount = 0;
+        int exp = getExperience();
+        while (expCount < exp) {
+            if (expCount + expToNextLevel > exp) {
+                return exp - expCount;
+            }
+            expCount += expToNextLevel;
+            expToNextLevel += (100 * EXP_REQ_MULTIPLIER);
+        }
+        return 0;
+    }
+
+    default int getExpToNextlevel() {
+        if (getHeroLevel() >= MAX_LEVEL)
+            return 0;
+        return (int) ((getHeroLevel() + 1) * (100 * EXP_REQ_MULTIPLIER));
+    }
+
+    default List<HeroAbility> getHeroAbilities() {
+        List<HeroAbility> list = new ArrayList<>();
+        for (Ability a : getAbilities().get()) {
+            if (a instanceof HeroAbility heroAbility) {
+                list.add(heroAbility);
+            }
+        }
+        return list;
+    }
+
+    default void addHeroUnitSaveData(@NotNull CompoundTag pCompound) {
+        pCompound.putInt("experience", getExperience());
+        pCompound.putInt("skillPoints", getSkillPoints());
+        pCompound.putInt("charges", getChargesForSaveData());
+        pCompound.putFloat("mana", getMana());
+        pCompound.putFloat("maxMana", getMaxMana());
+
+        List<HeroAbility> abls = getHeroAbilities();
+        pCompound.putInt("ability1Rank", abls.size() > 0 ? getHeroAbilityRank(abls.get(0)) : 0);
+        pCompound.putInt("ability2Rank", abls.size() > 1 ? getHeroAbilityRank(abls.get(1)) : 0);
+        pCompound.putInt("ability3Rank", abls.size() > 2 ? getHeroAbilityRank(abls.get(2)) : 0);
+        pCompound.putInt("ability4Rank", abls.size() > 3 ? getHeroAbilityRank(abls.get(3)) : 0);
+    }
+
+    default void readHeroUnitSaveData(@NotNull CompoundTag pCompound) {
+        setExperience(pCompound.getInt("experience"));
+        setSkillPoints(pCompound.getInt("skillPoints"));
+        setChargesFromSaveData(pCompound.getInt("charges"));
+        setMana(pCompound.getFloat("mana"));
+        setMaxMana(pCompound.getFloat("maxMana"));
+
+        List<HeroAbility> abls = getHeroAbilities();
+        if (abls.size() > 0) {
+            setHeroAbilityRank(abls.get(0), pCompound.getInt("ability1Rank"));
+        }
+        if (abls.size() > 1) {
+            setHeroAbilityRank(abls.get(1), pCompound.getInt("ability2Rank"));
+        }
+        if (abls.size() > 2) {
+            setHeroAbilityRank(abls.get(2), pCompound.getInt("ability3Rank"));
+        }
+        if (abls.size() > 3) {
+            setHeroAbilityRank(abls.get(3), pCompound.getInt("ability4Rank"));
+        }
+        for (HeroAbility abl : abls)
+            abl.updateStatsForRank((HeroUnit) this);
+    }
+
+    default void activateAbilityClientside(int abilityIndex) { }
+    default void deactivateAbilityClientside(int abilityIndex) { }
+
+    default int getHeroAbilityRank(HeroAbility ability) {
+        return getHeroAbilityRanks().getOrDefault(ability, 0);
+    }
+
+    default void setHeroAbilityRank(HeroAbility ability, int rank) {
+        getHeroAbilityRanks().put(ability, rank);
+    }
+
+    static void tick(HeroUnit heroUnit) {
+        if (heroUnit.needsStatSync()) {
+            heroUnit.setStatsForLevel();
+            heroUnit.setNeedsStatSync(false);
+        }
+        if (((LivingEntity) heroUnit).tickCount % 20 == 0) {
+            heroUnit.setMana(heroUnit.getMana() + heroUnit.getManaRegenPerSecond());
+        }
+    }
+
+    static AttributeSupplier.Builder createHeroDefaultAttributes() {
+        return Unit.createDefaultAttributes()
+                .add((AttributeHelpers.holder(AttributeRegistrar.BASE_MAX_HEALTH.get())), 1)
+                .add((AttributeHelpers.holder(AttributeRegistrar.BASE_MAX_MANA.get())), 0)
+                .add((AttributeHelpers.holder(AttributeRegistrar.MANA_REGEN_PER_SECOND.get())), 0)
+                .add((AttributeHelpers.holder(AttributeRegistrar.MAX_MANA_BONUS_PER_LEVEL.get())), 0)
+                .add((AttributeHelpers.holder(AttributeRegistrar.MAX_HEALTH_BONUS_PER_LEVEL.get())), 0)
+                .add((AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE_BONUS_PER_LEVEL.get())), 0);
+    }
+
+    static List<HeroUnit> getHeroes(boolean isClientside, String ownerName) {
+        return getHeroes(isClientside, ownerName, "");
+    }
+
+    static List<HeroUnit> getHeroes(boolean isClientside, String ownerName, String unitName) {
+        List<LivingEntity> units = isClientside ? UnitClientEvents.getAllUnits() : UnitServerEvents.getAllUnits();
+        List<HeroUnit> list = new ArrayList<>();
+        for (LivingEntity e : units) {
+            if (e instanceof HeroUnit heroUnit &&
+                    heroUnit.getOwnerName().equals(ownerName) &&
+                    (e.getType().getDescriptionId().equals(unitName) || unitName.isBlank())) {
+                list.add(heroUnit);
+            }
+        }
+        return list;
+    }
 
     // if true, will ignore all commands except for stop (S)
     // used for things like channeling blizzard on the wraith to prevent accidental cancels
