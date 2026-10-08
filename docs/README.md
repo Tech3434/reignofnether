@@ -11,6 +11,7 @@
 | [`STATUS.md`](STATUS.md) | **Состояние**: ветки, гейты, что сделано по этапам, что осталось |
 | [`PLAN_RTS_ONLY.md`](PLAN_RTS_ONLY.md) | **Исходный план A–H**: этапы, решения владельца, гейты |
 | [`RESEARCH_AND_EXTENSIBILITY_PLAN.md`](RESEARCH_AND_EXTENSIBILITY_PLAN.md) | **План**: система исследований (на игрока, с инверсией) и JSON-расширяемость; остаток оригинального плана (G.2/G.5/H.9/§14.5) |
+| [`CONTENT_JSON_PLAN.md`](CONTENT_JSON_PLAN.md) | **План**: JSON-юниты (`Unit` на `Mob` + `UnitDefinition`, `base`/`inherits`, `role`+флаги, способности `type`+параметры), JSON-здания, JSON-способности |
 | [`BUGS_RUNCLIENT.md`](BUGS_RUNCLIENT.md) | Баги после `runClient`: разбор причин, правки по инкрементам/прогонам |
 | [`VANILLA_CHANGES.md`](VANILLA_CHANGES.md) | **Текущая инвентаризация изменений ванильных механик** (миксины, геймрулы, датапак/ассеты) |
 | [`FEATURES.md`](FEATURES.md) | Каталог функций с вердиктами (историческое обоснование плана) |

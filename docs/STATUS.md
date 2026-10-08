@@ -258,6 +258,7 @@ JAVA="/c/Program Files/Java/jdk-21/bin/java.exe"
 | `INTRUSION_AUDIT.md` | что мод ломал в обычном мире |
 | `VANILLA_CHANGES.md` | текущая инвентаризация изменений ванильных механик |
 | `RESEARCH_AND_EXTENSIBILITY_PLAN.md` | план системы исследований и JSON-расширяемости |
+| `CONTENT_JSON_PLAN.md` | план JSON-юнитов/зданий/способностей (согласован 2026-10-08) |
 | `../.agents/skills/` | навыки для ИИ-агентов |
 
 **Аудит доков (2026-10-08).** Удалены устаревшие `docs/_end.md`, `docs/STAGE_D_PROGRESS.md`,
