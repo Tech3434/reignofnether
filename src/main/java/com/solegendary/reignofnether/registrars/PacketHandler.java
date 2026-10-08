@@ -14,6 +14,7 @@ import com.solegendary.reignofnether.gamerules.GameruleClientboundPacket;
 import com.solegendary.reignofnether.gamerules.GameruleServerboundPacket;
 import com.solegendary.reignofnether.research.ResearchClientboundPacket;
 import com.solegendary.reignofnether.research.ResearchDefinitionsClientboundPacket;
+import com.solegendary.reignofnether.research.ResearchServerboundPacket;
 import com.solegendary.reignofnether.faction.FactionClientboundPacket;
 import com.solegendary.reignofnether.guiscreen.TopdownGuiServerboundPacket;
 
@@ -117,6 +118,7 @@ public final class PacketHandler {
         registerServer(registrar, GameruleServerboundPacket.TYPE, GameruleServerboundPacket::new);
         registerClient(registrar, GameruleClientboundPacket.TYPE, GameruleClientboundPacket::new);
         registerClient(registrar, ResearchClientboundPacket.TYPE, ResearchClientboundPacket::new);
+        registerServer(registrar, ResearchServerboundPacket.TYPE, ResearchServerboundPacket::new);
         registerClient(registrar, ResearchDefinitionsClientboundPacket.TYPE, ResearchDefinitionsClientboundPacket::new);
         registerClient(registrar, FactionClientboundPacket.TYPE, FactionClientboundPacket::new);
         registerClient(registrar, CustomBuildingClientboundPacket.TYPE, CustomBuildingClientboundPacket::new);

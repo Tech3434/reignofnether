@@ -59,6 +59,7 @@ public final class ResearchMenu {
         for (ResearchClientEvents.Def def : ResearchClientEvents.definitions()) {
             boolean researched = ResearchClientEvents.has(playerName, def.id());
             boolean available = researched || ResearchUtils.meetsClient(playerName, def.prerequisites());
+            boolean canStart = available && !researched;
 
             String statusKey = researched
                     ? "hud.research.reignofnether.researched"
@@ -74,8 +75,8 @@ public final class ResearchMenu {
                     (Keybinding) null,
                     () -> researched,
                     () -> false,
-                    () -> researched,
-                    null,
+                    () -> canStart,
+                    canStart ? () -> ResearchServerboundPacket.request(def.id()) : null,
                     null,
                     tooltip
             );
