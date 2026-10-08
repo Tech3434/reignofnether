@@ -2,11 +2,11 @@
 
 **Дата:** 2026-10-08
 **Ветка:** `wip/stage-d-deletions`
-**HEAD:** `a422e885`
+**HEAD:** `21d511f3`
 **compileJava:** ✅ 0 ошибок
 **validateMixins:** ✅ 48 injection point'ов / 31 mixin-класс, все резолвятся
 **runData:** ✅ BUILD SUCCESSFUL
-**runServer:** ✅ `Done (0.920s)!`, 0 `mixin apply failed`, 0 SEVERE/ERROR
+**runServer:** ✅ `Done (1.005s)!`, 0 `mixin apply failed`, 0 SEVERE/ERROR
 **runClient:** ⏳ не прогонялся (нужен интерактивный запуск)
 
 Версия: 1.4.4d, MC 1.21.1, NeoForge 21.1.250.
@@ -79,14 +79,16 @@ H.1–H.8 сделаны (`15bd1a69`): пропуск = право операт�
 
 ### Система юнитов и строений «как в Warcraft 3» (§14 плана) — закрыта
 
-§14.1–§14.5 сделаны (коммиты `76f33930`, `4f9b893b`, `63bf1a14`, `46ed5856`, `a422e885`);
-подробности и остаток — `PLAN_RTS_ONLY.md` §15. Вкратце: подменю способностей (`Ability.subAbilities`,
-`MenuAbility`, стек меню в HUD); приказы и кнопки постройки — способности (`CommandAbility`,
-`CommandAbilities`, `BuildMenuAbility`, `ActionButtons` удалён); производство зданий — способности
-(`ProductionAbility`, HUD рисует один список); вскапывание `DIG_BLOCK`/`DIG_AREA` (`DigAbility`,
-дроп в `UnitInventory`) с рамкой box-select для области; вскапывание строения = фикс. урон и снос
-сверху вниз (`BuildingPlacement.demolishTopDown`). Открытых вопросов нет; дизайн-значения и
-HUD-прогресс сноса — на усмотрение владельца.
+§14.1–§14.5 сделаны (коммиты `76f33930`, `4f9b893b`, `63bf1a14`, `46ed5856`, `a422e885`,
+`21d511f3`); подробности и остаток — `PLAN_RTS_ONLY.md` §15. Вкратце: подменю способностей
+(`Ability.subAbilities`, `MenuAbility`, стек меню в HUD); приказы и кнопки постройки — способности
+(`CommandAbility`, `CommandAbilities`, `BuildMenuAbility`, `ActionButtons` удалён); производство
+зданий — способности (`ProductionAbility`, HUD рисует один список); вскапывание
+`DIG_BLOCK`/`DIG_AREA` (`DigAbility`, дроп в `UnitInventory`) с рамкой box-select для области;
+вскапывание блока строения **отменяется** и наносит **процентный** урон по HP — 5 % максимального HP
+за удар (`DigAbility.BUILDING_DAMAGE_PERCENT_PER_HIT`), снос сверху вниз
+(`BuildingPlacement.demolishTopDown`). Открытых вопросов нет; дизайн-значения и HUD-прогресс сноса —
+на усмотрение владельца.
 
 ### Документация
 
