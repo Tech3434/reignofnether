@@ -625,6 +625,47 @@ public class BuildingPlacement {
         }
     }
 
+    /**
+     * §14.5: like {@link #destroyRandomBlocks} but removes the topmost blocks first, so a building
+     * being dug away visibly collapses from the roof down. Damage is a fixed amount per hit; once the
+     * normal destruction threshold is reached the remaining blocks are cleared as usual.
+     */
+    public void demolishTopDown(double amount) {
+        if (getLevel().isClientSide())
+            return;
+        if (!isAttackable())
+            return;
+
+        amount /= (getHealthPerBlock() / 2d);
+        double floorAmount = Math.floor(amount);
+        partialBlocksDestroyed += (amount - floorAmount);
+
+        int intAmount = (int) floorAmount;
+        if (partialBlocksDestroyed >= 1d) {
+            partialBlocksDestroyed -= 1d;
+            intAmount += 1;
+        }
+
+        var placedBlocks = new ArrayList<BuildingBlock>();
+        for (BuildingBlock block : blocks) {
+            if (!isDestroyedAndNotNextToLiquid(block)) continue;
+            placedBlocks.add(block);
+        }
+        placedBlocks.sort(Comparator.comparingInt((BuildingBlock b) -> b.getBlockPos().getY()).reversed());
+        for (int i = 0; i < intAmount && i < placedBlocks.size(); i++) {
+            BlockPos bp = placedBlocks.get(i).getBlockPos();
+            if (!getLevel().getBlockState(bp).getFluidState().isEmpty()) {
+                getLevel().setBlockAndUpdate(bp, Blocks.AIR.defaultBlockState());
+            } else {
+                getLevel().destroyBlock(bp, false);
+            }
+            this.onBlockBreak((ServerLevel) getLevel(), bp, false);
+        }
+        if (intAmount > 0) {
+            AttackWarningClientboundPacket.sendWarning(ownerName, BuildingUtils.getCentrePos(getBlocks()));
+        }
+    }
+
     public boolean shouldBeDestroyed() {
         if (isIllegallyOutsideWorldBorder()) {
             return true;

@@ -1,6 +1,7 @@
 package com.solegendary.reignofnether.ability;
 
 import com.solegendary.reignofnether.ReignOfNether;
+import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
 import com.solegendary.reignofnether.hud.buttons.AbilityButton;
@@ -41,6 +42,8 @@ public class DigAbility extends Ability {
     public static final float DIG_RANGE = 12f;
     /** Cap on blocks a single DIG_AREA may remove. */
     public static final int MAX_AREA_BLOCKS = 256;
+    /** §14.5: fixed building damage per dig hit. */
+    public static final double BUILDING_DAMAGE_PER_HIT = 30d;
 
     public DigAbility(UnitAction action) {
         super(action, 20, DIG_RANGE, 0, false);
@@ -89,8 +92,14 @@ public class DigAbility extends Ability {
 
     /** Removes one block and hands its drops to the unit. Returns true if a block was removed. */
     private boolean digBlock(ServerLevel level, Unit unit, BlockPos bp) {
-        if (BuildingUtils.isPosInsideAnyBuilding(false, bp))
+        // §14.5: a block that belongs to a building cannot be dug - digging it damages the
+        // building instead, and the building collapses from the top down.
+        if (BuildingUtils.isPosInsideAnyBuilding(false, bp)) {
+            BuildingPlacement building = BuildingUtils.findBuilding(false, bp);
+            if (building != null && building.isAttackable())
+                building.demolishTopDown(BUILDING_DAMAGE_PER_HIT);
             return false;
+        }
 
         BlockState bs = level.getBlockState(bp);
         if (bs.isAir())
