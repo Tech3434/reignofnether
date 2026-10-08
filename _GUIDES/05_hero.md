@@ -1,110 +1,49 @@
-# Герои: уровни, мана, прокачка
+# Герои
 
-> **Требует ревизии (2026-10-08).** Контент героев вырезан; интерфейс `HeroUnit` сохранён как
-> контракт. Гайд описывает прежнюю систему (герои-юниты, опыт, воскрешение) и требует сверки с
-> текущим `unit/interfaces/HeroUnit.java`.
+> Переписано 2026-10-08 под текущий каркас.
 
-## Что даёт `HeroUnit`
+**Герой — это юнит, который прокачивается: у него есть уровень.** Некоторые способности могут
+требовать определённый уровень героя (и ману), а не только кулдаун. Это в дополнение к обычным
+требованиям `Ability` (кулдаун, мана, исследование — см. `07_research.md`).
 
-Интерфейс `unit/interfaces/HeroUnit.java`. Реализуется **вместе** с обычными интерфейсами
-юнита:
+## Контракт — `unit/interfaces/HeroUnit`
 
-```java
-public class XHeroUnit extends Vindicator
-        implements Unit, AttackerUnit, HeroUnit, KeyframeAnimated {
-```
-
-Ключевое:
-* **уровни 1..10** (`HeroUnit.MAX_LEVEL = 10`), опыт по кривой: первый уровень — 320,
-  далее +160 за уровень;
-* **очки навыков** — +1 за уровень;
-* **мана** — пул и реген, растёт с уровнем;
-* **ранги способностей** — тратят очки навыков, требуют
-  `heroLevel >= rank * 2 + 1` (то есть ранг 1 доступен с 3 уровня, ранг 2 — с 5);
-* **воскрешение** — состояние сохраняется в `HeroUnitSave` при смерти.
-
-## Обязательные элементы
+Реализуется **вместе** с обычными интерфейсами юнита:
 
 ```java
-@Override protected void defineSynchedData() { ... }     // плюс свои поля
-
-public static AttributeSupplier.Builder createAttributes() {
-    return HeroUnit.createDefaultAttributes()             // добавляет ману и HP за уровень
-            .add(Attributes.MAX_HEALTH, 125)
-            .add(Attributes.ATTACK_DAMAGE, 6)
-            .add(Attributes.MOVEMENT_SPEED, 0.28);
-}
-
-private final Object2ObjectArrayMap<HeroAbility, Integer> ranks = new Object2ObjectArrayMap<>();
-@Override public Object2ObjectArrayMap<HeroAbility, Integer> getHeroAbilityRanks() { return ranks; }
-
-@Override public void tick() {
-    super.tick();
-    Unit.tick(this);
-    AttackerUnit.tick(this);
-    HeroUnit.tick(this);          // реген маны, кулдауны способностей
-}
+public class XHeroUnit extends Vindicator implements Unit, AttackerUnit, HeroUnit, KeyframeAnimated {
 ```
 
-Также нужно: `needsStatSync`/`setNeedsStatSync`, `getMana`/`setMana`,
-`getMaxMana`/`setMaxMana`, `getSkillPoints`/`setSkillPoints`,
-`isRankUpMenuOpen`/`showRankUpMenu`, `getExperience`/`setExperience`.
+## Уровни и опыт
 
-`HeroUnit.setStatsForLevel()` пишет бонусные атрибуты в **ванильные**
-`MAX_HEALTH`/`ATTACK_DAMAGE`, поэтому переопределять это вручную не нужно.
+* `HeroUnit.MAX_LEVEL = 10`; `MAX_NEUTRAL_EXP_LEVEL = 5` (с этого уровня нейтралы опыт не дают).
+* Опыт хранится суммарным; уровень считается по кривой `HeroUnit.getHeroLevel(exp)`
+  (первый порог `200 * 1.6`, далее `+100 * 1.6`).
+* `addExperience(amount)` → **+1 очко навыка за уровень**, звук/частицы, `setStatsForLevel()`, хил.
 
-## Геройские способности
+## Характеристики и мана
 
-`ability/HeroAbility.java` — наследник `Ability`. Отличия: `maxRank`, `manaCost`,
-`rankUp(hero)`, `updateStatsForRank(hero)`.
+* База и прирост за уровень — через атрибуты: `AttributeRegistrar.BASE_MAX_HEALTH`, `BASE_MAX_MANA`,
+  `MANA_REGEN_PER_SECOND`, `MAX_HEALTH_BONUS_PER_LEVEL`, `MAX_MANA_BONUS_PER_LEVEL`,
+  `ATTACK_DAMAGE_BONUS_PER_LEVEL`. Точка входа — `HeroUnit.createDefaultAttributes()`.
+* `setStatsForLevel()` пересчитывает HP/урон/макс. ману под текущий уровень.
+* Мана: `getMana`/`setMana`/`getMaxMana`; реген раз в секунду в `HeroUnit.tick`.
 
-```java
-public class XHeroAbility extends HeroAbility {
-    public static final int MAX_RANK = 3;
+## Способности героя
 
-    public XHeroAbility() {
-        super(UnitAction.CAST_X_HERO, UnitAction.RANK_X_HERO,
-              30 * ResourceCost.TICKS_PER_SECOND, RANGE, RADIUS, true, true,
-              manaCostFor(1), MAX_RANK);
-    }
-    @Override protected int manaCostFor(int rank) { return 50; }
-    @Override public int getCooldownSeconds(int rank) { return 30; }
-}
-```
+* `HeroAbility` — подвид `Ability`. Ранги: `getHeroAbilityRank` / `setHeroAbilityRank`
+  (хранятся в `getHeroAbilityRanks()`), усиливаются `updateStatsForRank(this)`.
+* Очки навыка тратятся на ранги; **ранг способности — это и есть требование по уровню героя**
+  (вместе с маной при применении).
+* UI рангов — `isRankUpMenuOpen()` / `showRankUpMenu(...)`.
 
-Константа `UnitAction` на ранг нужна для кнопки прокачки (`heroLevel >= rank * 2 + 1`).
+## Сохранение
 
-## Производство героя
+`addHeroUnitSaveData(CompoundTag)` / `readHeroUnitSaveData(CompoundTag)`: опыт, очки навыка, мана,
+ранги способностей, произвольные `charges`.
 
-Герой получается через производство — `HeroProductionItem` плюс отдельный
-`ReviveHeroProductionItem`. Оба требуют здания-производителя.
+## Примечание
 
-⚠ **После удаления контента (`*Prod` уходят в документацию) эта связь рвётся.**
-`HeroUnit.getHeroesInTraining()` перечисляет `ProductionPlacement.productionQueue`,
-а `ReviveHeroProductionItem.onComplete` вызывает `placement.produceUnit(...)`. Если владелец
-захочет получать героев иначе (например, только орторежимом без зданий), выноси создание
-в отдельный путь — так же, как это делается для обычных юнитов.
-
-Лимит одновременных героев задаётся геймрулом `allowedHeroes` (по умолчанию 2).
-Проверяется в `HeroProductionItem`.
-
-## Анимации
-
-`KeyframeAnimated` + класс анимаций в `unit/modelling/animations/` (паттерн —
-`WildfireAnimations`). Регистрируется в `ClientModEvents.registerLayerDefinitions`.
-Слои состояний задаются в рендерере.
-
-## Ассеты
-
-* Модель и текстуры — `unit/modelling/models/`, `textures/entities/`.
-* Собственный рендерер в `unit/modelling/renderers/`, если ванильный не подходит.
-* Частица подъёма уровня — `level_up` в `registrars/ParticleRegistrar`.
-* Ключи: `entity.reignofnether.x_hero`, `unitstats.reignofnether.*`,
-  `abilities.reignofnether.x_hero.*`, `hud.unitinfo.*`.
-
-## Проверка в игре
-
-* Опыт капает с убийств, уровень растёт, цифры на портрете обновляются.
-* Мена регенерируется, способность не срабатывает без маны.
-* Ранг 1 открывается на 3 уровне, попытка ранговать раньше не тратит очко.
-* Смерть сохраняет опыт и ранги; воскрешение их восстанавливает.
+Готовых героев в каркасе нет — `HeroUnit` это контракт, под который вы делаете своих героев.
+Требования способности по уровню героя реализуются в вашем гейте применения (по аналогии с
+маной/кулдауном/исследованием).

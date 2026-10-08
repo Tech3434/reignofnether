@@ -1177,6 +1177,7 @@
 
     "server.reignofnether.is_defeated": "%s has %s and is defeated!",
     "server.reignofnether.research_required": "%s requires research you have not completed",
+    "faction.reignofnether.villagers": "Villagers",
     "server.reignofnether.lost_buildings": "lost all their buildings",
     "server.reignofnether.lost_capitol": "%s has lost their capitol and will be revealed in %d seconds unless they rebuild it!",
     "server.reignofnether.lost_all": "lost all their units and buildings",

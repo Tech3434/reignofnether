@@ -1,0 +1,12 @@
+{
+  "name": "faction.reignofnether.villagers",
+  "icon": "minecraft:textures/block/polished_granite.png",
+  "capitol": "reignofnether:town_centre",
+  "starting_units": [
+    { "unit": "reignofnether:villager_unit", "count": 1 }
+  ],
+  "food": 0,
+  "wood": 0,
+  "ore": 0,
+  "emerald": 0
+}

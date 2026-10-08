@@ -35,6 +35,7 @@ import com.solegendary.reignofnether.unit.packets.UnitSyncClientboundPacket;
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.worldborder.WorldBorderServerEvents;
 import net.minecraft.commands.Commands;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
@@ -373,7 +374,7 @@ public class PlayerServerEvents {
     );
 
     public static void startRTS(int playerId, Vec3 pos) {
-        startRTS(playerId, pos, 0);
+        startRTS(playerId, pos, 0, com.solegendary.reignofnether.faction.FactionRegistries.DEFAULT_FACTION);
     }
 
     // readied start is a simultaneous start from players using RTS start pos blocks, difference being:
@@ -381,6 +382,11 @@ public class PlayerServerEvents {
     // - spawns workers outside the foundations
     // - no start messages are sent other than the one from the countdown
     public static void startRTS(int playerId, Vec3 pos, int startPosColorId) {
+        startRTS(playerId, pos, startPosColorId, com.solegendary.reignofnether.faction.FactionRegistries.DEFAULT_FACTION);
+    }
+
+    /** Starts a match for the player under the given faction (its capitol and starting army). */
+    public static void startRTS(int playerId, Vec3 pos, int startPosColorId, ResourceLocation factionId) {
         ReignOfNether.LOGGER.info("[Player] startRTS: playerId={}, pos=[{},{},{}], startPosColorId={}", playerId, pos.x, pos.y, pos.z, startPosColorId);
         synchronized (rtsPlayers) {
             boolean readiedStart = startPosColorId != 0;
@@ -435,9 +441,30 @@ public class PlayerServerEvents {
             ServerLevel level = (ServerLevel) serverPlayer.level();
             ArrayList<Entity> startingWorkers = new ArrayList<>();
 
+            // a faction (datapack registry) names its capitol and starting army; fall back to the
+            // built-in constants when the faction or one of its entries is missing
+            com.solegendary.reignofnether.faction.Faction faction =
+                    com.solegendary.reignofnether.faction.FactionRegistries.get(level.getServer(), factionId);
+            List<EntityType<? extends Unit>> startTypes = new ArrayList<>();
+            if (faction != null && !faction.startingUnits().isEmpty()) {
+                for (com.solegendary.reignofnether.faction.StartingUnit su : faction.startingUnits()) {
+                    EntityType<?> et = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.get(su.entityType());
+                    if (et != null)
+                        for (int c = 0; c < Math.max(1, su.count()); c++)
+                            startTypes.add((EntityType<? extends Unit>) et);
+                }
+            }
+            if (startTypes.isEmpty())
+                startTypes.addAll(STARTING_ARMY);
+            Building capitolBuilding = faction != null
+                    ? com.solegendary.reignofnether.api.ReignOfNetherRegistries.BUILDING.get(faction.capitol())
+                    : null;
+            if (capitolBuilding == null)
+                capitolBuilding = Buildings.TOWN_CENTRE;
+
             // H.8: one spawn position per starting unit, spread out along x from the start position
-            for (int startUnitIdx = 0; startUnitIdx < STARTING_ARMY.size(); startUnitIdx++) {
-                EntityType<? extends Unit> startUnitType = STARTING_ARMY.get(startUnitIdx);
+            for (int startUnitIdx = 0; startUnitIdx < startTypes.size(); startUnitIdx++) {
+                EntityType<? extends Unit> startUnitType = startTypes.get(startUnitIdx);
                 BlockPos bp0 = new BlockPos((int) pos.x + startUnitIdx, 0, (int) pos.z);
                 Entity entity = startUnitType != null ? startUnitType.create(level) : null;
                 if (entity != null) {
@@ -455,8 +482,8 @@ public class PlayerServerEvents {
             ResourcesServerEvents.resetResources(playerName, readiedStart);
 
             if (readiedStart) {
-                // the capitol a readied start places automatically - a new faction names its own here
-                Building building = Buildings.TOWN_CENTRE;
+                // the capitol a readied start places automatically - named by the faction
+                Building building = capitolBuilding;
                 ArrayList<BuildingBlock> blocks = building.getRelativeBlockData(level);
                 BlockPos bp = getBuildingOriginPos(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z), blocks);
                 for (int i = 0; i < startingWorkers.size(); i++) {

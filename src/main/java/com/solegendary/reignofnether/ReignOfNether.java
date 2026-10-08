@@ -113,6 +113,11 @@ public class ReignOfNether {
             CustomButton.CODEC,
             CustomButton.CODEC
         );
+        evt.dataPackRegistry(
+            com.solegendary.reignofnether.faction.FactionRegistries.FACTION_KEY,
+            com.solegendary.reignofnether.faction.Faction.CODEC,
+            com.solegendary.reignofnether.faction.Faction.CODEC
+        );
     }
 
     public static void reloadListener(AddReloadListenerEvent evt) {

@@ -176,6 +176,14 @@ JSON для юнитов/зданий/способностей — отложе�
 для начисления владельцу. Настраиваемый блок лесов (D.21) уже был реализован
 (`Building.scaffoldFill`/`scaffoldBlock`). Гейты ✅.
 
+**Реестр фракций и старт (2026-10-08).** Фракция — объект datapack-реестра
+(`data/<ns>/faction/<name>.json`; `FactionRegistries.FACTION_KEY`, синхронизируется клиентам);
+поля `name`/`icon`/`capitol`/`starting_units`/ресурсы. `PlayerServerEvents.startRTS` получил
+перегрузку с `factionId`: ставит столицу фракции и спавнит её стартовый отряд (фолбэк — константы
+`STARTING_ARMY`/`Buildings.TOWN_CENTRE`). Гайд `_GUIDES/01_faction.md` и навык
+`reignofnether-add-faction` переписаны под реестр; `_GUIDES/05_hero.md` — под уровень/ману/ранги
+героя. Гейты `compileJava`/`validateMixins`/`runData` ✅.
+
 **П5 (2026-10-08).** `1.21.1-clean` fast-forward'нут на текущую работу (`wip/stage-d-deletions`);
 обе ветки указывали на `ec35ca7d`.
 
