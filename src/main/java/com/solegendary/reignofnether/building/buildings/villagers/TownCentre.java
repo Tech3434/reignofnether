@@ -67,7 +67,7 @@ public class TownCentre extends ProductionBuilding implements RangeIndicatorAddo
 
     public BuildingPlaceButton getBuildButton(Keybinding hotkey) {
         ResourceLocation key = ReignOfNetherRegistries.BUILDING.getKey(this);
-        String name = I18n.get("buildings." + getFaction() + "." + key.getNamespace() + "." + key.getPath());
+        String name = I18n.get("buildings." + key.getNamespace() + "." + key.getPath());
         return new BuildingPlaceButton(
                name,
                 ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/polished_granite.png"),

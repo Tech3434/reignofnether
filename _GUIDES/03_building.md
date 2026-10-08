@@ -44,23 +44,23 @@ public class XBuilding extends ProductionBuilding {
         this.maxHealth = 300;                     // 0 = 1 HP на блок
         this.buildTimeModifier = 1.0f;
         this.startingBlockTypes.add(Blocks.COBBLESTONE);
-        this.scaffoldingBlock = Blocks.SCAFFOLDING; // см. ниже
+        this.scaffoldFill = ScaffoldFill.SCAFFOLDING; // SCAFFOLDING | CUSTOM (тогда scaffoldBlock) | BIOME_AWARE
     }
 
-    @Override public Faction getFaction() { ... }              // удаляется на этапе F
+    public String getFaction() { return "villagers"; }         // строковая метка (имя кнопки от неё не зависит)
     @Override public BuildingPlaceButton getBuildButton(Keybinding hotkey) { ... }
 }
 ```
 
-**Абстрактных методов у `Building` всего два:** `getFaction()` и `getBuildButton(Keybinding)`.
-Первый удаляется вместе с `Faction` (этап F плана) — новым зданиям его реализовывать не нужно.
+**Абстрактный метод один — `getBuildButton(Keybinding)`.** `getFaction()` не абстрактный и теперь
+возвращает **строку-метку** (по умолчанию `""`), не enum; на имя кнопки он не влияет.
 
 ### Поля `Building`, которые задаёт наследник
 
 `name`, `structureName`, `icon`, `portraitBlock`, `isCapitol`, `maxHealth`,
 `buildTimeModifier`, `repairTimeModifier`, `startingBlockTypes`, `foundationYLayers`,
 `canAcceptResources`, `captureRange`, `capturable`, `invulnerable`, `repairable`,
-`shouldDestroyOnReset`, `scaffoldingBlock` (после этапа B.8.10).
+`shouldDestroyOnReset`, `scaffoldFill`/`scaffoldBlock` (`ScaffoldFill`), `requiredResearch`.
 
 ### Переопределяемые хуки
 
