@@ -2,9 +2,13 @@
   "structure": "reignofnether:town_centre",
   "isCapitol": true,
   "populationSupply": 10,
-  "canAcceptResources": true,
-  "buildTimeModifier": 0.328,
+  "icon": "minecraft:textures/block/polished_granite.png",
   "maxHealth": 380,
+  "flags": {
+    "canAcceptResources": true,
+    "buildTimeModifier": 0.328,
+    "portrait": "minecraft:polished_granite"
+  },
   "production": [ "reignofnether:villager_unit" ],
   "researches": [],
   "addons": [ { "type": "reignofnether:night_source", "params": { "range": 24 } } ]

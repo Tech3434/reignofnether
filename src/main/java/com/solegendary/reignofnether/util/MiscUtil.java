@@ -438,7 +438,7 @@ public class MiscUtil {
     private static boolean isBuildingAutoAttackable(Mob unitMob, BuildingPlacement building) {
         if (!building.isAttackable())
             return false;
-        if (building instanceof CustomBuildingPlacement cb && !cb.getBuilding().drawAggro)
+        if (!building.getBuilding().drawAggro)
             return false;
 
         Relationship relationship = UnitServerEvents.getUnitToBuildingRelationship((Unit) unitMob, building);

@@ -101,13 +101,18 @@ public abstract class Building {
      * What gets placed between a foundation and the ground under it, when the ground is more than a
      * couple of blocks down. A building on flat ground never triggers it at all.
      */
-    public enum ScaffoldFill {
+    public enum ScaffoldFill implements net.minecraft.util.StringRepresentable {
         /** The mod's own scaffolding block - the previous behaviour, and the default. */
         SCAFFOLDING,
         /** One chosen block for the whole column. */
         CUSTOM,
         /** Grass on the topmost filled layer, dirt everywhere below, so the fill blends into a hillside. */
-        BIOME_AWARE
+        BIOME_AWARE;
+
+        @Override
+        public String getSerializedName() {
+            return name().toLowerCase();
+        }
     }
 
     protected final Abilities abilities = new Abilities();

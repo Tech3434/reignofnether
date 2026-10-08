@@ -115,11 +115,12 @@ this.productions.add(ProductionItems.X_UNIT, Keybindings.abilitySlot1);
 
 ### Определение здания (JSON, актуально)
 
-`data/<ns>/building/<name>.json` (реестр `reignofnether:building`). Реализованные поля: `structure` (NBT),
-`name`, `icon`, `cost`, `maxHealth`, `populationSupply`, `isCapitol`, `canAcceptResources` (дроп-офф
-ресурсов — нужно столице), `buildTimeModifier`, `production`, `researches`, `addons`, `upgrades`,
-`requiredResearch`. Планируются: `repairable`/`invulnerable`/`capturable`/`captureRange`/`repairTimeModifier`/
-`portrait`. Идентичность — id определения; апгрейды создают варианты уровней (см. «Апгрейды»).
+`data/<ns>/building/<name>.json` (реестр `reignofnether:building`). Поля: `structure` (NBT), `name`, `icon`,
+`cost`, `maxHealth`, `populationSupply`, `isCapitol`, `production`, `researches`, `addons`, `upgrades`,
+`requiredResearch`. Флаги — под `"flags"`: `canAcceptResources` (дроп-офф ресурсов — нужно столице),
+`buildTimeModifier`, `captureRange`, `capturable`, `invulnerable`, `repairable`, `repairTimeModifier`,
+`drawAggro`, `scaffoldFill` (`SCAFFOLDING`/`CUSTOM`/`BIOME_AWARE`), `scaffoldBlock`, `portrait` (id блока).
+Идентичность — id определения; апгрейды создают варианты уровней (см. «Апгрейды»).
 
 ### Производство и исследования в JSON-зданиях
 

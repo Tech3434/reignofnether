@@ -56,8 +56,26 @@ public class JsonBuilding extends ProductionBuilding {
         this.maxHealth = definition.maxHealth();
         this.populationSupply = definition.populationSupply();
         this.requiredResearch = definition.requiredResearch();
-        this.canAcceptResources = definition.canAcceptResources();
-        this.buildTimeModifier = (float) definition.buildTimeModifier();
+        BuildingDefinition.Flags flags = definition.flags();
+        this.canAcceptResources = flags.canAcceptResources();
+        this.buildTimeModifier = (float) flags.buildTimeModifier();
+        this.captureRange = flags.captureRange();
+        this.capturable = flags.capturable();
+        this.invulnerable = flags.invulnerable();
+        this.repairable = flags.repairable();
+        this.repairTimeModifier = (float) flags.repairTimeModifier();
+        this.drawAggro = flags.drawAggro();
+        flags.scaffoldFill().ifPresent(fill -> this.scaffoldFill = fill);
+        flags.scaffoldBlock().ifPresent(id -> {
+            net.minecraft.world.level.block.Block block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(id);
+            if (block != null)
+                this.scaffoldBlock = block;
+        });
+        flags.portrait().ifPresent(id -> {
+            net.minecraft.world.level.block.Block block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(id);
+            if (block != null)
+                this.portraitBlock = block;
+        });
 
         for (ResourceLocation unitId : definition.production())
             this.productions.add(new JsonProductionItem(unitId, cost, unitId.getPath()), Keybindings.abilitySlot1);

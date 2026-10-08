@@ -67,9 +67,9 @@
 `data/<namespace>/building/<name>.json`, id = `<namespace>:<name>`.
 
 * **Структура** — NBT-файл (`structureName`, автор строит в игре Structure Block-ом; как сейчас).
-  Реализованы: `cost`, `maxHealth`, `buildTimeModifier`, `isCapitol`, `populationSupply`,
-  `canAcceptResources`, `requiredResearch`, `icon`/`name`. Планируются: `repairTimeModifier`, `captureRange`,
-  `capturable`, `invulnerable`, `repairable`, `scaffoldFill`/`scaffoldBlock`, `portrait`.
+  Реализованы: `cost`, `maxHealth`, `isCapitol`, `populationSupply`, `requiredResearch`, `icon`/`name`.
+  Флаги под `"flags"`: `canAcceptResources`, `buildTimeModifier`, `captureRange`, `capturable`,
+  `invulnerable`, `repairable`, `repairTimeModifier`, `drawAggro`, `scaffoldFill`, `scaffoldBlock`, `portrait`.
 * **Производство** — на здании: `production: [ { "unit": "…", "key": "abilitySlot1", "costOverride": {…} } ]`.
 * **Исследования** (реализовано) — на здании:
   `researches: [ "…", … ]` — какие исследования здание предлагает; очередь общая с производством

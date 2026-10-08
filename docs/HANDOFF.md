@@ -87,7 +87,9 @@ cd ___temp
 ### Здания — `data/<ns>/building/<name>.json` (реестр `reignofnether:building`)
 ```json
 { "structure": "reignofnether:barracks", "maxHealth": 150, "populationSupply": 0,
-  "isCapitol": false, "canAcceptResources": false, "buildTimeModifier": 1.0,
+  "isCapitol": false,
+  "flags": { "canAcceptResources": false, "buildTimeModifier": 1.0, "capturable": false,
+             "invulnerable": false, "repairable": true, "drawAggro": true, "captureRange": 20 },
   "production": [ "reignofnether:vindicator_unit" ],
   "researches": [], "addons": [ { "type": "myns:garrison", "params": {} } ],
   "requiredResearch": [] }
@@ -252,6 +254,12 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 `JsonBuilding` их применяет. `town_centre.json` → `canAcceptResources: true`, `buildTimeModifier: 0.328`
 (раньше JSON-столица НЕ принимала ресурсы — экономика была сломана). Гейты зелёные.
 
+**Флаги зданий в JSON:** `BuildingDefinition.Flags` (Codec, под `"flags"`): `canAcceptResources`,
+`buildTimeModifier`, `captureRange`, `capturable`, `invulnerable`, `repairable`, `repairTimeModifier`,
+`drawAggro`, `scaffoldFill`, `scaffoldBlock`, `portrait`; `JsonBuilding` их применяет, `drawAggro` теперь
+учитывается для любого здания (`MiscUtil`), `Building.ScaffoldFill` стал `StringRepresentable`.
+`town_centre.json` — под `flags` (+`icon`/`portrait` polished_granite). Гейты зелёные.**`runClient` не проверялся**.
+
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)
 спавнит снаряд на сервере (owner, урон = `damage` или `getUnitAttackDamage()`), дефолт — стрела.
@@ -277,8 +285,9 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 2. ✅ **Исследования у зданий** (`ResearchProductionItem`, демо `example_research`). ✅ **Апгрейды (полностью)**
    (`UpgradeSpec`/`upgrades` + `JsonBuilding`-варианты на уровень; per-level производство/исследования/аддоны/
    способности/имя/иконка/структура). Дальше по зданиям:
-   - Капитолий-специфика: `isCapitol`/`populationSupply`/`canAcceptResources`/`buildTimeModifier` из
-     определения (дроп-офф ресурсов работает). Не портировано: милиция (система удалена), захват (`capturable`).
+   - Флаги здания из JSON (`flags`): `canAcceptResources`, `buildTimeModifier`, `captureRange`, `capturable`,
+     `invulnerable`, `repairable`, `repairTimeModifier`, `drawAggro`, `scaffoldFill`, `scaffoldBlock`,
+     `portrait`. Не портировано: милиция (система удалена).
 3. ✅ **Ranged-юнит:** `equipment` + `projectile` (`ProjectileSpec`) в определении; спавн в
    `UnitMobMixin.performUnitRangedAttack`; демо `skeleton_unit` (лук+стрела) в казарме.
 4. **lang-дочистка:** `entity.reignofnether.villager_unit*` (используется тултипами `VillagerProd`/`VindicatorProd`);
