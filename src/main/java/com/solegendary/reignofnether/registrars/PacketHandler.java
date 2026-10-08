@@ -12,6 +12,7 @@ import com.solegendary.reignofnether.building.custombuilding.CustomBuildingServe
 import com.solegendary.reignofnether.config.ClientboundSyncResourceCostPacket;
 import com.solegendary.reignofnether.gamerules.GameruleClientboundPacket;
 import com.solegendary.reignofnether.gamerules.GameruleServerboundPacket;
+import com.solegendary.reignofnether.research.ResearchClientboundPacket;
 import com.solegendary.reignofnether.guiscreen.TopdownGuiServerboundPacket;
 
 import com.solegendary.reignofnether.hud.HudClientboundPacket;
@@ -113,6 +114,7 @@ public final class PacketHandler {
         registerClient(registrar, ClientboundSyncResourceCostPacket.TYPE, ClientboundSyncResourceCostPacket::decode);
         registerServer(registrar, GameruleServerboundPacket.TYPE, GameruleServerboundPacket::new);
         registerClient(registrar, GameruleClientboundPacket.TYPE, GameruleClientboundPacket::new);
+        registerClient(registrar, ResearchClientboundPacket.TYPE, ResearchClientboundPacket::new);
         registerClient(registrar, CustomBuildingClientboundPacket.TYPE, CustomBuildingClientboundPacket::new);
         registerServer(registrar, CustomBuildingServerboundPacket.TYPE, CustomBuildingServerboundPacket::new);
         registerClient(registrar, UnitSyncMobEffectsClientboundPacket.TYPE, UnitSyncMobEffectsClientboundPacket::new);

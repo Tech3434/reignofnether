@@ -11,6 +11,8 @@ import com.solegendary.reignofnether.building.buildings.placements.CustomBuildin
 import com.solegendary.reignofnether.building.buildings.placements.ProductionPlacement;
 
 import com.solegendary.reignofnether.gamerules.GameruleClientboundPacket;
+import com.solegendary.reignofnether.research.ResearchClientboundPacket;
+import com.solegendary.reignofnether.research.ResearchSaveData;
 import com.solegendary.reignofnether.guiscreen.TopdownGuiContainer;
 
 
@@ -765,6 +767,12 @@ public class PlayerServerEvents {
 
                     // H.4: the defeated player's units go neutral right away, not on the next match reset
                     neutraliseUnitsOf(playerName);
+
+                    // losing also wipes the player's research progress
+                    if (serverLevel != null) {
+                        ResearchSaveData.getInstance(serverLevel).clear(playerName);
+                        ResearchClientboundPacket.sync(playerName, java.util.Set.of());
+                    }
                     for (BuildingPlacement building : BuildingServerEvents.getBuildings()) {
                         if (building.ownerName.equals(playerName)) {
                             if (building instanceof ProductionPlacement productionBuilding)
@@ -945,6 +953,13 @@ public class PlayerServerEvents {
 
         for (ServerPlayer player : serverLevel.players())
             player.setGameMode(GameType.SPECTATOR);
+
+        // a fresh match starts everyone without research
+        for (ServerPlayer player : serverLevel.players()) {
+            String name = player.getName().getString();
+            ResearchSaveData.getInstance(serverLevel).clear(name);
+            ResearchClientboundPacket.sync(name, java.util.Set.of());
+        }
 
         // deliberately NOT rewriting the saved pre-RTS modes to SPECTATOR: doing so meant a player who
         // later left the RTS camera was restored straight back into spectator and could not break

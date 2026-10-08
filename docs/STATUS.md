@@ -140,7 +140,17 @@ H.1–H.8 сделаны (`15bd1a69`): пропуск = право операт�
 **Чистка и доки (2026-10-08).** Из `data/reignofnether` удалены 65 неиспользуемых
 `structures/*.nbt` (остались `town_centre.nbt` и `barracks.nbt` — их грузит `Building.structureName`)
 и `maps/*.json`. `FEATURES.md`, `INTRUSION_AUDIT.md` и `PLAN §15.1/§15.3/§15.4` приведены к
-текущему состоянию (DIG_AREA удалён, §14.5 откачен, геймрулов 12, миксинов 21/11).
+текущему состоянию (DIG_AREA удалён, §14.5 откачен, геймрулов 12, миксинов 21/11). Пакет `gamemode/`
+удалён (единственный режим `CLASSIC`). План исследований/расширяемости —
+`RESEARCH_AND_EXTENSIBILITY_PLAN.md`.
+
+**Фаза 1 исследований (2026-10-08).** Добавлено ядро: `research/ResearchCondition` (с инверсией),
+`ResearchType`, `Research`, `ResearchAttributeModifier`, `ResearchRegistry`, `ResearchSaveData`
+(per-player, персистентно), `ResearchUtils` (+ клиентское зеркало), `ResearchClientboundPacket` +
+`ResearchClientEvents`, команды `/research grant|revoke|clear|list`, синк при входе, сброс при
+поражении и в `resetRTS`. Гейты: `compileJava` ✅, `validateMixins` ✅ (47/30), `runData` ✅,
+`runServer` ✅ `Done (0.909s)!`. Гейты контента (способности/производство/строительство) и
+JSON-загрузчик — фазы 2/4.
 
 ### Документация
 
