@@ -137,6 +137,11 @@ H.1–H.8 сделаны (`15bd1a69`): пропуск = право операт�
 `runServer` ✅ `Done (0.964s)!`. Разбор — `BUGS_RUNCLIENT.md` §«Сужение», сводка —
 `docs/VANILLA_CHANGES.md`.
 
+**Чистка и доки (2026-10-08).** Из `data/reignofnether` удалены 65 неиспользуемых
+`structures/*.nbt` (остались `town_centre.nbt` и `barracks.nbt` — их грузит `Building.structureName`)
+и `maps/*.json`. `FEATURES.md`, `INTRUSION_AUDIT.md` и `PLAN §15.1/§15.3/§15.4` приведены к
+текущему состоянию (DIG_AREA удалён, §14.5 откачен, геймрулов 12, миксинов 21/11).
+
 ### Документация
 
 * `FEATURES.md` и `INTRUSION_AUDIT.md` — актуализировать (снять удалённое, отметить читы/туман).

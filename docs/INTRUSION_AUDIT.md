@@ -15,6 +15,13 @@
 > «сущность + способности». Счёт миксинов и категории 0 (права команд, форс ванильных геймрулов)
 > по-прежнему актуальны для исторической части, но исполненные пункты закрыты `PLAN_RTS_ONLY.md`
 > §3–§6. Актуальное состояние — [`STATUS.md`](STATUS.md).
+>
+> **Поправка на 2026-10-08 (актуальная, `e87b66db`).** Выполнено сужение: `ArmorStandMixin` удалён,
+> `AbstractArrowMixin` больше без `@Overwrite` (ванильные стрелы не трогаются), `LivingEntityMixin`
+> сужен (партиклы левитации только юнитам, мёртвый код убран), геймрулов осталось **12** (удалены
+> `doPlayerGriefing`, `groundYLevel`, `flyingMaxYLevel`, `allowBeacons`, `pvpModesOnly`,
+> `beaconWinMinutes`, `allowedHeroes`, `randomItemDrops`). Миксины: **21 common / 11 client**.
+> Авторитетная текущая инвентаризация — [`VANILLA_CHANGES.md`](VANILLA_CHANGES.md).
 
 Пути относительно `src/main/java/com/solegendary/reignofnether/` внутри `___temp/`, если не
 указано иное.
