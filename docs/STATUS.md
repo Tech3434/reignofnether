@@ -186,4 +186,6 @@ JAVA="/c/Program Files/Java/jdk-21/bin/java.exe"
 | `FEATURES.md` | каталог функций с вердиктами |
 | `BUGS_RUNCLIENT.md` | баги после первого `runClient`: разбор причин, вопросы, план правок |
 | `INTRUSION_AUDIT.md` | что мод ломал в обычном мире |
+| `VANILLA_CHANGES.md` | текущая инвентаризация изменений ванильных механик |
+| `RESEARCH_AND_EXTENSIBILITY_PLAN.md` | план системы исследований и JSON-расширяемости |
 | `../.agents/skills/` | навыки для ИИ-агентов |
