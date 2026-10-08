@@ -123,6 +123,11 @@ public class ReignOfNether {
             com.solegendary.reignofnether.unit.UnitDefinition.CODEC,
             com.solegendary.reignofnether.unit.UnitDefinition.CODEC
         );
+        evt.dataPackRegistry(
+            com.solegendary.reignofnether.building.BuildingDefinitions.BUILDING_KEY,
+            com.solegendary.reignofnether.building.BuildingDefinition.CODEC,
+            com.solegendary.reignofnether.building.BuildingDefinition.CODEC
+        );
     }
 
     public static void reloadListener(AddReloadListenerEvent evt) {
