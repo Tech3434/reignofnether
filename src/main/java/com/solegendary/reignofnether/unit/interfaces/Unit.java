@@ -1202,6 +1202,15 @@ public interface Unit {
         return isAttackingBuilding;
     }
 
+    // ==== merged from RangedAttackerUnit ====
+    default com.solegendary.reignofnether.unit.goals.RangedAttackGroundGoal<?> getRangedAttackGroundGoal() { return null; }
+
+    default void performUnitRangedAttack(LivingEntity pTarget, float velocity) {
+        performUnitRangedAttack(pTarget.getX(), pTarget.getY(), pTarget.getZ(), velocity);
+    }
+
+    default void performUnitRangedAttack(double x, double y, double z, float velocity) { }
+
     // if true, will ignore all commands except for stop (S)
     // used for things like channeling blizzard on the wraith to prevent accidental cancels
     default boolean ignoreNonStopCommands() {
