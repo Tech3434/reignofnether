@@ -59,11 +59,25 @@ public class BuildingServerboundPacket  implements RTSSimplePayload {
             BuildingAction.SET_RALLY_POINT_ENTITY
     );
 
+    /** Resolves a place target: code building first, then a data-driven JSON building. */
+    private static Building resolveBuilding(String itemName) {
+        ResourceLocation id = ResourceLocation.tryParse(itemName);
+        if (id == null)
+            return null;
+        Building building = ReignOfNetherRegistries.BUILDING.get(id);
+        if (building == null)
+            building = com.solegendary.reignofnether.building.buildings.JsonBuildingManager.get(id);
+        return building;
+    }
+
     public static void placeBuilding(Building building, BlockPos originPos, Rotation rotation,
                                      String ownerName, int[] builderUnitIds, boolean isDiagonalBridge) {
         BuildingAction action = BuildingAction.PLACE_CUSTOM;
         String itemName = building.structureName;
-        if (!(building instanceof CustomBuilding)) {
+        if (building instanceof com.solegendary.reignofnether.building.buildings.JsonBuilding jb) {
+            action = BuildingAction.PLACE;
+            itemName = jb.getDefinitionId().toString();
+        } else if (!(building instanceof CustomBuilding)) {
             action = BuildingAction.PLACE;
             itemName = ReignOfNetherRegistries.BUILDING.getKey(building).toString();
         }
@@ -74,7 +88,10 @@ public class BuildingServerboundPacket  implements RTSSimplePayload {
                                              String ownerName, int[] builderUnitIds, boolean isDiagonalBridge) {
         BuildingAction action = BuildingAction.PLACE_AND_QUEUE_CUSTOM;
         String itemName = building.structureName;
-        if (!(building instanceof CustomBuilding)) {
+        if (building instanceof com.solegendary.reignofnether.building.buildings.JsonBuilding jb) {
+            action = BuildingAction.PLACE_AND_QUEUE;
+            itemName = jb.getDefinitionId().toString();
+        } else if (!(building instanceof CustomBuilding)) {
             action = BuildingAction.PLACE_AND_QUEUE;
             itemName = ReignOfNetherRegistries.BUILDING.getKey(building).toString();
         }
@@ -183,10 +200,10 @@ public class BuildingServerboundPacket  implements RTSSimplePayload {
             ReignOfNether.LOGGER.info("[Building] {} performed {} for {} (itemName: {}, pos: {})", player.getName(), this.action, this.ownerName, this.itemName, this.buildingPos);
             switch (this.action) {
                 case PLACE -> {
-                    BuildingServerEvents.placeBuilding(ReignOfNetherRegistries.BUILDING.get(ResourceLocation.tryParse(this.itemName)), this.buildingPos, this.rotation, this.ownerName, this.builderUnitIds, false, isDiagonalBridge, false, false);
+                    BuildingServerEvents.placeBuilding(resolveBuilding(this.itemName), this.buildingPos, this.rotation, this.ownerName, this.builderUnitIds, false, isDiagonalBridge, false, false);
                 }
                 case PLACE_AND_QUEUE -> {
-                    BuildingServerEvents.placeBuilding(ReignOfNetherRegistries.BUILDING.get(ResourceLocation.tryParse(this.itemName)), this.buildingPos, this.rotation, this.ownerName, this.builderUnitIds, true, isDiagonalBridge, false, false);
+                    BuildingServerEvents.placeBuilding(resolveBuilding(this.itemName), this.buildingPos, this.rotation, this.ownerName, this.builderUnitIds, true, isDiagonalBridge, false, false);
                 }
                 case PLACE_CUSTOM -> {
                     BuildingServerEvents.placeBuilding(CustomBuildingServerEvents.getCustomBuilding(this.itemName), this.buildingPos, this.rotation, this.ownerName, this.builderUnitIds, false, isDiagonalBridge, false, false);
