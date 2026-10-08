@@ -2,6 +2,7 @@ package com.solegendary.reignofnether.unit;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.solegendary.reignofnether.ability.AbilitySpec;
 import com.solegendary.reignofnether.research.ResearchCondition;
 
 import net.minecraft.resources.ResourceLocation;
@@ -30,7 +31,8 @@ public record UnitDefinition(
         Map<ResourceLocation, Double> attributes,
         Optional<CostSpec> cost,
         int population,
-        List<ResearchCondition> requiredResearch
+        List<ResearchCondition> requiredResearch,
+        List<AbilitySpec> abilities
 ) {
 
     public enum Role implements StringRepresentable {
@@ -78,6 +80,7 @@ public record UnitDefinition(
             Codec.unboundedMap(ResourceLocation.CODEC, Codec.DOUBLE).optionalFieldOf("attributes", Map.of()).forGetter(UnitDefinition::attributes),
             CostSpec.CODEC.optionalFieldOf("cost").forGetter(UnitDefinition::cost),
             Codec.INT.optionalFieldOf("population", 0).forGetter(UnitDefinition::population),
-            ResearchCondition.CODEC.listOf().optionalFieldOf("requiredResearch", List.of()).forGetter(UnitDefinition::requiredResearch)
+            ResearchCondition.CODEC.listOf().optionalFieldOf("requiredResearch", List.of()).forGetter(UnitDefinition::requiredResearch),
+            AbilitySpec.CODEC.listOf().optionalFieldOf("abilities", List.of()).forGetter(UnitDefinition::abilities)
     ).apply(instance, UnitDefinition::new));
 }

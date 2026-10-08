@@ -64,7 +64,24 @@ public final class UnitDefinitionRuntime {
         applyAttributes(def, mob);
         if (mob instanceof Unit unit)
             unit.initialiseGoals();
+        if (mob instanceof Unit unit)
+            buildAbilities(def, unit);
         return mob;
+    }
+
+    /** Instantiates the definition's data-driven abilities and adds them to the unit. */
+    private static void buildAbilities(UnitDefinition def, Unit unit) {
+        for (com.solegendary.reignofnether.ability.AbilitySpec spec : def.abilities()) {
+            com.solegendary.reignofnether.ability.Ability ability =
+                    com.solegendary.reignofnether.ability.AbilityTypes.create(spec, unit);
+            if (ability == null)
+                continue;
+            if (spec.cooldown() > 0)
+                ability.cooldownMax = Math.round(spec.cooldown());
+            ability.requiredResearch = spec.requiredResearch();
+            unit.getAbilities().add(ability);
+        }
+        unit.updateAbilityButtons();
     }
 
     /** Creates the definition at {@code pos} and adds it to the world. */
