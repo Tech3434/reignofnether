@@ -7,7 +7,6 @@ import com.solegendary.reignofnether.building.BuildingPlacement;
 
 import com.solegendary.reignofnether.building.custombuilding.CustomBuildingClientEvents;
 
-import com.solegendary.reignofnether.gamemode.ClientGameModeHelper;
 import com.solegendary.reignofnether.gamerules.GameruleClient;
 
 import com.solegendary.reignofnether.hud.HudClientEvents;
@@ -335,8 +334,6 @@ public class PlayerClientEvents {
         for (BuildingPlacement building : BuildingClientEvents.getBuildings())
             building.ownerName = "";
         ResourcesClientEvents.resourcesList.clear();
-        ClientGameModeHelper.gameMode = ClientGameModeHelper.DEFAULT_GAMEMODE;
-        ClientGameModeHelper.gameModeLocked = false;
         AlliancesClient.playersWithAlliedControl.clear();
         PlayerColors.reset();
         PlayerDisplayClientEvents.resetDisplay();

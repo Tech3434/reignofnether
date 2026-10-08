@@ -2,9 +2,6 @@ package com.solegendary.reignofnether.player;
 
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.building.BuildingUtils;
-import com.solegendary.reignofnether.gamemode.ClientGameModeHelper;
-import com.solegendary.reignofnether.gamemode.GameMode;
-import com.solegendary.reignofnether.gamemode.GameModeServerboundPacket;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.registrars.PacketHandler;
 
@@ -84,7 +81,6 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
                 return;
             }
             PacketHandler.sendToServer(new PlayerServerboundPacket(PlayerAction.START_RTS, MC.player.getId(), x, y, z));
-            GameModeServerboundPacket.setAndLockAllClientGameModes(ClientGameModeHelper.gameMode);
             CompletableFuture.delayedExecutor(2000, TimeUnit.MILLISECONDS).execute(() -> {
                 MC.player.sendSystemMessage(Component.literal(""));
                 MC.player.sendSystemMessage(Component.translatable("hud.gamemode.reignofnether.classic1")
