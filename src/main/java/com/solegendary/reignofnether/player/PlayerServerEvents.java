@@ -26,10 +26,10 @@ import com.solegendary.reignofnether.time.TimeServerEvents;
 import com.solegendary.reignofnether.time.TimeUtils;
 
 import com.solegendary.reignofnether.unit.UnitServerEvents;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.packets.UnitSyncClientboundPacket;
 
 import com.solegendary.reignofnether.util.MiscUtil;
@@ -865,9 +865,9 @@ public class PlayerServerEvents {
             try {
                 unit.resetBehaviours();
                 Unit.resetBehaviours(unit);
-                if (unit instanceof AttackerUnit aUnit)
+                if (unit instanceof Unit aUnit && aUnit.isAttacker())
                     Unit.resetAttackerBehaviours(aUnit);
-                if (unit instanceof WorkerUnit wUnit)
+                if (unit instanceof Unit wUnit && wUnit.isWorker())
                     Unit.resetWorkerBehaviours(wUnit);
             } catch (Exception e) {
                 ReignOfNether.LOGGER.error("Failed to reset behaviours of neutralised unit {}", entity.getId(), e);

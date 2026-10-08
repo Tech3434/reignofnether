@@ -11,7 +11,7 @@ import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.LevelRenderCompat;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Camera;
@@ -70,7 +70,7 @@ public class ResourcesClientEvents {
                     }
                 }
             }
-            boolean workerSelected = HudClientEvents.hudSelectedEntity instanceof WorkerUnit workerUnit &&
+            boolean workerSelected = HudClientEvents.hudSelectedEntity instanceof Unit workerUnit && workerUnit.isWorker() &&
                     UnitClientEvents.getPlayerToEntityRelationship((LivingEntity) workerUnit) == Relationship.OWNED;
             boolean notInBuilding = !BuildingUtils.isPosInsideAnyBuilding(true, preSelBp);
 

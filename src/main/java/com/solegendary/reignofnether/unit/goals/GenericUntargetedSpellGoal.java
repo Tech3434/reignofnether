@@ -4,7 +4,7 @@ import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.ability.AbilityClientboundPacket;
 import com.solegendary.reignofnether.ability.HeroAbility;
 import com.solegendary.reignofnether.unit.UnitAnimationAction;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.packets.UnitAnimationClientboundPacket;
 import net.minecraft.core.BlockPos;
@@ -74,7 +74,7 @@ public class GenericUntargetedSpellGoal extends Goal {
                 if (this.ability != null && !this.mob.level().isClientSide()) {
                     if (!this.mob.level().isClientSide()) {
                         AbilityClientboundPacket.sendSetCooldownPacket(this.mob.getId(), this.ability.action, this.ability.cooldownMax);
-                        if (mob instanceof HeroUnit heroUnit && this.ability instanceof HeroAbility heroAbility) {
+                        if (mob instanceof Unit heroUnit && heroUnit.isHero() && this.ability instanceof HeroAbility heroAbility) {
                             heroUnit.setMana(heroUnit.getMana() - heroAbility.manaCost);
                         }
                     }

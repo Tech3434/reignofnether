@@ -4,10 +4,10 @@ import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
-import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -101,7 +101,7 @@ public class UnitCrossbowAttackGoal<T extends Monster & RangedAttackMob & Crossb
     }
 
     public BuildingPlacement getBuildingTarget() {
-        if (this.mob instanceof AttackerUnit attackerUnit &&
+        if (this.mob instanceof Unit attackerUnit && attackerUnit.isAttacker() &&
                 attackerUnit.getAttackBuildingGoal() instanceof RangedAttackBuildingGoal<?> rabg) {
             return rabg.getBuildingTarget();
         }
@@ -109,7 +109,7 @@ public class UnitCrossbowAttackGoal<T extends Monster & RangedAttackMob & Crossb
     }
 
     private BlockPos getGroundTarget() {
-        if (this.mob instanceof RangedAttackerUnit rangedAttackerUnit &&
+        if (this.mob instanceof Unit rangedAttackerUnit && rangedAttackerUnit.isRangedAttacker() &&
                 rangedAttackerUnit.getRangedAttackGroundGoal() != null) {
             return rangedAttackerUnit.getRangedAttackGroundGoal().getGroundTarget();
         }
@@ -177,7 +177,7 @@ public class UnitCrossbowAttackGoal<T extends Monster & RangedAttackMob & Crossb
             else
                 distToTarget = Math.sqrt(this.mob.distanceToSqr(groundTarget.getX() + 0.5f, groundTarget.getY() + 1.0f, groundTarget.getZ() + 0.5f));
 
-            float attackRange = ((AttackerUnit) this.mob).getAttackRange();
+            float attackRange = ((Unit) this.mob).getAttackRange();
             if (buildTarget != null) {
                 float avgBuildingWidth = ((buildTarget.centrePos.getX() - buildTarget.minCorner.getX()) +
                                           (buildTarget.centrePos.getZ() - buildTarget.minCorner.getZ())) / 2f;

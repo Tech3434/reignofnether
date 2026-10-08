@@ -6,7 +6,7 @@ import com.solegendary.reignofnether.alliance.AlliancesClient;
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -83,7 +83,7 @@ public abstract class AbstractArrowMixin extends Projectile {
             cancellable = true
     )
     public void isNoPhysics(CallbackInfoReturnable<Boolean> cir) {
-        if (this.getOwner() instanceof AttackerUnit aUnit) {
+        if (this.getOwner() instanceof Unit aUnit) {
             // garrisoned unit -> ground
             BuildingPlacement building = GarrisonableBuildingAddon.getGarrison((Unit) aUnit);
             if (isInsideBuildingAndNotForeignEntity(building)) {
@@ -303,7 +303,7 @@ public abstract class AbstractArrowMixin extends Projectile {
             cancellable = true
     )
     protected void onHitBlock(BlockHitResult pResult, CallbackInfo ci) {
-        if (this.getOwner() instanceof AttackerUnit aUnit) {
+        if (this.getOwner() instanceof Unit aUnit) {
             // garrisoned unit -> ground
             BuildingPlacement building = GarrisonableBuildingAddon.getGarrison((Unit) aUnit);
             if (isInsideBuildingAndNotForeignEntity(pResult, building)) {
@@ -314,7 +314,7 @@ public abstract class AbstractArrowMixin extends Projectile {
 
     @Unique
     private boolean reignofnether$ignoresBlockPos(BlockPos pos) {
-        if (!(this.getOwner() instanceof AttackerUnit aUnit))
+        if (!(this.getOwner() instanceof Unit aUnit))
             return false;
         BuildingPlacement building = GarrisonableBuildingAddon.getGarrison((Unit) aUnit);
         return building != null && building.isPosInsideBuilding(pos);

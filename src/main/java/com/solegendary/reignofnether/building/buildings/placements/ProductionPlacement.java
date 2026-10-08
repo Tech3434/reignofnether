@@ -10,7 +10,7 @@ import com.solegendary.reignofnether.resources.*;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
@@ -215,7 +215,7 @@ public class ProductionPlacement extends BuildingPlacement {
                         );
                 });
                 CompletableFuture.delayedExecutor(750, TimeUnit.MILLISECONDS).execute(() -> {
-                    if (!attackRally && unit instanceof WorkerUnit workerUnit)
+                    if (!attackRally && unit instanceof Unit workerUnit && workerUnit.isWorker())
                         if (rallyResourceName != ResourceName.NONE)
                             workerUnit.getGatherResourceGoal().setTargetResourceName(rallyResourceName);
                 });

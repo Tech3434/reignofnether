@@ -6,7 +6,7 @@ import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.goals.GatherResourcesGoal;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -59,7 +59,7 @@ public class CommandAbilities {
     }
 
     private static ResourceName targetResource(Unit unit) {
-        if (unit instanceof WorkerUnit workerUnit) {
+        if (unit instanceof Unit workerUnit && workerUnit.isWorker()) {
             GatherResourcesGoal goal = workerUnit.getGatherResourceGoal();
             if (goal != null)
                 return goal.getTargetResourceName();

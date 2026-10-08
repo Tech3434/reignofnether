@@ -95,7 +95,7 @@ import static com.solegendary.reignofnether.unit.Checkpoint.CHECKPOINT_TICKS_FAD
 import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_CUTOUT_BLOCKS;
 import static net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_ENTITIES;
 
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import com.solegendary.reignofnether.unit.VirtualUnit;
 import com.solegendary.reignofnether.unit.units.villagers.VindicatorUnit;
@@ -109,18 +109,18 @@ import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import com.solegendary.reignofnether.mixin.RenderChunkRegionMixin;
 import com.solegendary.reignofnether.unit.Relationship;
-import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.NonUnitClientEvents;
 import com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal;
 import com.solegendary.reignofnether.unit.interfaces.KeyframeAnimated;
 import net.minecraft.core.IdMap;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.FormationDragMove;
 
 import com.solegendary.reignofnether.unit.interfaces.ConvertableUnit;
 import com.solegendary.reignofnether.unit.Checkpoint;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 public class UnitClientEvents {
 
@@ -434,7 +434,7 @@ public class UnitClientEvents {
 
     public static ResourceName getSelectedUnitResourceTarget() {
         Entity entity = hudSelectedEntity;
-        if (entity instanceof WorkerUnit workerUnit)
+        if (entity instanceof Unit workerUnit && workerUnit.isWorker())
             return workerUnit.getGatherResourceGoal().getTargetResourceName();
         return ResourceName.NONE;
     }
@@ -479,7 +479,7 @@ public class UnitClientEvents {
     public static void syncWorkerUnit(int entityId, boolean isBuilding, boolean isGathering, ResourceName gatherName, BlockPos gatherPos, int gatherTicks) {
         for(LivingEntity entity : allUnits) {
             if (entity.getId() == entityId && MC.level != null) {
-                if (entity instanceof WorkerUnit workerUnit) {
+                if (entity instanceof Unit workerUnit && workerUnit.isWorker()) {
                     workerUnit.getBuildRepairGoal().setIsBuildingServerside(isBuilding);
                     workerUnit.getGatherResourceGoal().setIsGatheringServerside(isGathering);
                     workerUnit.getGatherResourceGoal().syncFromServer(gatherName, gatherPos, gatherTicks);
@@ -1178,7 +1178,7 @@ public class UnitClientEvents {
                     // draw mounted units' target lines
                     if (entity.isVehicle()) {
                         BlockPos blockTarget = null;
-                        if (entity.getFirstPassenger() instanceof RangedAttackerUnit rau &&
+                        if (entity.getFirstPassenger() instanceof Unit rau &&
                             rau.getRangedAttackGroundGoal() != null &&
                             rau.getRangedAttackGroundGoal().getGroundTarget() != null) {
                             blockTarget = rau.getRangedAttackGroundGoal().getGroundTarget();
@@ -1368,8 +1368,8 @@ public class UnitClientEvents {
                         new BlockPos(0,0,0)
                     );
             }
-            if (oldEntity instanceof AttackerUnit oldAUnit &&
-                newEntity instanceof AttackerUnit newAUnit) {
+            if (oldEntity instanceof Unit oldAUnit && oldAUnit.isAttacker() &&
+                newEntity instanceof Unit newAUnit && newAUnit.isAttacker()) {
 
                 if (oldAUnit.getAttackMoveTarget() != null)
                     sendUnitCommandManual(
@@ -1394,7 +1394,7 @@ public class UnitClientEvents {
     public static void syncUnitAnimation(UnitAnimationAction animAction, boolean startAnimation, int entityId, int targetId,
                                          BlockPos buildingBp) {
         for (LivingEntity entity : getAllUnits()) {
-            if (entity instanceof WorkerUnit wUnit && entity instanceof AttackerUnit aUnit && entity.getId() == entityId) {
+            if (entity instanceof Unit wUnit && wUnit.isWorker() && entity instanceof Unit aUnit && aUnit.isAttacker() && entity.getId() == entityId) {
                 if (startAnimation && MC.level != null) {
                     entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WOODEN_SWORD));
 
@@ -1406,13 +1406,13 @@ public class UnitClientEvents {
             } else if (entity instanceof VindicatorUnit && entity.getId() == entityId) {
                 if (startAnimation && MC.level != null) {
                     if (targetId > 0) {
-                        ((AttackerUnit) entity).setUnitAttackTarget((LivingEntity) MC.level.getEntity(targetId)); // set itself as a target just for animation purposes, doesn't tick clientside anyway
+                        ((Unit) entity).setUnitAttackTarget((LivingEntity) MC.level.getEntity(targetId)); // set itself as a target just for animation purposes, doesn't tick clientside anyway
                     } else {
-                        ((AttackerUnit) entity).setAttackBuildingTarget(buildingBp);
+                        ((Unit) entity).setAttackBuildingTarget(buildingBp);
                     }
                 } else {
-                    ((AttackerUnit) entity).setUnitAttackTarget(null);
-                    ((MeleeAttackBuildingGoal) ((AttackerUnit) entity).getAttackBuildingGoal()).stopAttacking();
+                    ((Unit) entity).setUnitAttackTarget(null);
+                    ((MeleeAttackBuildingGoal) ((Unit) entity).getAttackBuildingGoal()).stopAttacking();
                 }
             }
         }
@@ -1443,7 +1443,7 @@ public class UnitClientEvents {
         for (int id : idleWorkerIds) {
             for (LivingEntity entity : getAllUnits()) {
                 if (entity.getId() == id &&
-                    entity instanceof WorkerUnit unit &&
+                    entity instanceof Unit unit && unit.isWorker() &&
                     getPlayerToEntityRelationship(entity) == Relationship.OWNED)
                     UnitClientEvents.idleWorkerIds.add(id);
             }

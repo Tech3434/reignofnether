@@ -10,7 +10,7 @@ import com.solegendary.reignofnether.resources.ResourcesClientboundPacket;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.packets.UnitSyncClientboundPacket;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.core.BlockPos;
@@ -64,9 +64,9 @@ public class ReturnResourcesGoal extends MoveToTargetBlockGoal {
             if (canDropOff() && this.mob instanceof Unit unit && unit.isRtsUnit()) {
                 if (!this.mob.level().isClientSide()) {
                     this.depositItems();
-                    if (this.mob instanceof WorkerUnit worker) {
+                    if (this.mob instanceof Unit worker && worker.isWorker()) {
                         unit.resetBehaviours();
-                        Unit.resetWorkerBehaviours((WorkerUnit) unit);
+                        Unit.resetWorkerBehaviours((Unit) unit);
                         GatherResourcesGoal goal = worker.getGatherResourceGoal();
                         if (goal != null && goal.saveData.hasData()) {
                             goal.loadState();

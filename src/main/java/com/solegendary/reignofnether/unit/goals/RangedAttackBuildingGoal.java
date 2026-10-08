@@ -5,8 +5,8 @@ import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
 
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
-import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.core.BlockPos;
@@ -142,7 +142,7 @@ public class RangedAttackBuildingGoal<T extends Mob> extends Goal {
             if (this.mob.level().isClientSide())
                 return;
 
-            float attackRange = ((AttackerUnit) this.mob).getAttackRange();
+            float attackRange = ((Unit) this.mob).getAttackRange();
 
             double distToTarget = Math.sqrt(this.mob.distanceToSqr(tx, ty, tz));
 
@@ -157,7 +157,7 @@ public class RangedAttackBuildingGoal<T extends Mob> extends Goal {
             if (distToTarget <= attackRange) { // start drawing bowstring
                 if (bowAttackGoal != null) {
                     if (bowAttackGoal.getAttackCooldown() <= 0) {
-                        if (mob instanceof RangedAttackerUnit rangedAttackerUnit) {
+                        if (mob instanceof Unit rangedAttackerUnit && rangedAttackerUnit.isRangedAttacker()) {
                             rangedAttackerUnit.performUnitRangedAttack(tx, ty, tz, 20);
                         }
                         bowAttackGoal.setToMaxAttackCooldown();

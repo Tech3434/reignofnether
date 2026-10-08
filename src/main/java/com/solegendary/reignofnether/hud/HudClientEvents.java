@@ -43,10 +43,10 @@ import com.solegendary.reignofnether.unit.NonUnitClientEvents;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 import com.solegendary.reignofnether.util.MiscUtil;
@@ -605,12 +605,12 @@ public class HudClientEvents {
             );
             hudZones.add(unitPortraitZone);
 
-            if (hudSelectedEntity instanceof HeroUnit heroUnit) {
+            if (hudSelectedEntity instanceof Unit heroUnit && heroUnit.isHero()) {
                 RectZone zone = portraitRendererUnit.renderHeroLevelAndExp(evt.getGuiGraphics(), blitX + 1, blitY - 5, mouseX, mouseY, heroUnit);
                 hudZones.add(zone);
                 if (zone.isMouseOver(mouseX, mouseY)) {
                     MyRenderer.renderTooltip(evt.getGuiGraphics(),
-                        heroUnit.getHeroLevel() >= HeroUnit.MAX_LEVEL ?
+                        heroUnit.getHeroLevel() >= Unit.MAX_LEVEL ?
                             List.of(fcs(I18n.get("hud.hero.reignofnether.max_level"))) :
                             List.of(
                                     fcs(I18n.get("hud.hero.reignofnether.experience", heroUnit.getExpOnCurrentLevel(), heroUnit.getExpToNextlevel())),
@@ -855,8 +855,8 @@ public class HudClientEvents {
                 for (Button button : unitAbilities) {
 
                     if (button instanceof AbilityButton abilityButton && abilityButton.ability instanceof HeroAbility heroAbility &&
-                            ((HeroUnit)unit).isRankUpMenuOpen() && !HeroAbility.allSkillsLearnt((HeroUnit) unit)) {
-                        Button rankUpButton = heroAbility.getRankUpButton((HeroUnit)unit);
+                            ((Unit)unit).isRankUpMenuOpen() && !HeroAbility.allSkillsLearnt((Unit) unit)) {
+                        Button rankUpButton = heroAbility.getRankUpButton((Unit)unit);
                         if (!rankUpButton.isHidden.get()) {
                             i += 1;
                             rankUpButton.render(evt.getGuiGraphics(), blitX, blitY, mouseX, mouseY);
@@ -878,7 +878,7 @@ public class HudClientEvents {
                         }
                     }
                 }
-                if (hudSelectedEntity instanceof HeroUnit hero) {
+                if (hudSelectedEntity instanceof Unit hero && hero.isHero()) {
                     Button rankUpMenuButton = HeroAbility.getRankUpMenuButton(hero);
                     if (!rankUpMenuButton.isHidden.get()) {
                         rankUpMenuButton.render(evt.getGuiGraphics(), 0, blitY - iconFrameSize, mouseX, mouseY);
@@ -1014,7 +1014,7 @@ public class HudClientEvents {
 
                 int numWorkersHunting = UnitClientEvents.getAllUnits()
                     .stream()
-                    .filter(le -> le instanceof WorkerUnit wu && le instanceof Unit u && u.isRtsUnit() && u.getOwnerName()
+                    .filter(le -> le instanceof Unit wu && wu.isWorker() && le instanceof Unit u && u.isRtsUnit() && u.getOwnerName()
                         .equals(finalSelPlayerName) && ResourceSources.isHuntableAnimal(u.getTargetGoal().getTarget()))
                     .toList()
                     .size();
@@ -1030,7 +1030,7 @@ public class HudClientEvents {
                         .size();
                 } else {
                     for (LivingEntity le : UnitClientEvents.getAllUnits()) {
-                        if (le instanceof Unit u && u.isRtsUnit() && le instanceof WorkerUnit wu && u.getOwnerName()
+                        if (le instanceof Unit u && u.isRtsUnit() && le instanceof Unit wu && wu.isWorker() && u.getOwnerName()
                             .equals(finalSelPlayerName) && !UnitClientEvents.idleWorkerIds.contains(le.getId())) {
 
                             boolean alreadyAssigned = false;

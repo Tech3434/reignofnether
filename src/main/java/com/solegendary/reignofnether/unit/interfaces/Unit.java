@@ -109,7 +109,7 @@ import java.util.Random;
 import static com.ibm.icu.impl.ValidIdentifiers.Datatype.unit;
 import static com.solegendary.reignofnether.util.MiscUtil.fcs;
 import net.minecraft.core.Holder;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.UnitStatType;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
@@ -124,9 +124,9 @@ import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.unit.Relationship;
-import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.goals.MoveToTargetBlockGoal;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.goals.GenericUntargetedSpellGoal;
 import com.solegendary.reignofnether.unit.goals.GenericTargetedSpellGoal;
 import com.solegendary.reignofnether.unit.goals.GatherResourcesGoal;
@@ -137,7 +137,7 @@ import net.minecraft.world.level.material.Fluid;
 import com.solegendary.reignofnether.unit.Checkpoint;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 // Defines method bodies for Units
 // workaround for trying to have units inherit from both their base vanilla Mob class and a Unit class
@@ -243,7 +243,7 @@ public interface Unit {
     }
     public default float getUnitMaxHealth() {
         float bonus = 0;
-        if (this instanceof HeroUnit heroUnit) {
+        if (this instanceof Unit heroUnit && heroUnit.isHero()) {
             bonus = heroUnit.getHealthBonusPerLevel() * heroUnit.getHeroLevel();
         }
         AttributeInstance attr = ((LivingEntity) this).getAttribute(Attributes.MAX_HEALTH);
@@ -477,7 +477,7 @@ public interface Unit {
 
                             UnitSyncClientboundPacket.sendSyncResourcesPacket(unit);
                         }
-                        if (Unit.atThresholdResources(unit) && unit instanceof WorkerUnit workerUnit) {
+                        if (Unit.atThresholdResources(unit) && unit instanceof Unit workerUnit && workerUnit.isWorker()) {
                             GatherResourcesGoal goal = workerUnit.getGatherResourceGoal();
                             if (goal != null && goal.getTargetResourceName() != ResourceName.NONE)
                                 goal.saveAndReturnResources();
@@ -526,7 +526,7 @@ public interface Unit {
             pCompound.putInt("anchorPosY", getAnchor().getY());
             pCompound.putInt("anchorPosZ", getAnchor().getZ());
         }
-        if (this instanceof HeroUnit heroUnit)
+        if (this instanceof Unit heroUnit && heroUnit.isHero())
             heroUnit.addHeroUnitSaveData(pCompound);
 
         for (EquipmentSlot slot : EquipmentSlot.values()) {
@@ -548,7 +548,7 @@ public interface Unit {
         if (!anchorPos.equals(new BlockPos(0,0,0))) {
             setAnchor(anchorPos);
         }
-        if (this instanceof HeroUnit heroUnit)
+        if (this instanceof Unit heroUnit && heroUnit.isHero())
             heroUnit.readHeroUnitSaveData(pCompound);
 
         for (EquipmentSlot slot : EquipmentSlot.values()) {
@@ -616,10 +616,10 @@ public interface Unit {
         }
         unit.resetBehaviours();
         Unit.resetBehaviours(unit);
-        if (unit instanceof WorkerUnit workerUnit) {
+        if (unit instanceof Unit workerUnit && workerUnit.isWorker()) {
             Unit.resetWorkerBehaviours(workerUnit);
         }
-        if (unit instanceof AttackerUnit attackerUnit) {
+        if (unit instanceof Unit attackerUnit && attackerUnit.isAttacker()) {
             Unit.resetAttackerBehaviours(attackerUnit);
         }
     }
@@ -708,19 +708,19 @@ public interface Unit {
 
     default boolean isIdle() {
         boolean idleAttacker = true;
-        if (this instanceof AttackerUnit attackerUnit) {
+        if (this instanceof Unit attackerUnit && attackerUnit.isAttacker()) {
             idleAttacker = attackerUnit.getAttackMoveTarget() == null &&
                     !((Unit) attackerUnit).hasLivingTarget() &&
                     !Unit.isAttackingBuilding(attackerUnit);
         }
         boolean idleRangedAttacker = true;
-        if (this instanceof RangedAttackerUnit rangedAttackerUnit) {
+        if (this instanceof Unit rangedAttackerUnit && rangedAttackerUnit.isRangedAttacker()) {
             idleRangedAttacker = rangedAttackerUnit.getRangedAttackGroundGoal() == null ||
                                 rangedAttackerUnit.getRangedAttackGroundGoal().getGroundTarget() == null;
         }
         boolean idleWorker = true;
         if (Unit.isWorker(this))
-            idleWorker = Unit.isWorkerIdle((WorkerUnit) this);
+            idleWorker = Unit.isWorkerIdle((Unit) this);
 
         for (Goal goal : ((Mob) this).goalSelector.getAvailableGoals()) {
             if (goal instanceof GenericUntargetedSpellGoal spellGoal && spellGoal.isCasting())
@@ -925,14 +925,14 @@ public interface Unit {
     // ---- Role flags (plan CONTENT_JSON_PLAN.md). ----
     // Temporary bridge to the sub-interfaces; they will be removed and these become definition-driven.
     // The static overloads are what `instanceof WorkerUnit/AttackerUnit/...` translates to.
-    default boolean isWorker() { return this instanceof WorkerUnit; }
-    static boolean isWorker(@Nullable Object o) { return o instanceof WorkerUnit; }
-    default boolean isAttacker() { return this instanceof AttackerUnit; }
-    static boolean isAttacker(@Nullable Object o) { return o instanceof AttackerUnit; }
-    default boolean isRangedAttacker() { return this instanceof RangedAttackerUnit; }
-    static boolean isRangedAttacker(@Nullable Object o) { return o instanceof RangedAttackerUnit; }
-    default boolean isHero() { return this instanceof HeroUnit; }
-    static boolean isHero(@Nullable Object o) { return o instanceof HeroUnit; }
+    default boolean isWorker() { return false; }
+    static boolean isWorker(@Nullable Object o) { return o instanceof Unit unit && unit.isWorker(); }
+    default boolean isAttacker() { return false; }
+    static boolean isAttacker(@Nullable Object o) { return o instanceof Unit unit && unit.isAttacker(); }
+    default boolean isRangedAttacker() { return false; }
+    static boolean isRangedAttacker(@Nullable Object o) { return o instanceof Unit unit && unit.isRangedAttacker(); }
+    default boolean isHero() { return false; }
+    static boolean isHero(@Nullable Object o) { return o instanceof Unit unit && unit.isHero(); }
 
     // ---- Goal accessors (plan CONTENT_JSON_PLAN.md: collapsed from the role sub-interfaces). ----
     default com.solegendary.reignofnether.unit.goals.BuildRepairGoal getBuildRepairGoal() { return null; }
@@ -989,7 +989,7 @@ public interface Unit {
     }
     default float getBaseUnitAttackDamage() {
         float bonus = 0;
-        if (this instanceof HeroUnit heroUnit) {
+        if (this instanceof Unit heroUnit && heroUnit.isHero()) {
             bonus = heroUnit.getAttackBonusPerLevel() * heroUnit.getHeroLevel();
         }
         AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE.get()));
@@ -997,7 +997,7 @@ public interface Unit {
     }
     default float getUnitAttackDamage() {
         float bonus = 0;
-        if (this instanceof HeroUnit heroUnit) {
+        if (this instanceof Unit heroUnit && heroUnit.isHero()) {
             bonus = heroUnit.getAttackBonusPerLevel() * heroUnit.getHeroLevel();
         }
         AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE.get()));
@@ -1570,7 +1570,7 @@ public interface Unit {
             setHeroAbilityRank(abls.get(3), pCompound.getInt("ability4Rank"));
         }
         for (HeroAbility abl : abls)
-            abl.updateStatsForRank((HeroUnit) this);
+            abl.updateStatsForRank((Unit) this);
     }
 
     default void activateAbilityClientside(int abilityIndex) { }
@@ -1584,7 +1584,7 @@ public interface Unit {
         getHeroAbilityRanks().put(ability, rank);
     }
 
-    static void tick(HeroUnit heroUnit) {
+    static void tickHero(Unit heroUnit) {
         if (heroUnit.needsStatSync()) {
             heroUnit.setStatsForLevel();
             heroUnit.setNeedsStatSync(false);
@@ -1604,15 +1604,15 @@ public interface Unit {
                 .add((AttributeHelpers.holder(AttributeRegistrar.ATTACK_DAMAGE_BONUS_PER_LEVEL.get())), 0);
     }
 
-    static List<HeroUnit> getHeroes(boolean isClientside, String ownerName) {
+    static List<Unit> getHeroes(boolean isClientside, String ownerName) {
         return getHeroes(isClientside, ownerName, "");
     }
 
-    static List<HeroUnit> getHeroes(boolean isClientside, String ownerName, String unitName) {
+    static List<Unit> getHeroes(boolean isClientside, String ownerName, String unitName) {
         List<LivingEntity> units = isClientside ? UnitClientEvents.getAllUnits() : UnitServerEvents.getAllUnits();
-        List<HeroUnit> list = new ArrayList<>();
+        List<Unit> list = new ArrayList<>();
         for (LivingEntity e : units) {
-            if (e instanceof HeroUnit heroUnit &&
+            if (e instanceof Unit heroUnit && heroUnit.isHero() &&
                     heroUnit.getOwnerName().equals(ownerName) &&
                     (e.getType().getDescriptionId().equals(unitName) || unitName.isBlank())) {
                 list.add(heroUnit);

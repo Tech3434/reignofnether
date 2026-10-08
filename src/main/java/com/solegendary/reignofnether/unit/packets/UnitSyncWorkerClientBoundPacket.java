@@ -3,7 +3,7 @@ package com.solegendary.reignofnether.unit.packets;
 import com.solegendary.reignofnether.registrars.PacketHandler;
 import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.LivingEntity;
@@ -35,7 +35,7 @@ public class UnitSyncWorkerClientBoundPacket  implements RTSSimplePayload {
     private final int gatherTicks;
 
     public static void sendSyncWorkerPacket(LivingEntity entity) {
-        if (entity instanceof WorkerUnit workerUnit) {
+        if (entity instanceof Unit workerUnit && workerUnit.isWorker()) {
             BlockPos bp = workerUnit.getGatherResourceGoal().getGatherTarget();
 
             PacketHandler.send(PacketHandler.allPlayers(),

@@ -50,9 +50,9 @@ import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.goals.BuildRepairGoal;
 import com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal;
 import com.solegendary.reignofnether.unit.goals.RangedAttackBuildingGoal;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import com.solegendary.reignofnether.util.MiscUtil;
 
@@ -335,10 +335,10 @@ public class BuildingPlacement {
             this.blockPlaceQueue.add(block);
     }
 
-    public ArrayList<WorkerUnit> getBuilders() {
-        ArrayList<WorkerUnit> builders = new ArrayList<>();
+    public ArrayList<Unit> getBuilders() {
+        ArrayList<Unit> builders = new ArrayList<>();
         for (LivingEntity entity : UnitServerEvents.getAllUnits()) {
-            if (entity instanceof WorkerUnit workerUnit) {
+            if (entity instanceof Unit workerUnit && workerUnit.isWorker()) {
                 BuildRepairGoal goal = workerUnit.getBuildRepairGoal();
                 if (goal != null && goal.getBuildingTarget() == this && goal.isBuilding()) {
                     builders.add(workerUnit);
@@ -541,7 +541,7 @@ public class BuildingPlacement {
                 }
             }
             if (false) {
-                ArrayList<WorkerUnit> builders = getBuilders();
+                ArrayList<Unit> builders = getBuilders();
                 if (!builders.isEmpty()) {
                     BlockPos builderPos = ((LivingEntity) builders.get(new Random().nextInt(builders.size()))).getOnPos();
                     validBlocks.sort(Comparator.comparing(bb -> bb.getBlockPos().distSqr(builderPos)));
@@ -951,10 +951,10 @@ public class BuildingPlacement {
     }
 
     private void handleServerTick(ServerLevel serverLevel, float blocksPlaced, float blocksTotal) {
-        ArrayList<WorkerUnit> workerUnits = getBuilders();
+        ArrayList<Unit> workerUnits = getBuilders();
         int builderCount = workerUnits.size();
 
-        for (WorkerUnit workerUnit : workerUnits) {
+        for (Unit workerUnit : workerUnits) {
             if (((Mob) workerUnit).getActiveEffectsMap().containsKey(MobEffects.DIG_SPEED) ||
                 ((Mob) workerUnit).getActiveEffectsMap().containsKey(MobEffectRegistrar.TEMPORARY_EFFICIENCY.get()))
                 builderCount += 1;
@@ -993,7 +993,7 @@ public class BuildingPlacement {
                     msToNextBuild += msPerBuild;
                     Collections.shuffle(workerUnits);
                     if (!workerUnits.isEmpty()) {
-                        WorkerUnit wUnit = workerUnits.get(0);
+                        Unit wUnit = workerUnits.get(0);
                         String ownerName = ((Unit) wUnit).getOwnerName();
                         queueNextBlock(serverLevel, ownerName);
                     }
@@ -1248,7 +1248,7 @@ public class BuildingPlacement {
                 ownerName = highestPopPlayer;
 
                 for (LivingEntity le : UnitServerEvents.getAllUnits()) {
-                    if (le instanceof AttackerUnit attackerUnit &&
+                    if (le instanceof Unit attackerUnit && attackerUnit.isAttacker() &&
                         le instanceof Unit unit && unit.isRtsUnit() &&
                             AlliancesServerEvents.isAlliedOrOwned(ownerName, unit.getOwnerName())) {
                         if (attackerUnit.getAttackBuildingGoal() instanceof MeleeAttackBuildingGoal mabg &&

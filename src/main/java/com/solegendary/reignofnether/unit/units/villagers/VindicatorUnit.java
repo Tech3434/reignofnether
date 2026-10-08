@@ -15,7 +15,7 @@ import com.solegendary.reignofnether.unit.Checkpoint;
 import com.solegendary.reignofnether.unit.EnemySearchBehaviour;
 import com.solegendary.reignofnether.unit.UnitAnimationAction;
 import com.solegendary.reignofnether.unit.goals.*;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.packets.UnitAnimationClientboundPacket;
 
@@ -54,7 +54,7 @@ import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.Holder;
 
-public class VindicatorUnit extends Vindicator implements Unit, AttackerUnit {
+public class VindicatorUnit extends Vindicator implements Unit {
     public static final Abilities ABILITIES = new Abilities();
 
     //region
@@ -89,6 +89,11 @@ public class VindicatorUnit extends Vindicator implements Unit, AttackerUnit {
     public String getFaction() {return "villagers";}
     @Override
     public boolean isRtsUnit() {
+        return true;
+    }
+
+    @Override
+    public boolean isAttacker() {
         return true;
     }
 
@@ -148,7 +153,7 @@ public class VindicatorUnit extends Vindicator implements Unit, AttackerUnit {
     // combat stats
     public boolean getWillRetaliate() {return willRetaliate;}
     public boolean getAggressiveWhenIdle() {return aggressiveWhenIdle && !isVehicle();}
-    public float getUnitAttackDamage() {return AttackerUnit.super.getUnitAttackDamage() + getSharpnessLevel();}
+    public float getUnitAttackDamage() {return Unit.super.getUnitAttackDamage() + getSharpnessLevel();}
 
     @Nullable
     public ResourceCost getCost() {return ResourceCosts.VINDICATOR;}
@@ -190,7 +195,7 @@ public class VindicatorUnit extends Vindicator implements Unit, AttackerUnit {
     // all for animation syncing...
     @Override
     public void setUnitAttackTarget(@Nullable LivingEntity target) {
-        AttackerUnit.super.setUnitAttackTarget(target);
+        Unit.super.setUnitAttackTarget(target);
         if (!this.level().isClientSide()) {
             if (target != null)
                 UnitAnimationClientboundPacket.sendEntityPacket(UnitAnimationAction.NON_KEYFRAME_START, this, target);
@@ -200,7 +205,7 @@ public class VindicatorUnit extends Vindicator implements Unit, AttackerUnit {
     }
     @Override
     public void setAttackBuildingTarget(BlockPos preselectedBlockPos, boolean forced) {
-        AttackerUnit.super.setAttackBuildingTarget(preselectedBlockPos, forced);
+        Unit.super.setAttackBuildingTarget(preselectedBlockPos, forced);
         if (!this.level().isClientSide())
             UnitAnimationClientboundPacket.sendBlockPosPacket(UnitAnimationAction.NON_KEYFRAME_START, this, preselectedBlockPos);
     }

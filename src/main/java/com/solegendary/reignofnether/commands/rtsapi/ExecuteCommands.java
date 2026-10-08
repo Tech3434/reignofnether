@@ -11,7 +11,7 @@ import com.solegendary.reignofnether.commands.rtsapi.argument.UnitArgument;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal;
 import com.solegendary.reignofnether.unit.goals.RangedAttackBuildingGoal;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import net.minecraft.commands.CommandSourceStack;
@@ -142,7 +142,7 @@ public class ExecuteCommands {
 							List<CommandSourceStack> list = Lists.newArrayList();
 							
 							Entity entity = ctx.getSource().getEntity();
-							if (entity instanceof AttackerUnit unit) {
+							if (entity instanceof Unit unit && unit.isAttacker()) {
 								Goal attackBuildingGoal = unit.getAttackBuildingGoal();
 								if (attackBuildingGoal instanceof RangedAttackBuildingGoal<?> rangedAttackBuildingGoal)
 									list.add(ctx.getSource().withPosition(rangedAttackBuildingGoal.getBuildingTarget().originPos.getCenter()));

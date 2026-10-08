@@ -5,7 +5,7 @@ import com.solegendary.reignofnether.ability.HeroAbility;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.keybinds.Keybinding;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -38,7 +38,7 @@ public class AbilityButton extends Button {
         this.onLeftClick = () -> {
             if (this.ability != null && (this.ability.getCooldown(unit) > 0 && !this.ability.canBypassCooldown(unit)))
                 HudClientEvents.showTemporaryMessage(I18n.get("hud.buttons.reignofnether.on_cooldown", Math.round(this.ability.getCooldown(unit) / 20)));
-            else if (this.ability instanceof HeroAbility heroAbility && heroAbility.manaCost > 0 && unit instanceof HeroUnit hero && hero.getMana() < heroAbility.manaCost)
+            else if (this.ability instanceof HeroAbility heroAbility && heroAbility.manaCost > 0 && unit instanceof Unit hero && hero.isHero() && hero.getMana() < heroAbility.manaCost)
                 HudClientEvents.showTemporaryMessage(I18n.get("hud.buttons.reignofnether.not_enough_mana"));
             else if (originalOnLeftClick != null)
                 originalOnLeftClick.run();

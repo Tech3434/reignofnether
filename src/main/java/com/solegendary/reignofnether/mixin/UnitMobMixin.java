@@ -71,6 +71,39 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
     }
 
     @Override
+    public boolean isWorker() {
+        return ron$role() == com.solegendary.reignofnether.unit.UnitDefinition.Role.WORKER;
+    }
+
+    @Override
+    public boolean isAttacker() {
+        com.solegendary.reignofnether.unit.UnitDefinition.Role r = ron$role();
+        return r == com.solegendary.reignofnether.unit.UnitDefinition.Role.MELEE
+                || r == com.solegendary.reignofnether.unit.UnitDefinition.Role.RANGED
+                || r == com.solegendary.reignofnether.unit.UnitDefinition.Role.HERO;
+    }
+
+    @Override
+    public boolean isRangedAttacker() {
+        return ron$role() == com.solegendary.reignofnether.unit.UnitDefinition.Role.RANGED;
+    }
+
+    @Override
+    public boolean isHero() {
+        return ron$role() == com.solegendary.reignofnether.unit.UnitDefinition.Role.HERO;
+    }
+
+    @Unique
+    private com.solegendary.reignofnether.unit.UnitDefinition.Role ron$role() {
+        if (ron$definitionId == null)
+            return null;
+        com.solegendary.reignofnether.unit.UnitDefinition def = level().registryAccess()
+                .registryOrThrow(com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY)
+                .get(ron$definitionId);
+        return def == null ? null : def.role();
+    }
+
+    @Override
     public ResourceLocation getUnitDefinitionId() {
         return ron$definitionId;
     }
@@ -199,7 +232,7 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
         if (def == null)
             return;
         Mob self = (Mob) (Object) this;
-        // base RTS goals every unit needs; combat/gather goals (which need AttackerUnit/WorkerUnit)
+        // base RTS goals every unit needs; combat/gather goals (which need Unit/Unit)
         // are wired in a later phase.
         if (ron$moveGoal == null) {
             ron$moveGoal = new MoveToTargetBlockGoal(self, false, 0);

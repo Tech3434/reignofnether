@@ -23,10 +23,10 @@ import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.UnitStatType;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyMath;
@@ -248,7 +248,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
 
         RectZone rectZone = RectZone.getZoneByLW(x, y, frameWidth, frameHeight);
 
-        if (entity instanceof HeroUnit heroUnit) {
+        if (entity instanceof Unit heroUnit && heroUnit.isHero()) {
             // draw health bar and write min/max hp
             HealthBarClientEvents.renderForEntity(guiGraphics.pose(),
                     entity,
@@ -304,7 +304,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
         healthText += "/" + ((int) maxHealth);
         texts.add(healthText);
 
-        if (entity instanceof HeroUnit heroUnit) {
+        if (entity instanceof Unit heroUnit && heroUnit.isHero()) {
             String manaText = "";
             float mana = heroUnit.getMana();
             if (mana >= 1) {
@@ -381,7 +381,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
 
         ArrayList<RenderedStat> renderedStats = new ArrayList<>();
 
-        if (unit instanceof AttackerUnit attackerUnit) {
+        if (unit instanceof Unit attackerUnit && attackerUnit.isAttacker()) {
             double atkDmg = attackerUnit.getUnitAttackDamage() + Unit.getWeaponDamageModifier(attackerUnit);
             if (Unit.isWorker(unit)) {
                 atkDmg = (int) attackerUnit.getUnitAttackDamage();
@@ -394,7 +394,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
                 DecimalFormat df1 = new DecimalFormat("###.#");
                 atkStr = String.valueOf(df1.format(atkDmg)); // attacks per second
             }
-            if (unit instanceof Mob mob && mob.isVehicle() && mob.getFirstPassenger() instanceof AttackerUnit passenger) {
+            if (unit instanceof Mob mob && mob.isVehicle() && mob.getFirstPassenger() instanceof Unit passenger) {
                 atkStr += "+" + (int) passenger.getUnitAttackDamage();
             }
 
@@ -521,7 +521,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
             ));
         }
 
-        if (unit instanceof HeroUnit heroUnit) {
+        if (unit instanceof Unit heroUnit && heroUnit.isHero()) {
             int heroLvl = heroUnit.getHeroLevel();
             String heroLvlString = I18n.get("hud.hero.reignofnether.level", heroLvl);
             String heroLvString = I18n.get("hud.hero.reignofnether.level.short", heroLvl);
@@ -568,7 +568,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
         return RectZone.getZoneByLW(x, y, statsWidth, statsHeight);
     }
 
-    public RectZone renderHeroLevelAndExp(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY, HeroUnit heroUnit) {
+    public RectZone renderHeroLevelAndExp(GuiGraphics guiGraphics, int x, int y, int mouseX, int mouseY, Unit heroUnit) {
         int width = 101;
         int height = 5;
 
@@ -585,7 +585,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
         ResourceLocation expBarFullRl = ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/experience_bar_full.png");
         RenderSystem.setShaderTexture(0, expBarFullRl);
         float expPercent = (float) heroUnit.getExpOnCurrentLevel() / heroUnit.getExpToNextlevel();
-        if (heroUnit.getHeroLevel() >= HeroUnit.MAX_LEVEL)
+        if (heroUnit.getHeroLevel() >= Unit.MAX_LEVEL)
             expPercent = 1.0f;
         guiGraphics.blit(expBarFullRl,
                 x, y, 0,

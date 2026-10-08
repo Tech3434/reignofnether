@@ -1,6 +1,6 @@
 package com.solegendary.reignofnether.unit.goals;
 
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import net.minecraft.world.InteractionHand;
@@ -31,7 +31,7 @@ public abstract class AbstractMeleeAttackUnitGoal extends Goal {
     }
 
     public void tickAttackCooldown() {
-        if (this.ticksUntilNextAttack > ((AttackerUnit) this.mob).getAttackCooldown())
+        if (this.ticksUntilNextAttack > ((Unit) this.mob).getAttackCooldown())
             this.ticksUntilNextAttack = getAttackInterval();
         if (ticksUntilNextAttack > 0) { // tick down even when not targeting anything
             this.ticksUntilNextAttack -= 1;
@@ -148,12 +148,12 @@ public abstract class AbstractMeleeAttackUnitGoal extends Goal {
     }
 
     protected int getAttackInterval() {
-        return this.adjustedTickDelay((int) ((AttackerUnit) this.mob).getAttackCooldown());
+        return this.adjustedTickDelay((int) ((Unit) this.mob).getAttackCooldown());
     }
 
     protected double getAttackReachSqr(LivingEntity target) {
         float width = mob.getBbWidth();
-        if (mob instanceof AttackerUnit attackerUnit)
+        if (mob instanceof Unit attackerUnit && attackerUnit.isAttacker())
             width += attackerUnit.getBonusMeleeRange();
         float targetWidth = target.getBbWidth();
         if (target instanceof Unit unit && unit.isRtsUnit()) {

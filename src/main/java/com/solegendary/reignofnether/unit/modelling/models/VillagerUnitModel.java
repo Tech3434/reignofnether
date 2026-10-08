@@ -6,9 +6,9 @@ import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal;
 import com.solegendary.reignofnether.unit.goals.SelectedTargetGoal;
 import com.solegendary.reignofnether.unit.interfaces.ArmSwingingUnit;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.client.model.AnimationUtils;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -98,13 +98,13 @@ public class VillagerUnitModel<T extends AbstractIllager> extends HumanoidModel<
     }
 
     private VillagerUnitModel.ArmPose getArmPose(Entity entity) {
-        if (entity instanceof WorkerUnit workerUnit && workerUnit.getGatherResourceGoal() != null && workerUnit.getGatherResourceGoal().isGathering()) {
+        if (entity instanceof Unit workerUnit && workerUnit.isWorker() && workerUnit.getGatherResourceGoal() != null && workerUnit.getGatherResourceGoal().isGathering()) {
             return VillagerUnitModel.ArmPose.GATHERING;
         }
-        if (entity instanceof WorkerUnit workerUnit && workerUnit.getBuildRepairGoal() != null && workerUnit.getBuildRepairGoal().isBuilding()) {
+        if (entity instanceof Unit workerUnit && workerUnit.isWorker() && workerUnit.getBuildRepairGoal() != null && workerUnit.getBuildRepairGoal().isBuilding()) {
             return VillagerUnitModel.ArmPose.BUILDING;
         }
-        else if (entity instanceof AttackerUnit attackerUnit) {
+        else if (entity instanceof Unit attackerUnit && attackerUnit.isAttacker()) {
             SelectedTargetGoal<?> goal = ((Unit) entity).getTargetGoal();
             if (goal != null && goal.getTarget() != null ||
                     (attackerUnit.getAttackBuildingGoal() instanceof MeleeAttackBuildingGoal mabg && mabg.getBuildingTarget() != null))

@@ -3,9 +3,9 @@ package com.solegendary.reignofnether.unit.goals;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
 import com.solegendary.reignofnether.unit.UnitAnimationAction;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.KeyframeAnimated;
-import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.packets.UnitAnimationClientboundPacket;
 import net.minecraft.world.entity.Entity;
@@ -42,7 +42,7 @@ public class UnitRangedAttackGoal<T extends net.minecraft.world.entity.Mob> exte
     }
 
     public void tickAttackCooldown() {
-        if (this.attackCooldown > ((AttackerUnit) this.mob).getAttackCooldown())
+        if (this.attackCooldown > ((Unit) this.mob).getAttackCooldown())
             setToMaxAttackCooldown();
         if (this.attackCooldown > 0)
             this.attackCooldown -= 1;
@@ -53,7 +53,7 @@ public class UnitRangedAttackGoal<T extends net.minecraft.world.entity.Mob> exte
     }
 
     public void setToMaxAttackCooldown() {
-        this.attackCooldown = (int) ((AttackerUnit) this.mob).getAttackCooldown();
+        this.attackCooldown = (int) ((Unit) this.mob).getAttackCooldown();
     }
 
     public void resetCooldown() {
@@ -119,7 +119,7 @@ public class UnitRangedAttackGoal<T extends net.minecraft.world.entity.Mob> exte
             } else {
                 --this.seeTime;
             }
-            float attackRange = ((AttackerUnit) this.mob).getAttackRange();
+            float attackRange = ((Unit) this.mob).getAttackRange();
 
             if (isGarrisoned)
                 attackRange = garr.getAttackRange();
@@ -151,7 +151,7 @@ public class UnitRangedAttackGoal<T extends net.minecraft.world.entity.Mob> exte
                 if (attackWindupTicksLeft <= 0) {
                     this.attackWindupTicksLeft = attackWindupTicksMax;
                     this.setToMaxAttackCooldown();
-                    if (mob instanceof RangedAttackerUnit rangedAttackerUnit)
+                    if (mob instanceof Unit rangedAttackerUnit && rangedAttackerUnit.isRangedAttacker())
                         rangedAttackerUnit.performUnitRangedAttack(target, VELOCITY);
                 }
             } else {

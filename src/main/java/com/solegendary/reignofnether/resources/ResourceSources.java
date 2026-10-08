@@ -33,7 +33,7 @@ import java.util.function.Predicate;
  * long a worker needs to gather them.
  *
  * <p>The plan listed this file under "economy" for deletion, but the worker loop that the framework
- * keeps - {@code WorkerUnit} → {@code GatherResourcesGoal} → {@code ReturnResourcesGoal} → a building
+ * keeps - {@code Unit} → {@code GatherResourcesGoal} → {@code ReturnResourcesGoal} → a building
  * with {@code canAcceptResources} - reads it for both the block being harvested and the value of the
  * item carried home. Without it no unit can carry a resource at all, so it stays as framework and the
  * per-faction resource chunks and generators are what a new faction writes.

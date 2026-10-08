@@ -5,7 +5,7 @@ import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
 
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 
@@ -15,8 +15,8 @@ import java.util.*;
 // used to move a worker over to the location of a place to build in fog before transferring control over to BuildRepairGoal
 public class ExploreBuildLocationGoal extends MoveToTargetBlockGoal {
 
-    private WorkerUnit workerUnit;
-    public ExploreBuildLocationGoal(WorkerUnit workerUnit) {
+    private Unit workerUnit;
+    public ExploreBuildLocationGoal(Unit workerUnit) {
         super((Mob) workerUnit, true, 0);
         this.workerUnit = workerUnit;
     }

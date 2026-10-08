@@ -11,7 +11,7 @@ import com.solegendary.reignofnether.commands.rtsapi.argument.UnitArgument;
 import com.solegendary.reignofnether.unit.EnemySearchBehaviour;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitActionItem;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import net.minecraft.commands.CommandSourceStack;
@@ -306,7 +306,7 @@ public class UnitCommands {
 									}
 									return withUnits(
 										attackers,
-										(unit) -> ((AttackerUnit) unit).setEnemySearchBehaviour(ctx.getArgument("behaviour", EnemySearchBehaviour.class)),
+										(unit) -> ((Unit) unit).setEnemySearchBehaviour(ctx.getArgument("behaviour", EnemySearchBehaviour.class)),
 										ctx,
 										Component.translatable("commands.reignofnether.unit.action.execute.success")
 									);

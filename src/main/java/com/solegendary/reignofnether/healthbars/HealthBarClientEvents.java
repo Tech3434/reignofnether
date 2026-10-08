@@ -7,7 +7,7 @@ import com.mojang.math.Axis;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.client.Camera;
@@ -191,7 +191,7 @@ public class HealthBarClientEvents {
         }
     }
 
-    public static void renderManaForEntity(PoseStack matrix, HeroUnit heroUnit, double x, double y,
+    public static void renderManaForEntity(PoseStack matrix, Unit heroUnit, double x, double y,
                                            float width, RenderMode renderMode) {
         BarState state = BarStates.getState((LivingEntity) heroUnit, BarState.BarStateType.MANA);
 

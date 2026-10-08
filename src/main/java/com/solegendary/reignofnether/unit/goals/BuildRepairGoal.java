@@ -8,7 +8,7 @@ import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
 import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
@@ -64,7 +64,7 @@ public class BuildRepairGoal extends MoveToTargetBlockGoal {
             return;
 
         if (buildingTarget == null) {
-            if (!this.mob.level().isClientSide() && Unit.isWorkerIdle((WorkerUnit) this.mob) && autocastRepair) {
+            if (!this.mob.level().isClientSide() && Unit.isWorkerIdle((Unit) this.mob) && autocastRepair) {
                 BuildingPlacement building = BuildingUtils.findClosestBuilding(
                         this.mob.level().isClientSide(),
                         this.mob.getEyePosition(),

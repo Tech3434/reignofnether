@@ -8,7 +8,7 @@ import com.solegendary.reignofnether.registrars.BlockRegistrar;
 import com.solegendary.reignofnether.resources.*;
 import com.solegendary.reignofnether.unit.TargetResourcesSave;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.packets.UnitSyncClientboundPacket;
 
 import com.solegendary.reignofnether.util.MiscUtil;
@@ -152,7 +152,7 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
         AABB aabb = AABB.ofSize(this.mob.position(), REACH_RANGE * 2,REACH_RANGE * 2,REACH_RANGE * 2);
         for (LivingEntity entity : this.mob.level().getNearbyEntities(LivingEntity.class, TargetingConditions.forNonCombat(), this.mob, aabb)) {
             if (entity instanceof Unit unit && unit.isRtsUnit()) {
-                if (unit instanceof WorkerUnit workerUnit && workerUnit.getGatherResourceGoal() != null && entity.getId() != this.mob.getId()) {
+                if (unit instanceof Unit workerUnit && workerUnit.isWorker() && workerUnit.getGatherResourceGoal() != null && entity.getId() != this.mob.getId()) {
                     BlockPos otherUnitTarget = workerUnit.getGatherResourceGoal().getGatherTarget();
                     if (otherUnitTarget != null && otherUnitTarget.equals(bp)) {
                         altSearchPos = bp;
@@ -326,7 +326,7 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
 
                         if (canAffordReplant()) {
                             ResourcesServerEvents.addSubtractResources(new Resources(((Unit) mob).getOwnerName(), 0, -getReplantWoodCost(), 0));
-                            mob.level().setBlockAndUpdate(data.gatherTarget.above(), ((WorkerUnit) mob).getReplantBlockState());
+                            mob.level().setBlockAndUpdate(data.gatherTarget.above(), ((Unit) mob).getReplantBlockState());
                             removeGatherTarget();
                         }
                     }
@@ -396,7 +396,7 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
         if (unit.getReturnResourcesGoal() != null) {
             this.saveState();
             unit.resetBehaviours();
-            Unit.resetWorkerBehaviours((WorkerUnit) unit);
+            Unit.resetWorkerBehaviours((Unit) unit);
             unit.getReturnResourcesGoal().returnToClosestBuilding();
         }
     }

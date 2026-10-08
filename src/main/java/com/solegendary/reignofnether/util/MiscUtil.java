@@ -27,7 +27,7 @@ import com.solegendary.reignofnether.unit.NonUnitServerEvents;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.goals.AbstractMeleeAttackUnitGoal;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import net.minecraft.client.Minecraft;
@@ -335,7 +335,7 @@ public class MiscUtil {
                 unitPosition.z + range
         );
         var entities = level.getEntitiesOfClass(LivingEntity.class, aabb);
-        boolean isMelee = unitMob instanceof AttackerUnit aUnit && aUnit.getAttackGoal() instanceof AbstractMeleeAttackUnitGoal;
+        boolean isMelee = unitMob instanceof Unit aUnit && aUnit.isAttacker() && aUnit.getAttackGoal() instanceof AbstractMeleeAttackUnitGoal;
         entities.sort(Comparator.comparingDouble(
             e -> {
                 double dist = e.position().distanceTo(pos); // deprioritise over actual enemy units
@@ -392,7 +392,7 @@ public class MiscUtil {
         // Prevents certain attacks based on specific unit and goal conditions
         if (targetEntity instanceof Unit unit && unit.isRtsUnit() &&
                 unit.isFlyingUnit() &&
-                unitMob instanceof AttackerUnit attackerUnit &&
+                unitMob instanceof Unit attackerUnit && attackerUnit.isAttacker() &&
                 attackerUnit.getAttackGoal() instanceof AbstractMeleeAttackUnitGoal) {
             return false;
         }

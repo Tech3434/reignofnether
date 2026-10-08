@@ -105,7 +105,7 @@ public class UnitActionItem {
     }
 
     private boolean canAffordManaCost(Ability ability, Unit unit) {
-        if (ability instanceof HeroAbility heroAbility && unit instanceof HeroUnit hero) {
+        if (ability instanceof HeroAbility heroAbility && unit instanceof Unit hero && hero.isHero()) {
             return heroAbility.manaCost <= hero.getMana();
         }
         return true;
@@ -179,7 +179,7 @@ public class UnitActionItem {
             // pressing the toggle cancelled whatever the worker was doing. The goal re-tests its
             // current target against the new mode each tick and re-searches on its own.
             if (action == UnitAction.TOGGLE_GATHER_TARGET) {
-                if (unit instanceof WorkerUnit workerUnit) {
+                if (unit instanceof Unit workerUnit && workerUnit.isWorker()) {
                     GatherResourcesGoal goal = workerUnit.getGatherResourceGoal();
                     if (goal != null) {
                         ResourceName current = goal.getTargetResourceName();
@@ -249,7 +249,7 @@ public class UnitActionItem {
                         preselectedBlockPos
                     );
 
-                    if (unit instanceof WorkerUnit workerUnit && resName != ResourceName.NONE
+                    if (unit instanceof Unit workerUnit && workerUnit.isWorker() && resName != ResourceName.NONE
                         && buildingAtPos == null) {
                         GatherResourcesGoal goal = workerUnit.getGatherResourceGoal();
                         if (goal != null) {
@@ -270,10 +270,10 @@ public class UnitActionItem {
                 }
                 case ATTACK_MOVE -> {
                     // if the unit can't actually attack just treat this as a move action
-                    if (unit instanceof AttackerUnit attackerUnit) {
+                    if (unit instanceof Unit attackerUnit && attackerUnit.isAttacker()) {
                         MiscUtil.addUnitCheckpoint(unit, preselectedBlockPos, false);
                         attackerUnit.setAttackMoveTarget(preselectedBlockPos);
-                        if (((LivingEntity) unit).getFirstPassenger() instanceof RangedAttackerUnit rau &&
+                        if (((LivingEntity) unit).getFirstPassenger() instanceof Unit rau &&
                             rau.getRangedAttackGroundGoal() != null) {
                             rau.getRangedAttackGroundGoal().setGroundTarget(null);
                         }
@@ -283,7 +283,7 @@ public class UnitActionItem {
                 }
                 case ATTACK -> {
                     LivingEntity le = (LivingEntity) level.getEntity(unitId);
-                    if (unit instanceof AttackerUnit attackerUnit) {
+                    if (unit instanceof Unit attackerUnit && attackerUnit.isAttacker()) {
                         if (Unit.isWorker(unit) && ResourceSources.isHuntableAnimal(le) && Unit.atMaxResources(unit)) {
                             if (level.isClientSide()) {
                                 HudClientEvents.showTemporaryMessage(LanguageUtil.getTranslation("hud.reignofnether.worker_inv_full"));
@@ -332,7 +332,7 @@ public class UnitActionItem {
                 }
                 case ATTACK_BUILDING -> {
                     // if the unit can't actually attack just treat this as a move action
-                    if (unit instanceof AttackerUnit attackerUnit) {
+                    if (unit instanceof Unit attackerUnit && attackerUnit.isAttacker()) {
                         attackerUnit.setAttackBuildingTarget(preselectedBlockPos);
                     } else {
                         unit.setMoveTarget(preselectedBlockPos);
@@ -347,7 +347,7 @@ public class UnitActionItem {
                 }
                 case BUILD_REPAIR -> {
                     // if the unit can't actually build/repair just treat this as a move action
-                    if (unit instanceof WorkerUnit workerUnit) {
+                    if (unit instanceof Unit workerUnit && workerUnit.isWorker()) {
                         BuildingPlacement building = BuildingUtils.findBuilding(level.isClientSide(), preselectedBlockPos);
                         if (building != null) {
                             workerUnit.getBuildRepairGoal().setBuildingTarget(building);
@@ -358,13 +358,13 @@ public class UnitActionItem {
                 }
                 case ENABLE_AUTOCAST_BUILD_REPAIR, DISABLE_AUTOCAST_BUILD_REPAIR -> {
                     // if the unit can't actually build/repair just treat this as a move action
-                    if (unit instanceof WorkerUnit workerUnit && workerUnit.getBuildRepairGoal() != null) {
+                    if (unit instanceof Unit workerUnit && workerUnit.isWorker() && workerUnit.getBuildRepairGoal() != null) {
                         workerUnit.getBuildRepairGoal().autocastRepair =
                                 action == UnitAction.ENABLE_AUTOCAST_BUILD_REPAIR;
                     }
                 }
                 case FARM -> {
-                    if (unit instanceof WorkerUnit workerUnit) {
+                    if (unit instanceof Unit workerUnit && workerUnit.isWorker()) {
                         GatherResourcesGoal goal = workerUnit.getGatherResourceGoal();
                         if (goal != null) {
                             goal.setTargetResourceName(ResourceName.FOOD);
@@ -373,7 +373,7 @@ public class UnitActionItem {
                     }
                 }
                 case RETURN_RESOURCES -> {
-                    if (unit instanceof WorkerUnit workerUnit) { // if we manually did this, ignore automated return
+                    if (unit instanceof Unit workerUnit && workerUnit.isWorker()) { // if we manually did this, ignore automated return
                         // to gather
                         GatherResourcesGoal goal = workerUnit.getGatherResourceGoal();
                         if (goal != null && goal.saveData != null) {
@@ -387,7 +387,7 @@ public class UnitActionItem {
                     }
                 }
                 case RETURN_RESOURCES_TO_CLOSEST -> { // drop resources off early and return to work
-                    if (unit instanceof WorkerUnit workerUnit) {
+                    if (unit instanceof Unit workerUnit && workerUnit.isWorker()) {
                         GatherResourcesGoal goal = workerUnit.getGatherResourceGoal();
                         if (goal != null)
                             goal.saveAndReturnResources(); // saves gather state, then returns

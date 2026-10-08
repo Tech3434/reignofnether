@@ -4,9 +4,9 @@ import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.registrars.MobEffectRegistrar;
 import com.solegendary.reignofnether.resources.ResourceSources;
 
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.core.Holder;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
@@ -105,7 +105,7 @@ public abstract class LivingEntityMixin extends Entity {
                 !pDamageSource.is(DamageTypeTags.BYPASSES_RESISTANCE)))
             return -1.0F;
 
-        if (!(pDamageSource.getEntity() instanceof AttackerUnit attackerUnit))
+        if (!(pDamageSource.getEntity() instanceof Unit attackerUnit))
             return -1.0F;
 
         // ensure projectiles from units do the damage of the unit, not the item,

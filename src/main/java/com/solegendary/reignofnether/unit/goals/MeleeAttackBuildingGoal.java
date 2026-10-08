@@ -6,7 +6,7 @@ import com.solegendary.reignofnether.building.BuildingUtils;
 
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitAnimationAction;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.packets.UnitAnimationClientboundPacket;
 
@@ -28,7 +28,7 @@ import java.util.Random;
 
 public class MeleeAttackBuildingGoal extends MoveToTargetBlockGoal {
 
-    protected int ticksToNextBlockBreak = (int) ((AttackerUnit) mob).getAttackCooldown();
+    protected int ticksToNextBlockBreak = (int) ((Unit) mob).getAttackCooldown();
     protected BuildingPlacement buildingTarget;
 
     protected final int RECALC_COOLDOWN_MAX = 10;
@@ -91,7 +91,7 @@ public class MeleeAttackBuildingGoal extends MoveToTargetBlockGoal {
     protected void doBuildingAttack() {
         this.mob.swing(InteractionHand.MAIN_HAND);
 
-        AttackerUnit unit = (AttackerUnit) mob;
+        Unit unit = (Unit) mob;
         ticksToNextBlockBreak = (int) unit.getAttackCooldown();
         double dmg = unit.getUnitAttackDamage() * buildingTarget.getMeleeDamageMult();
         buildingTarget.destroyRandomBlocks(dmg);
@@ -132,7 +132,7 @@ public class MeleeAttackBuildingGoal extends MoveToTargetBlockGoal {
                 BuildingPlacement b = BuildingUtils.findBuilding(this.mob.level().isClientSide(), blockPos);
                 if (b != null && b.isAttackable()) {
                     this.buildingTarget = b;
-                    if (this.mob.isVehicle() && this.mob.getFirstPassenger() instanceof AttackerUnit aUnit &&
+                    if (this.mob.isVehicle() && this.mob.getFirstPassenger() instanceof Unit aUnit &&
                             aUnit.getAttackBuildingGoal() instanceof RangedAttackBuildingGoal<?> rabg)
                         rabg.setBuildingTarget(this.buildingTarget);
                 }

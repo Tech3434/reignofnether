@@ -89,7 +89,7 @@ import java.util.Map;
 import static com.solegendary.reignofnether.util.MiscUtil.fcs;
 import com.solegendary.reignofnether.util.EnchantmentUtil;
 
-public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, AttackerUnit, ArmSwingingUnit, VillagerDataHolder, ConvertableUnit {
+public class VillagerUnit extends Vindicator implements Unit, ArmSwingingUnit, VillagerDataHolder, ConvertableUnit {
     public static final Abilities ABILITIES = new Abilities();
 
     /** §14.2: the worker's building-place buttons are opened from a menu instead of a fixed row. */
@@ -498,9 +498,19 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
     }
 
     @Override
+    public boolean isWorker() {
+        return true;
+    }
+
+    @Override
+    public boolean isAttacker() {
+        return true;
+    }
+
+    @Override
     public List<Button> getAbilityButtons() {
         // includes the standard commands (attack/build/gather/stop/hold...) from Unit.getCommandAbilities
-        List<Button> abilities = new ArrayList<>(WorkerUnit.super.getAbilityButtons());
+        List<Button> abilities = new ArrayList<>(Unit.super.getAbilityButtons());
         if (FMLEnvironment.dist == Dist.CLIENT) {
             Button buildMenu = BUILD_MENU.getButton(this);
             if (buildMenu != null)

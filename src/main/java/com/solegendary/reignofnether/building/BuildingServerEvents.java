@@ -25,7 +25,7 @@ import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.core.BlockPos;
@@ -396,7 +396,7 @@ buildingData.buildings.forEach(b -> {
             if (!fromCommand && !BuildingValidators.isInBrightChunk(serverLevel, newBuilding.centrePos, ownerName) && !ignoreFog) {
                 for (int id : builderUnitIds) {
                     Entity entity = serverLevel.getEntity(id);
-                    if (entity instanceof WorkerUnit workerUnit) {
+                    if (entity instanceof Unit workerUnit && workerUnit.isWorker()) {
                         if (!queue) {
                             Unit.fullResetBehaviours((Unit) entity);
                         }
@@ -528,7 +528,7 @@ buildingData.buildings.forEach(b -> {
 
         for (int id : builderUnitIds) {
             Entity entity = serverLevel.getEntity(id);
-            if (entity instanceof WorkerUnit workerUnit) {
+            if (entity instanceof Unit workerUnit && workerUnit.isWorker()) {
                 if (queue) {
                     if (workerUnit.getBuildRepairGoal().queuedBuildings.isEmpty()) {
                         ((Unit) entity).resetBehaviours();

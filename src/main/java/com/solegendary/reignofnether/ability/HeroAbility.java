@@ -7,7 +7,7 @@ import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.player.PlayerClientEvents;
 import com.solegendary.reignofnether.unit.UnitAction;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Style;
@@ -23,7 +23,7 @@ import static com.solegendary.reignofnether.util.MiscUtil.fcs;
 public abstract class HeroAbility extends Ability {
 
     // can be ranked up when the hero levels up
-    // requires a HeroUnit to be passed
+    // requires a Unit to be passed
 
     public final int maxRank;
     public int manaCost = 0;
@@ -40,7 +40,7 @@ public abstract class HeroAbility extends Ability {
         this.manaCost = manaCost;
     }
 
-    public int getLevelRequirement(HeroUnit hero) {
+    public int getLevelRequirement(Unit hero) {
         if (maxRank <= 1) {
            return 6;
         } else {
@@ -48,7 +48,7 @@ public abstract class HeroAbility extends Ability {
         }
     }
 
-    public boolean rankUp(HeroUnit hero) {
+    public boolean rankUp(Unit hero) {
         if (getRank(hero) < maxRank && hero.getSkillPoints() > 0 && hero.getHeroLevel() >= getLevelRequirement(hero)) {
             setRank(hero, getRank(hero) + 1);
             hero.setSkillPoints(hero.getSkillPoints() - 1);
@@ -59,17 +59,17 @@ public abstract class HeroAbility extends Ability {
         return false;
     }
     
-    public void updateStatsForRank(HeroUnit heroUnit) { }
+    public void updateStatsForRank(Unit heroUnit) { }
 
-    protected String rankString(HeroUnit hero) {
+    protected String rankString(Unit hero) {
         return getRank(hero) > 0 ? I18n.get("abilities.reignofnether.rank", getRank(hero)) : I18n.get("abilities.reignofnether.unlearnt");
     }
 
-    public List<FormattedCharSequence> getRankUpTooltipLines(HeroUnit hero) {
+    public List<FormattedCharSequence> getRankUpTooltipLines(Unit hero) {
         return List.of();
     }
 
-    public List<FormattedCharSequence> getTooltipLines(HeroUnit hero) {
+    public List<FormattedCharSequence> getTooltipLines(Unit hero) {
         return List.of();
     }
 
@@ -78,11 +78,11 @@ public abstract class HeroAbility extends Ability {
     }
 
     // rank up button for this specific ability
-    public Button getRankUpButton(HeroUnit hero) {
+    public Button getRankUpButton(Unit hero) {
         return null;
     }
 
-    protected Button getRankUpButtonProtected(String name, ResourceLocation resourceLocation, HeroUnit hero) {
+    protected Button getRankUpButtonProtected(String name, ResourceLocation resourceLocation, Unit hero) {
         Button button = new Button(name,
             14,
             ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/corner_plus.png"),
@@ -106,8 +106,8 @@ public abstract class HeroAbility extends Ability {
         return button;
     }
 
-    public static boolean allSkillsLearnt(HeroUnit hero) {
-        if (hero.getHeroLevel() >= HeroUnit.MAX_LEVEL && hero.getSkillPoints() <= 0)
+    public static boolean allSkillsLearnt(Unit hero) {
+        if (hero.getHeroLevel() >= Unit.MAX_LEVEL && hero.getSkillPoints() <= 0)
             return true;
         int totalSkillRanks = 0;
         for (HeroAbility ability : hero.getHeroAbilities()) {
@@ -117,7 +117,7 @@ public abstract class HeroAbility extends Ability {
     }
 
     // button that all heroes have to show ability level up options
-    public static Button getRankUpMenuButton(HeroUnit hero) {
+    public static Button getRankUpMenuButton(Unit hero) {
         Button menuButton = new Button("Rank up abilities",
             14,
             hero.isRankUpMenuOpen() ?
@@ -135,15 +135,15 @@ public abstract class HeroAbility extends Ability {
         return menuButton;
     }
 
-    public Style getLevelReqStyle(HeroUnit hero) {
+    public Style getLevelReqStyle(Unit hero) {
         return Style.EMPTY.withColor(hero.getHeroLevel() >= getLevelRequirement(hero) ? 0x00FF00 : 0xFF0000);
     }
 
-    public int getRank(HeroUnit hero) {
+    public int getRank(Unit hero) {
         return hero.getHeroAbilityRank(this);
     }
 
-    public void setRank(HeroUnit hero, int rank) {
+    public void setRank(Unit hero, int rank) {
         hero.setHeroAbilityRank(this, rank);
     }
 }

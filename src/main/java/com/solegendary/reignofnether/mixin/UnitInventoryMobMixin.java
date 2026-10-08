@@ -2,7 +2,7 @@ package com.solegendary.reignofnether.mixin;
 
 import com.solegendary.reignofnether.items.ItemClientboundPacket;
 import com.solegendary.reignofnether.items.UnitInventory;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.EnchantmentUtil;
 import com.solegendary.reignofnether.util.ItemTagCompat;
@@ -153,7 +153,7 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
                     if (EnchantmentUtil.hasBindingCurse(stack))
                         return false;
                     this.unitItems.set(i, ItemStack.EMPTY);
-                    if (this instanceof HeroUnit heroUnit)
+                    if (this instanceof Unit heroUnit && heroUnit.isHero())
                         heroUnit.setStatsForLevel();
                     syncToClient();
                     return true;

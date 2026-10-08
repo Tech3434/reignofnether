@@ -28,7 +28,7 @@ import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.LevelRenderCompat;
 import com.solegendary.reignofnether.util.MiscUtil;
 import com.solegendary.reignofnether.util.MyRenderer;
@@ -375,7 +375,7 @@ matrix.pushPose();
 
         Map<BlockPos, List<BuildingBlock>> fogBlocksToDraw = new HashMap<>();
         for (LivingEntity le : UnitClientEvents.getAllUnits()) {
-            if (le instanceof Unit unit && unit.isRtsUnit() && le instanceof WorkerUnit workerUnit &&
+            if (le instanceof Unit unit && unit.isRtsUnit() && le instanceof Unit workerUnit && workerUnit.isWorker() &&
                 MC.player != null && unit.getOwnerName().equals(MC.player.getName().getString()))
             {
                 Map<BlockPos, List<BuildingBlock>> fogBlocks = workerUnit.getExploreBuildLocationGoal().getFogQueuedBlocksToDraw();
@@ -522,7 +522,7 @@ matrix.pushPose();
 
                 ArrayList<Integer> builderIds = new ArrayList<>();
                 for (LivingEntity builderEntity : getSelectedUnits())
-                    if (builderEntity instanceof WorkerUnit workerUnit) {
+                    if (builderEntity instanceof Unit workerUnit && workerUnit.isWorker()) {
                         builderIds.add(builderEntity.getId());
                         if (inFog) {
                             if (!Keybindings.shiftMod.isDown())
@@ -552,7 +552,7 @@ matrix.pushPose();
                                     return true;
                                 boolean notInBuilding = !BuildingUtils.isPosInsideAnyBuilding(true, c.bp);
                                 boolean hasFogQueue = false;
-                                if (unit instanceof WorkerUnit workerUnit) { // remove if the pos is a fog-queued position that is explored
+                                if (unit instanceof Unit workerUnit && workerUnit.isWorker()) { // remove if the pos is a fog-queued position that is explored
                                     hasFogQueue = !workerUnit.getExploreBuildLocationGoal().getFogQueuedBlocksToDraw().isEmpty();
                                 }
                                 return notInBuilding && (!hasFogQueue || true);
@@ -561,7 +561,7 @@ matrix.pushPose();
                                 preSelPos.above(),
                                 true
                             );
-                            if (unit instanceof WorkerUnit workerUnit) {
+                            if (unit instanceof Unit workerUnit && workerUnit.isWorker()) {
                                 workerUnit.getBuildRepairGoal().ignoreNextCheckpoint = true;
                             }
                         }
@@ -592,7 +592,7 @@ matrix.pushPose();
                         for (LivingEntity entity : getSelectedUnits()) {
                             if (entity instanceof Unit unit && unit.isRtsUnit()) {
                                 MiscUtil.addUnitCheckpoint(unit, preSelPos.above(), true);
-                                if (unit instanceof WorkerUnit workerUnit) {
+                                if (unit instanceof Unit workerUnit && workerUnit.isWorker()) {
                                     workerUnit.getBuildRepairGoal().ignoreNextCheckpoint = true;
                                 }
                             }
@@ -823,7 +823,7 @@ matrix.pushPose();
         }
         // sync the goal so we can display the correct animations
         Entity entity = hudSelectedEntity;
-        if (entity instanceof WorkerUnit workerUnit && entity instanceof Unit unit && unit.isRtsUnit() &&
+        if (entity instanceof Unit workerUnit && workerUnit.isWorker() && entity instanceof Unit unit && unit.isRtsUnit() &&
             unit.getOwnerName().equals(ownerName)) {
             ((Unit) entity).resetBehaviours();
             workerUnit.getBuildRepairGoal().setBuildingTarget(newBuilding);
@@ -911,7 +911,7 @@ matrix.pushPose();
 
     public static void removeFogQueuedBuilding(BlockPos bp) {
         for (LivingEntity le : UnitClientEvents.getAllUnits()) {
-            if (le instanceof WorkerUnit workerUnit) {
+            if (le instanceof Unit workerUnit && workerUnit.isWorker()) {
                 workerUnit.getExploreBuildLocationGoal().getFogQueuedBlocksToDraw().remove(bp);
                 workerUnit.getExploreBuildLocationGoal().getFogQueuedBuildings().removeIf(bpl -> bpl.isPosInsideBuilding(bp));
             }

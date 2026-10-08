@@ -1,6 +1,6 @@
 package com.solegendary.reignofnether.healthbars;
 
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -39,7 +39,7 @@ public class BarState {
     Entity entity = Minecraft.getInstance().level.getEntity(entityId);
     if (entity instanceof LivingEntity livingEntity) {
 
-      if (entity instanceof HeroUnit heroUnit && barStateType == BarStateType.MANA) {
+      if (entity instanceof Unit heroUnit && heroUnit.isHero() && barStateType == BarStateType.MANA) {
         amount = Math.min(heroUnit.getMana(), heroUnit.getMaxMana());
       } else if (barStateType == BarStateType.HEALTH) {
         amount = Math.min(livingEntity.getHealth(), livingEntity.getMaxHealth());

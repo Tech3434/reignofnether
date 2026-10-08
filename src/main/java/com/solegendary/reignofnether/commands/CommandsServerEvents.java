@@ -31,7 +31,7 @@ import com.solegendary.reignofnether.unit.EnemySearchBehaviour;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitActionItem;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.packets.UnitSyncClientboundPacket;
 
@@ -840,7 +840,7 @@ public class CommandsServerEvents {
 		
 		int changed = 0;
 		for (LivingEntity entity : UnitServerEvents.getAllUnits()) {
-			if (entity instanceof AttackerUnit attacker
+			if (entity instanceof Unit attacker && attacker.isAttacker()
 				&& entity instanceof Unit unit && unit.isRtsUnit()
 				&& unit.getOwnerName().equals(ownerName)
 				&& isWithin(entity.getOnPos(), min, max)) {

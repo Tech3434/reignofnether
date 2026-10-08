@@ -8,7 +8,7 @@ import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
 import com.solegendary.reignofnether.unit.UnitAnimationAction;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.packets.UnitAnimationClientboundPacket;
 import com.solegendary.reignofnether.util.MiscUtil;
@@ -201,7 +201,7 @@ public class GenericTargetedSpellGoal extends MoveToTargetBlockGoal {
                             if (this.ability.isOffCooldown(unit)) {
                                 AbilityClientboundPacket.sendSetCooldownPacket(this.mob.getId(), this.ability.action, this.ability.cooldownMax);
                             }
-                            if (mob instanceof HeroUnit heroUnit && this.ability instanceof HeroAbility heroAbility) {
+                            if (mob instanceof Unit heroUnit && heroUnit.isHero() && this.ability instanceof HeroAbility heroAbility) {
                                 heroUnit.setMana(heroUnit.getMana() - heroAbility.manaCost);
                             }
                         }

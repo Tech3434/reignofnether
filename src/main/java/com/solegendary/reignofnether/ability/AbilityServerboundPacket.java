@@ -4,7 +4,7 @@ import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.registrars.PacketHandler;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
-import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -70,7 +70,7 @@ public class AbilityServerboundPacket  implements RTSSimplePayload {
                     }
 
                     for (Ability ability : unit.getAbilities().get()) {
-                        if (ability.action == this.unitAction && ability instanceof HeroAbility heroAbility && unit instanceof HeroUnit hero) {
+                        if (ability.action == this.unitAction && ability instanceof HeroAbility heroAbility && unit instanceof Unit hero && hero.isHero()) {
                             ReignOfNether.LOGGER.info("[Ability] {} ranked up ability {} on unit {}", player.getName(), this.unitAction, this.unitId);
                             heroAbility.rankUp(hero);
                         }

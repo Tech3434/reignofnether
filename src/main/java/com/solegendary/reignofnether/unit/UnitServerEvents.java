@@ -175,7 +175,7 @@ public class UnitServerEvents {
     public static void saveGatherTargets(ServerLevel level) {
         ArrayList<TargetResourcesSave> toSave = new ArrayList<>();
         getAllUnits().forEach(e -> { // if currently gathering, save that gather data
-            if (e instanceof WorkerUnit wUnit) {
+            if (e instanceof Unit wUnit && wUnit.isWorker()) {
                 if (wUnit.getGatherResourceGoal().data.hasData()) {
                     wUnit.getGatherResourceGoal().data.unitUUID = e.getStringUUID();
                     toSave.add(wUnit.getGatherResourceGoal().data);
@@ -405,7 +405,7 @@ public class UnitServerEvents {
             allUnits.add(entity);
             com.solegendary.reignofnether.research.ResearchAttributeApplier.applyFor(evt.getLevel(), unit);
 
-            if (unit instanceof WorkerUnit wUnit) {
+            if (unit instanceof Unit wUnit && wUnit.isWorker()) {
                 synchronized (savedTargetResources) {
                     savedTargetResources.removeIf(sr -> {
                         if (sr.unitUUID.equals(entity.getStringUUID())) {
@@ -756,7 +756,7 @@ public class UnitServerEvents {
 
         // ignore added weapon damage for workers
         if (Unit.isWorker(evt.getSource().getEntity()) && evt.getSource()
-            .getEntity() instanceof AttackerUnit attackerUnit) {
+            .getEntity() instanceof Unit attackerUnit) {
             evt.setNewDamage(attackerUnit.getUnitAttackDamage());
         }
 

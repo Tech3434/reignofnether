@@ -2,8 +2,8 @@ package com.solegendary.reignofnether.unit.goals;
 
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.addon.GarrisonableBuildingAddon;
-import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
-import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import net.minecraft.world.entity.Entity;
@@ -49,7 +49,7 @@ public class UnitBowAttackGoal<T extends net.minecraft.world.entity.Mob> extends
     }
 
     public void tickAttackCooldown() {
-        if (this.attackCooldown > ((AttackerUnit) this.mob).getAttackCooldown())
+        if (this.attackCooldown > ((Unit) this.mob).getAttackCooldown())
             setToMaxAttackCooldown();
         if (this.attackCooldown > 0)
             this.attackCooldown -= 1;
@@ -60,7 +60,7 @@ public class UnitBowAttackGoal<T extends net.minecraft.world.entity.Mob> extends
     }
 
     public void setToMaxAttackCooldown() {
-        this.attackCooldown = (int) ((AttackerUnit) this.mob).getAttackCooldown();
+        this.attackCooldown = (int) ((Unit) this.mob).getAttackCooldown();
     }
 
     public void resetCooldown() {
@@ -132,7 +132,7 @@ public class UnitBowAttackGoal<T extends net.minecraft.world.entity.Mob> extends
                 --this.seeTime;
             }
 
-            float attackRange = ((AttackerUnit) this.mob).getAttackRange();
+            float attackRange = ((Unit) this.mob).getAttackRange();
 
             Unit unit = (Unit) this.mob;
             if (!unit.isFlyingUnit()) {
@@ -176,7 +176,7 @@ public class UnitBowAttackGoal<T extends net.minecraft.world.entity.Mob> extends
                         else if (isHoldingTrident())
                             velocity = 20;
 
-                        if (mob instanceof RangedAttackerUnit rangedAttackerUnit)
+                        if (mob instanceof Unit rangedAttackerUnit && rangedAttackerUnit.isRangedAttacker())
                             rangedAttackerUnit.performUnitRangedAttack(target, velocity);
 
                         this.attackTime = this.attackWindupTime;
