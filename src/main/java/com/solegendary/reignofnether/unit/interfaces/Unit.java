@@ -908,6 +908,14 @@ public interface Unit {
     default boolean isHero() { return this instanceof HeroUnit; }
     static boolean isHero(@Nullable Object o) { return o instanceof HeroUnit; }
 
+    // ---- Goal accessors (plan CONTENT_JSON_PLAN.md: collapsed from the role sub-interfaces). ----
+    default com.solegendary.reignofnether.unit.goals.BuildRepairGoal getBuildRepairGoal() { return null; }
+    default com.solegendary.reignofnether.unit.goals.GatherResourcesGoal getGatherResourceGoal() { return null; }
+    default com.solegendary.reignofnether.unit.goals.ExploreBuildLocationGoal getExploreBuildLocationGoal() { return null; }
+    default net.minecraft.world.level.block.state.BlockState getReplantBlockState() {
+        return net.minecraft.world.level.block.Blocks.WHEAT.defaultBlockState();
+    }
+
     // if true, will ignore all commands except for stop (S)
     // used for things like channeling blizzard on the wraith to prevent accidental cancels
     default boolean ignoreNonStopCommands() {

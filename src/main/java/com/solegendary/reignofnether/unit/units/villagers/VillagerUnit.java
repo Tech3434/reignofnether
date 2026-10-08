@@ -500,7 +500,7 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
     @Override
     public List<Button> getAbilityButtons() {
         // includes the standard commands (attack/build/gather/stop/hold...) from Unit.getCommandAbilities
-        List<Button> abilities = new ArrayList<>(Unit.super.getAbilityButtons());
+        List<Button> abilities = new ArrayList<>(WorkerUnit.super.getAbilityButtons());
         if (FMLEnvironment.dist == Dist.CLIENT) {
             Button buildMenu = BUILD_MENU.getButton(this);
             if (buildMenu != null)

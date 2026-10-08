@@ -21,13 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public interface WorkerUnit {
-
-    public BuildRepairGoal getBuildRepairGoal();
-    public GatherResourcesGoal getGatherResourceGoal();
-    public ExploreBuildLocationGoal getExploreBuildLocationGoal(); // serverside only
-
-    public BlockState getReplantBlockState();
+public interface WorkerUnit extends Unit {
 
     public static void tick(WorkerUnit unit) {
         BuildRepairGoal buildRepairGoal = unit.getBuildRepairGoal();
