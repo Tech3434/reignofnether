@@ -39,6 +39,18 @@ public class Ability {
      */
     public final java.util.List<Ability> subAbilities = new java.util.ArrayList<>();
 
+    /**
+     * Pinned to the unit orders row even while a submenu is open. The owner asked for the key orders
+     * (attack / stop / hold) to stay put; set on those in {@link CommandAbilities}.
+     */
+    public boolean alwaysVisible = false;
+
+    /**
+     * If true, opening this ability as a submenu hides even the always-visible orders. Menus that
+     * should leave the pinned orders in place set it to false.
+     */
+    public boolean hidePinnedOnOpen = true;
+
     public boolean showRangeLine = false;
     public boolean showRadiusCircle = false;
     public boolean showRangeCircle = true;

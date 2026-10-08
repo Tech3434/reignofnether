@@ -186,6 +186,15 @@ public interface Unit {
     List<ItemStack> getItems();
     int getMaxResources();
 
+    /**
+     * Tool tier used by {@link com.solegendary.reignofnether.ability.DigAbility} to decide how fast
+     * this unit breaks a block. It is a property of the unit and is iron by default; a unit may
+     * override it.
+     */
+    default com.solegendary.reignofnether.ability.DigToolTier getDigToolTier() {
+        return com.solegendary.reignofnether.ability.DigToolTier.IRON;
+    }
+
     // note that attackGoal is specific to unit types
     MoveToTargetBlockGoal getMoveGoal();
     SelectedTargetGoal<?> getTargetGoal();

@@ -2,7 +2,7 @@
 
 **Дата:** 2026-10-08
 **Ветка:** `wip/stage-d-deletions`
-**HEAD:** `ee616b00`
+**HEAD:** `fad1f813`
 **compileJava:** ✅ 0 ошибок
 **validateMixins:** ✅ 48 injection point'ов / 31 mixin-класс, все резолвятся
 **runData:** ✅ BUILD SUCCESSFUL

@@ -529,27 +529,15 @@ public class MinimapClientEvents {
             return;
         }
 
-        // if camera is off the map, start panning the centre of the map
+        // "Center map on base" off: the map follows the camera - flying north pans the map north.
+        // (With it on, the centre stays where it was, i.e. the map is pinned.) It used to only nudge
+        // the centre once the camera had already left the mapped square, so short moves did nothing.
         double xCam = MC.player.getX();
         double zCam = MC.player.getZ();
-        double xDiff1 = xCam - (xc_world + worldRadius);
 
         if (!lockedMap) {
-            if (xDiff1 > 0) {
-                xc_world += xDiff1;
-            }
-            double zDiff1 = zCam - (zc_world + worldRadius);
-            if (zDiff1 > 0) {
-                zc_world += zDiff1;
-            }
-            double xDiff2 = xCam - (xc_world - worldRadius);
-            if (xDiff2 < 0) {
-                xc_world += xDiff2;
-            }
-            double zDiff2 = zCam - (zc_world - worldRadius);
-            if (zDiff2 < 0) {
-                zc_world += zDiff2;
-            }
+            xc_world = (int) xCam;
+            zc_world = (int) zCam;
         }
 
         NativeImage pixels = mapTexture.getPixels();

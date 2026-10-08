@@ -845,17 +845,21 @@ public class HudClientEvents {
             blitX = 0;
             blitY = screenHeight - (iconFrameSize * 2) - 4;
 
-            // an open submenu for this unit takes the row's place instead of overlaying the screen
             ordersRowX = 0;
             ordersRowY = screenHeight - (iconFrameSize * 2) - 4;
-            boolean submenuReplacesOrders = !abilityMenus.isEmpty()
+
+            // An open submenu for this unit is drawn over this row. By default it "replaces" the
+            // orders by hiding every button; a menu can keep the pinned orders (attack / stop / hold)
+            // by setting hidePinnedOnOpen = false.
+            AbilityMenuFrame openMenu = (!abilityMenus.isEmpty()
                     && abilityMenus.peek().unit() != null
-                    && abilityMenus.peek().unit() == hudSelectedEntity;
+                    && abilityMenus.peek().unit() == hudSelectedEntity) ? abilityMenus.peek() : null;
+            boolean keepPinned = openMenu != null && !openMenu.menu().hidePinnedOnOpen;
 
             // includes worker building buttons
-            if (!submenuReplacesOrders && (getPlayerToEntityRelationship(selUnits.get(0)) == Relationship.OWNED ||
+            if (getPlayerToEntityRelationship(selUnits.get(0)) == Relationship.OWNED ||
                     !PlayerClientEvents.isRTSPlayer() ||
-                    AlliancesClient.canControlAlly(selUnits.get(0)))) {
+                    AlliancesClient.canControlAlly(selUnits.get(0))) {
                 List<Button> abilityButtons = List.of();
                 for (LivingEntity livingEntity : selUnits) {
                     if (livingEntity == hudSelectedEntity) {
@@ -864,6 +868,17 @@ public class HudClientEvents {
                     }
                 }
                 List<Button> unitAbilities = abilityButtons;
+
+                if (openMenu != null) {
+                    // hide the row while a submenu is open; keep only the pinned orders if the menu
+                    // asked not to hide them
+                    unitAbilities = unitAbilities.stream()
+                            .filter(b -> keepPinned && b instanceof AbilityButton ab
+                                    && ab.ability != null && ab.ability.alwaysVisible)
+                            .toList();
+                    if (keepPinned)
+                        ordersRowY -= iconFrameSize; // draw the submenu above the pinned row
+                }
 
                 int rowsUp = (int) Math.floor((float) (unitAbilities.size() - 1) / MAX_BUTTONS_PER_ROW);
                 rowsUp = Math.max(0, rowsUp);

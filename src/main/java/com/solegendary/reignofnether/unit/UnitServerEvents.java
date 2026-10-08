@@ -9,6 +9,7 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import com.mojang.datafixers.util.Pair;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.ability.AbilityClientboundPacket;
+import com.solegendary.reignofnether.ability.DigAbility;
 
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
@@ -538,12 +539,20 @@ public class UnitServerEvents {
                 evt.setCanceled(true);
 
             if (lastHuntedAnimalId != evt.getEntity().getId()) {
+                lastHuntedAnimalId = evt.getEntity().getId();
 
-                if (!Unit.atMaxResources(unit)) {
-                    for (ItemStack itemStack : ResourceSources.getFoodItemsFromAnimal((Animal) evt.getEntity())) {
-                        ResourceSource res = ResourceSources.getFromItem(itemStack.getItem());
-                        if (res != null)
-                            unit.getItems().add(itemStack);
+                // Add the animal's food one item at a time and never past the carry limit. A kill used
+                // to push a worker over maxResources (the carried count then turned red), which looked
+                // like the loot was stuck and could not be deposited at all. Anything over the limit is
+                // simply not picked up.
+                for (ItemStack itemStack : ResourceSources.getFoodItemsFromAnimal((Animal) evt.getEntity())) {
+                    ResourceSource res = ResourceSources.getFromItem(itemStack.getItem());
+                    if (res == null)
+                        continue;
+                    int remaining = itemStack.getCount();
+                    while (remaining > 0 && !Unit.atMaxResources(unit)) {
+                        unit.getItems().add(new ItemStack(itemStack.getItem(), 1));
+                        remaining -= 1;
                     }
                 }
 
@@ -573,8 +582,6 @@ public class UnitServerEvents {
                 }
 
                  */
-            } else {
-                lastHuntedAnimalId = evt.getEntity().getId();
             }
         }
     }
@@ -608,6 +615,9 @@ public class UnitServerEvents {
         if (evt.getLevel().isClientSide() || evt.getLevel().dimension() != Level.OVERWORLD) {
             return;
         }
+        // advance in-flight DIG_BLOCK / DIG_AREA digs (progressive block breaking)
+        DigAbility.serverTick((ServerLevel) evt.getLevel());
+
         unitSyncTicks -= 1;
         if (unitSyncTicks <= 0) {
             unitSyncTicks = UNIT_SYNC_TICKS_MAX;

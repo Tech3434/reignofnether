@@ -3,6 +3,7 @@ package com.solegendary.reignofnether.unit;
 import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.mojang.datafixers.util.Pair;
 import com.solegendary.reignofnether.ability.Ability;
+import com.solegendary.reignofnether.ability.DigAbility;
 import com.solegendary.reignofnether.ability.HeroAbility;
 import com.solegendary.reignofnether.alliance.AlliancesClient;
 import com.solegendary.reignofnether.resources.ResourceSources;
@@ -169,6 +170,10 @@ public class UnitActionItem {
             if (action == UnitAction.MOVE && isRedundantMove(unit, preselectedBlockPos)) {
                 continue;
             }
+
+            // any order other than a dig abandons an in-flight dig (progress is not kept)
+            if (action != UnitAction.DIG_BLOCK && action != UnitAction.DIG_AREA)
+                DigAbility.clear(((Entity) unit).getId());
 
             // have to do this before resetBehaviours so we can assign the correct resourceName first
             if (action == UnitAction.TOGGLE_GATHER_TARGET) {

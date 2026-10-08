@@ -51,6 +51,13 @@ public class CommandAbilities {
             UnitAction.HOLD, "hud.actionbuttons.reignofnether.hold_position",
             icon("chestplate.png"), Keybindings.hold, false);
 
+    static {
+        // these three stay visible in the unit orders row even while a submenu is open
+        ATTACK.alwaysVisible = true;
+        STOP.alwaysVisible = true;
+        HOLD.alwaysVisible = true;
+    }
+
     private static ResourceName targetResource(Unit unit) {
         if (unit instanceof WorkerUnit workerUnit) {
             GatherResourcesGoal goal = workerUnit.getGatherResourceGoal();

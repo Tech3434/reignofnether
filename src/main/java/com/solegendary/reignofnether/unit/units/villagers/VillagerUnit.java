@@ -111,6 +111,9 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
         // GATHER is not put here: it is one of the worker's always-visible command abilities
         // (Unit.getCommandAbilities), and having it in both places was a duplicate that also made
         // clicking it in the menu look like it did nothing.
+        // The worker's Orders menu keeps the pinned orders (attack / stop / hold) visible while it is
+        // open, like Warcraft 3's command card.
+        orders.hidePinnedOnOpen = false;
         orders.addSubAbility(new OrderAbility(UnitAction.RETURN_RESOURCES_TO_CLOSEST,
                 "abilities.reignofnether.return_resources",
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/items/hopper.png"), false));
