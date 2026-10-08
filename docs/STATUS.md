@@ -230,3 +230,10 @@ JAVA="/c/Program Files/Java/jdk-21/bin/java.exe"
 | `VANILLA_CHANGES.md` | текущая инвентаризация изменений ванильных механик |
 | `RESEARCH_AND_EXTENSIBILITY_PLAN.md` | план системы исследований и JSON-расширяемости |
 | `../.agents/skills/` | навыки для ИИ-агентов |
+
+**Аудит доков (2026-10-08).** Удалены устаревшие `docs/_end.md`, `docs/STAGE_D_PROGRESS.md`,
+`docs/WORKLOG.md` и апстримные `TODO*.txt` (описывали удалённое). Индекс `docs/README.md` переписан;
+висячие ссылки на `HOWTO_FACTION`/`WORKLOG` поправлены; навык `reignofnether-add-research` переписан
+под новую систему; в `_GUIDES/README` и в самих гайдах помечены требующие ревизии (`00_обзор`,
+`01_faction`, `05_hero`). Удалены все `.py`/`.log` и явный мусор в корнях репозитория и воркспейса.
+`.md` в корне воркспейса (вне git) оставлены по решению владельца.
