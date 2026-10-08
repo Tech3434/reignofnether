@@ -830,59 +830,9 @@ public class HudClientEvents {
                         !PlayerClientEvents.isRTSPlayer() ||
                         AlliancesClient.canControlAlly(selUnits.get(0))) &&
                 hudSelectedEntity instanceof Unit unit) {
-            blitX = 0;
-            blitY = screenHeight - iconFrameSize;
-
-            ArrayList<Button> actionButtons = new ArrayList<>();
-
-            if (hudSelectedEntity instanceof AttackerUnit) {
-                actionButtons.add(ActionButtons.attack);
-            }
-            if (hudSelectedEntity instanceof WorkerUnit) {
-                actionButtons.add(ActionButtons.buildRepair);
-                actionButtons.add(ActionButtons.gather);
-            }
-            if (unit.canGarrison() && GarrisonableBuildingAddon.getGarrison(unit) == null) {
-                actionButtons.add(ActionButtons.garrison);
-            } else if (GarrisonableBuildingAddon.getGarrison(unit) != null) {
-                actionButtons.add(ActionButtons.ungarrison);
-            }
-
-            if (!(hudSelectedEntity instanceof WorkerUnit)) {
-                actionButtons.add(ActionButtons.hold);
-            }
-            actionButtons.add(ActionButtons.stop);
-
-            for (Button actionButton : actionButtons) {
-                // GATHER button does not have a static icon
-                if (actionButton == ActionButtons.gather && hudSelectedEntity instanceof WorkerUnit workerUnit) {
-                    switch (workerUnit.getGatherResourceGoal().getTargetResourceName()) {
-                        case NONE -> actionButton.iconResource = ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID,
-                                "textures/icons/items/no_gather.png"
-                        );
-                        case FOOD -> actionButton.iconResource = ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID,
-                                "textures/icons/items/hoe.png"
-                        );
-                        case WOOD -> actionButton.iconResource = ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID,
-                                "textures/icons/items/axe.png"
-                        );
-                        case ORE -> actionButton.iconResource = ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID,
-                                "textures/icons/items/pickaxe.png"
-                        );
-                    }
-                    String resourceName = UnitClientEvents.getSelectedUnitResourceTarget().toString();
-                    String key = String.format("resources.reignofnether.%s", resourceName.toLowerCase(Locale.ENGLISH));
-                    actionButton.tooltipLines = List.of(
-                            FormattedCharSequence.forward(I18n.get("hud.reignofnether" + ".gather_resources",
-                                    I18n.get(key)
-                            ), Style.EMPTY),
-                            FormattedCharSequence.forward(I18n.get("hud.reignofnether.change_target_resource"), Style.EMPTY)
-                    );
-                }
-                actionButton.render(evt.getGuiGraphics(), blitX, blitY, mouseX, mouseY);
-                renderedButtons.add(actionButton);
-                blitX += iconFrameSize;
-            }
+            // §14.2: the generic orders (attack, build, gather, stop, hold, garrison) are abilities
+            // now, so they arrive through unit.getAbilityButtons() below instead of a separate
+            // ActionButtons row.
             blitX = 0;
             blitY = screenHeight - (iconFrameSize * 2) - 4;
 
@@ -1568,11 +1518,37 @@ public class HudClientEvents {
     // Renders the open ability menu at the top-left, above everything except tooltips. The back
     // button closes one level; a sub-ability that is itself a menu opens another level (plan §14.1).
     private static void renderAbilitySubmenu(ScreenEvent.Render.Post evt, AbilityMenuFrame frame, int mouseX, int mouseY) {
-        List<Ability> subs = frame.menu().getSubAbilities();
         int subIconFrame = Button.DEFAULT_ICON_FRAME_SIZE;
         int fx = 4;
         int fy = 4;
-        int total = subs.size() + 1; // includes the back button
+
+        List<Keybinding> slots = List.of(
+                Keybindings.abilitySlot1, Keybindings.abilitySlot2, Keybindings.abilitySlot3,
+                Keybindings.abilitySlot4, Keybindings.abilitySlot5, Keybindings.abilitySlot6,
+                Keybindings.abilitySlot7, Keybindings.abilitySlot8
+        );
+
+        // A menu either declares sub-abilities, or hands out pre-built buttons (the worker's build menu).
+        List<Button> subButtons = new ArrayList<>();
+        List<Button> dynamic = frame.unit() != null
+                ? frame.menu().getSubButtons(frame.unit())
+                : null;
+        if (dynamic != null) {
+            subButtons.addAll(dynamic);
+        } else {
+            List<Ability> subs = frame.menu().getSubAbilities();
+            for (int i = 0; i < subs.size(); i++) {
+                Ability sub = subs.get(i);
+                Keybinding hk = slots.get(Math.min(i, slots.size() - 1));
+                AbilityButton btn = frame.unit() != null
+                        ? sub.getButton(hk, frame.unit())
+                        : sub.getButton(hk, frame.placement());
+                if (btn != null)
+                    subButtons.add(btn);
+            }
+        }
+
+        int total = subButtons.size() + 1; // includes the back button
         int rows = Math.max(1, (int) Math.ceil((double) total / MAX_BUTTONS_PER_ROW));
         int cols = Math.min(MAX_BUTTONS_PER_ROW, total);
         hudZones.add(MyRenderer.renderFrameWithBg(evt.getGuiGraphics(),
@@ -1580,12 +1556,6 @@ public class HudClientEvents {
                 subIconFrame * cols + 8,
                 subIconFrame * rows + 8,
                 frameBgColour));
-
-        List<Keybinding> slots = List.of(
-                Keybindings.abilitySlot1, Keybindings.abilitySlot2, Keybindings.abilitySlot3,
-                Keybindings.abilitySlot4, Keybindings.abilitySlot5, Keybindings.abilitySlot6,
-                Keybindings.abilitySlot7, Keybindings.abilitySlot8
-        );
 
         Button back = new Button(
                 I18n.get("hud.reignofnether.ability_back"),
@@ -1603,17 +1573,11 @@ public class HudClientEvents {
         renderedButtons.add(back);
 
         int i = 1;
-        for (Ability sub : subs) {
+        for (Button btn : subButtons) {
             int gx = fx + (i % MAX_BUTTONS_PER_ROW) * subIconFrame;
             int gy = fy + (i / MAX_BUTTONS_PER_ROW) * subIconFrame;
-            Keybinding hk = slots.get(Math.min(i - 1, slots.size() - 1));
-            AbilityButton btn = frame.unit() != null
-                    ? sub.getButton(hk, frame.unit())
-                    : sub.getButton(hk, frame.placement());
-            if (btn != null) {
-                btn.render(evt.getGuiGraphics(), gx, gy, mouseX, mouseY);
-                renderedButtons.add(btn);
-            }
+            btn.render(evt.getGuiGraphics(), gx, gy, mouseX, mouseY);
+            renderedButtons.add(btn);
             i += 1;
         }
     }

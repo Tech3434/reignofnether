@@ -6,6 +6,7 @@ import com.mojang.serialization.Dynamic;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
+import com.solegendary.reignofnether.ability.BuildMenuAbility;
 import com.solegendary.reignofnether.ability.DigAbility;
 import com.solegendary.reignofnether.ability.MenuAbility;
 import com.solegendary.reignofnether.ability.OrderAbility;
@@ -92,6 +93,12 @@ import com.solegendary.reignofnether.util.EnchantmentUtil;
 
 public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, AttackerUnit, ArmSwingingUnit, VillagerDataHolder, ConvertableUnit {
     public static final Abilities ABILITIES = new Abilities();
+
+    /** §14.2: the worker's building-place buttons are opened from a menu instead of a fixed row. */
+    public static final BuildMenuAbility BUILD_MENU = new BuildMenuAbility(
+            "abilities.reignofnether.build",
+            ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/items/shovel.png"),
+            () -> getBuildingButtons());
 
     // §14.2: the worker's orders are abilities. Digging is exposed directly; the rest live behind a
     // menu-in-menu, which is the shape a new faction's units follow - behaviour comes from a set of
@@ -351,8 +358,8 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
                 (this.getBuildRepairGoal() != null && this.getBuildRepairGoal().isBuilding()));
     }
 
-    public static List<BuildingPlaceButton> getBuildingButtons() {
-        List<BuildingPlaceButton> buttons = new ArrayList<>();
+    public static List<Button> getBuildingButtons() {
+        List<Button> buttons = new ArrayList<>();
         buttons.add(Buildings.TOWN_CENTRE.getBuildButton(null));
         buttons.add(Buildings.BARRACKS.getBuildButton(null));
 
@@ -596,9 +603,12 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
 
     @Override
     public List<Button> getAbilityButtons() {
-        List<Button> abilities = new ArrayList<>(getAbilities().getButtons(this));
+        // includes the standard commands (attack/build/gather/stop/hold...) from Unit.getCommandAbilities
+        List<Button> abilities = new ArrayList<>(Unit.super.getAbilityButtons());
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            abilities.addAll(getBuildingButtons());
+            Button buildMenu = BUILD_MENU.getButton(this);
+            if (buildMenu != null)
+                abilities.add(buildMenu);
         }
         return abilities;
     }

@@ -4,6 +4,7 @@ import com.solegendary.reignofnether.util.AttributeHelpers;
 import com.solegendary.reignofnether.util.MobEffectHelpers;
 import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.ability.Ability;
+import com.solegendary.reignofnether.ability.CommandAbilities;
 
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.blocks.BlockServerEvents;
@@ -150,8 +151,37 @@ public interface Unit {
 
 
     Abilities getAbilities();
+
+    /**
+     * §14.2: generic orders a unit has because of what it is (attacker, worker, garrisonable),
+     * expressed as abilities so the HUD has a single list of buttons per unit and building.
+     */
+    default List<Ability> getCommandAbilities() {
+        List<Ability> commands = new ArrayList<>();
+        if (this instanceof AttackerUnit)
+            commands.add(CommandAbilities.ATTACK);
+        if (this instanceof WorkerUnit) {
+            commands.add(CommandAbilities.BUILD_REPAIR);
+            commands.add(CommandAbilities.GATHER);
+        }
+        if (canGarrison() && getGarrison() == null)
+            commands.add(CommandAbilities.GARRISON);
+        else if (getGarrison() != null)
+            commands.add(CommandAbilities.UNGARRISON);
+        if (!(this instanceof WorkerUnit))
+            commands.add(CommandAbilities.HOLD);
+        commands.add(CommandAbilities.STOP);
+        return commands;
+    }
+
     default List<Button> getAbilityButtons() {
-        return getAbilities().getButtons(this);
+        List<Button> buttons = new ArrayList<>(getAbilities().getButtons(this));
+        for (Ability command : getCommandAbilities()) {
+            Button button = command.getButton(this);
+            if (button != null)
+                buttons.add(button);
+        }
+        return buttons;
     }
     List<ItemStack> getItems();
     int getMaxResources();

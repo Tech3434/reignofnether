@@ -65,8 +65,22 @@ public class Ability {
         return !subAbilities.isEmpty();
     }
 
+    /** A menu whose items are built on demand rather than stored in {@link #subAbilities}. */
+    protected boolean hasDynamicSubButtons() {
+        return false;
+    }
+
     public java.util.List<Ability> getSubAbilities() {
         return subAbilities;
+    }
+
+    /**
+     * Optional pre-built buttons for a menu that is not a plain list of abilities (the worker's
+     * build menu hands out the existing building-place buttons). A null return means the menu
+     * renders {@link #subAbilities} instead.
+     */
+    public java.util.List<com.solegendary.reignofnether.hud.buttons.Button> getSubButtons(Unit unit) {
+        return null;
     }
 
     /** Adds a sub-ability and returns this ability so menus can be built fluently. */

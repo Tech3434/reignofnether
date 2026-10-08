@@ -2,7 +2,6 @@ package com.solegendary.reignofnether.mixin;
 
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
-import com.solegendary.reignofnether.hud.buttons.ActionButtons;
 import com.solegendary.reignofnether.hud.buttons.HelperButtons;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
@@ -29,7 +28,6 @@ public abstract class ResourceLoadStateTrackerMixin {
         for (BuildingPlacement building : BuildingClientEvents.getBuildings())
             building.updateButtons();
 
-        ActionButtons.updateButtons();
         HelperButtons.updateButtons();
     }
 }
