@@ -41,7 +41,25 @@ public class VillagerProd extends ProductionItem {
     public EntityType<? extends Mob> getEntityType() {
         return EntityRegistrar.VILLAGER_UNIT.get();
     }
-    
+
+    @Override
+    public ResourceLocation getIcon() {
+        return ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/villager.png");
+    }
+
+    @Override
+    public java.util.List<net.minecraft.util.FormattedCharSequence> getTooltipLines() {
+        return java.util.List.of(
+                FormattedCharSequence.forward(I18n.get("entity.reignofnether.villager_unit"), Style.EMPTY.withBold(true)),
+                ResourceCosts.getFormattedCost(cost),
+                ResourceCosts.getFormattedPopAndTime(cost),
+                FormattedCharSequence.forward("", Style.EMPTY),
+                FormattedCharSequence.forward(I18n.get("entity.reignofnether.villager_unit.tooltip1"), Style.EMPTY),
+                FormattedCharSequence.forward(I18n.get("entity.reignofnether.villager_unit.tooltip2"), Style.EMPTY),
+                FormattedCharSequence.forward(I18n.get("entity.reignofnether.villager_unit.tooltip3"), Style.EMPTY)
+        );
+    }
+
     public StartProductionButton getStartButton(ProductionPlacement prodBuilding, Keybinding hotkey) {
         return new StartProductionButton(
             VillagerProd.itemName,

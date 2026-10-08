@@ -13,6 +13,8 @@ import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
@@ -60,6 +62,17 @@ public abstract class ProductionItem {
     }
 
     public abstract String getItemName();
+
+    /** Icon shown on the ability button (plan §14.3). Null falls back to an empty frame. */
+    @Nullable
+    public ResourceLocation getIcon() {
+        return null;
+    }
+
+    /** Tooltip lines for the ability button; empty by default. */
+    public List<FormattedCharSequence> getTooltipLines() {
+        return List.of();
+    }
 
     /** The entity this item summons, or null if it produces something else (eg. tech). */
     @Nullable

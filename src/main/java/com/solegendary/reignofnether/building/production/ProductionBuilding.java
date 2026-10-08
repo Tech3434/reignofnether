@@ -1,5 +1,6 @@
 package com.solegendary.reignofnether.building.production;
 
+import com.solegendary.reignofnether.ability.Abilities;
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
@@ -14,6 +15,23 @@ public abstract class ProductionBuilding extends Building {
     public ProductionItemList productions = new ProductionItemList();
     public boolean canSetRallyPoint = true;
     public float spawnRadiusOffset = 1.0F;
+
+    /**
+     * §14.3: production is exposed through the same ability list as everything else a building can
+     * do, so there is no separate "productions" mechanism in the HUD. Built lazily once, because
+     * subclasses add their production items in their own constructors, after ours.
+     */
+    private Abilities combinedAbilities = null;
+
+    @Override
+    public Abilities getAbilities() {
+        if (combinedAbilities == null) {
+            combinedAbilities = super.getAbilities().clone();
+            for (ProductionItem item : productions.get())
+                combinedAbilities.add(new ProductionAbility(item));
+        }
+        return combinedAbilities;
+    }
 
     public ProductionBuilding(String structureName, ResourceCost cost, boolean isCapitol) {
         super(structureName, cost, isCapitol);

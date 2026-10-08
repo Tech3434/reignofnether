@@ -43,6 +43,22 @@ public class VindicatorProd extends ProductionItem {
         return EntityRegistrar.VINDICATOR_UNIT.get();
     }
 
+    @Override
+    public ResourceLocation getIcon() {
+        return ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/vindicator.png");
+    }
+
+    @Override
+    public List<FormattedCharSequence> getTooltipLines() {
+        return List.of(
+                FormattedCharSequence.forward(I18n.get("entity.reignofnether.vindicator_unit"), Style.EMPTY.withBold(true)),
+                ResourceCosts.getFormattedCost(cost),
+                ResourceCosts.getFormattedPopAndTime(cost),
+                FormattedCharSequence.forward("", Style.EMPTY),
+                FormattedCharSequence.forward(I18n.get("entity.reignofnether.vindicator_unit.tooltip1"), Style.EMPTY)
+        );
+    }
+
     public StartProductionButton getStartButton(ProductionPlacement prodBuilding, Keybinding hotkey) {
         List<FormattedCharSequence> tooltipLines = new ArrayList<>(List.of(
                 FormattedCharSequence.forward(I18n.get("entity.reignofnether.vindicator_unit"), Style.EMPTY.withBold(true)),
