@@ -1,0 +1,20 @@
+{
+  "base": "minecraft:vindicator",
+  "role": "melee",
+  "flags": { "canGarrison": true, "holdPosition": true },
+  "attributes": {
+    "minecraft:generic.max_health": 65,
+    "minecraft:generic.attack_damage": 6,
+    "minecraft:generic.movement_speed": 0.28,
+    "minecraft:generic.armor": 0,
+    "reignofnether:attack_damage": 6,
+    "reignofnether:attacks_per_second": 0.5,
+    "reignofnether:attack_range": 2,
+    "reignofnether:aggro_range": 10,
+    "reignofnether:sight_range": 16,
+    "reignofnether:ranged_damage_resist": 0.2,
+    "reignofnether:magic_damage_resist": 0
+  },
+  "cost": { "food": 100, "wood": 0, "ore": 0, "seconds": 20 },
+  "population": 1
+}
