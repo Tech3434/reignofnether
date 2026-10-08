@@ -51,6 +51,13 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
     @Unique private SelectedTargetGoal<?> ron$targetGoal;
     @Unique private ReturnResourcesGoal ron$returnResourcesGoal;
     @Unique private GarrisonGoal ron$garrisonGoal;
+    @Unique private net.minecraft.world.entity.ai.goal.Goal ron$attackGoal;
+    @Unique private net.minecraft.world.entity.ai.goal.Goal ron$attackBuildingGoal;
+    @Unique private com.solegendary.reignofnether.unit.goals.GatherResourcesGoal ron$gatherGoal;
+    @Unique private com.solegendary.reignofnether.unit.goals.BuildRepairGoal ron$buildRepairGoal;
+    @Unique private com.solegendary.reignofnether.unit.goals.ExploreBuildLocationGoal ron$exploreBuildLocationGoal;
+    @Unique private boolean ron$willRetaliate = false;
+    @Unique private boolean ron$aggressiveWhenIdle = false;
     @Unique private ResourceCost ron$cost;
     @Unique private LivingEntity ron$followTarget;
     @Unique private boolean ron$holdPosition = false;
@@ -140,7 +147,47 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
 
     @Override
     public boolean canGarrison() {
-        return false;
+        return ron$garrisonGoal != null;
+    }
+
+    @Override
+    public net.minecraft.world.entity.ai.goal.Goal getAttackGoal() {
+        return ron$attackGoal;
+    }
+
+    @Override
+    public net.minecraft.world.entity.ai.goal.Goal getAttackBuildingGoal() {
+        return ron$attackBuildingGoal;
+    }
+
+    @Override
+    public boolean canAttackBuildings() {
+        return ron$attackBuildingGoal != null;
+    }
+
+    @Override
+    public com.solegendary.reignofnether.unit.goals.GatherResourcesGoal getGatherResourceGoal() {
+        return ron$gatherGoal;
+    }
+
+    @Override
+    public com.solegendary.reignofnether.unit.goals.BuildRepairGoal getBuildRepairGoal() {
+        return ron$buildRepairGoal;
+    }
+
+    @Override
+    public com.solegendary.reignofnether.unit.goals.ExploreBuildLocationGoal getExploreBuildLocationGoal() {
+        return ron$exploreBuildLocationGoal;
+    }
+
+    @Override
+    public boolean getWillRetaliate() {
+        return ron$willRetaliate;
+    }
+
+    @Override
+    public boolean getAggressiveWhenIdle() {
+        return ron$aggressiveWhenIdle;
     }
 
     @Override
@@ -232,8 +279,8 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
         if (def == null)
             return;
         Mob self = (Mob) (Object) this;
-        // base RTS goals every unit needs; combat/gather goals (which need Unit/Unit)
-        // are wired in a later phase.
+        Unit me = (Unit) (Object) this;
+
         if (ron$moveGoal == null) {
             ron$moveGoal = new MoveToTargetBlockGoal(self, false, 0);
             this.goalSelector.addGoal(5, ron$moveGoal);
@@ -241,6 +288,60 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
         if (ron$targetGoal == null) {
             ron$targetGoal = new SelectedTargetGoal<>(self, false, true);
             this.targetSelector.addGoal(5, ron$targetGoal);
+        }
+
+        var role = def.role();
+        boolean worker = role == com.solegendary.reignofnether.unit.UnitDefinition.Role.WORKER;
+        boolean melee = role == com.solegendary.reignofnether.unit.UnitDefinition.Role.MELEE
+                || role == com.solegendary.reignofnether.unit.UnitDefinition.Role.HERO;
+        boolean ranged = role == com.solegendary.reignofnether.unit.UnitDefinition.Role.RANGED;
+
+        if (melee || ranged) {
+            ron$willRetaliate = true;
+            ron$aggressiveWhenIdle = true;
+        }
+
+        if (melee) {
+            if (ron$attackGoal == null) {
+                ron$attackGoal = new com.solegendary.reignofnether.unit.goals.MeleeAttackUnitGoal(self, false);
+                this.goalSelector.addGoal(2, ron$attackGoal);
+            }
+            if (ron$attackBuildingGoal == null) {
+                ron$attackBuildingGoal = new com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal(self);
+                this.goalSelector.addGoal(2, ron$attackBuildingGoal);
+            }
+        } else if (ranged) {
+            if (ron$attackGoal == null) {
+                com.solegendary.reignofnether.unit.goals.UnitBowAttackGoal<?> bow =
+                        new com.solegendary.reignofnether.unit.goals.UnitBowAttackGoal<>(self);
+                ron$attackGoal = bow;
+                this.goalSelector.addGoal(2, ron$attackGoal);
+                ron$attackBuildingGoal = new com.solegendary.reignofnether.unit.goals.RangedAttackBuildingGoal<>(self, bow);
+                this.goalSelector.addGoal(2, ron$attackBuildingGoal);
+            }
+        }
+
+        if ((def.flags().canGather() || worker) && ron$gatherGoal == null) {
+            ron$gatherGoal = new com.solegendary.reignofnether.unit.goals.GatherResourcesGoal(self);
+            this.goalSelector.addGoal(2, ron$gatherGoal);
+        }
+        if (def.flags().canBuild()) {
+            if (ron$buildRepairGoal == null) {
+                ron$buildRepairGoal = new com.solegendary.reignofnether.unit.goals.BuildRepairGoal(self);
+                this.goalSelector.addGoal(2, ron$buildRepairGoal);
+            }
+            if (ron$exploreBuildLocationGoal == null) {
+                ron$exploreBuildLocationGoal = new com.solegendary.reignofnether.unit.goals.ExploreBuildLocationGoal(me);
+                this.goalSelector.addGoal(3, ron$exploreBuildLocationGoal);
+            }
+        }
+        if (worker && ron$returnResourcesGoal == null) {
+            ron$returnResourcesGoal = new ReturnResourcesGoal(self);
+            this.goalSelector.addGoal(2, ron$returnResourcesGoal);
+        }
+        if (def.flags().canGarrison() && ron$garrisonGoal == null) {
+            ron$garrisonGoal = new GarrisonGoal(self);
+            this.goalSelector.addGoal(2, ron$garrisonGoal);
         }
     }
 
