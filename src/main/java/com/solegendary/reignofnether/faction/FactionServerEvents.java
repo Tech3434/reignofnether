@@ -15,6 +15,7 @@ public class FactionServerEvents {
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent evt) {
         FactionClientboundPacket.sync(build(evt.getServer()));
+        com.solegendary.reignofnether.building.buildings.JsonBuildingManager.reload(evt.getServer());
     }
 
     @SubscribeEvent
