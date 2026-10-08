@@ -336,6 +336,7 @@ public class PlayerClientEvents {
             building.ownerName = "";
         ResourcesClientEvents.resourcesList.clear();
         ResearchClientEvents.clear();
+        com.solegendary.reignofnether.faction.FactionClientEvents.close();
         AlliancesClient.playersWithAlliedControl.clear();
         PlayerColors.reset();
         PlayerDisplayClientEvents.resetDisplay();
