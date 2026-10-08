@@ -416,6 +416,6 @@ F12 или `/rts-camera`. Ортографическая камера с зум�
 * [`INTRUSION_AUDIT.md`](INTRUSION_AUDIT.md) — что мод ломает в обычном мире. **Читать перед
   любым из удалений.**
 * [`CLEAN_FORK.md`](CLEAN_FORK.md) — этапы деинтрузивности.
-* [`HOWTO_FACTION.md`](HOWTO_FACTION.md) — гайд по контенту (нужен, если сохраняется часть
+* [`_GUIDES/README.md`](_GUIDES/README.md) — гайд по контенту (нужен, если сохраняется часть
   зданий).
-* [`WORKLOG.md`](WORKLOG.md) — хронология.
+* [`STATUS.md`](STATUS.md) — хронология.

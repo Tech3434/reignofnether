@@ -7,7 +7,7 @@
 Позже владелец ветки пишет на этом каркасе свою фракцию.
 
 Обоснование: `FEATURES.md` (каталог), `INTRUSION_AUDIT.md` (инвентаризация вреда),
-`HOWTO_FACTION.md` (как добавлять контент). Состояние кода при составлении: `5079004e`.
+`_GUIDES/README.md` (как добавлять контент). Состояние кода при составлении: `5079004e`.
 
 ## Принятые решения
 
@@ -286,7 +286,7 @@
 
 ☐ D.1 `docs/reference/units.md` — таблица ростера со статами и ролью каждого юнита; анатомия
 класса юнита: `createAttributes`, `defineSynchedData`, `initialiseGoals`/`registerGoals`,
-`tick`, NBT через `addUnitSaveData`, интерфейсы. Уже частично есть в `HOWTO_FACTION.md` §5 —
+`tick`, NBT через `addUnitSaveData`, интерфейсы. Уже частично есть в `_GUIDES/README.md` §5 —
 дополнить числами.
 ☐ D.2 `docs/reference/buildings.md` — таблица 51 здания по группам; анатомия класса здания;
 контракты пяти аддонов; `BuildingPlacement` как система (HP по блокам, `minBlocksPercent`,
@@ -420,7 +420,7 @@ ResourcesServerEvents}`. `ResourceCost`/`ResourceCosts` **остаются** (р
 ☐ F.7 Локализация `hud.faction.reignofnether.*` — удалить из 22 файлов.
 
 ⚠ **Не делать** `FactionDefinition`. Это отдельная фича для нескольких играбельных рас, и
-enum из шести значений ей не фундамент. Материалы уже есть в `HOWTO_FACTION.md` §2.
+enum из шести значений ей не фундамент. Материалы уже есть в `_GUIDES/README.md` §2.
 
 ---
 
