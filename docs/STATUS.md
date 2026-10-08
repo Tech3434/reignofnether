@@ -171,6 +171,11 @@ JSON-загрузчик — фазы 2/4.
 (`unlock`/`attribute_boost`), `cost`, `prerequisites` (с `invert`), `attributes` (со `unit`).
 JSON для юнитов/зданий/способностей — отложено до совместной сессии. Гейты ✅.
 
+**П4 (2026-10-08).** Форма генератора ресурсов заложена: интерфейс `ResourceGenerator`
+(`getTickInterval`/`getResourceAmount`/`getResourceType`/`getCapacity`) и `ResourceGenerators.produce`
+для начисления владельцу. Настраиваемый блок лесов (D.21) уже был реализован
+(`Building.scaffoldFill`/`scaffoldBlock`). Гейты ✅.
+
 ### Документация
 
 * `FEATURES.md` и `INTRUSION_AUDIT.md` — актуализировать (снять удалённое, отметить читы/туман).
