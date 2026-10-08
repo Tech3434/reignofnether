@@ -871,6 +871,14 @@ public interface Unit {
         return getMoveGoal() instanceof FlyingMoveToTargetGoal;
     }
 
+    /**
+     * Highest Y coordinate a flying unit of this type will path to. Was the server-wide
+     * `flyingMaxYLevel` gamerule; a default lives here and each unit type can override it.
+     */
+    default double getFlyingMaxY() {
+        return 320;
+    }
+
     // if true, will ignore all commands except for stop (S)
     // used for things like channeling blizzard on the wraith to prevent accidental cancels
     default boolean ignoreNonStopCommands() {

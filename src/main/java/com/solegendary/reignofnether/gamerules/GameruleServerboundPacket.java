@@ -8,16 +8,10 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameRules;
-import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.network.RTSSimplePayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-
-import java.util.function.Supplier;
-import com.solegendary.reignofnether.gamerules.GameruleServerboundPacket;
-import com.solegendary.reignofnether.gamerules.GameruleClientboundPacket;
-import com.solegendary.reignofnether.gamerules.GameruleAction;
 
 public class GameruleServerboundPacket  implements RTSSimplePayload {
 
@@ -45,37 +39,9 @@ public class GameruleServerboundPacket  implements RTSSimplePayload {
         PacketDistributor.sendToServer(
             new GameruleServerboundPacket(GameruleAction.SET_MAX_POPULATION, "", maxPopulation));
     }
-    public static void setPlayerGriefing(boolean playerGriefing) {
-        PacketDistributor.sendToServer(
-            new GameruleServerboundPacket(GameruleAction.SET_PLAYER_GRIEFING, "", playerGriefing ? 1L : 0L));
-    }
-    public static void setGroundYLevel(long groundYLevel) {
-        PacketDistributor.sendToServer(
-            new GameruleServerboundPacket(GameruleAction.SET_GROUND_Y_LEVEL, "", groundYLevel));
-    }
-    public static void setFlyingMaxYLevel(long flyingMaxYLevel) {
-        PacketDistributor.sendToServer(
-            new GameruleServerboundPacket(GameruleAction.SET_FLYING_MAX_Y_LEVEL, "", flyingMaxYLevel));
-    }
-    public static void setAllowBeacons(boolean allowBeacons) {
-        PacketDistributor.sendToServer(
-            new GameruleServerboundPacket(GameruleAction.SET_ALLOW_BEACONS, "", allowBeacons ? 1L : 0L));
-    }
-    public static void setPvpModesOnly(boolean pvpModesOnly) {
-        PacketDistributor.sendToServer(
-            new GameruleServerboundPacket(GameruleAction.SET_PVP_MODES_ONLY, "", pvpModesOnly ? 1L : 0L));
-    }
-    public static void setBeaconWinMinutes(long beaconWinMinutes) {
-        PacketDistributor.sendToServer(
-                new GameruleServerboundPacket(GameruleAction.SET_BEACON_WIN_MINUTES, "", beaconWinMinutes));
-    }
     public static void setSlantedBuilding(boolean slantedBuilding) {
         PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_SLANTED_BUILDING, "", slantedBuilding ? 1L : 0L));
-    }
-    public static void setAllowedHeroes(long allowedHeroes) {
-        PacketDistributor.sendToServer(
-                new GameruleServerboundPacket(GameruleAction.SET_ALLOWED_HEROES, "", allowedHeroes));
     }
     public static void setLockAlliances(boolean lockAlliances) {
         PacketDistributor.sendToServer(
@@ -88,10 +54,6 @@ public class GameruleServerboundPacket  implements RTSSimplePayload {
     public static void setAnimalSpawnYDiff(long animalSpawnYDiff) {
         PacketDistributor.sendToServer(
                 new GameruleServerboundPacket(GameruleAction.SET_ANIMAL_SPAWN_Y_DIFF, "", animalSpawnYDiff));
-    }
-    public static void setRandomItemDrops(long randomItemDrops) {
-        PacketDistributor.sendToServer(
-                new GameruleServerboundPacket(GameruleAction.SET_RANDOM_ITEM_DROPS, "", randomItemDrops));
     }
 
     public GameruleServerboundPacket(GameruleAction action, String playerName, Long value) {
@@ -144,37 +106,9 @@ public class GameruleServerboundPacket  implements RTSSimplePayload {
                     gameRules.getRule(GameRuleRegistrar.MAX_POPULATION).set(UnitServerEvents.maxPopulation, server);
                     GameruleClientboundPacket.setMaxPopulation(UnitServerEvents.maxPopulation);
                 }
-                case SET_PLAYER_GRIEFING -> {
-                    gameRules.getRule(GameRuleRegistrar.DO_PLAYER_GRIEFING).set(booleanValue, server);
-                    GameruleClientboundPacket.setPlayerGriefing(booleanValue);
-                }
-                case SET_GROUND_Y_LEVEL -> {
-                    gameRules.getRule(GameRuleRegistrar.GROUND_Y_LEVEL).set(Math.toIntExact(value), server);
-                    GameruleClientboundPacket.setGroundYLevel(value);
-                }
-                case SET_FLYING_MAX_Y_LEVEL -> {
-                    gameRules.getRule(GameRuleRegistrar.FLYING_MAX_Y_LEVEL).set(Math.toIntExact(value), server);
-                    GameruleClientboundPacket.setFlyingMaxYLevel(value);
-                }
-                case SET_ALLOW_BEACONS -> {
-                    gameRules.getRule(GameRuleRegistrar.ALLOW_BEACONS).set(booleanValue, server);
-                    GameruleClientboundPacket.setAllowBeacons(booleanValue);
-                }
-                case SET_PVP_MODES_ONLY -> {
-                    gameRules.getRule(GameRuleRegistrar.PVP_MODES_ONLY).set(booleanValue, server);
-                    GameruleClientboundPacket.setPvpModesOnly(booleanValue);
-                }
-                case SET_BEACON_WIN_MINUTES -> {
-                    gameRules.getRule(GameRuleRegistrar.BEACON_WIN_MINUTES).set(Math.toIntExact(value), server);
-                    GameruleClientboundPacket.setBeaconWinMinutes(value);
-                }
                 case SET_SLANTED_BUILDING -> {
                     gameRules.getRule(GameRuleRegistrar.SLANTED_BUILDING).set(booleanValue, server);
                     GameruleClientboundPacket.setSlantedBuilding(booleanValue);
-                }
-                case SET_ALLOWED_HEROES -> {
-                    gameRules.getRule(GameRuleRegistrar.ALLOWED_HEROES).set(Math.toIntExact(value), server);
-                    GameruleClientboundPacket.setAllowedHeroes(value);
                 }
                 case SET_LOCK_ALLIANCES -> {
                     gameRules.getRule(GameRuleRegistrar.LOCK_ALLIANCES).set(booleanValue, server);
@@ -188,10 +122,6 @@ public class GameruleServerboundPacket  implements RTSSimplePayload {
                 case SET_ANIMAL_SPAWN_Y_DIFF -> {
                     gameRules.getRule(GameRuleRegistrar.ANIMAL_SPAWN_Y_DIFF).set(Math.toIntExact(value), server);
                     GameruleClientboundPacket.setAnimalSpawnYDiff(value);
-                }
-                case SET_RANDOM_ITEM_DROPS -> {
-                    gameRules.getRule(GameRuleRegistrar.RANDOM_ITEM_DROPS).set(Math.toIntExact(value), server);
-                    GameruleClientboundPacket.setRandomItemDrops(value);
                 }
             }
         });

@@ -10,7 +10,6 @@ import net.minecraft.util.FormattedCharSequence;
 
 import java.util.ArrayList;
 
-import static com.solegendary.reignofnether.gamerules.GameruleClient.pvpModesOnly;
 import static com.solegendary.reignofnether.util.MiscUtil.fcs;
 
 /**
@@ -27,7 +26,7 @@ public class ClientGameModeHelper {
     public static boolean gameModeLocked = false; // locked with startRTS() in any gamemode, unlocked with /rts-reset
 
     private static String getLockedString() {
-        return gameModeLocked || pvpModesOnly ? " " + I18n.get("hud.gamemode.reignofnether.locked") : "";
+        return gameModeLocked ? " " + I18n.get("hud.gamemode.reignofnether.locked") : "";
     }
 
     private static Button getClassicButton() {

@@ -508,3 +508,21 @@ Warcraft 3: атака/движение), часть исчезает; нужн�
 
 Полный список — `docs/VANILLA_CHANGES.md` (миксины, геймрулы, датапак/ассеты, что мод **не** трогает,
 и кандидаты на сужение).
+
+### Сужение ванильных изменений (2026-10-08)
+
+По решению владельца:
+* `ArmorStandMixin` **удалён** (стойки в строениях не используются);
+* удалены геймрулы без читателей: `doPlayerGriefing`, `groundYLevel`, `flyingMaxYLevel`,
+  `allowBeacons`, `pvpModesOnly`, `beaconWinMinutes`, `allowedHeroes`, `randomItemDrops`
+  (+ enum `RandomItemDropRule`); потолок высоты полёта — `Unit.getFlyingMaxY()` (default 320,
+  юнит может переопределить);
+* `AbstractArrowMixin` без `@Overwrite`: ванильные стрелы (игрок, мобы) идут стоковым путём, модовые
+  исключения применяются только стрелам юнита;
+* `LivingEntityMixin` сужен: партиклы левитации только юнитам, удалены пустая инъекция
+  `onChangedBlock` и мёртвый `FrostWalkerOnEntityMoved`;
+* командные миксины `/data`/`/execute` — **оставлены** по решению владельца;
+* `UnitInventoryMobMixin` — **оставлен** (фреймворк, сужение невозможно без потери общего предка).
+
+Гейты: `compileJava` ✅, `validateMixins` ✅ (47/30), `runData` ✅, `runServer` ✅ `Done (0.964s)!`.
+Сводка — `docs/VANILLA_CHANGES.md`.

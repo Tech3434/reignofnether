@@ -1,92 +1,80 @@
 # Изменения ванильных механик (текущее состояние)
 
-Составлено 2026-10-08 по факту кода на `wip/stage-d-deletions` (поверх `67e020fd` + незакоммиченные
-правки прогонов 2–5). Цель документа — честный список всего, чем мод трогает ванильную игру, и того,
-что он **не** трогает.
+Составлено 2026-10-08 по факту кода на `wip/stage-d-deletions`. Обновлено после сужения
+(`ArmorStandMixin` удалён, `AbstractArrowMixin` без `@Overwrite`, геймрулы сокращены,
+`LivingEntityMixin` сужен). Цель документа — честный список всего, чем мод трогает ванильную игру.
 
 ## Коротко: чего мод НЕ делает с ванилью
 
 - `assets/minecraft/**` **удалён целиком** — перекраски GUI, меню, сплэшей, рождественского кота нет.
 - `data/minecraft/**` содержит **только** `tags/blocks/mineable/axe.json` (аддитивно добавляет
   модовые блоки в ванильный тег топора; ванильные записи не трогает).
-- Датапак генерации мира (`data/minecraft/worldgen`, `flat_dimensions`, `overworldify`, `tectonic`)
-  **удалён** — генерация, биомы, руда, пещеры, каньоны ванильные.
+- Датапак генерации мира **удалён** — генерация, биомы, руда, пещеры, каньоны ванильные.
 - Форс `disableElytraMovementCheck`, форс `allcheats`, форс времени суток, форс режима игры при
   загрузке — **убраны**.
-- Туман войны **удалён целиком** (миксины и подсистема).
-- Огонь/спавнеры/скульк/блейз/бочки/листья/паника/удушье/заморозка/эвокер/трезубец/зелья/арбалет —
-  ванильные (соответствующие миксины удалены или инертны).
+- Туман войны **удалён целиком**.
+- Огонь/спавнеры/скульк/блейз/листья/паника/удушье/заморозка/эвокер/трезубец/зелья/арбалет —
+  ванильные.
 
-## 1. Общие (common) миксины, которые реально меняют ваниль
+## 1. Общие (common) миксины — 21, из них 4 — чистые accessor/invoker
 
-Всего 22 common-миксина; 4 из них — чистые accessor/invoker (не меняют поведение):
 `EntitySelectorAccessor`, `LivingEntityAccessor`, `ObjectiveCriteriaAccessor`,
-`StructureBlockEntityAccessor`.
+`StructureBlockEntityAccessor` поведение не меняют.
 
-Меняющие поведение:
+Меняющие поведение (вне мода почти ничего не задето):
 
-| Миксин | Цель | Что делает | Затрагивает ли ваниль вне мода |
+| Миксин | Цель | Что делает | Ваниль вне мода |
 |---|---|---|---|
-| `EntityMixin` | `Entity` | Дальность отрисовки предметов ×4 в орторежиме; отмена тушения и звука при эффекте `souls_aflame`; подсветка (`isCurrentlyGlowing`) охотничьих животных при вкл. подсветке на миникарте. | Да, но только: (а) клиент+орторежим, (б) сущности с модовым эффектом, (в) при включённой подсветке животных. |
-| `LivingEntityMixin` | `LivingEntity` | Перезапись входящего урона для атак **юнитов** (ArmorUnit-путь), пропуск ванильной брони для атак юнита, отказ от прерывающих эффектов для `uninterruptable` юнитов, урон от `intense_heat`, партиклы левитации. | Гейт по `AttackerUnit`/`Unit`/модовым эффектам — ванильные существа не затронуты. |
-| `LivingEntityRendererMixin` | `LivingEntityRenderer` | Принудительная дрожь при `attack_slowdown` на `wraith_snow_layer`. | Только модовый эффект/блок. |
-| `MobMixin` (root) | `Mob` | `doHurtTarget` — шанс уклонения для **юнитов**; `setTarget` — пустой (мёртвый) инжект. | Только когда цель — `Unit`. |
-| `goals/MobMixin` | `Mob` | Отмена `setTarget` для мобов из `attackSuppressedNonUnits` (управление ванильными мобами в RTS). | Только для мобов, добавленных модом в список. |
-| `goals/RandomStrollGoalMixin` | `RandomStrollGoal` | Отмена `canContinueToUse` для мобов из `moveSuppressedNonUnits`. | Только для мобов из списка. |
-| `PathNavigationMixin` | `PathNavigation` | Отмена ванильного рекомпа пути и расширение вертикального гейта для **юнитов** при вкл. `rtsPathfinding`. | Гейт `mob instanceof Unit` + геймрул. |
-| `fire/WalkNodeEvaluatorMixin` | `WalkNodeEvaluator` | Проходимость огня/магмы и непроходимость листвы/сталактитов для **юнитов**. | Только `mob instanceof Unit`. |
-| `PowderSnowBlockMixin` | `PowderSnowBlock` | Рыхлый снег превращается в снежный блок при входе **юнита**. | Только `Unit`. |
-| `LevelChunkMixin` | `LevelChunk` | Пометка чанка «грязным» для кэша проходимости при `rtsPathfinding`. | Гейт геймрулом; без него инертно. |
-| `HoglinMixin` / `IronGolemMixin` | `Hoglin` / `IronGolem` | Уклонение при атаке **юнита**. | Только когда цель — `Unit`. |
+| `EntityMixin` | `Entity` | Дальность отрисовки предметов ×4 в орто; отмена тушения/звука при `souls_aflame`; подсветка охотничьих животных при вкл. подсветке. | Только орто / модовый эффект / вкл. подсветка. |
+| `LivingEntityMixin` | `LivingEntity` | Партиклы левитации **только юнитам**; редирект входящего урона для атак `AttackerUnit` (ванильная ветка для остальных); пропуск ванильной брони для атак юнита; блок прерывающих эффектов для `uninterruptable` юнитов; урон от `intense_heat`. Пустая инъекция `onChangedBlock` и мёртвый `FrostWalkerOnEntityMoved` удалены. | Гейт по `AttackerUnit`/`Unit`/модовым эффектам. |
+| `LivingEntityRendererMixin` | `LivingEntityRenderer` | Дрожь при `attack_slowdown` на `wraith_snow_layer`. | Модовый эффект/блок. |
+| `MobMixin` (root) | `Mob` | Уклонение для **юнитов**; `setTarget` — пустой (мёртвый) инжект. | Только цель `Unit`. |
+| `goals/MobMixin` | `Mob` | Отмена `setTarget` для мобов из `attackSuppressedNonUnits`. | Только мобы из списка. |
+| `goals/RandomStrollGoalMixin` | `RandomStrollGoal` | Отмена `canContinueToUse` для мобов из `moveSuppressedNonUnits`. | Только мобы из списка. |
+| `PathNavigationMixin` | `PathNavigation` | Отмена ванильного рекомпа пути и вертикальный гейт для **юнитов** при `rtsPathfinding`. | Гейт `mob instanceof Unit` + геймрул. |
+| `fire/WalkNodeEvaluatorMixin` | `WalkNodeEvaluator` | Проходимость огня/магмы и непроходимость листвы для **юнитов**. | Только `Unit`. |
+| `PowderSnowBlockMixin` | `PowderSnowBlock` | Рыхлый снег → снежный блок при входе **юнита**. | Только `Unit`. |
+| `LevelChunkMixin` | `LevelChunk` | Пометка чанка для кэша проходимости при `rtsPathfinding`. | Гейт геймрулом. |
+| `HoglinMixin` / `IronGolemMixin` | `Hoglin` / `IronGolem` | Уклонение при атаке **юнита**. | Только цель `Unit`. |
 | `VexMixin` | `Vex` | Пустой инжект `tick`. | Ничего. |
-| `WitchMixin` | `Witch` | Пересоздаёт цели лечения/атаки, если они `null`. | В ванили не `null` → no-op. |
-| `ArmorStandMixin` | `ArmorStand` | Атака мобом по стойке **отменяется** (стойка не получает урон) и, если она в строении, наносит урон строению. | **Да**: любая стойка мира не получает урон от мобов. Кандидат на сужение до стоек внутри строений. |
-| `AbstractArrowMixin` | `AbstractArrow` | `@Overwrite` `canHitEntity` и `onHitEntity` (полная копия ванильной логики + боеприпасы-прошивка юнитов), `tick` — угол nophysics-стрел, `tickDespawn` — укороченная жизнь стрел **юнитов**, `onHitBlock`/коллизия — игнор строения для гарнизонных юнитов. | **Да, но эквивалентно ванили** для не-юнитов; риск совместимости (полный overwrite). |
-| `UnitInventoryMobMixin` | `Mob` | Даёт **каждому** мобу 6-слотовый инвентарь; NBT `reignofnether:UnitItems` пишется только при непустом инвентаре; выброс предметов при смерти. | Инертно, пока инвентарь не используется; тег появляется только у несущих. |
-| `StructureBlockEntityMixin` | `StructureBlockEntity` | Варианты `updateBlockState`/`getRelatedCorners` для `RTSStructureBlockEntity`. | Только модовый блок. |
-| `DataCommandsMixin` | `DataCommands` | Добавляет провайдер `/data … building` в ванильное дерево команд. | Да — в команды. |
-| `ExecuteCommandMixin` | `ExecuteCommand` | Добавляет подкоманды `/execute …` (owner/…). | Да — в команды. |
+| `WitchMixin` | `Witch` | Пересоздаёт цели, если они `null`. | В ванили no-op. |
+| `AbstractArrowMixin` | `AbstractArrow` | **Без `@Overwrite`**: инъекция в `canHitEntity` только обнуляет результат для стрел юнита; `onHitEntity` перехватывается и копия ванильной логики применяется **только стрелам юнита**; угол nophysics-стрел — только юнитам; укороченная жизнь и игнор строения — только юнитам. | Стрелы игрока/ванильных мобов идут ванильным путём. |
+| `UnitInventoryMobMixin` | `Mob` | Даёт **каждому** мобу 6-слотовый контейнер; NBT-тег только при непустом; выброс при смерти. **Сохранён как фреймворк** (план §1): любой моб может быть юнитом, иного общего предка у юнитов нет. | Инертно, пока инвентарь не используется. |
+| `StructureBlockEntityMixin` | `StructureBlockEntity` | Варианты для `RTSStructureBlockEntity`. | Только модовый блок. |
+| `DataCommandsMixin` | `DataCommands` | Добавляет провайдер `/data … building`. **Оставлен по решению владельца.** | Да — расширяет команды. |
+| `ExecuteCommandMixin` | `ExecuteCommand` | Добавляет подкоманды `/execute … building`. **Оставлен по решению владельца.** | Да — расширяет команды. |
 
-## 2. Клиентские (client) миксины — 11
+**Удалён:** `ArmorStandMixin` — стойки в строениях не используются, ванильная неуязвимость стоек к
+моб-атакам больше не отменяется.
 
-Почти все активны **только** в орторежиме (`OrthoviewClientEvents.isEnabled()`) или при модовом
-контенте:
+## 2. Клиентские (client) миксины — 11, почти все только в орторежиме
 
-| Миксин | Цель | Что делает | Ваниль вне RTS |
-|---|---|---|---|
-| `OrthoViewMixin` | `GameRenderer` | Ортографическая матрица проекции. | Только орто. |
-| `CameraMixin` | `Camera` | Отодвигает/наклоняет камеру. | Только орто. |
-| `FrustumMixin` | `Frustum` | Заглушка `offsetToFullyIncludeCameraCube` (иначе залипание). | Только орто. |
-| `RenderChunkRegionMixin` | `RenderChunkRegion` | Подмена листвы/снега на стекло/воздух (режимы листвы). | Только орто + включённый режим листвы. |
-| `MixinMinecraft` | `Minecraft` | Возвращает обработку клавиш под `TopdownGui`. | Только при открытом TopdownGui. |
-| `ChatComponentMixin` | `ChatComponent` | Сдвиг Y кликов по чату. | Только орто. |
-| `ClientLevelMixin` | `ClientLevel` | Звук ортокак-будто-на-земле; `tickTime` — только при источнике ночи (контент удалён → no-op); `getSkyColor` — при кровавой луне (удалена → no-op); `setServerVerifiedBlockState`/`addDestroyBlockEffect` — dead-код (`if(false)`). | Фактически только орто/звук; остальное инертно. |
-| `ClientPacketMixin` | `ClientPacketListener` | Учёт времени; отмены пакета нет. | Inertный. |
-| `CycleButtonMixin` | `CycleButton` | Не показывает экран LOAD для RTS-структурного блока. | Только модовый блок. |
-| `ResourceLoadStateTrackerMixin` | `ResourceLoadStateTracker` | Пересборка кнопок способностей после смены языка. | Не влияет на ваниль. |
+`OrthoViewMixin`, `CameraMixin`, `FrustumMixin`, `RenderChunkRegionMixin`, `MixinMinecraft`,
+`ChatComponentMixin`, `CycleButtonMixin`, `ResourceLoadStateTrackerMixin` — активны только в
+орторежиме / модовом контексте. `ClientLevelMixin`/`ClientPacketMixin` — звук только в орто;
+`tickTime`/`getSkyColor` инертны (контент удалён); `setServerVerifiedBlockState`/
+`addDestroyBlockEffect` — мёртвый код (`if(false)`).
 
 ## 3. Не-миксиновые изменения
 
-- **Геймрулы.** Мод регистрирует 20 своих геймрулов (`doLogFalling`, `neutralAggro`,
-  `doPlayerGriefing`, `groundYLevel`, `flyingMaxYLevel`, `allowBeacons`, `beaconWinMinutes`,
-  `pvpModesOnly`, `slantedBuilding`, `allowedHeroes`, `lockAlliances`, `doNetherConversion`,
-  `buildingsOutsideBorder`, `reignofnetherRtsMap`, `rtsPathfinding`, `pathfindingThreads`,
-  `pathfindingChunkBuildsPerTick`, `animalSpawnYDiff`, `randomItemDrops`, `maxPopulation`).
-  Ванильные геймрулы мод больше **не переопределяет**. `doPlayerGriefing` после правки прогона 4
-  **ни на что не влияет** (оставлен зарегистрированным).
-  Дефолты, меняющие «ванильное поведение при первом запуске», у всех `false`/безопасные.
-- **`data/reignofnether/functions`** — нет. **`data/minecraft/functions`** — нет.
-- **Время суток**: сервер его не форсит; клиент трогает только рядом с источником ночного искажения
-  (контент удалён).
-- **Союз/команды**: `/rtsapi`, `/execute rts-*`, `/data … building` — расширения команд.
+- **Геймрулы — 12** (было 20). Оставлены только те, что реально читаются:
+  `doLogFalling`, `neutralAggro`, `maxPopulation`, `slantedBuilding`, `lockAlliances`,
+  `doNetherConversion`, `buildingsOutsideBorder`, `reignofnetherRtsMap`, `rtsPathfinding`,
+  `pathfindingThreads`, `pathfindingChunkBuildsPerTick`, `animalSpawnYDiff`.
+  Ванильные геймрулы мод **не переопределяет**.
+  **Удалены** (не имели читателей): `doPlayerGriefing`, `groundYLevel`, `flyingMaxYLevel`,
+  `allowBeacons`, `pvpModesOnly`, `beaconWinMinutes`, `allowedHeroes`, `randomItemDrops`
+  (и enum `RandomItemDropRule`). Потолок высоты для летающих юнитов теперь `Unit.getFlyingMaxY()`
+  (по умолчанию 320, юнит может переопределить).
+- **Команды**: `/rtsapi`, `/execute … building …`, `/data … building` — расширения командного
+  дерева (последние два — осознанно оставлены).
+- **Время суток** сервер не форсит.
 
-## 4. Известные «глобальные» шероховатости (кандидаты на сужение)
+## 4. Осознанно оставленные интрузии
 
-1. `ArmorStandMixin` — моб-атака по любой стойке в мире не наносит урона (не только по стойкам
-   внутри строений).
-2. `AbstractArrowMixin` — `@Overwrite` `canHitEntity`/`onHitEntity` для всех стрел; для не-юнитов
-   эквивалентно ванили, но ломается при обновлении vanilla-логики.
-3. `DataCommandsMixin`/`ExecuteCommandMixin` — расширяют ванильное дерево команд.
-4. `UnitInventoryMobMixin` — добавляет инвентарь каждому мобу (инертно, но тег возможен).
-5. `LivingEntityMixin` — общий редирект урона на `LivingEntity` (гейт по `AttackerUnit`, но точка
-   инъекции на всю иерархию).
+1. `DataCommandsMixin`/`ExecuteCommandMixin` — расширяют ванильное дерево `/data` и `/execute`
+   (только модовые цели `building`; решение владельца — оставить).
+2. `UnitInventoryMobMixin` — контейнер у всех мобов; сужение невозможно без потери фреймворка.
+3. `LivingEntityMixin` — редиректы на `LivingEntity.hurt`/`actuallyHurt` (иначе не перехватить урон
+   юнитов); поведение гейтится `AttackerUnit`/`Unit`.
+4. `AbstractArrowMixin` — перехват `onHitEntity` копией ванильной логики (только для стрел юнита).

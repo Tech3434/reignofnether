@@ -127,6 +127,16 @@ H.1–H.8 сделаны (`15bd1a69`): пропуск = право операт�
 
 **Инвентаризация изменений ванильных механик** — `docs/VANILLA_CHANGES.md`.
 
+**Сужение ванильных изменений (2026-10-08).** Удалён `ArmorStandMixin`; удалены 8 геймрулов без
+читателей (`doPlayerGriefing`, `groundYLevel`, `flyingMaxYLevel`, `allowBeacons`, `pvpModesOnly`,
+`beaconWinMinutes`, `allowedHeroes`, `randomItemDrops`) — потолок полёта теперь
+`Unit.getFlyingMaxY()` (default 320, оверрайд на юнит); `AbstractArrowMixin` больше без `@Overwrite`
+(ванильные стрелы не трогаются); `LivingEntityMixin` сужен (партиклы левитации только юнитам,
+мёртвый код убран). Командные миксины `/data`/`/execute` и `UnitInventoryMobMixin` оставлены по
+решению владельца. Гейты: `compileJava` ✅, `validateMixins` ✅ (47/30), `runData` ✅,
+`runServer` ✅ `Done (0.964s)!`. Разбор — `BUGS_RUNCLIENT.md` §«Сужение», сводка —
+`docs/VANILLA_CHANGES.md`.
+
 ### Документация
 
 * `FEATURES.md` и `INTRUSION_AUDIT.md` — актуализировать (снять удалённое, отметить читы/туман).

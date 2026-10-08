@@ -1,6 +1,5 @@
 package com.solegendary.reignofnether.unit.goals;
 
-import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.core.BlockPos;
@@ -74,7 +73,7 @@ public class FlyingMoveToTargetGoal extends MoveToTargetBlockGoal {
                     break;
             }
             BlockPos targetBp = bpGround.offset(0,10,0);
-            double maxHeight = this.mob.level().getGameRules().getRule(GameRuleRegistrar.FLYING_MAX_Y_LEVEL).get();
+            double maxHeight = this.mob instanceof Unit unit ? unit.getFlyingMaxY() : 320;
             if (targetBp.getY() > maxHeight)
                 targetBp = new BlockPos(targetBp.getX(), (int) maxHeight, targetBp.getZ());
 

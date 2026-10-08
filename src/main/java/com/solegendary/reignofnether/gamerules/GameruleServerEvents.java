@@ -31,53 +31,17 @@ public class GameruleServerEvents {
                 UnitServerEvents.maxPopulation = (int) args.get("value").getResult();
                 GameruleClientboundPacket.setMaxPopulation(UnitServerEvents.maxPopulation);
             }
-        } else if (nodes.get(1).getNode().getName().equals("groundYLevel")) {
-            Map<String, ParsedArgument<CommandSourceStack, ?>> args = evt.getParseResults().getContext().getArguments();
-            if (args.containsKey("value")) {
-                double groundYLevel = ((Integer) args.get("value").getResult()).doubleValue();
-                GameruleClientboundPacket.setGroundYLevel((long) groundYLevel);
-            }
-        }  else if (nodes.get(1).getNode().getName().equals("flyingMaxYLevel")) {
-            Map<String, ParsedArgument<CommandSourceStack, ?>> args = evt.getParseResults().getContext().getArguments();
-            if (args.containsKey("value")) {
-                double flyingMaxYLevel = ((Integer) args.get("value").getResult()).doubleValue();
-                GameruleClientboundPacket.setFlyingMaxYLevel((long) flyingMaxYLevel);
-            }
         } else if (nodes.get(1).getNode().getName().equals("neutralAggro")) {
             Map<String, ParsedArgument<CommandSourceStack, ?>> args = evt.getParseResults().getContext().getArguments();
             if (args.containsKey("value")) {
                 boolean value = (boolean) args.get("value").getResult();
                 GameruleClientboundPacket.setNeutralAggro(value);
             }
-        } else if (nodes.get(1).getNode().getName().equals("allowBeacons")) {
-            Map<String, ParsedArgument<CommandSourceStack, ?>> args = evt.getParseResults().getContext().getArguments();
-            if (args.containsKey("value")) {
-                boolean value = (boolean) args.get("value").getResult();
-                GameruleClientboundPacket.setAllowBeacons(value);
-            }
-        } else if (nodes.get(1).getNode().getName().equals("pvpModesOnly")) {
-            Map<String, ParsedArgument<CommandSourceStack, ?>> args = evt.getParseResults().getContext().getArguments();
-            if (args.containsKey("value")) {
-                boolean value = (boolean) args.get("value").getResult();
-                GameruleClientboundPacket.setPvpModesOnly(value);
-            }
-        } else if (nodes.get(1).getNode().getName().equals("beaconWinMinutes")) {
-            Map<String, ParsedArgument<CommandSourceStack, ?>> args = evt.getParseResults().getContext().getArguments();
-            if (args.containsKey("value")) {
-                double beaconWinMinutes = ((Integer) args.get("value").getResult()).doubleValue();
-                GameruleClientboundPacket.setBeaconWinMinutes((long) beaconWinMinutes);
-            }
         } else if (nodes.get(1).getNode().getName().equals("slantedBuilding")) {
             Map<String, ParsedArgument<CommandSourceStack, ?>> args = evt.getParseResults().getContext().getArguments();
             if (args.containsKey("value")) {
                 boolean value = (boolean) args.get("value").getResult();
                 GameruleClientboundPacket.setSlantedBuilding(value);
-            }
-        } else if (nodes.get(1).getNode().getName().equals("allowedHeroes")) {
-            Map<String, ParsedArgument<CommandSourceStack, ?>> args = evt.getParseResults().getContext().getArguments();
-            if (args.containsKey("value")) {
-                double value = ((Integer) args.get("value").getResult()).doubleValue();
-                GameruleClientboundPacket.setAllowedHeroes((long) value);
             }
         } else if (nodes.get(1).getNode().getName().equals("lockAlliances")) {
             Map<String, ParsedArgument<CommandSourceStack, ?>> args = evt.getParseResults().getContext().getArguments();
@@ -129,22 +93,8 @@ public class GameruleServerEvents {
             GameruleClientboundPacket.setNeutralAggro(neutralAggro);
             int maxPopulation = server.getGameRules().getInt(GameRuleRegistrar.MAX_POPULATION);
             GameruleClientboundPacket.setMaxPopulation(maxPopulation);
-            boolean playerGriefing = server.getGameRules().getRule(GameRuleRegistrar.DO_PLAYER_GRIEFING).get();
-            GameruleClientboundPacket.setPlayerGriefing(playerGriefing);
-            int groundYLevel = server.getGameRules().getRule(GameRuleRegistrar.GROUND_Y_LEVEL).get();
-            GameruleClientboundPacket.setGroundYLevel(groundYLevel);
-            int flyingMaxYLevel = server.getGameRules().getRule(GameRuleRegistrar.FLYING_MAX_Y_LEVEL).get();
-            GameruleClientboundPacket.setFlyingMaxYLevel(flyingMaxYLevel);
-            boolean allowBeacons = server.getGameRules().getRule(GameRuleRegistrar.ALLOW_BEACONS).get();
-            GameruleClientboundPacket.setAllowBeacons(allowBeacons);
-            boolean pvpModesOnly = server.getGameRules().getRule(GameRuleRegistrar.PVP_MODES_ONLY).get();
-            GameruleClientboundPacket.setPvpModesOnly(pvpModesOnly);
-            int beaconWinMinutes = server.getGameRules().getRule(GameRuleRegistrar.BEACON_WIN_MINUTES).get();
-            GameruleClientboundPacket.setBeaconWinMinutes(beaconWinMinutes);
             boolean slantedBuilding = server.getGameRules().getRule(GameRuleRegistrar.SLANTED_BUILDING).get();
             GameruleClientboundPacket.setSlantedBuilding(slantedBuilding);
-            int allowHeroes = server.getGameRules().getRule(GameRuleRegistrar.ALLOWED_HEROES).get();
-            GameruleClientboundPacket.setAllowedHeroes(allowHeroes);
             boolean lockAlliances = server.getGameRules().getRule(GameRuleRegistrar.LOCK_ALLIANCES).get();
             GameruleClientboundPacket.setLockAlliances(lockAlliances);
             boolean buildingsOutsideBorder = server.getGameRules().getRule(GameRuleRegistrar.BUILDINGS_OUTSIDE_BORDER).get();

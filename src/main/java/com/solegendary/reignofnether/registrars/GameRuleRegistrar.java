@@ -2,7 +2,6 @@ package com.solegendary.reignofnether.registrars;
 
 import com.solegendary.reignofnether.resources.ResourceCosts;
 import com.solegendary.reignofnether.unit.pathfinding.PathfinderConfig;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.GameRules;
 
 public class GameRuleRegistrar {
@@ -10,14 +9,7 @@ public class GameRuleRegistrar {
     public static GameRules.Key<GameRules.BooleanValue> LOG_FALLING;
     public static GameRules.Key<GameRules.BooleanValue> NEUTRAL_AGGRO;
     public static GameRules.Key<GameRules.IntegerValue> MAX_POPULATION;
-    public static GameRules.Key<GameRules.BooleanValue> DO_PLAYER_GRIEFING;
-    public static GameRules.Key<GameRules.IntegerValue> GROUND_Y_LEVEL;
-    public static GameRules.Key<GameRules.IntegerValue> FLYING_MAX_Y_LEVEL;
-    public static GameRules.Key<GameRules.BooleanValue> ALLOW_BEACONS;
-    public static GameRules.Key<GameRules.IntegerValue> BEACON_WIN_MINUTES;
-    public static GameRules.Key<GameRules.BooleanValue> PVP_MODES_ONLY;
     public static GameRules.Key<GameRules.BooleanValue> SLANTED_BUILDING;
-    public static GameRules.Key<GameRules.IntegerValue> ALLOWED_HEROES;
     public static GameRules.Key<GameRules.BooleanValue> LOCK_ALLIANCES;
     public static GameRules.Key<GameRules.BooleanValue> DO_NETHER_CONVERSION;
     public static GameRules.Key<GameRules.BooleanValue> BUILDINGS_OUTSIDE_BORDER;
@@ -26,7 +18,6 @@ public class GameRuleRegistrar {
     public static GameRules.Key<GameRules.IntegerValue> PATHFINDING_THREADS;
     public static GameRules.Key<GameRules.IntegerValue> PATHFINDING_CHUNK_BUILDS;
     public static GameRules.Key<GameRules.IntegerValue> ANIMAL_SPAWN_Y_DIFF;
-    public static GameRules.Key<GameRules.IntegerValue> RANDOM_ITEM_DROPS;
 
     public static void init() {
         // felling a tree turned neighbouring logs into mod falling-log blocks with their own loot tables; off by default so a vanilla world is unaffected
@@ -41,37 +32,9 @@ public class GameRuleRegistrar {
         MAX_POPULATION = GameRules.register("maxPopulation", GameRules.Category.MISC,
                 GameRules.IntegerValue.create(ResourceCosts.DEFAULT_MAX_POPULATION)
         );
-        // the mod overrode the vanilla default of false, so players could break blocks where vanilla forbids it; off by default so a vanilla world is unaffected
-        DO_PLAYER_GRIEFING = GameRules.register("doPlayerGriefing", GameRules.Category.PLAYER,
-                GameRules.BooleanValue.create(false)
-        );
-        // sets the minimum Y level for the camera so it doesn't fall into the void
-        GROUND_Y_LEVEL = GameRules.register("groundYLevel", GameRules.Category.PLAYER,
-                GameRules.IntegerValue.create(-320)
-        );
-        // locks the camera to a specific Y level instead of it being calculated dynamically
-        FLYING_MAX_Y_LEVEL = GameRules.register("flyingMaxYLevel", GameRules.Category.MOBS,
-                GameRules.IntegerValue.create(320)
-        );
-        // allow beacons to be built by workers as a win condition
-        ALLOW_BEACONS = GameRules.register("allowBeacons", GameRules.Category.PLAYER,
-                GameRules.BooleanValue.create(true)
-        );
-        // allow only classic/king of the beacon gamemodes
-        PVP_MODES_ONLY = GameRules.register("pvpModesOnly", GameRules.Category.PLAYER,
-                GameRules.BooleanValue.create(false)
-        );
-        // ticks to win with a beacon
-        BEACON_WIN_MINUTES = GameRules.register("beaconWinMinutes", GameRules.Category.PLAYER,
-                GameRules.IntegerValue.create(10)
-        );
         // buildings ignore ground flatness
         SLANTED_BUILDING = GameRules.register("slantedBuilding", GameRules.Category.PLAYER,
                 GameRules.BooleanValue.create(false)
-        );
-        // enable heroes in all gamemodes
-        ALLOWED_HEROES = GameRules.register("allowedHeroes", GameRules.Category.PLAYER,
-                GameRules.IntegerValue.create(2)
         );
         // only allow alliances to be made/broken with non-RTS players (ie. before a game starts)
         LOCK_ALLIANCES = GameRules.register("lockAlliances", GameRules.Category.PLAYER,
@@ -86,19 +49,14 @@ public class GameRuleRegistrar {
                 GameRules.BooleanValue.create(false)
         );
         // treat this world as purpose-built for RTS. Gates every mode that assumes a small bounded play
-        // area: the navmesh prewarm, the fog-of-war chunk snapshot, and fog of war itself.
-        // OFF by default and never inferred from the world border: a reduced border is a normal thing for
-        // a modpack survival map to have, and generating a whole border on server start is not something a
-        // world should get without being asked. The border size stays as a second condition - a small border
-        // is still required for the bounded-area assumption to hold - but it no longer opts you in by itself.
-        // Set with /gamerule reignofnetherRtsMap true on maps you want treated as RTS maps.
+        // area: the navmesh prewarm and the RTS pathfinder. OFF by default and never inferred from the
+        // world border. Set with /gamerule reignofnetherRtsMap true on maps you want treated as RTS maps.
         RTS_MAP = GameRules.register("reignofnetherRtsMap", GameRules.Category.MISC,
                 GameRules.BooleanValue.create(false)
         );
         // use the RTS-optimised pathfinder (async grid A*, walkability cache) instead of vanilla.
         // Enabled at world load for worlds with reignofnetherRtsMap on, which also prewarms the navmesh.
         // Off otherwise.
-        // May cause additional TPS lag on worlds without world borders as they will not have a pregenerated navmesh
         RTS_PATHFINDING = GameRules.register("rtsPathfinding", GameRules.Category.MOBS,
                 GameRules.BooleanValue.create(false)
         );
@@ -116,17 +74,5 @@ public class GameRuleRegistrar {
         ANIMAL_SPAWN_Y_DIFF = GameRules.register("animalSpawnYDiff", GameRules.Category.MOBS,
                 GameRules.IntegerValue.create(5)
         );
-        // Difference in level that animals can spawn around capitols at
-        RANDOM_ITEM_DROPS = GameRules.register("randomItemDrops", GameRules.Category.DROPS,
-                boundedInt(1, 0, 2)
-        );
-    }
-
-    private static GameRules.Type<GameRules.IntegerValue> boundedInt(int def, int min, int max) {
-        return GameRules.IntegerValue.create(def, (server, value) -> {
-            int clamped = Mth.clamp(value.get(), 0, 2);
-            if (clamped != value.get())
-                value.set(clamped, server); // only re-set if different, avoids infinite recursion
-        });
     }
 }

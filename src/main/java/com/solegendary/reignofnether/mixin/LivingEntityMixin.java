@@ -8,17 +8,12 @@ import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
 import com.solegendary.reignofnether.util.MiscUtil;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.CombatTracker;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffect;
@@ -28,11 +23,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.util.BlockSnapshot;
 import org.spongepowered.asm.mixin.Mixin;
@@ -42,8 +33,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.Iterator;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
@@ -57,63 +46,9 @@ public abstract class LivingEntityMixin extends Entity {
             at = @At("TAIL")
     )
     public void tick(CallbackInfo ci) {
-        if (this.level().isClientSide())
-            if (this.hasEffect(MobEffects.LEVITATION))
-                MiscUtil.spawnFlyingCloudParticles(this);
-    }
-
-    @Inject(
-            method = "onChangedBlock",
-            at = @At("TAIL"),
-            cancellable = true
-    )
-    protected void onChangedBlock(ServerLevel pLevel, BlockPos pPos, CallbackInfo ci) {
-    }
-
-    // copied from FrostWalkerEnchantment.onEntityMoved
-    private void FrostWalkerOnEntityMoved(LivingEntity pLiving, Level pLevel, BlockPos pPos, int pLevelConflicting) {
-        if (pLiving.onGround()) {
-
-            float f = (float)Math.min(16, 2 + pLevelConflicting);
-            BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
-            Iterator var7 = BlockPos.betweenClosed(pPos.offset((int) -f, (int) -1.0, (int) -f), pPos.offset((int) f, (int) -1.0, (int) f)).iterator();
-
-            while(true) {
-                BlockPos blockpos;
-                BlockState blockstate1;
-                do {
-                    do {
-                        if (!var7.hasNext()) {
-                            return;
-                        }
-                        blockpos = (BlockPos)var7.next();
-                    } while(!blockpos.closerToCenterThan(pLiving.position(), f));
-
-                    blockpos$mutableblockpos.set(blockpos.getX(), blockpos.getY() + 1, blockpos.getZ());
-                    blockstate1 = pLevel.getBlockState(blockpos$mutableblockpos);
-                } while(!blockstate1.isAir());
-
-                BlockState blockstate2 = pLevel.getBlockState(blockpos);
-                boolean isFull = blockstate2.getBlock() == Blocks.WATER && blockstate2.getValue(LiquidBlock.LEVEL) == 0;
-
-                BlockState iceState = Blocks.FROSTED_ICE.defaultBlockState();
-                if (blockstate2.getFluidState().is(FluidTags.WATER) && isFull &&
-                        pLevel.isUnobstructed(iceState, blockpos, CollisionContext.empty())) {
-
-                    pLevel.setBlockAndUpdate(blockpos, iceState);
-                    pLevel.scheduleTick(blockpos, Blocks.FROSTED_ICE, Mth.nextInt(pLiving.getRandom(), 60, 120));
-                }
-
-                isFull = blockstate2.getBlock() == Blocks.LAVA && blockstate2.getValue(LiquidBlock.LEVEL) == 0;
-                BlockState magmaState = Blocks.NETHERRACK.defaultBlockState();
-                if (blockstate2.getFluidState().is(FluidTags.LAVA) && isFull &&
-                        pLevel.isUnobstructed(magmaState, blockpos, CollisionContext.empty())) {
-
-                    pLevel.setBlockAndUpdate(blockpos, magmaState);
-                    pLevel.scheduleTick(blockpos, Blocks.NETHERRACK, Mth.nextInt(pLiving.getRandom(), 60, 120));
-                }
-            }
-        }
+        // only units get the mod's flight trail; vanilla entities with levitation are untouched
+        if (this.level().isClientSide() && this instanceof Unit && this.hasEffect(MobEffects.LEVITATION))
+            MiscUtil.spawnFlyingCloudParticles(this);
     }
 
     @Shadow protected float getDamageAfterArmorAbsorb(DamageSource pDamageSource, float pDamageAmount) { return 0f; }

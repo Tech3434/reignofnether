@@ -38,7 +38,6 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -113,7 +112,7 @@ public abstract class AbstractArrowMixin extends Projectile {
             at = @At("TAIL")
     )
     public void tick(CallbackInfo ci) {
-        if (this.isNoPhysics()) {
+        if (this.isNoPhysics() && this.getOwner() instanceof Unit) {
             Vec3 vec3 = this.getDeltaMovement();
             double d4 = vec3.horizontalDistance();
             double d6 = vec3.y;
@@ -166,14 +165,20 @@ public abstract class AbstractArrowMixin extends Projectile {
                         !unit1.getTargetGoal().getTarget().equals(unit2));
     }
 
-    // Overwrites AbstractArrow#canHitEntity to add the unit-specific exclusions. Mixin merges an
-    // unannotated method of a matching signature as an implicit overwrite, which is fragile and
-    // invisible; declare it so a rename upstream fails loudly instead of silently.
-    @Overwrite
-    protected boolean canHitEntity(Entity entity) {
-        return super.canHitEntity(entity) &&
-                (this.piercingIgnoreEntityIds == null || !this.piercingIgnoreEntityIds.contains(entity.getId())) &&
-                !reignofnether$collidedWithUntargetedAlly(entity);
+    // Add the unit-specific exclusions (already-pierced entities, untargeted allies) without
+    // overwriting the vanilla method: the result is only ever forced to false for arrows owned by a
+    // Unit, so arrows from players and vanilla mobs keep stock canHitEntity behaviour.
+    @Inject(
+            method = "canHitEntity",
+            at = @At("RETURN"),
+            cancellable = true
+    )
+    private void reignofnether$canHitEntity(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        if (cir.getReturnValue() && this.getOwner() instanceof Unit) {
+            if ((this.piercingIgnoreEntityIds != null && this.piercingIgnoreEntityIds.contains(entity.getId())) ||
+                    reignofnether$collidedWithUntargetedAlly(entity))
+                cir.setReturnValue(false);
+        }
     }
 
     // replace bounce logic (on hitting an enemy at the time as another arrow) with pierce logic instead
@@ -183,6 +188,10 @@ public abstract class AbstractArrowMixin extends Projectile {
             cancellable = true
     )
     protected void onHitEntity(EntityHitResult pResult, CallbackInfo ci) {
+        // Only unit arrows use the pierce/garrison copy below; arrows from players and vanilla mobs
+        // fall through to vanilla onHitEntity untouched.
+        if (!(this.getOwner() instanceof Unit))
+            return;
         ci.cancel();
         Entity entity = pResult.getEntity();
 
