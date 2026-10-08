@@ -31,7 +31,7 @@ import java.util.Set;
  * Makes every {@link Mob} an {@link Unit} carrying the generic unit state (plan `CONTENT_JSON_PLAN.md`).
  *
  * <p>A mob is only a real RTS unit when it has a definition attached - {@link #isRtsUnit()} returns true
- * only when {@code ron$definitionId} is set (by a data-driven spawn). Every {@code instanceof Unit}
+ * only when {@code ron$definitionId} is set (by a data-driven spawn). Every {@Unit.isUnit(code)}
  * check in the codebase must be gated on {@code isRtsUnit()}, otherwise all vanilla mobs would be
  * treated as units. Code unit classes (the templates) override {@code isRtsUnit()} back to true.
  *

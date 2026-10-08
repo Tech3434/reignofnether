@@ -78,7 +78,7 @@ public class GenericUntargetedSpellGoal extends Goal {
                             heroUnit.setMana(heroUnit.getMana() - heroAbility.manaCost);
                         }
                     }
-                    else if (mob instanceof Unit unit) {
+                    else if (mob instanceof Unit unit && unit.isRtsUnit()) {
                         this.ability.setToMaxCooldown(unit);
                     }
                 }

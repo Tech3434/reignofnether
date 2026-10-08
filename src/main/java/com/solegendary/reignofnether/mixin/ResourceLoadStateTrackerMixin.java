@@ -22,7 +22,7 @@ public abstract class ResourceLoadStateTrackerMixin {
     )
     protected void onDone(CallbackInfo ci) {
         for (LivingEntity le : UnitClientEvents.getAllUnits())
-            if (le instanceof Unit unit)
+            if (le instanceof Unit unit && unit.isRtsUnit())
                 unit.updateAbilityButtons();
 
         for (BuildingPlacement building : BuildingClientEvents.getBuildings())

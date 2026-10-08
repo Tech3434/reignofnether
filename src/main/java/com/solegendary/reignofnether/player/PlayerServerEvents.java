@@ -248,7 +248,7 @@ public class PlayerServerEvents {
 
     private static void syncUnits() {
         for (LivingEntity entity : UnitServerEvents.getAllUnits()) {
-            if (entity instanceof Unit unit) {
+            if (entity instanceof Unit unit && unit.isRtsUnit()) {
                 UnitSyncClientboundPacket.sendSyncResourcesPacket(unit);
                 UnitSyncClientboundPacket.sendSyncOwnerNamePacket(unit);
                 if (unit.getAnchor() != null)
@@ -858,7 +858,7 @@ public class PlayerServerEvents {
      */
     public static void neutraliseUnitsOf(String playerName) {
         for (LivingEntity entity : new ArrayList<>(UnitServerEvents.getAllUnits())) {
-            if (!(entity instanceof Unit unit) || !unit.getOwnerName().equals(playerName))
+            if (!(entity instanceof Unit unit && unit.isRtsUnit()) || !unit.getOwnerName().equals(playerName))
                 continue;
             com.solegendary.reignofnether.research.ResearchAttributeApplier.removeFor(unit);
             unit.setOwnerName("");
@@ -946,13 +946,13 @@ public class PlayerServerEvents {
             rtsPlayers.clear();
 
             for (LivingEntity entity : UnitServerEvents.getAllUnits())
-                if (hardReset || (entity instanceof Unit unit && !Unit.hasAnchor(unit)))
+                if (hardReset || (entity instanceof Unit unit && unit.isRtsUnit() && !Unit.hasAnchor(unit)))
                     entity.kill();
 
-            UnitServerEvents.getAllUnits().removeIf(u -> (hardReset || (u instanceof Unit unit && !Unit.hasAnchor(unit))));
+            UnitServerEvents.getAllUnits().removeIf(u -> (hardReset || (u instanceof Unit unit && unit.isRtsUnit() && !Unit.hasAnchor(unit))));
 
             for (LivingEntity entity : UnitServerEvents.getAllUnits())
-                if (entity instanceof Unit unit) {
+                if (entity instanceof Unit unit && unit.isRtsUnit()) {
                     com.solegendary.reignofnether.research.ResearchAttributeApplier.removeFor(unit);
                     unit.setOwnerName("");
                 }

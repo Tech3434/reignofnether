@@ -95,7 +95,7 @@ public abstract class EquipAbility extends Ability {
         BlockPos centreBottom = new BlockPos(buildingUsing.centrePos.getX(), buildingUsing.minCorner.getY(), buildingUsing.centrePos.getZ());
 
         if (!level.isClientSide() &&
-            te instanceof Unit unit &&
+            te instanceof Unit unit && unit.isRtsUnit() &&
             unit.getOwnerName().equals(buildingUsing.ownerName) &&
             isCorrectUnit(te) &&
             !isWindcaller(te) &&
@@ -109,7 +109,7 @@ public abstract class EquipAbility extends Ability {
             playSound(level, te);
 
         } else if (level.isClientSide()) {
-            if (!(te instanceof Unit unit && unit.getOwnerName().equals(buildingUsing.ownerName))) {
+            if (!(te instanceof Unit unit && unit.isRtsUnit() && unit.getOwnerName().equals(buildingUsing.ownerName))) {
                 HudClientEvents.showTemporaryMessage(I18n.get("ability.reignofnether.equip.error1"));
             } else if (te.distanceToSqr(Vec3.atCenterOf(centreBottom)) >= RANGE * RANGE) {
                 HudClientEvents.showTemporaryMessage(I18n.get("ability.reignofnether.equip.error2"));

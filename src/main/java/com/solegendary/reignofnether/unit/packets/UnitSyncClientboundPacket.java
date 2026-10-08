@@ -63,7 +63,7 @@ public class UnitSyncClientboundPacket  implements RTSSimplePayload {
 
     public static void sendSyncStatsPacket(List<ServerPlayer> players, LivingEntity entity) {
         String owner = "";
-        if (entity instanceof Unit unit)
+        if (entity instanceof Unit unit && unit.isRtsUnit())
             owner = unit.getOwnerName();
 
         for (ServerPlayer player : players) {
@@ -74,7 +74,7 @@ public class UnitSyncClientboundPacket  implements RTSSimplePayload {
                                 entity.getHealth(),
                                 entity.getAbsorptionAmount(),
                                 entity.getX(), entity.getY(), entity.getZ(),
-                                0,0,0,0, entity instanceof Unit unit ? unit.getCost().population : 0, owner)
+                                0,0,0,0, entity instanceof Unit unit && unit.isRtsUnit() ? unit.getCost().population : 0, owner)
                 );
             }
         }

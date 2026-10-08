@@ -62,7 +62,7 @@ public class AbilityServerboundPacket  implements RTSSimplePayload {
                 return;
             }
             for (LivingEntity entity : UnitServerEvents.getAllUnits()) {
-                if (entity.getId() == this.unitId && entity instanceof Unit unit) {
+                if (entity.getId() == this.unitId && entity instanceof Unit unit && unit.isRtsUnit()) {
 
                     if (!player.getName().getString().equals(unit.getOwnerName())) {
                         ReignOfNether.LOGGER.warn("AbilityServerboundPacket: Tried to process packet from " + player.getName() + " for: " + unit.getOwnerName());

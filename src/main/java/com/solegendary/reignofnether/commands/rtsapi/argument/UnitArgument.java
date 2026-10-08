@@ -65,7 +65,7 @@ public class UnitArgument implements ArgumentType<EntitySelector> {
 //	public static Unit getUnit(CommandContext<CommandSourceStack> pContext, String pName, String pOwner) throws CommandSyntaxException {
 //		EntitySelector selector = pContext.getArgument(pName, EntitySelector.class);
 //		Entity entity = selector.findSingleEntity(pContext.getSource());
-//		if (!(entity instanceof Unit unit) || entity instanceof Player) {
+//		if (!(entity instanceof Unit unit && unit.isRtsUnit()) || entity instanceof Player) {
 //			throw NO_UNITS_FOUND.create();
 //		}
 //		if (pOwner != null && !Objects.equals(unit.getOwnerName(), pOwner)) {
@@ -87,7 +87,7 @@ public class UnitArgument implements ArgumentType<EntitySelector> {
 		Collection<? extends Entity> entities = selector.findEntities(pContext.getSource());
 		List<Unit> units = new ArrayList<>();
 		for (Entity entity : entities) {
-			if (entity instanceof Unit unit && (pOwner == null || unit.getOwnerName().equals(pOwner)))
+			if (entity instanceof Unit unit && unit.isRtsUnit() && (pOwner == null || unit.getOwnerName().equals(pOwner)))
 				units.add(unit);
 		}
 		return units;

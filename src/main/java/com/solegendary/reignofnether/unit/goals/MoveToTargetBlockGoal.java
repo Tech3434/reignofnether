@@ -79,7 +79,7 @@ public class MoveToTargetBlockGoal extends Goal {
     }
 
     public boolean canUse() {
-        if (this.mob instanceof Unit unit && unit.isFlyingUnit())
+        if (this.mob instanceof Unit unit && unit.isRtsUnit() && unit.isFlyingUnit())
             return false;
         return moveTarget != null;
     }
@@ -139,7 +139,7 @@ public class MoveToTargetBlockGoal extends Goal {
             this.mob.getNavigation().stop();
             return;
         }
-        if (!(this.mob instanceof Unit u)) {
+        if (!(this.mob instanceof Unit u && u.isRtsUnit())) {
             this.mob.getNavigation().stop();
             return;
         }
@@ -215,7 +215,7 @@ public class MoveToTargetBlockGoal extends Goal {
         boolean wasRepath = pendingRepath;
         pendingRepath = false;
         if (moveTarget == null) { repathFromFinalNode = null; return; }
-        if (!(this.mob instanceof Unit u)) {
+        if (!(this.mob instanceof Unit u && u.isRtsUnit())) {
             this.mob.getNavigation().stop();
             return;
         }
@@ -327,7 +327,7 @@ public class MoveToTargetBlockGoal extends Goal {
         pathRequestSeq++; // cancel any in-flight path so a late result can't restart movement after a stop.
         this.moveTarget = null;
         this.mob.getNavigation().stop();
-        if (this.mob.isVehicle() && this.mob.getPassengers().get(0) instanceof Unit unit)
+        if (this.mob.isVehicle() && this.mob.getPassengers().get(0) instanceof Unit unit && unit.isRtsUnit())
             unit.getMoveGoal().stopMoving();
     }
 }

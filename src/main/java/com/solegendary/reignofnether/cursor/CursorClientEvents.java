@@ -278,7 +278,7 @@ public class CursorClientEvents {
             int priority = 0;
             if (le instanceof HeroUnit)
                 priority += 5;
-            if (le instanceof Unit unit) {
+            if (le instanceof Unit unit && unit.isRtsUnit()) {
                 priority += 1;
                 priority += unit.getAbilities().get().size();
                 priority += unit.getCost().population;
@@ -295,7 +295,7 @@ public class CursorClientEvents {
 
             // inflate by set amount to improve click accuracy
             AABB entityaabb = entity.getBoundingBox().inflate(0.1);
-            if (entity instanceof Unit unit) {
+            if (entity instanceof Unit unit && unit.isRtsUnit()) {
                 entityaabb = unit.getInflatedSelectionBox();
             } else if (entity instanceof Chicken) {
                 entityaabb = entityaabb.inflate(0.2f, 0, 0.2f);
@@ -640,7 +640,7 @@ public class CursorClientEvents {
             if (MC.level != null) {
                 // if we have a worker selected then include resource blocks that would otherwise be ignored like plants
                 boolean isBlockSelectableResource = false;
-                if (HudClientEvents.hudSelectedEntity instanceof Unit workerUnit)
+                if (HudClientEvents.hudSelectedEntity instanceof Unit workerUnit && workerUnit.isRtsUnit())
                     isBlockSelectableResource = ResourceSources.getFromBlockPos(block, MC.level) != null;
 
                 BlockState bs = MC.level.getBlockState(block);

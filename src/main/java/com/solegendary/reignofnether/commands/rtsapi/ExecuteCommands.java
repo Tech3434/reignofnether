@@ -55,7 +55,7 @@ public class ExecuteCommands {
 							List<CommandSourceStack> list = Lists.newArrayList();
 							
 							Entity entity = ctx.getSource().getEntity();
-							if (entity instanceof Unit unit) {
+							if (entity instanceof Unit unit && unit.isRtsUnit()) {
 								String ownerName = unit.getOwnerName();
 								if (ownerName != null && !ownerName.isEmpty()) {
 									ServerPlayer ownerPlayer = ctx.getSource().getServer().getPlayerList().getPlayerByName(ownerName);
@@ -108,7 +108,7 @@ public class ExecuteCommands {
 							List<CommandSourceStack> list = Lists.newArrayList();
 							
 							Entity entity = ctx.getSource().getEntity();
-							if (entity instanceof Unit unit) {
+							if (entity instanceof Unit unit && unit.isRtsUnit()) {
 								DamageSource source = ((Mob) unit).getLastDamageSource();
 								if (source != null) {
 									Entity attacker = source.getEntity();

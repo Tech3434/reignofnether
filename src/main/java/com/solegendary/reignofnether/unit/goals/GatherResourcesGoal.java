@@ -151,7 +151,7 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
         // not targeted by another nearby worker
         AABB aabb = AABB.ofSize(this.mob.position(), REACH_RANGE * 2,REACH_RANGE * 2,REACH_RANGE * 2);
         for (LivingEntity entity : this.mob.level().getNearbyEntities(LivingEntity.class, TargetingConditions.forNonCombat(), this.mob, aabb)) {
-            if (entity instanceof Unit unit) {
+            if (entity instanceof Unit unit && unit.isRtsUnit()) {
                 if (unit instanceof WorkerUnit workerUnit && workerUnit.getGatherResourceGoal() != null && entity.getId() != this.mob.getId()) {
                     BlockPos otherUnitTarget = workerUnit.getGatherResourceGoal().getGatherTarget();
                     if (otherUnitTarget != null && otherUnitTarget.equals(bp)) {

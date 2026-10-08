@@ -20,7 +20,7 @@ public class AlliancesClient {
         return MC.player != null && AlliancesClient.playersWithAlliedControl.contains(MC.player.getName().getString());
     }
     public static boolean canControlAlly(LivingEntity entity) {
-        return entity instanceof Unit unit && canControlAlly(unit.getOwnerName());
+        return entity instanceof Unit unit && unit.isRtsUnit() && canControlAlly(unit.getOwnerName());
     }
     public static boolean canControlAlly(Unit unit) {
         return canControlAlly(unit.getOwnerName());

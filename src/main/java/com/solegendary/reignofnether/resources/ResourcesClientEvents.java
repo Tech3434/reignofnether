@@ -135,7 +135,7 @@ public class ResourcesClientEvents {
             // remove checkpoints from a failed building placement since the client has no knowledge of resource costs
             if (msg.contains("not_enough")) {
                 for (LivingEntity entity : getSelectedUnits())
-                    if (entity instanceof Unit unit)
+                    if (entity instanceof Unit unit && unit.isRtsUnit())
                         if (((Entity) unit).level().isClientSide() && !Keybindings.shiftMod.isDown())
                             unit.getCheckpoints().clear();
             }

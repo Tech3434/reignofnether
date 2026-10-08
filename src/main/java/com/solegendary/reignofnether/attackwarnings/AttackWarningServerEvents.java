@@ -12,7 +12,7 @@ public class AttackWarningServerEvents {
         if (evt.getEntity().level().isClientSide())
             return;
 
-        if (evt.getEntity() instanceof Unit unit &&
+        if (evt.getEntity() instanceof Unit unit && unit.isRtsUnit() &&
                 !evt.getSource().is(DamageTypeTags.IS_FALL) &&
                 evt.getSource() != evt.getEntity().damageSources().starve() &&
                 evt.getSource() != evt.getEntity().damageSources().inWall() &&

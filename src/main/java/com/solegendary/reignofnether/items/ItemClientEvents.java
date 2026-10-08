@@ -191,7 +191,7 @@ public class ItemClientEvents {
             button.checkClickedReleased((int) evt.getMouseX(), (int) evt.getMouseY(), true);
 
         if (hasDragActionItem() && HudClientEvents.hudSelectedEntity instanceof UnitInventory inv
-                && HudClientEvents.hudSelectedEntity instanceof Unit unit) {
+                && HudClientEvents.hudSelectedEntity instanceof Unit unit && unit.isRtsUnit()) {
             Button mousedOverButton = getMousedOverSlot();
             Button hudMousedOverButton = HudClientEvents.getMousedOverButton();
 

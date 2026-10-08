@@ -156,7 +156,7 @@ public abstract class AbstractMeleeAttackUnitGoal extends Goal {
         if (mob instanceof AttackerUnit attackerUnit)
             width += attackerUnit.getBonusMeleeRange();
         float targetWidth = target.getBbWidth();
-        if (target instanceof Unit unit) {
+        if (target instanceof Unit unit && unit.isRtsUnit()) {
             targetWidth += unit.getBonusMeleeRangeForAttackers();
         }
         return width * 2.0F * width * 2.0F + targetWidth;

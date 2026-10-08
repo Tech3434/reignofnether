@@ -47,7 +47,7 @@ public abstract class LivingEntityMixin extends Entity {
     )
     public void tick(CallbackInfo ci) {
         // only units get the mod's flight trail; vanilla entities with levitation are untouched
-        if (this.level().isClientSide() && this instanceof Unit && this.hasEffect(MobEffects.LEVITATION))
+        if (this.level().isClientSide() && Unit.isUnit(this) && this.hasEffect(MobEffects.LEVITATION))
             MiscUtil.spawnFlyingCloudParticles(this);
     }
 
@@ -120,7 +120,7 @@ public abstract class LivingEntityMixin extends Entity {
             dmg *= 0.5f;
         }
 
-        if (this instanceof Unit unit) {
+        if (this instanceof Unit unit && unit.isRtsUnit()) {
             dmg *= (1 - unit.getUnitPhysicalArmorPercentage());
             if (isProjectile)
                 dmg *= (1 - unit.getUnitRangedArmorPercentage());
@@ -141,7 +141,7 @@ public abstract class LivingEntityMixin extends Entity {
             cancellable = true
     )
     private void ron$blockInterrupt(MobEffectInstance pInstance, Entity pSource, CallbackInfoReturnable<Boolean> cir) {
-        if (this instanceof Unit unit && unit.uninterruptable()
+        if (this instanceof Unit unit && unit.isRtsUnit() && unit.uninterruptable()
                 && MobEffectRegistrar.isInterrupt(pInstance.getEffect()))
             cir.setReturnValue(false);
     }

@@ -32,7 +32,7 @@ public class UnitSyncAbilityClientboundPacket  implements RTSSimplePayload {
     private final int[] abilityCharges;
 
     public static void sendSyncAbilitiesPacket(LivingEntity entity) {
-        if (entity instanceof Unit unit) {
+        if (entity instanceof Unit unit && unit.isRtsUnit()) {
             var abilities = unit.getAbilities().get();
             var abilityCooldowns = new int[abilities.size()];
             var abilityCharges = new int[abilities.size()];
@@ -90,7 +90,7 @@ public class UnitSyncAbilityClientboundPacket  implements RTSSimplePayload {
                     switch (this.syncAction) {
                         case SYNC_ABILITIES -> {
                             for (LivingEntity entity : UnitClientEvents.getAllUnits()) {
-                                if (entity.getId() == this.entityId && entity instanceof Unit unit) {
+                                if (entity.getId() == this.entityId && entity instanceof Unit unit && unit.isRtsUnit()) {
                                     for (int i = 0; i < unit.getAbilities().get().size(); i++) {
                                         if (this.abilityCooldowns.length > i)
                                             unit.getAbilities().get().get(i).setCooldown(this.abilityCooldowns[i], false, unit);

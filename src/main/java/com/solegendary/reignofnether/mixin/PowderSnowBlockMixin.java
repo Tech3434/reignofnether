@@ -20,7 +20,7 @@ public class PowderSnowBlockMixin {
             at = @At("HEAD")
     )
     public void entityInside(BlockState pState, Level pLevel, BlockPos pPos, Entity pEntity, CallbackInfo ci) {
-        if (pEntity instanceof Unit) {
+        if (Unit.isUnit(pEntity)) {
             pLevel.setBlockAndUpdate(pPos, Blocks.SNOW_BLOCK.defaultBlockState());
             if (pLevel.getBlockState(pPos.below()).getBlock() == Blocks.POWDER_SNOW)
                 pLevel.setBlockAndUpdate(pPos.below(), Blocks.SNOW_BLOCK.defaultBlockState());

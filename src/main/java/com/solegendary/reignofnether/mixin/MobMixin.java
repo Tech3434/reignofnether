@@ -46,7 +46,7 @@ public abstract class MobMixin extends LivingEntity {
             cancellable = true
     )
     public void doHurtTarget(Entity pEntity, CallbackInfoReturnable<Boolean> cir) {
-        if (pEntity instanceof Unit unit && unit.getEvasionChance() > 0)
+        if (pEntity instanceof Unit unit && unit.isRtsUnit() && unit.getEvasionChance() > 0)
             if (RANDOM.nextFloat() < unit.getEvasionChance())
                 cir.setReturnValue(false);
     }

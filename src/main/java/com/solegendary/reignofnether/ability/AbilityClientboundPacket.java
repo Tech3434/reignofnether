@@ -39,7 +39,7 @@ public class AbilityClientboundPacket  implements RTSSimplePayload {
 
     private static void setServersideCooldown(int unitId, UnitAction unitAction, float cooldown) {
         for (LivingEntity entity : UnitServerEvents.getAllUnits())
-            if (entity.getId() == unitId && entity instanceof Unit unit)
+            if (entity.getId() == unitId && entity instanceof Unit unit && unit.isRtsUnit())
                 for (Ability ability : unit.getAbilities().get())
                     if (ability.action == unitAction) {
                         ability.setCooldown(cooldown, unit);
@@ -110,7 +110,7 @@ public class AbilityClientboundPacket  implements RTSSimplePayload {
                 () -> () -> {
                     Unit unit = null;
                     for (LivingEntity entity : UnitClientEvents.getAllUnits()) {
-                        if (entity.getId() == this.unitId && entity instanceof Unit) {
+                        if (entity.getId() == this.unitId && Unit.isUnit(entity)) {
                             unit = (Unit) entity;
                             break;
                         }

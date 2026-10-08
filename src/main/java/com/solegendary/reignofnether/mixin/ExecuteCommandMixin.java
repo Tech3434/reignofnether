@@ -52,7 +52,7 @@ public class ExecuteCommandMixin {
 //								List<CommandSourceStack> list = Lists.newArrayList();
 //								
 //								for (Entity entity : EntityArgument.getOptionalEntities(ctx, "targets")) {
-//									if (entity instanceof Unit unit) {
+//									if (entity instanceof Unit unit && unit.isRtsUnit()) {
 //										String ownerName = unit.getOwnerName();
 //										if (ownerName == null || ownerName.isEmpty())
 //											continue;

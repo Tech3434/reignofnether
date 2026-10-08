@@ -88,7 +88,7 @@ public final class ResearchAttributeApplier {
         if (level.isClientSide() || ownerName == null || ownerName.isEmpty())
             return;
         for (LivingEntity entity : UnitServerEvents.getAllUnits())
-            if (entity instanceof Unit unit && ownerName.equals(unit.getOwnerName())) {
+            if (entity instanceof Unit unit && unit.isRtsUnit() && ownerName.equals(unit.getOwnerName())) {
                 removeFor(unit);
                 applyFor(level, unit);
             }

@@ -325,9 +325,9 @@ public class PlayerClientEvents {
         HudClientEvents.controlGroups.clear();
         UnitClientEvents.getSelectedUnits().clear();
         UnitClientEvents.getPreselectedUnits().clear();
-        UnitClientEvents.getAllUnits().removeIf(u -> (hardReset || (u instanceof Unit unit && !Unit.hasAnchor(unit))));
+        UnitClientEvents.getAllUnits().removeIf(u -> (hardReset || (u instanceof Unit unit && unit.isRtsUnit() && !Unit.hasAnchor(unit))));
         for (LivingEntity entity : UnitClientEvents.getAllUnits())
-            if (entity instanceof Unit unit)
+            if (entity instanceof Unit unit && unit.isRtsUnit())
                 unit.setOwnerName("");
         UnitClientEvents.idleWorkerIds.clear();
         BuildingClientEvents.getSelectedBuildings().clear();

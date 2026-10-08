@@ -23,7 +23,7 @@ public class FlyingMoveToTargetGoal extends MoveToTargetBlockGoal {
 
     @Override
     public boolean canUse() {
-        if (this.mob instanceof Unit unit && !unit.isFlyingUnit())
+        if (this.mob instanceof Unit unit && unit.isRtsUnit() && !unit.isFlyingUnit())
             return false;
         return moveTarget != null;
     }
@@ -73,7 +73,7 @@ public class FlyingMoveToTargetGoal extends MoveToTargetBlockGoal {
                     break;
             }
             BlockPos targetBp = bpGround.offset(0,10,0);
-            double maxHeight = this.mob instanceof Unit unit ? unit.getFlyingMaxY() : 320;
+            double maxHeight = this.mob instanceof Unit unit && unit.isRtsUnit() ? unit.getFlyingMaxY() : 320;
             if (targetBp.getY() > maxHeight)
                 targetBp = new BlockPos(targetBp.getX(), (int) maxHeight, targetBp.getZ());
 
@@ -91,7 +91,7 @@ public class FlyingMoveToTargetGoal extends MoveToTargetBlockGoal {
         this.moveTarget = null;
         this.mob.getMoveControl().operation = MoveControl.Operation.WAIT;
 
-        if (this.mob.isVehicle() && this.mob.getPassengers().get(0) instanceof Unit unit)
+        if (this.mob.isVehicle() && this.mob.getPassengers().get(0) instanceof Unit unit && unit.isRtsUnit())
             unit.getMoveGoal().stopMoving();
     }
 }

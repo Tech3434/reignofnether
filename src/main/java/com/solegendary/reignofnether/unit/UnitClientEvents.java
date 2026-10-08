@@ -257,7 +257,7 @@ public class UnitClientEvents {
         if (MC.level != null) {
             List<Integer> allUnitIds = allUnits.stream().map(Entity::getId).toList();
             for (LivingEntity entity : allUnits) {
-                if (entity instanceof Unit unit)
+                if (entity instanceof Unit unit && unit.isRtsUnit())
                     if (unit.getOwnerName().equals(playerName))
                         currentPopulation += unit.getCost().population;
             }
@@ -371,7 +371,7 @@ public class UnitClientEvents {
             int targetEntityId = !preselectedUnits.isEmpty() ? preselectedUnits.get(0).getId() : -1;
             loop:
             for (LivingEntity livingEntity : selectedUnits) {
-                if (livingEntity instanceof Unit unit) {
+                if (livingEntity instanceof Unit unit && unit.isRtsUnit()) {
                     for (Ability ability : unit.getAbilities().get()) {
                         if (ability.isCasting(unit) && ability.oneClickOneUse && ability.action == action) continue loop;
                     }
@@ -442,7 +442,7 @@ public class UnitClientEvents {
     public static void syncOwnerName(int entityId, String ownerName) {
         for (LivingEntity entity : allUnits)
             if (entity.getId() == entityId && MC.level != null)
-                if (entity instanceof Unit unit)
+                if (entity instanceof Unit unit && unit.isRtsUnit())
                     unit.setOwnerName(ownerName);
     }
 
@@ -491,7 +491,7 @@ public class UnitClientEvents {
     public static void syncUnitResources(int entityId, Resources res) {
         for(LivingEntity entity : allUnits) {
             if (entity.getId() == entityId && MC.level != null) {
-                if (entity instanceof Unit unit) {
+                if (entity instanceof Unit unit && unit.isRtsUnit()) {
                     // the carried-resource display is rebuilt from scratch on every sync: appending
                     // without clearing made the total grow with each packet (600 shown for 150 carried)
                     unit.getItems().clear();
@@ -507,7 +507,7 @@ public class UnitClientEvents {
     public static void syncAnchorPos(int entityId, BlockPos bp) {
         for(LivingEntity entity : allUnits) {
             if (entity.getId() == entityId && MC.level != null) {
-                if (entity instanceof Unit unit) {
+                if (entity instanceof Unit unit && unit.isRtsUnit()) {
                     unit.setAnchor(bp);
                     break;
                 }
@@ -518,7 +518,7 @@ public class UnitClientEvents {
     public static void removeAnchorPos(int entityId) {
         for(LivingEntity entity : allUnits) {
             if (entity.getId() == entityId && MC.level != null) {
-                if (entity instanceof Unit unit) {
+                if (entity instanceof Unit unit && unit.isRtsUnit()) {
                     unit.setAnchor(null);
                     break;
                 }
@@ -681,7 +681,7 @@ public class UnitClientEvents {
     public static void onEntityJoin(EntityJoinLevelEvent evt) {
         Entity entity = evt.getEntity();
 
-        if (entity instanceof Unit unit && evt.getLevel().isClientSide) {
+        if (entity instanceof Unit unit && unit.isRtsUnit() && evt.getLevel().isClientSide) {
             if (selectedUnits.removeIf(e -> e.getId() == entity.getId()))
                 selectedUnits.add((LivingEntity) entity);
             if (preselectedUnits.removeIf(e -> e.getId() == entity.getId()))
@@ -750,8 +750,8 @@ public class UnitClientEvents {
                         AlliancesClient.canControlAlly(selectedUnit)) {
 
                     for (LivingEntity entity : nearbyEntities) {
-                        boolean garrisoned1 = selectedUnit instanceof Unit unit1 && GarrisonableBuildingAddon.getGarrison(unit1) != null;
-                        boolean garrisoned2 = entity instanceof Unit unit2 && GarrisonableBuildingAddon.getGarrison(unit2) != null;
+                        boolean garrisoned1 = selectedUnit instanceof Unit unit1 && unit1.isRtsUnit() && GarrisonableBuildingAddon.getGarrison(unit1) != null;
+                        boolean garrisoned2 = entity instanceof Unit unit2 && unit2.isRtsUnit() && GarrisonableBuildingAddon.getGarrison(unit2) != null;
                         boolean garrionStatusMatches = (garrisoned1 && garrisoned2) || (!garrisoned1 && !garrisoned2);
                         if (entity == selectedUnit) continue;
                         if ((getPlayerToEntityRelationship(entity) == Relationship.OWNED ||
@@ -788,7 +788,7 @@ public class UnitClientEvents {
                     deselected = selectedUnits.removeIf(id -> id.equals(preselectedUnits.get(0)));
 
                 if (Keybindings.shiftMod.isDown() && !deselected &&
-                    ((preselectedUnits.get(0) instanceof Unit && getPlayerToEntityRelationship(preselectedUnits.get(0)) == Relationship.OWNED) ||
+                    ((Unit.isUnit(preselectedUnits.get(0)) && getPlayerToEntityRelationship(preselectedUnits.get(0)) == Relationship.OWNED) ||
                     AlliancesClient.canControlAlly(preselectedUnits.get(0)))) {
                         addSelectedUnit(preselectedUnits.get(0));
                 }
@@ -835,7 +835,7 @@ public class UnitClientEvents {
                 // right click -> garrison friendly building
                 else if (preSelBuilding != null && preSelBuilding.getBuilding().hasActiveAddon(GarrisonableBuildingAddon.class) &&
                         hudSelectedEntity instanceof RangedAttackerUnit &&
-                        hudSelectedEntity instanceof Unit unit && unit.canGarrison() &&
+                        hudSelectedEntity instanceof Unit unit && unit.isRtsUnit() && unit.canGarrison() &&
                         preSelBuilding.ownerName.equals(unit.getOwnerName())) {
                     sendUnitCommand(UnitAction.GARRISON);
                     rightClickActionTaken = true;
@@ -843,7 +843,7 @@ public class UnitClientEvents {
                 // right click -> attack unfriendly unit
                 else if (preselectedUnits.size() == 1 &&
                     !targetingSelf() &&
-                    (hudSelectedEntity instanceof Unit || NonUnitClientEvents.canAttack(hudSelectedEntity)) &&
+                    (Unit.isUnit(hudSelectedEntity) || NonUnitClientEvents.canAttack(hudSelectedEntity)) &&
                     ((GameruleClient.neutralAggro && getPlayerToEntityRelationship(preselectedUnits.get(0)) == Relationship.NEUTRAL) ||
                     getPlayerToEntityRelationship(preselectedUnits.get(0)) == Relationship.HOSTILE ||
                      ResourceSources.isHuntableAnimal(preselectedUnits.get(0)))) {
@@ -861,7 +861,7 @@ public class UnitClientEvents {
                     rightClickActionTaken = true;
                 }
                 // right click -> return resources
-                else if (hudSelectedEntity instanceof Unit unit &&
+                else if (hudSelectedEntity instanceof Unit unit && unit.isRtsUnit() &&
                         unit.getReturnResourcesGoal() != null &&
                         Resources.getTotalResourcesFromItems(unit.getItems()).getTotalValue() > 0 &&
                         preSelBuilding != null && preSelBuilding.getBuilding().canAcceptResources && preSelBuilding.isBuilt &&
@@ -911,7 +911,7 @@ public class UnitClientEvents {
         ArrayList<LivingEntity> actionableUnits = new ArrayList<>();
         for (LivingEntity unit : selUnits) {
             if ((getPlayerToEntityRelationship(unit) == Relationship.OWNED ||
-                    AlliancesClient.canControlAlly(unit)) && unit instanceof Unit) {
+                    AlliancesClient.canControlAlly(unit)) && Unit.isUnit(unit)) {
                 actionableUnits.add(unit);
             }
         }
@@ -943,7 +943,7 @@ public class UnitClientEvents {
                 ArrayList<LivingEntity> actionableUnits = new ArrayList<>();
                 for (LivingEntity unit : selUnits) {
                     if ((getPlayerToEntityRelationship(unit) == Relationship.OWNED ||
-                            AlliancesClient.canControlAlly(unit)) && unit instanceof Unit) {
+                            AlliancesClient.canControlAlly(unit)) && Unit.isUnit(unit)) {
                         actionableUnits.add(unit);
                     }
                 }
@@ -967,7 +967,7 @@ public class UnitClientEvents {
         for (var pair : pairs) {
             LivingEntity le = pair.getFirst();
             BlockPos targetBp = pair.getSecond();
-            if (le instanceof Unit unit) {
+            if (le instanceof Unit unit && unit.isRtsUnit()) {
                 int[] singleUnitId = new int[]{le.getId()};
 
                 if (!queueOrders) {
@@ -1021,7 +1021,7 @@ public class UnitClientEvents {
                             continue;
 
                         AABB entityAABB = entity.getBoundingBox();
-                        if (entity instanceof Unit unit) {
+                        if (entity instanceof Unit unit && unit.isRtsUnit()) {
                             entityAABB = unit.getInflatedSelectionBox();
                         } else if (entity instanceof Chicken) {
                             entityAABB = entityAABB.inflate(0.2f, 0, 0.2f);
@@ -1068,14 +1068,14 @@ public class UnitClientEvents {
 
                         // draw only the bottom of the outline boxes
                         AABB entityAABB = entity.getBoundingBox();
-                        if (entity instanceof Unit unit) {
+                        if (entity instanceof Unit unit && unit.isRtsUnit()) {
                             entityAABB = unit.getInflatedSelectionBox();
                         }
                         entityAABB = entityAABB.setMaxY(entityAABB.minY);
                         boolean excludeMaxY = OrthoviewClientEvents.isEnabled();
 
                         Color colorHex;
-                        if (entity instanceof Unit unit) {
+                        if (entity instanceof Unit unit && unit.isRtsUnit()) {
                             if (PlayerClientEvents.isRTSPlayer(unit.getOwnerName())) {
                                 colorHex = new Color(PlayerColors.getPlayerDisplayColorHex(unit.getOwnerName()));
                             } else {
@@ -1118,7 +1118,7 @@ public class UnitClientEvents {
             VertexConsumer vertexConsumerEntityTranslucent = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
             // draw unit checkpoints
             for (LivingEntity entity : getSelectedUnits()) {
-                if (entity instanceof Unit unit) {
+                if (entity instanceof Unit unit && unit.isRtsUnit()) {
                     float entityYOffset1 = 1.74f - ((LivingEntity) unit).getEyeHeight() - 1;
                     Vec3 firstPos = ((LivingEntity) unit).getEyePosition().add(0, entityYOffset1,0);
                     Vec3 lastPos = firstPos;
@@ -1283,7 +1283,7 @@ public class UnitClientEvents {
             String playerName = MC.player.getName().getString();
 
             // Check if the entity is a Unit with no owner (neutral)
-            if (entity instanceof Unit unit && unit.getOwnerName().isBlank()) {
+            if (entity instanceof Unit unit && unit.isRtsUnit() && unit.getOwnerName().isBlank()) {
                 return Relationship.NEUTRAL;
             }
 
@@ -1301,7 +1301,7 @@ public class UnitClientEvents {
             }
 
             // Check if the entity is not a Unit (e.g., an NPC or neutral entity)
-            if (!(entity instanceof Unit)) {
+            if (!(Unit.isUnit(entity))) {
                 return Relationship.NEUTRAL;
             }
 
@@ -1330,8 +1330,8 @@ public class UnitClientEvents {
             Entity oldEntity = MC.level.getEntity(oldUnitIds[i]);
             Entity newEntity = MC.level.getEntity(newUnitIds[i]);
 
-            if (oldEntity instanceof Unit oldUnit &&
-                newEntity instanceof Unit newUnit) {
+            if (oldEntity instanceof Unit oldUnit && oldUnit.isRtsUnit() &&
+                newEntity instanceof Unit newUnit && newUnit.isRtsUnit()) {
 
                 // retain selections
                 int j = i;
@@ -1453,7 +1453,7 @@ public class UnitClientEvents {
     // used only for right click mounting shortcut
     @Nullable
     public static UnitAction getMountAction(LivingEntity passenger, LivingEntity vehicle) {
-        if (!(passenger instanceof Unit) || !(vehicle instanceof Unit))
+        if (!(Unit.isUnit(passenger)) || !(Unit.isUnit(vehicle)))
             return null;
         if (!((Unit) passenger).getOwnerName().equals(((Unit) vehicle).getOwnerName()))
             return null;
@@ -1472,7 +1472,7 @@ public class UnitClientEvents {
             if (MyMath.isPointInsideRect3d(uvwpFull, entity.getBoundingBox().getCenter()) &&
                     MC.player != null &&
                     entity.getId() != MC.player.getId() &&
-                    entity instanceof Unit unit &&
+                    entity instanceof Unit unit && unit.isRtsUnit() &&
                     !(entity instanceof WorkerUnit) &&
                     entity instanceof AttackerUnit &&
                     GarrisonableBuildingAddon.getGarrison(unit) == null &&
@@ -1485,7 +1485,7 @@ public class UnitClientEvents {
 
     public static void syncUnitEatingFood(int unitId, int itemId) {
         for (LivingEntity entity : getAllUnits()) {
-            if (unitId == entity.getId() && entity instanceof Unit unit) {
+            if (unitId == entity.getId() && entity instanceof Unit unit && unit.isRtsUnit()) {
                 unit.getItems().add(new ItemStack(BuiltInRegistries.ITEM.byId(itemId)));
                 break;
             }
@@ -1496,7 +1496,7 @@ public class UnitClientEvents {
         for (LivingEntity entity : getAllUnits()) {
             // 1.21.1 removed MobEffect#byId; the numeric id lives on the registry's IdMap.
             MobEffect effect = BuiltInRegistries.MOB_EFFECT.byId(effectId);
-            if (effect != null && entityId == entity.getId() && entity instanceof Unit) {
+            if (effect != null && entityId == entity.getId() && Unit.isUnit(entity)) {
                 if (duration > 0) {
                     entity.addEffect(MobEffectHelpers.instance(effect, duration, amplifier));
                 } else if (entity.getEffect(MobEffectHelpers.holder(effect)) != null) {
@@ -1643,7 +1643,7 @@ public class UnitClientEvents {
     @SubscribeEvent
     public static void onMobEffectAdded(MobEffectEvent.Added evt) {
         LivingEntity entity = evt.getEntity();
-        if (!(entity instanceof Unit))
+        if (!(Unit.isUnit(entity)))
             return;
 
         MobEffectInstance mei = evt.getEffectInstance();
@@ -1658,7 +1658,7 @@ public class UnitClientEvents {
     @SubscribeEvent
     public static void onMobEffectRemoved(MobEffectEvent.Remove evt) {
         LivingEntity entity = evt.getEntity();
-        if (!(entity instanceof Unit))
+        if (!(Unit.isUnit(entity)))
             return;
 
         removeMobEffectIcon(entity.getId(), MobEffectHelpers.holder(evt.getEffect()));
@@ -1669,7 +1669,7 @@ public class UnitClientEvents {
     public static void onMobEffectExpired(MobEffectEvent.Expired evt) {
         LivingEntity entity = evt.getEntity();
         MobEffectInstance mei = evt.getEffectInstance();
-        if (!(entity instanceof Unit) || mei == null)
+        if (!(Unit.isUnit(entity)) || mei == null)
             return;
 
         removeMobEffectIcon(entity.getId(), mei.getEffect());
@@ -1689,7 +1689,7 @@ public class UnitClientEvents {
     // Icons are keyed by entity id, which a client reuses after an entity is gone.
     @SubscribeEvent
     public static void onEntityLeaveLevel(EntityLeaveLevelEvent evt) {
-        if (evt.getEntity() instanceof Unit) {
+        if (Unit.isUnit(evt.getEntity())) {
             synchronized (mobEffectIcons) {
                 mobEffectIcons.remove(evt.getEntity().getId());
             }

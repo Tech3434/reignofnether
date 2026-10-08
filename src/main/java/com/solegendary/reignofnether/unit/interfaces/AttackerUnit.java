@@ -267,7 +267,7 @@ public interface AttackerUnit {
                 Entity lastDSEntity = unitMob.getLastDamageSource().getEntity();
 
                 boolean isMeleeAttackedByFlyingOrGarrisoned = false;
-                if (lastDSEntity instanceof Unit unitDS &&
+                if (lastDSEntity instanceof Unit unitDS && unitDS.isRtsUnit() &&
                     (unitDS.isFlyingUnit() ||
                         GarrisonableBuildingAddon.getGarrison(unitDS) != null ||
                         unitDS instanceof Vex) &&
@@ -445,7 +445,7 @@ public interface AttackerUnit {
         ArrayList<LivingEntity> eligibleTargets = new ArrayList<>();
         List<LivingEntity> unitsCopy = new ArrayList<>(units); // defensive copy
         for (LivingEntity entity : unitsCopy) {
-            if (entity instanceof Unit otherUnit &&
+            if (entity instanceof Unit otherUnit && otherUnit.isRtsUnit() &&
                     (!workersOnly || entity instanceof WorkerUnit) &&
                     !unit.getOwnerName().equals(otherUnit.getOwnerName()) &&
                     !AlliancesServerEvents.isAllied(unit.getOwnerName(), otherUnit.getOwnerName()) &&

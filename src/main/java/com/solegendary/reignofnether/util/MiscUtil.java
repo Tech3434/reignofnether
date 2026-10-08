@@ -339,7 +339,7 @@ public class MiscUtil {
         entities.sort(Comparator.comparingDouble(
             e -> {
                 double dist = e.position().distanceTo(pos); // deprioritise over actual enemy units
-                boolean isMeleeAgainstFlyer = isMelee && e instanceof Unit unit && unit.isFlyingUnit();
+                boolean isMeleeAgainstFlyer = isMelee && e instanceof Unit unit && unit.isRtsUnit() && unit.isFlyingUnit();
                 if (isMeleeAgainstFlyer)
                     dist += 100;
                 return dist;
@@ -367,7 +367,7 @@ public class MiscUtil {
                 if (filter.test(entity) &&
                         isIdleOrMoveAttackable(unitMob, entity, neutralAggro) &&
                         hasLineOfSightForAttacks(unitMob, entity) &&
-                        !(entity instanceof Unit unit && unit.isGarrisoned())) {
+                        !(entity instanceof Unit unit && unit.isRtsUnit() && unit.isGarrisoned())) {
                     return entity;
                 }
             }
@@ -378,7 +378,7 @@ public class MiscUtil {
     // does not cover explicit attack commands
     private static boolean isIdleOrMoveAttackable(Mob unitMob, LivingEntity targetEntity, boolean neutralAggro) {
         Relationship rs = Relationship.NEUTRAL;
-        if (unitMob instanceof Unit) {
+        if (Unit.isUnit(unitMob)) {
             rs = UnitServerEvents.getUnitToEntityRelationship((Unit) unitMob, targetEntity);
         }
 
@@ -390,13 +390,13 @@ public class MiscUtil {
             return false;
 
         // Prevents certain attacks based on specific unit and goal conditions
-        if (targetEntity instanceof Unit unit &&
+        if (targetEntity instanceof Unit unit && unit.isRtsUnit() &&
                 unit.isFlyingUnit() &&
                 unitMob instanceof AttackerUnit attackerUnit &&
                 attackerUnit.getAttackGoal() instanceof AbstractMeleeAttackUnitGoal) {
             return false;
         }
-        boolean isPassiveNonUnit = !(targetEntity instanceof Unit) &&
+        boolean isPassiveNonUnit = !(Unit.isUnit(targetEntity)) &&
                 (targetEntity instanceof Animal || targetEntity instanceof AbstractFish || targetEntity instanceof Villager);
 
         // Checks if neutral units can be attacked based on neutralAggro flag and other conditions
@@ -456,7 +456,7 @@ public class MiscUtil {
 
     private static boolean hasLineOfSightForAttacks(Mob mob, LivingEntity targetEntity) {
         return mob.hasLineOfSight(targetEntity) ||
-                (mob instanceof Unit unit && GarrisonableBuildingAddon.getGarrison((Unit) mob) != null);
+                (mob instanceof Unit unit && unit.isRtsUnit() && GarrisonableBuildingAddon.getGarrison((Unit) mob) != null);
     }
 
     public static <T extends Entity> List<T> getEntitiesWithinRange(Vec3 pos, float range, Class<T> entityType, Level level) {
@@ -819,7 +819,7 @@ public class MiscUtil {
 
     // eg. Zombie
     public static String getSimpleEntityName(Entity entity) {
-        if (entity instanceof Unit) {
+        if (Unit.isUnit(entity)) {
             if (entity.hasCustomName()) {
                 return entity.getType()
                         .getDescription()
@@ -835,7 +835,7 @@ public class MiscUtil {
     }
 
     public static boolean isOnNetherTerrain(LivingEntity le) {
-        if (le instanceof Unit unit && unit.isFlyingUnit()) {
+        if (le instanceof Unit unit && unit.isRtsUnit() && unit.isFlyingUnit()) {
             BlockPos groundPos = getHighestNonAirBlock(le.level(), le.getOnPos(), false);
             return NetherBlocks.isNetherBlock(le.level(), groundPos);
         }

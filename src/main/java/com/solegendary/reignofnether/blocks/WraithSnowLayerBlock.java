@@ -107,7 +107,7 @@ public class WraithSnowLayerBlock extends BaseEntityBlock {
                 be instanceof WraithSnowBlockEntity snowBe) {
 
             Relationship rs = Relationship.NEUTRAL;
-            if (pEntity instanceof Unit unit) {
+            if (pEntity instanceof Unit unit && unit.isRtsUnit()) {
                 rs = UnitServerEvents.getUnitToEntityRelationship(unit, pLevel, snowBe.getOwnerId());
             }
             if (rs != Relationship.FRIENDLY && rs != Relationship.OWNED) {

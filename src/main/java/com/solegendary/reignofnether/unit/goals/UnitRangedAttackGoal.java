@@ -95,7 +95,7 @@ public class UnitRangedAttackGoal<T extends net.minecraft.world.entity.Mob> exte
 
             BuildingPlacement garrPlacement = GarrisonableBuildingAddon.getGarrison((Unit) this.mob);
             BuildingPlacement targetGarrPlacement = null;
-            if (target instanceof Unit unit)
+            if (target instanceof Unit unit && unit.isRtsUnit())
                 targetGarrPlacement = GarrisonableBuildingAddon.getGarrison(unit);
 
             GarrisonableBuildingAddon garr = garrPlacement != null ? garrPlacement.getBuilding().getActiveAddon(GarrisonableBuildingAddon.class) : null;

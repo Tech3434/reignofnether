@@ -43,7 +43,7 @@ public interface GarrisonableBuildingAddon extends BuildingAddon {
         if (placement.level.isClientSide()) {
             List<LivingEntity> list = new ArrayList<>();
             for (LivingEntity le : UnitClientEvents.getAllUnits()) {
-                if (le instanceof Unit u &&
+                if (le instanceof Unit u && u.isRtsUnit() &&
                     GarrisonableBuildingAddon.getGarrison(u) == placement) {
                     list.add(le);
                 }
@@ -53,7 +53,7 @@ public interface GarrisonableBuildingAddon extends BuildingAddon {
         else {
             List<LivingEntity> list = new ArrayList<>();
             for (LivingEntity le : UnitServerEvents.getAllUnits()) {
-                if (le instanceof Unit u &&
+                if (le instanceof Unit u && u.isRtsUnit() &&
                     GarrisonableBuildingAddon.getGarrison(u) == placement) {
                     list.add(le);
                 }

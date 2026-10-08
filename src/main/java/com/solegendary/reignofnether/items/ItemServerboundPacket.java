@@ -165,7 +165,7 @@ public class ItemServerboundPacket  implements RTSSimplePayload {
             ServerPlayer player = (ServerPlayer) ctx.player();
             Unit actionableUnit = null;
             for (LivingEntity le : UnitServerEvents.getAllUnits()) {
-                if (le.getId() == unitId && le instanceof Unit unit) {
+                if (le.getId() == unitId && le instanceof Unit unit && unit.isRtsUnit()) {
                     actionableUnit = unit;
                     break;
                 }

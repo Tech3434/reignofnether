@@ -806,7 +806,7 @@ public class MinimapClientEvents {
         for (LivingEntity entity : UnitClientEvents.getAllUnits()) {
             if (!true)
                 continue;
-            var colorHex = PlayerColors.getPlayerDisplayColorHex(entity instanceof Unit unit ? unit.getOwnerName() : null);
+            var colorHex = PlayerColors.getPlayerDisplayColorHex(entity instanceof Unit unit && unit.isRtsUnit() ? unit.getOwnerName() : null);
             drawUnitOnMap(entity.getOnPos().getX(),
                     entity.getOnPos().getZ(),
                     colorHex
@@ -1251,7 +1251,7 @@ public class MinimapClientEvents {
                 for (var pair : pairs) {
                     LivingEntity le = pair.getFirst();
                     BlockPos targetBp = pair.getSecond();
-                    if (le instanceof Unit unit) {
+                    if (le instanceof Unit unit && unit.isRtsUnit()) {
 					int[] singleUnitId = new int[]{le.getId()};
 					boolean queueOrders = Keybindings.shiftMod.isDown();
 					if (!queueOrders) {

@@ -96,7 +96,7 @@ public class RtsDebugPathPreview {
 
         VertexConsumer vertexConsumerLine = MC.renderBuffers().bufferSource().getBuffer(RenderType.LINE_STRIP);
         for (LivingEntity entity : UnitClientEvents.getSelectedUnits()) {
-            if (!(entity instanceof Unit unit))
+            if (!(entity instanceof Unit unit && unit.isRtsUnit()))
                 continue;
             PathDisplay pd = displayedPaths.get(entity.getId());
             if (pd == null || pd.nodes.size() < 2

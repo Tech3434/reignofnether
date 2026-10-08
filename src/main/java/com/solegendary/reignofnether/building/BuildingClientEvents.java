@@ -375,7 +375,7 @@ matrix.pushPose();
 
         Map<BlockPos, List<BuildingBlock>> fogBlocksToDraw = new HashMap<>();
         for (LivingEntity le : UnitClientEvents.getAllUnits()) {
-            if (le instanceof Unit unit && le instanceof WorkerUnit workerUnit &&
+            if (le instanceof Unit unit && unit.isRtsUnit() && le instanceof WorkerUnit workerUnit &&
                 MC.player != null && unit.getOwnerName().equals(MC.player.getName().getString()))
             {
                 Map<BlockPos, List<BuildingBlock>> fogBlocks = workerUnit.getExploreBuildLocationGoal().getFogQueuedBlocksToDraw();
@@ -540,13 +540,13 @@ matrix.pushPose();
                     BuildingServerboundPacket.placeAndQueueBuilding(building,
                         BuildingUtils.isBridge(buildingToPlace) && bridgePlaceState == 2 ? originPos.offset(-5, 0, -5) : originPos,
                         buildingRotation,
-                        hudSelectedEntity instanceof Unit unit ? unit.getOwnerName() : ownerName,
+                        hudSelectedEntity instanceof Unit unit && unit.isRtsUnit() ? unit.getOwnerName() : ownerName,
                         ids,
                         isBridgeDiagonal()
                     );
 
                     for (LivingEntity entity : getSelectedUnits()) {
-                        if (entity instanceof Unit unit) {
+                        if (entity instanceof Unit unit && unit.isRtsUnit()) {
                             unit.getCheckpoints().removeIf(c -> {
                                 if (!c.isForEntity() && c.bp == null)
                                     return true;
@@ -582,7 +582,7 @@ matrix.pushPose();
                     BuildingServerboundPacket.placeBuilding(buildingToPlace,
                         isBridge(buildingToPlace) && bridgePlaceState == 2 ? originPos.offset(-5, 0, -5) : originPos,
                         buildingRotation,
-                        hudSelectedEntity instanceof Unit unit ? unit.getOwnerName() : ownerName,
+                        hudSelectedEntity instanceof Unit unit && unit.isRtsUnit() ? unit.getOwnerName() : ownerName,
                         builderArray,
                         isBridgeDiagonal()
                     );
@@ -590,7 +590,7 @@ matrix.pushPose();
 
                     if (hasSelectedWorkers) {
                         for (LivingEntity entity : getSelectedUnits()) {
-                            if (entity instanceof Unit unit) {
+                            if (entity instanceof Unit unit && unit.isRtsUnit()) {
                                 MiscUtil.addUnitCheckpoint(unit, preSelPos.above(), true);
                                 if (unit instanceof WorkerUnit workerUnit) {
                                     workerUnit.getBuildRepairGoal().ignoreNextCheckpoint = true;
@@ -823,7 +823,7 @@ matrix.pushPose();
         }
         // sync the goal so we can display the correct animations
         Entity entity = hudSelectedEntity;
-        if (entity instanceof WorkerUnit workerUnit && entity instanceof Unit unit &&
+        if (entity instanceof WorkerUnit workerUnit && entity instanceof Unit unit && unit.isRtsUnit() &&
             unit.getOwnerName().equals(ownerName)) {
             ((Unit) entity).resetBehaviours();
             workerUnit.getBuildRepairGoal().setBuildingTarget(newBuilding);
@@ -892,7 +892,7 @@ matrix.pushPose();
             return false;
 
         String allyName = "";
-        if (hudSelectedEntity instanceof Unit unit)
+        if (hudSelectedEntity instanceof Unit unit && unit.isRtsUnit())
             allyName = unit.getOwnerName();
 
         for (BuildingPlacement bpl : buildings) {

@@ -113,7 +113,7 @@ public class ProductionPlacement extends BuildingPlacement {
     private boolean isRallyEntityAttackable() {
         return rallyPointEntity != null && rallyPointEntity.isAlive() &&
                 (ResourceSources.isHuntableAnimal(rallyPointEntity) ||
-                (rallyPointEntity instanceof Unit unit1 && !AlliancesServerEvents.isAlliedOrOwned(unit1.getOwnerName(), ownerName)));
+                (rallyPointEntity instanceof Unit unit1 && unit1.isRtsUnit() && !AlliancesServerEvents.isAlliedOrOwned(unit1.getOwnerName(), ownerName)));
     }
 
     private boolean isProducing() {
@@ -157,7 +157,7 @@ public class ProductionPlacement extends BuildingPlacement {
                 true,
                 false
         );
-        if (entity instanceof Unit unit) {
+        if (entity instanceof Unit unit && unit.isRtsUnit()) {
             unit.setOwnerName(ownerName);
             unit.setupEquipmentAndUpgradesServer();
             setDelayedRally(unit);

@@ -145,7 +145,7 @@ public class HelperButtons {
                         militaryUnits.addAll(UnitClientEvents.getMilitaryUnitsOnScreen());
                     } else {
                         for (LivingEntity u : UnitClientEvents.getAllUnits()) {
-                            if (u instanceof Unit unit &&
+                            if (u instanceof Unit unit && unit.isRtsUnit() &&
                                 !(u instanceof WorkerUnit) &&
                                 GarrisonableBuildingAddon.getGarrison(unit) == null &&
                                 getPlayerToEntityRelationship(u) == Relationship.OWNED) {

@@ -460,7 +460,7 @@ buildingData.buildings.forEach(b -> {
             assignBuilderUnits(builderUnitIds, queue, newBuilding);
 
             for (LivingEntity entity : UnitServerEvents.getAllUnits()) {
-                if (entity instanceof Unit unit && unit.getOwnerName().equals(ownerName) &&
+                if (entity instanceof Unit unit && unit.isRtsUnit() && unit.getOwnerName().equals(ownerName) &&
                         newBuilding.isPosInsideBuilding(entity.getOnPos().above().above()) &&
                         (unit.getMoveGoal().getMoveTarget() == null ||
                                 newBuilding.isPosInsideBuilding(unit.getMoveGoal().getMoveTarget()))) {

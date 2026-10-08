@@ -59,7 +59,7 @@ public class NonUnitClientEvents {
             ResourceLocation rl = ResourceLocation.parse("neoforge:textures/white.png");
             VertexConsumer vertexConsumerEntityTranslucent = MC.renderBuffers().bufferSource().getBuffer(RenderType.entityTranslucent(rl));
             for (LivingEntity le : UnitClientEvents.getSelectedUnits()) {
-                if (le instanceof PathfinderMob mob && !(le instanceof Unit) && le.isAlive() && !le.isRemoved()) {
+                if (le instanceof PathfinderMob mob && !(Unit.isUnit(le)) && le.isAlive() && !le.isRemoved()) {
                     float entityYOffset = 1.74f - le.getEyeHeight() - 1;
                     Vec3 firstPos = le.getEyePosition().add(0, entityYOffset,0);
 

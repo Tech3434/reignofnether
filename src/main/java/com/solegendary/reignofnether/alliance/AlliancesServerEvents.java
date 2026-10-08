@@ -16,7 +16,7 @@ public class AlliancesServerEvents {
     public static final HashSet<String> playersWithAlliedControl = new HashSet<>();
 
     public static boolean canControlAlly(String player, LivingEntity entity) {
-        return entity instanceof Unit unit && canControlAlly(player, unit.getOwnerName());
+        return entity instanceof Unit unit && unit.isRtsUnit() && canControlAlly(player, unit.getOwnerName());
     }
     public static boolean canControlAlly(String player, Unit unit) {
         return canControlAlly(player, unit.getOwnerName());

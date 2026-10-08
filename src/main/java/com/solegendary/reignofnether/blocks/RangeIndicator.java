@@ -36,7 +36,7 @@ public interface RangeIndicator {
         boolean showRangeCircle = false;
         boolean showRadiusAtCursor = false;
 
-        if (this instanceof Unit unit) {
+        if (this instanceof Unit unit && unit.isRtsUnit()) {
             boolean hasAbilityWithRange = false;
             for (Ability ability : unit.getAbilities().get()) {
                 if (CursorClientEvents.getLeftClickAction() == ability.action) {

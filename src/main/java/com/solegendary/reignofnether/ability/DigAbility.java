@@ -115,7 +115,7 @@ public class DigAbility extends Ability {
         while (it.hasNext()) {
             Map.Entry<Integer, DigState> entry = it.next();
             Entity entity = level.getEntity(entry.getKey());
-            if (!(entity instanceof Unit unit) || !entity.isAlive()) {
+            if (!(entity instanceof Unit unit && unit.isRtsUnit()) || !entity.isAlive()) {
                 it.remove();
                 continue;
             }

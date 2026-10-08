@@ -144,7 +144,7 @@ public class HealthBarClientEvents {
 
             // calculate bar width based in entity max health (1hp : 2px)
             int barWidth;
-            if (entity instanceof Unit)
+            if (Unit.isUnit(entity))
                 barWidth = (int) entity.getMaxHealth();
             else
                 barWidth = (int) entity.getMaxHealth() * 2;

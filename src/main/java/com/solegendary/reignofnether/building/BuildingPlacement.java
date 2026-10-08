@@ -768,7 +768,7 @@ public class BuildingPlacement {
     }
     
     private void awardBounty() {
-        if (lastAttacker instanceof Unit unit && !unit.getOwnerName().isEmpty()) {
+        if (lastAttacker instanceof Unit unit && unit.isRtsUnit() && !unit.getOwnerName().isEmpty()) {
             ResourceCost cost = building.cost;
             Resources resources;
             int food = (int) (cost.food * NEUTRAL_BUILDING_BOUNTY_PERCENT);
@@ -1217,7 +1217,7 @@ public class BuildingPlacement {
         Map<String, Integer> playerPopCounts = new HashMap<>();
         boolean ownerHasUnit = false;
         for (Mob mob : nearbyUnits) {
-            if (mob instanceof Unit unit && !(mob instanceof WorkerUnit)) {
+            if (mob instanceof Unit unit && unit.isRtsUnit() && !(mob instanceof WorkerUnit)) {
                 String uOwner = unit.getOwnerName();
                 if (uOwner.equals(ownerName) && !ownerName.isEmpty()) {
                     ownerHasUnit = true;
@@ -1249,7 +1249,7 @@ public class BuildingPlacement {
 
                 for (LivingEntity le : UnitServerEvents.getAllUnits()) {
                     if (le instanceof AttackerUnit attackerUnit &&
-                        le instanceof Unit unit &&
+                        le instanceof Unit unit && unit.isRtsUnit() &&
                             AlliancesServerEvents.isAlliedOrOwned(ownerName, unit.getOwnerName())) {
                         if (attackerUnit.getAttackBuildingGoal() instanceof MeleeAttackBuildingGoal mabg &&
                                 mabg.getBuildingTarget() == this)

@@ -185,7 +185,7 @@ public class HudClientEvents {
         List<Pair<LivingEntity, Float>> pairs = new ArrayList<>();
         for (LivingEntity livingEntity : getSelectedUnits()) {
             float totalCd = 0;
-            if (livingEntity instanceof Unit unit) {
+            if (livingEntity instanceof Unit unit && unit.isRtsUnit()) {
                 for (Ability ability : unit.getAbilities().get()) {
                     totalCd += ability.getCooldown(unit);
                     if (ability.isCasting(unit))
@@ -224,7 +224,7 @@ public class HudClientEvents {
         if (entity.isBaby())
             name = I18n.get("entity.reignofnether.reignofnether.baby") + " " + name;
 
-        if (!(entity instanceof Unit))
+        if (!(Unit.isUnit(entity)))
             return name.toLowerCase();
 
         ItemStack itemStack = entity.getItemBySlot(EquipmentSlot.HEAD);
@@ -623,7 +623,7 @@ public class HudClientEvents {
             blitX += portraitRendererUnit.frameWidth;
             boolean renderedItemsOrResources = false;
 
-            if (hudSelectedEntity instanceof Unit unit) {
+            if (hudSelectedEntity instanceof Unit unit && unit.isRtsUnit()) {
                 hudZones.add(portraitRendererUnit.renderStats(evt.getGuiGraphics(), blitX, blitY, mouseX, mouseY, unit));
 
                 blitX += portraitRendererUnit.statsWidth;
@@ -688,7 +688,7 @@ public class HudClientEvents {
 
                 Button button = new ButtonBuilder(unitName)
                     .iconSize(iconSize)
-                    .iconResource(unit instanceof Unit ? ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, buttonImagePath) : null)
+                    .iconResource(Unit.isUnit(unit) ? ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, buttonImagePath) : null)
                     .entity(unit)
                     .isSelected(() -> hudSelectedEntity == null || getModifiedEntityName(hudSelectedEntity).equals(
                             getModifiedEntityName(unit)))
@@ -706,7 +706,7 @@ public class HudClientEvents {
                     .tooltipLines(List.of(fcs(capitaliseAndSpace(getModifiedEntityName(unit)))))
                     .build();
 
-                if (unit.isVehicle() && unit instanceof Unit) {
+                if (unit.isVehicle() && Unit.isUnit(unit)) {
                     String passengerName = MiscUtil.getEntityIconName(unit.getFirstPassenger());
                     button.bgIconResource = ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID,
                         "textures/mobheads/" + passengerName + ".png"
@@ -804,7 +804,7 @@ public class HudClientEvents {
                 (getPlayerToEntityRelationship(selUnits.get(0)) == Relationship.OWNED ||
                         !PlayerClientEvents.isRTSPlayer() ||
                         AlliancesClient.canControlAlly(selUnits.get(0))) &&
-                hudSelectedEntity instanceof Unit unit) {
+                hudSelectedEntity instanceof Unit unit && unit.isRtsUnit()) {
             // §14.2: the generic orders (attack, build, gather, stop, hold, garrison) are abilities
             // now, so they arrive through unit.getAbilityButtons() below instead of a separate
             // ActionButtons row.
@@ -894,7 +894,7 @@ public class HudClientEvents {
         String selPlayerName = null;
 
         if (!UnitClientEvents.getSelectedUnits().isEmpty()) {
-            if (UnitClientEvents.getSelectedUnits().get(0) instanceof Unit unit) {
+            if (UnitClientEvents.getSelectedUnits().get(0) instanceof Unit unit && unit.isRtsUnit()) {
                 selPlayerName = unit.getOwnerName();
             }
         }
@@ -1014,7 +1014,7 @@ public class HudClientEvents {
 
                 int numWorkersHunting = UnitClientEvents.getAllUnits()
                     .stream()
-                    .filter(le -> le instanceof WorkerUnit wu && le instanceof Unit u && u.getOwnerName()
+                    .filter(le -> le instanceof WorkerUnit wu && le instanceof Unit u && u.isRtsUnit() && u.getOwnerName()
                         .equals(finalSelPlayerName) && ResourceSources.isHuntableAnimal(u.getTargetGoal().getTarget()))
                     .toList()
                     .size();
@@ -1030,7 +1030,7 @@ public class HudClientEvents {
                         .size();
                 } else {
                     for (LivingEntity le : UnitClientEvents.getAllUnits()) {
-                        if (le instanceof Unit u && le instanceof WorkerUnit wu && u.getOwnerName()
+                        if (le instanceof Unit u && u.isRtsUnit() && le instanceof WorkerUnit wu && u.getOwnerName()
                             .equals(finalSelPlayerName) && !UnitClientEvents.idleWorkerIds.contains(le.getId())) {
 
                             boolean alreadyAssigned = false;

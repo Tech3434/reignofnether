@@ -140,7 +140,7 @@ public class UnitActionItem {
         for (int id : unitIds) {
             Entity entity = level.getEntity(id);
 
-            if (entity instanceof Unit unit) {
+            if (entity instanceof Unit unit && unit.isRtsUnit()) {
                 boolean alliedControl;
                 if (level.isClientSide()) {
                     alliedControl = AlliancesClient.canControlAlly(unit.getOwnerName());
@@ -223,7 +223,7 @@ public class UnitActionItem {
             switch (action) {
                 case STOP -> {
                     Entity passenger = ((Entity) unit).getFirstPassenger();
-                    if (passenger instanceof Unit unitPassenger) {
+                    if (passenger instanceof Unit unitPassenger && unitPassenger.isRtsUnit()) {
                         Unit.fullResetBehaviours(unitPassenger);
                     }
                 }
@@ -459,7 +459,7 @@ public class UnitActionItem {
             // were just ordered away from (the "team move-away snaps back to attacking" bug).
             if (level.isClientSide() || UnitServerEvents.rtsPathfinding || filtered.size() <= 20) {
                 for (Pair<LivingEntity, BlockPos> pair : filtered) {
-                    if (pair.getFirst() instanceof Unit unit) {
+                    if (pair.getFirst() instanceof Unit unit && unit.isRtsUnit()) {
                         unit.getMoveGoal().setMoveTarget(pair.getSecond());
                     }
                 }

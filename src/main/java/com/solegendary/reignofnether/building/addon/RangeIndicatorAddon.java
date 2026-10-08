@@ -28,7 +28,7 @@ public interface RangeIndicatorAddon extends BuildingAddon {
     boolean showOnlyWhenSelected(BuildingPlacement placement);
 
     public default void updateHighlightBps(BuildingPlacement placement) {
-        if (this instanceof Unit unit) {
+        if (this instanceof Unit unit && unit.isRtsUnit()) {
             LivingEntity le = (LivingEntity) unit;
             if (le.level().isClientSide()) {
                 setHighlightBps(placement, new HashSet<>());

@@ -68,7 +68,7 @@ public abstract class AbstractArrowMixin extends Projectile {
         EntityHitResult entityHitResult = this.findHitEntity(vec32, vec33);
 
         boolean insideForeignEntity = entityHitResult != null && entityHitResult.getEntity() != getOwner();
-        if (entityHitResult != null && entityHitResult.getEntity() instanceof Unit unit1 && getOwner() instanceof Unit unit2 &&
+        if (entityHitResult != null && entityHitResult.getEntity() instanceof Unit unit1 && unit1.isRtsUnit() && getOwner() instanceof Unit unit2 && unit2.isRtsUnit() &&
             GarrisonableBuildingAddon.getGarrison(unit1) == GarrisonableBuildingAddon.getGarrison(unit2))
             insideForeignEntity = false;
 
@@ -93,7 +93,7 @@ public abstract class AbstractArrowMixin extends Projectile {
             // ground -> garrisoned unit - allow through at 1/2 accuracy
             // can't use random() here or the nophysics status will change every tick
             //if (this.getId() % 2 == 0 &&
-            //    ((Unit) aUnit).getTargetGoal().getTarget() instanceof Unit tUnit) {
+            //    ((Unit) aUnit).getTargetGoal().getTarget() instanceof Unit tUnit && tUnit.isRtsUnit()) {
             //    if (GarrisonableBuilding.getGarrison(tUnit) instanceof Building building &&
             //        isInsideTopOfBuilding(building)) {
 
@@ -112,7 +112,7 @@ public abstract class AbstractArrowMixin extends Projectile {
             at = @At("TAIL")
     )
     public void tick(CallbackInfo ci) {
-        if (this.isNoPhysics() && this.getOwner() instanceof Unit) {
+        if (this.isNoPhysics() && Unit.isUnit(this.getOwner())) {
             Vec3 vec3 = this.getDeltaMovement();
             double d4 = vec3.horizontalDistance();
             double d6 = vec3.y;
@@ -128,7 +128,7 @@ public abstract class AbstractArrowMixin extends Projectile {
             at = @At("TAIL")
     )
     protected void tickDespawn(CallbackInfo ci) {
-        if (this.getOwner() instanceof Unit && this.life >= 200)
+        if (Unit.isUnit(this.getOwner()) && this.life >= 200)
             this.discard();
     }
 
@@ -149,8 +149,8 @@ public abstract class AbstractArrowMixin extends Projectile {
     @Unique
     private boolean reignofnether$collidedWithUntargetedAlly(Entity entity) {
         boolean isAlliedOrOwned = false;
-        if (this.getOwner() instanceof Unit unit1 &&
-                entity instanceof Unit unit2) {
+        if (this.getOwner() instanceof Unit unit1 && unit1.isRtsUnit() &&
+                entity instanceof Unit unit2 && unit2.isRtsUnit()) {
             String owner1 = unit1.getOwnerName();
             String owner2 = unit2.getOwnerName();
             if (entity.level().isClientSide())
@@ -158,8 +158,8 @@ public abstract class AbstractArrowMixin extends Projectile {
             else
                 isAlliedOrOwned = owner1.equals(owner2) || AlliancesServerEvents.isAllied(owner1, owner2);
         }
-        return this.getOwner() instanceof Unit unit1 &&
-                entity instanceof Unit unit2 &&
+        return this.getOwner() instanceof Unit unit1 && unit1.isRtsUnit() &&
+                entity instanceof Unit unit2 && unit2.isRtsUnit() &&
                 isAlliedOrOwned &&
                 (unit1.getTargetGoal().getTarget() == null ||
                         !unit1.getTargetGoal().getTarget().equals(unit2));
@@ -174,7 +174,7 @@ public abstract class AbstractArrowMixin extends Projectile {
             cancellable = true
     )
     private void reignofnether$canHitEntity(Entity entity, CallbackInfoReturnable<Boolean> cir) {
-        if (cir.getReturnValue() && this.getOwner() instanceof Unit) {
+        if (cir.getReturnValue() && Unit.isUnit(this.getOwner())) {
             if ((this.piercingIgnoreEntityIds != null && this.piercingIgnoreEntityIds.contains(entity.getId())) ||
                     reignofnether$collidedWithUntargetedAlly(entity))
                 cir.setReturnValue(false);
@@ -190,7 +190,7 @@ public abstract class AbstractArrowMixin extends Projectile {
     protected void onHitEntity(EntityHitResult pResult, CallbackInfo ci) {
         // Only unit arrows use the pierce/garrison copy below; arrows from players and vanilla mobs
         // fall through to vanilla onHitEntity untouched.
-        if (!(this.getOwner() instanceof Unit))
+        if (!(Unit.isUnit(this.getOwner())))
             return;
         ci.cancel();
         Entity entity = pResult.getEntity();

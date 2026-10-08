@@ -33,7 +33,7 @@ public class PathNavigationMixin {
 
     @Unique
     private boolean reignofnether$isWideUnit() {
-        return mob instanceof Unit && mob.getBbWidth() > 1.0f;
+        return Unit.isUnit(mob) && mob.getBbWidth() > 1.0f;
     }
 
     @Unique
@@ -52,7 +52,7 @@ public class PathNavigationMixin {
     // goal's own repath); vanilla mode (gamerule off) keeps stock behaviour.
     @Unique
     private boolean reignofnether$usesRtsPaths() {
-        return mob instanceof Unit && UnitServerEvents.rtsPathfinding;
+        return Unit.isUnit(mob) && UnitServerEvents.rtsPathfinding;
     }
 
     @Inject(method = "shouldRecomputePath", at = @At("HEAD"), cancellable = true)

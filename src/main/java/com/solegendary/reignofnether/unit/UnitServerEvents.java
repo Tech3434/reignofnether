@@ -244,7 +244,7 @@ public class UnitServerEvents {
     public static int getCurrentPopulation(String ownerName) {
         int currentPopulation = 0;
         for (LivingEntity entity : allUnits)
-            if (entity instanceof Unit unit) {
+            if (entity instanceof Unit unit && unit.isRtsUnit()) {
                 if (unit.getOwnerName().equals(ownerName)) {
                     currentPopulation += unit.getCost().population;
                 }
@@ -336,11 +336,11 @@ public class UnitServerEvents {
         String ownerName1 = unit.getOwnerName();
         String ownerName2 = "";
 
-        if (entity instanceof ItemEntity item && item.getOwner() instanceof Unit unitItemOwner) {
+        if (entity instanceof ItemEntity item && item.getOwner() instanceof Unit unitItemOwner && unitItemOwner.isRtsUnit()) {
             ownerName2 = unitItemOwner.getOwnerName();
         } else if (entity instanceof Player player) {
             ownerName2 = player.getName().getString();
-        } else if (entity instanceof Unit) {
+        } else if (Unit.isUnit(entity)) {
             ownerName2 = ((Unit) entity).getOwnerName();
         } else {
             return Relationship.NEUTRAL;
@@ -378,10 +378,10 @@ public class UnitServerEvents {
     @SubscribeEvent
     public static void onEntityJoin(EntityJoinLevelEvent evt) {
         if (evt.getEntity() instanceof LivingEntity le &&
-                (ResourceSources.isHuntableAnimal(le) || le instanceof Unit))
+                (ResourceSources.isHuntableAnimal(le) || Unit.isUnit(le)))
             addUnitPoofs(evt.getLevel(), le);
 
-        if (evt.getEntity() instanceof Unit && evt.getEntity() instanceof Mob mob) {
+        if (Unit.isUnit(evt.getEntity()) && evt.getEntity() instanceof Mob mob) {
             mob.setBaby(false);
             mob.setPathfindingMalus(PathType.WATER, -1.0f);
             mob.setPathfindingMalus(PathType.DANGER_FIRE, 1.0f);
@@ -394,13 +394,13 @@ public class UnitServerEvents {
         // neutral and is adopted only explicitly.
 
         // for some reason some units need to be nudged a little on spawn or they can.t move
-        if (!evt.getLevel().isClientSide() && evt.getEntity() instanceof Unit && evt.getEntity() instanceof LivingEntity le) {
+        if (!evt.getLevel().isClientSide() && Unit.isUnit(evt.getEntity()) && evt.getEntity() instanceof LivingEntity le) {
             boolean bool1 = le.getRandom().nextBoolean();
             boolean bool2 = le.getRandom().nextBoolean();
             evt.getEntity().push(0.005d * (bool1 ? -1 : 1), 0, 0.005d * (bool2 ? -1 : 1));
         }
 
-        if (evt.getEntity() instanceof Unit unit && evt.getEntity() instanceof LivingEntity entity
+        if (evt.getEntity() instanceof Unit unit && unit.isRtsUnit() && evt.getEntity() instanceof LivingEntity entity
             && !evt.getLevel().isClientSide) {
             allUnits.add(entity);
             com.solegendary.reignofnether.research.ResearchAttributeApplier.applyFor(evt.getLevel(), unit);
@@ -448,7 +448,7 @@ public class UnitServerEvents {
     public static void onEntityLeave(EntityLeaveLevelEvent evt) {
         if (isServerStopping) return;
 
-        if (evt.getEntity() instanceof Unit && evt.getEntity() instanceof LivingEntity entity
+        if (Unit.isUnit(evt.getEntity()) && evt.getEntity() instanceof LivingEntity entity
             && !evt.getLevel().isClientSide) {
 
             allUnits.removeIf(e -> e.getId() == entity.getId());
@@ -463,10 +463,10 @@ public class UnitServerEvents {
         // if a player has no more units, then they are defeated
         synchronized (allUnits) {
             try {
-                if (evt.getEntity() instanceof Unit unit) {
+                if (evt.getEntity() instanceof Unit unit && unit.isRtsUnit()) {
                     var unitsOwned = 0;
                     for (LivingEntity u : allUnits) {
-                        if ((u instanceof Unit unit1 && unit1.getOwnerName().equals(unit.getOwnerName()))) unitsOwned++;
+                        if ((u instanceof Unit unit1 && unit1.isRtsUnit() && unit1.getOwnerName().equals(unit.getOwnerName()))) unitsOwned++;
                     }
                     // H.4: only end the match for a player who actually had a building to lose
                     if (unitsOwned == 0 && isRTSPlayer(unit.getOwnerName())
@@ -487,13 +487,13 @@ public class UnitServerEvents {
         // supposed to add to sculk_spreadable.json tag under the data/minecraft/tags/blocks
         // but doesn't work for some reason
         // drop all resources held
-        if (evt.getEntity() instanceof Unit unit) {
+        if (evt.getEntity() instanceof Unit unit && unit.isRtsUnit()) {
             List<ItemStack> itemStacks = unit.getItems();
             for (ItemStack itemStack : itemStacks)
                 evt.getEntity().spawnAtLocation(itemStack);
         }
 
-        if (evt.getEntity() instanceof Unit unitKilled && evt.getSource().getEntity() instanceof Unit unit) {
+        if (evt.getEntity() instanceof Unit unitKilled && unitKilled.isRtsUnit() && evt.getSource().getEntity() instanceof Unit unit && unit.isRtsUnit()) {
             float bountyPercent = 0;
             if (unitKilled.getOwnerName().isEmpty()) {
                 bountyPercent = NEUTRAL_UNIT_BOUNTY_PERCENT;
@@ -526,7 +526,7 @@ public class UnitServerEvents {
     @SubscribeEvent
     public static void onDropItem(LivingDropsEvent evt) {
         if (ResourceSources.isHuntableAnimal(evt.getEntity()) && !evt.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO) && evt.getSource()
-            .getEntity() instanceof Unit unit && evt.getSource().getEntity() instanceof WorkerUnit && evt.getSource()
+            .getEntity() instanceof Unit unit && unit.isRtsUnit() && evt.getSource().getEntity() instanceof WorkerUnit && evt.getSource()
             .getEntity() instanceof Mob mob && mob.canPickUpLoot()) {
 
             if (!Unit.atMaxResources(unit))
@@ -593,7 +593,7 @@ public class UnitServerEvents {
                 FormationOrder order = it.next();
                 it.remove();
                 LivingEntity le = order.unit();
-                if (le != null && le.isAlive() && le instanceof Unit unit) {
+                if (le != null && le.isAlive() && le instanceof Unit unit && unit.isRtsUnit()) {
                     unit.getMoveGoal().setMoveTarget(order.target());
                 }
                 processed += 1;
@@ -618,7 +618,7 @@ public class UnitServerEvents {
             UnitIdleWorkerClientBoundPacket.sendIdleWorkerPacket();
 
             for (LivingEntity entity : allUnits) {
-                if (entity instanceof Unit unit && evt.getLevel().getServer() != null) {
+                if (entity instanceof Unit unit && unit.isRtsUnit() && evt.getLevel().getServer() != null) {
                     UnitSyncClientboundPacket.sendSyncResourcesPacket(unit);
                     UnitSyncClientboundPacket.sendSyncStatsPacket(evt.getLevel().getServer().getPlayerList().getPlayers(), entity);
 
@@ -668,7 +668,7 @@ public class UnitServerEvents {
             for (UnitActionItem uai : unitActionSlowQueue) {
                 if (uai.getUnitIds().length > 0) {
                     Entity entity = evt.getLevel().getEntity(uai.getUnitIds()[0]);
-                    if (entity instanceof Unit unit && unit.isIdle()) {
+                    if (entity instanceof Unit unit && unit.isRtsUnit() && unit.isIdle()) {
                         uai.action(evt.getLevel());
                         actionedItem = uai;
                         //System.out.println("actioned item from queue: " + uai.getAction().name() + "|" + uai.getUnitIds()[0] + "|" + uai.getPreselectedBlockPos());
@@ -730,7 +730,7 @@ public class UnitServerEvents {
                             pos.above().getZ() + 0.5f
                     );
                     entities.add(entity);
-                    if (entity instanceof Unit unit) {
+                    if (entity instanceof Unit unit && unit.isRtsUnit()) {
                         unit.setOwnerName(ownerName);
                     }
                     level.addFreshEntity(entity);
@@ -747,7 +747,7 @@ public class UnitServerEvents {
             knockbackIgnoreIds.add(evt.getEntity().getId());
         }
 
-        if (evt.getEntity() instanceof Unit && (
+        if (Unit.isUnit(evt.getEntity()) && (
             evt.getSource() == evt.getEntity().damageSources().sweetBerryBush() || evt.getSource() == evt.getEntity().damageSources().cactus()
         )) {
             evt.setNewDamage(0);
@@ -760,12 +760,12 @@ public class UnitServerEvents {
             evt.setNewDamage(attackerUnit.getUnitAttackDamage());
         }
 
-        if (evt.getEntity() instanceof Unit && (evt.getSource() == evt.getEntity().damageSources().inWall())) {
+        if (Unit.isUnit(evt.getEntity()) && (evt.getSource() == evt.getEntity().damageSources().inWall())) {
             evt.setNewDamage(0);
         }
 
         // prevent friendly fire damage from ranged units (unless specifically targeted)
-        if (evt.getSource().is(DamageTypeTags.IS_PROJECTILE) && evt.getSource().getEntity() instanceof Unit unit) {
+        if (evt.getSource().is(DamageTypeTags.IS_PROJECTILE) && evt.getSource().getEntity() instanceof Unit unit && unit.isRtsUnit()) {
             if (getUnitToEntityRelationship(unit, evt.getEntity()) == Relationship.FRIENDLY
                 && unit.getTargetGoal().getTarget() != evt.getEntity()) {
                 evt.setNewDamage(0);
@@ -808,7 +808,7 @@ public class UnitServerEvents {
             hit = ((EntityHitResult) evt.getRayTraceResult()).getEntity();
         }
 
-        if (owner instanceof Unit unit && hit != null) {
+        if (owner instanceof Unit unit && unit.isRtsUnit() && hit != null) {
             if (getUnitToEntityRelationship(unit, hit) == Relationship.FRIENDLY
                 && unit.getTargetGoal().getTarget() != hit) {
                 // for some reason, if we try to cancel a pierced arrow, it loops here forever
@@ -819,7 +819,7 @@ public class UnitServerEvents {
             }
         }
 
-        if (hit instanceof Unit unit && evt.getProjectile().getPersistentData().contains("accuracyRoll")) {
+        if (hit instanceof Unit unit && unit.isRtsUnit() && evt.getProjectile().getPersistentData().contains("accuracyRoll")) {
             float accuracyRoll = evt.getProjectile().getPersistentData().getFloat("accuracyRoll");
             if (accuracyRoll < unit.getEvasionChance())
                 evt.setCanceled(true);
@@ -835,7 +835,7 @@ public class UnitServerEvents {
         }
         // 1.21.1's MobEffectEvent.Added is no longer cancellable, so uninterruptable units are blocked
         // earlier: LivingEntityMixin#addEffect drops interrupting effects before they are applied.
-        if (evt.getEntity() instanceof Unit unit && MobEffectRegistrar.isInterrupt(evt.getEffectInstance().getEffect()) && unit.uninterruptable()) {
+        if (evt.getEntity() instanceof Unit unit && unit.isRtsUnit() && MobEffectRegistrar.isInterrupt(evt.getEffectInstance().getEffect()) && unit.uninterruptable()) {
             return;
         }
         if (!evt.getEntity().level().isClientSide())
@@ -861,7 +861,7 @@ public class UnitServerEvents {
     public static void onMobEffectApplicable(MobEffectEvent.Applicable evt) {
         // allow undead to be poisoned
         if (MobCategoryCompat.isMonster(evt.getEntity()) &&
-            evt.getEntity() instanceof Unit &&
+            Unit.isUnit(evt.getEntity()) &&
             evt.getEffectInstance().getEffect().value() == MobEffects.POISON.value()) {
             evt.setResult(MobEffectEvent.Applicable.Result.APPLY);
         }

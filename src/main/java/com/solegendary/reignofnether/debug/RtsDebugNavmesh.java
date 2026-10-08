@@ -56,8 +56,8 @@ public class RtsDebugNavmesh {
         if (MC.level == null) return;
         LivingEntity sel = null;
         for (LivingEntity e : UnitClientEvents.getSelectedUnits())
-            if (e instanceof Unit) { sel = e; break; }
-        if (!(sel instanceof Mob mob) || !(sel instanceof Unit unit)) return;
+            if (Unit.isUnit(e)) { sel = e; break; }
+        if (!(sel instanceof Mob mob) || !(sel instanceof Unit unit && unit.isRtsUnit())) return;
 
         MobilityClass mobility = MobilityClass.of(unit);
         int fr = RtsPathfinder.footprintRadiusFor(mob);

@@ -97,7 +97,7 @@ public abstract class EnchantAbility extends Ability {
         BlockPos centreBottom = new BlockPos(buildingUsing.centrePos.getX(), buildingUsing.minCorner.getY(), buildingUsing.centrePos.getZ());
 
         if (!level.isClientSide() &&
-            te instanceof Unit unit &&
+            te instanceof Unit unit && unit.isRtsUnit() &&
             unit.getOwnerName().equals(buildingUsing.ownerName) &&
             isCorrectUnitAndEquipment(te) &&
             !hasSameEnchant(te) &&
@@ -110,7 +110,7 @@ public abstract class EnchantAbility extends Ability {
             playSound(level, te);
 
         } else if (level.isClientSide()) {
-            if (!(te instanceof Unit unit &&
+            if (!(te instanceof Unit unit && unit.isRtsUnit() &&
                     unit.getOwnerName().equals(buildingUsing.ownerName))) {
                 HudClientEvents.showTemporaryMessage(I18n.get("ability.reignofnether.enchant.error1"));
             } else if (te.distanceToSqr(Vec3.atCenterOf(centreBottom)) >= RANGE * RANGE) {

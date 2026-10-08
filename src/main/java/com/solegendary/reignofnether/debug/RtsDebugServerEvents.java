@@ -75,7 +75,7 @@ public class RtsDebugServerEvents {
         debugPathCalcsThisSecond = 0;
         int stuck = 0;
         for (LivingEntity e : UnitServerEvents.getAllUnits()) {
-            if (e instanceof Unit u) {
+            if (e instanceof Unit u && u.isRtsUnit()) {
                 var mg = u.getMoveGoal();
                 if (mg != null && mg.isInBackoff()) stuck += 1;
             }

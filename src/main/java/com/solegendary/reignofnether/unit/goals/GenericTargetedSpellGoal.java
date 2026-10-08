@@ -197,7 +197,7 @@ public class GenericTargetedSpellGoal extends MoveToTargetBlockGoal {
                             onGroundCast.accept(castTarget);
                     }
                     if (this.ability != null && !this.mob.level().isClientSide()) {
-                        if (!this.mob.level().isClientSide() && mob instanceof Unit unit) {
+                        if (!this.mob.level().isClientSide() && mob instanceof Unit unit && unit.isRtsUnit()) {
                             if (this.ability.isOffCooldown(unit)) {
                                 AbilityClientboundPacket.sendSetCooldownPacket(this.mob.getId(), this.ability.action, this.ability.cooldownMax);
                             }
@@ -205,7 +205,7 @@ public class GenericTargetedSpellGoal extends MoveToTargetBlockGoal {
                                 heroUnit.setMana(heroUnit.getMana() - heroAbility.manaCost);
                             }
                         }
-                        else if (mob instanceof Unit unit && this.ability.isOffCooldown(unit)) {
+                        else if (mob instanceof Unit unit && unit.isRtsUnit() && this.ability.isOffCooldown(unit)) {
                             this.ability.setToMaxCooldown(unit);
                         }
                     }

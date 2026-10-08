@@ -34,7 +34,7 @@ public abstract class WalkNodeEvaluatorMixin extends NodeEvaluator {
         // PathfindingContext keeps the mob private, but NodeEvaluator already holds the one prepare()
         // was called with, and getPathType is only reached through it.
         Mob mob = this.mob;
-        if (!(mob instanceof Unit))
+        if (!(Unit.isUnit(mob)))
             return;
 
         BlockPos pos = new BlockPos(pX, pY, pZ);

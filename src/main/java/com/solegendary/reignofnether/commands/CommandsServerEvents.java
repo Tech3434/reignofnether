@@ -585,7 +585,7 @@ public class CommandsServerEvents {
 		}
 		level.addFreshEntity(entity);
 		
-		if (entity instanceof Unit unit) {
+		if (entity instanceof Unit unit && unit.isRtsUnit()) {
 			unit.setOwnerName(ownerName);
 			UnitSyncClientboundPacket.sendSyncOwnerNamePacket(unit);
 		}
@@ -713,7 +713,7 @@ public class CommandsServerEvents {
 		
 		List<Integer> ids = new ArrayList<>();
 		for (LivingEntity entity : UnitServerEvents.getAllUnits()) {
-			if (entity instanceof Unit unit &&
+			if (entity instanceof Unit unit && unit.isRtsUnit() &&
 				(currentOwnerName == null || unit.getOwnerName().equals(currentOwnerName)) &&
 				isWithin(entity.getOnPos(), min, max)) {
 				ids.add(entity.getId());
@@ -725,7 +725,7 @@ public class CommandsServerEvents {
 		}
 		for (LivingEntity entity : UnitServerEvents.getAllUnits())
 			for (int id : idArray)
-				if (entity.getId() == id && entity instanceof Unit unit) {
+				if (entity.getId() == id && entity instanceof Unit unit && unit.isRtsUnit()) {
 					unit.setOwnerName(ownerName);
 					UnitSyncClientboundPacket.sendSyncOwnerNamePacket(unit);
 				}
@@ -772,7 +772,7 @@ public class CommandsServerEvents {
 		int[] ids = collectUnitIds(from, to);
 		for (LivingEntity entity : UnitServerEvents.getAllUnits())
 			for (int id : ids)
-				if (entity.getId() == id && entity instanceof Unit unit) {
+				if (entity.getId() == id && entity instanceof Unit unit && unit.isRtsUnit()) {
 					unit.setAnchor(anchor);
 					UnitSyncClientboundPacket.sendSyncAnchorPosPacket(entity, unit.getAnchor());
 				}
@@ -787,7 +787,7 @@ public class CommandsServerEvents {
 	public static void removeAnchors(int[] ids) {
 		for (LivingEntity entity : UnitServerEvents.getAllUnits())
 			for (int id : ids)
-				if (entity.getId() == id && entity instanceof Unit unit) {
+				if (entity.getId() == id && entity instanceof Unit unit && unit.isRtsUnit()) {
 					unit.setAnchor(null);
 					UnitSyncClientboundPacket.sendRemoveAnchorPosPacket(entity);
 				}
@@ -841,7 +841,7 @@ public class CommandsServerEvents {
 		int changed = 0;
 		for (LivingEntity entity : UnitServerEvents.getAllUnits()) {
 			if (entity instanceof AttackerUnit attacker
-				&& entity instanceof Unit unit
+				&& entity instanceof Unit unit && unit.isRtsUnit()
 				&& unit.getOwnerName().equals(ownerName)
 				&& isWithin(entity.getOnPos(), min, max)) {
 				Unit.fullResetBehaviours(unit);
@@ -879,7 +879,7 @@ public class CommandsServerEvents {
 		BlockPos max = max(from, to);
 		List<Integer> ids = new ArrayList<>();
 		for (LivingEntity entity : UnitServerEvents.getAllUnits()) {
-			if (entity instanceof Unit && isWithin(entity.getOnPos(), min, max)) {
+			if (Unit.isUnit(entity) && isWithin(entity.getOnPos(), min, max)) {
 				ids.add(entity.getId());
 			}
 		}

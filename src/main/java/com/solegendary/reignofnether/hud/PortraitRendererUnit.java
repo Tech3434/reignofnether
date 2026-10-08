@@ -183,7 +183,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
             y -= HERO_Y_OFFSET;
 
         Relationship rs = UnitClientEvents.getPlayerToEntityRelationship(entity);
-        int bgCol = PlayerColors.getPlayerPortraitDisplayColorHex(entity instanceof Unit u ? u.getOwnerName() : null);
+        int bgCol = PlayerColors.getPlayerPortraitDisplayColorHex(entity instanceof Unit u && u.isRtsUnit() ? u.getOwnerName() : null);
         if (entity instanceof Player player) {
             bgCol = 0xA0000000 | PlayerColors.getPlayerAllianceColorHex(player.getName().getString());
         }
@@ -218,7 +218,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
         guiGraphics.pose().translate(0,0,2000);
         name = WordUtils.capitalize(name);
 
-        if (rs != Relationship.OWNED && entity instanceof Unit unit && unit.getOwnerName().length() > 0) {
+        if (rs != Relationship.OWNED && entity instanceof Unit unit && unit.isRtsUnit() && unit.getOwnerName().length() > 0) {
             name += " (" + unit.getOwnerName() + ")";
         }
 
@@ -227,7 +227,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
             y -= 6;
         }
         int xOrig = x;
-        if (entity instanceof Unit unit) {
+        if (entity instanceof Unit unit && unit.isRtsUnit()) {
             for (Button passiveIcon : unit.getPassiveIcons()) {
                 int yr = unit instanceof HeroUnit ? y - 18 : y - 16;
                 passiveIcon.render(guiGraphics, x - 2, yr, mouseX, mouseY);

@@ -113,7 +113,7 @@ public class UnitBowAttackGoal<T extends net.minecraft.world.entity.Mob> extends
 
             BuildingPlacement garrPlacement = GarrisonableBuildingAddon.getGarrison((Unit) this.mob);
             BuildingPlacement targetGarrPlacement = null;
-            if (target instanceof Unit unit)
+            if (target instanceof Unit unit && unit.isRtsUnit())
                 targetGarrPlacement = GarrisonableBuildingAddon.getGarrison(unit);
 
             GarrisonableBuildingAddon garr = garrPlacement != null ? garrPlacement.getBuilding().getActiveAddon(GarrisonableBuildingAddon.class) : null;
@@ -138,12 +138,12 @@ public class UnitBowAttackGoal<T extends net.minecraft.world.entity.Mob> extends
             if (!unit.isFlyingUnit()) {
                 if (isGarrisoned) {
                     attackRange = garr.getAttackRange();
-                    if (target instanceof Unit targetUnit && targetUnit.isFlyingUnit())
+                    if (target instanceof Unit targetUnit && targetUnit.isRtsUnit() && targetUnit.isFlyingUnit())
                         attackRange += GARRISON_BONUS_RANGE_TO_FLYING;
                 }
                 else if (isTargetGarrisoned)
                     attackRange += targetGarr.getExternalAttackRangeBonus();
-                else if (target instanceof Unit targetUnit)
+                else if (target instanceof Unit targetUnit && targetUnit.isRtsUnit())
                     attackRange += targetUnit.getAttackerRangeBonus(this.mob);
             }
 

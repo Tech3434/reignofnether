@@ -82,7 +82,7 @@ public class BuildingCommands {
 								String ownerName = "";
 								if (source instanceof Player player)
 									ownerName = player.getName().getString();
-								else if (source instanceof Unit unit)
+								else if (source instanceof Unit unit && unit.isRtsUnit())
 									ownerName = unit.getOwnerName();
 								return CommandsServerEvents.placeBuilding(
 									ctx,

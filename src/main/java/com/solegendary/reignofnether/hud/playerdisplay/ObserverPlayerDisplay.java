@@ -100,7 +100,7 @@ public class ObserverPlayerDisplay extends AbstractPlayerDisplay {
         int militarySupply = 0;
 
         for (LivingEntity entities : UnitClientEvents.getAllUnits()) {
-            if (!(entities instanceof Unit unit)) {
+            if (!(entities instanceof Unit unit && unit.isRtsUnit())) {
                 continue;
             }
 

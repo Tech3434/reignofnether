@@ -103,7 +103,7 @@ public class CustomBuildingPlacement extends ProductionPlacement {
             nbt.put("Pos", pos);
             entity.load(nbt);
         }
-        if (entity instanceof Unit unit) {
+        if (entity instanceof Unit unit && unit.isRtsUnit()) {
             unit.setOwnerName(ownerName);
             unit.setupEquipmentAndUpgradesServer();
             setDelayedRally(unit);

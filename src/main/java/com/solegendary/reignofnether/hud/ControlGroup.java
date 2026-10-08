@@ -133,7 +133,7 @@ public class ControlGroup {
             UnitClientEvents.clearSelectedUnits();
             List<LivingEntity> entities = new ArrayList<>();
             for (LivingEntity e : getAllUnits()) {
-                if (entityIds.contains(e.getId()) && e instanceof Unit) {
+                if (entityIds.contains(e.getId()) && Unit.isUnit(e)) {
                     entities.add(e);
                 }
             }

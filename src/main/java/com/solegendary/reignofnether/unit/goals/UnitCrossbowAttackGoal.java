@@ -150,7 +150,7 @@ public class UnitCrossbowAttackGoal<T extends Monster & RangedAttackMob & Crossb
 
             BuildingPlacement garrPlacement = GarrisonableBuildingAddon.getGarrison((Unit) this.mob);
             BuildingPlacement targetGarrPlacement = null;
-            if (target instanceof Unit unit)
+            if (target instanceof Unit unit && unit.isRtsUnit())
                 targetGarrPlacement = GarrisonableBuildingAddon.getGarrison(unit);
 
             GarrisonableBuildingAddon garr = garrPlacement != null ? garrPlacement.getBuilding().getActiveAddon(GarrisonableBuildingAddon.class) : null;
@@ -189,7 +189,7 @@ public class UnitCrossbowAttackGoal<T extends Monster & RangedAttackMob & Crossb
             }
             else if (isTargetGarrisoned)
                 attackRange += targetGarr.getExternalAttackRangeBonus();
-            else if (target instanceof Unit targetUnit)
+            else if (target instanceof Unit targetUnit && targetUnit.isRtsUnit())
                 attackRange += targetUnit.getAttackerRangeBonus(this.mob);
 
             // dont consider garrison range here so the unit still moves towards the edge of the building
