@@ -48,14 +48,12 @@ public interface AttackerUnit extends Unit {
     public static final float ATTACK_DAMAGE_REDUCTION_PER_WEAK = 0.2f;
     public static final float ATTACK_DAMAGE_INCREASE_PER_STRENGTH = 0.2f;
 
-    public boolean getWillRetaliate();
     public default float getAttacksPerSecond() {
         return 20f / getAttackCooldown();
     }
     public default float getAttackCooldown() {
         return ((20 / getNonBaseAttacksPerSecond()) * getAttackCooldownMultiplier());
     }
-    public boolean getAggressiveWhenIdle();
     public default float getNonBaseAttacksPerSecond() {
         AttributeInstance attr = ((LivingEntity) this).getAttribute(AttributeHelpers.holder(AttributeRegistrar.ATTACKS_PER_SECOND.get()));
         return (float) (attr != null ?  attr.getValue() : AttributeRegistrar.ATTACKS_PER_SECOND.get().getDefaultValue());
@@ -106,15 +104,6 @@ public interface AttackerUnit extends Unit {
         }
         return Math.max(0, value * (1 - weak + str));
     }
-
-    public BlockPos getAttackMoveTarget();
-    public boolean canAttackBuildings();
-
-    public Goal getAttackGoal(); // not necessarily the same goal, eg. could be melee or ranged
-    public Goal getAttackBuildingGoal();
-
-    public EnemySearchBehaviour getEnemySearchBehaviour(); // not necessarily the same goal, eg. could be melee or ranged
-    public void setEnemySearchBehaviour(EnemySearchBehaviour behaviour);
 
     // chase and attack the target ignoring all else until it is dead or out of sight
     public default void setUnitAttackTarget(@Nullable LivingEntity target) {
@@ -197,7 +186,6 @@ public interface AttackerUnit extends Unit {
 
     // this setter sets a Unit field and so can't be defaulted
     // move to a block but chase/attack a target if there is one close by (for a limited distance)
-    void setAttackMoveTarget(@Nullable BlockPos bp);
 
     static boolean isAttackingBuilding(AttackerUnit attackerUnit) {
         boolean isAttackingBuilding = false;

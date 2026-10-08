@@ -916,6 +916,19 @@ public interface Unit {
         return net.minecraft.world.level.block.Blocks.WHEAT.defaultBlockState();
     }
 
+    // ---- Attacker accessors (collapsed from AttackerUnit). ----
+    default boolean getWillRetaliate() { return false; }
+    default boolean getAggressiveWhenIdle() { return false; }
+    default net.minecraft.core.BlockPos getAttackMoveTarget() { return null; }
+    default boolean canAttackBuildings() { return false; }
+    default net.minecraft.world.entity.ai.goal.Goal getAttackGoal() { return null; }
+    default net.minecraft.world.entity.ai.goal.Goal getAttackBuildingGoal() { return null; }
+    default com.solegendary.reignofnether.unit.EnemySearchBehaviour getEnemySearchBehaviour() {
+        return com.solegendary.reignofnether.unit.EnemySearchBehaviour.NONE;
+    }
+    default void setEnemySearchBehaviour(com.solegendary.reignofnether.unit.EnemySearchBehaviour behaviour) { }
+    default void setAttackMoveTarget(@Nullable net.minecraft.core.BlockPos bp) { }
+
     // if true, will ignore all commands except for stop (S)
     // used for things like channeling blizzard on the wraith to prevent accidental cancels
     default boolean ignoreNonStopCommands() {
