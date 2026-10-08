@@ -184,6 +184,14 @@ JSON для юнитов/зданий/способностей — отложе�
 `reignofnether-add-faction` переписаны под реестр; `_GUIDES/05_hero.md` — под уровень/ману/ранги
 героя. Гейты `compileJava`/`validateMixins`/`runData` ✅.
 
+**JSON-юниты (2026-10-08).** Юниты стали data-driven: `UnitDefinition` (датапак-реестр `unit`),
+`@Mixin(Mob) UnitMobMixin` (роль/флаги → goals, определение хранится на экземпляре),
+`AbilitySpec` + `AbilityTypes` (способности `type`+параметры), `UnitDefinitionRuntime.create/spawn`.
+Производство и старт матча спавнят юнитов **по id определения** (ванильные тела
+`minecraft:villager`/`minecraft:vindicator`). Код-классы `VillagerUnit`/`VindicatorUnit`, их
+рендереры/модели/`EntityType`/спавн-яйца **удалены**; все под-интерфейсы сведены в один `Unit` +
+флаги. Проверено `runServer` (`Done (1.193s)!`, чистый стоп).
+
 **Выбор фракции при входе (2026-10-08).** Команда `/startrts [<faction>]` (нужен RTS-пропуск)
 открывает клиентское меню фракций: без аргумента — выбирай любую; с фракцией — только её, остальные
 кнопки видны, но заблокированы. Список синхронизируется (`FactionClientboundPacket` →
