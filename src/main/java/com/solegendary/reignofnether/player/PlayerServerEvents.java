@@ -374,7 +374,7 @@ public class PlayerServerEvents {
     );
 
     public static void startRTS(int playerId, Vec3 pos) {
-        startRTS(playerId, pos, 0, com.solegendary.reignofnether.faction.FactionRegistries.DEFAULT_FACTION);
+        startRTS(playerId, pos, 0, com.solegendary.reignofnether.faction.FactionRegistries.getDefaultFactionId());
     }
 
     // readied start is a simultaneous start from players using RTS start pos blocks, difference being:
@@ -382,7 +382,7 @@ public class PlayerServerEvents {
     // - spawns workers outside the foundations
     // - no start messages are sent other than the one from the countdown
     public static void startRTS(int playerId, Vec3 pos, int startPosColorId) {
-        startRTS(playerId, pos, startPosColorId, com.solegendary.reignofnether.faction.FactionRegistries.DEFAULT_FACTION);
+        startRTS(playerId, pos, startPosColorId, com.solegendary.reignofnether.faction.FactionRegistries.getDefaultFactionId());
     }
 
     /** Starts a match for the player under the given faction (its capitol and starting army). */

@@ -30,4 +30,17 @@ public final class FactionRegistries {
             return null;
         return get(server).get(id);
     }
+
+    /** The configured default faction id, falling back to {@link #DEFAULT_FACTION}. */
+    public static ResourceLocation getDefaultFactionId() {
+        try {
+            ResourceLocation id = ResourceLocation.tryParse(
+                    com.solegendary.reignofnether.config.ReignOfNetherCommonConfigs.DEFAULT_FACTION.get());
+            if (id != null)
+                return id;
+        } catch (Exception ignored) {
+            // config not loaded yet - use the built-in default
+        }
+        return DEFAULT_FACTION;
+    }
 }

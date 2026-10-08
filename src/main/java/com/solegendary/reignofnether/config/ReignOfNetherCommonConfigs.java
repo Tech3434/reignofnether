@@ -19,6 +19,11 @@ public class ReignOfNetherCommonConfigs {
 
     public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
+    /** Faction id used when an RTS start does not name one (a datapack faction, e.g. reignofnether:villagers). */
+    public static final ModConfigSpec.ConfigValue<String> DEFAULT_FACTION = BUILDER
+            .comment("Faction used when an RTS start does not name one (e.g. reignofnether:villagers).")
+            .define("defaultFaction", "reignofnether:villagers");
+
     public static final ModConfigSpec SPEC;
 
     static {
