@@ -879,6 +879,18 @@ public interface Unit {
         return 320;
     }
 
+    /**
+     * Whether this entity is an RTS unit. Code units (the templates) are always units; data-driven
+     * units (a plain `Mob` carrying a {@link com.solegendary.reignofnether.unit.UnitDefinition})
+     * report true while the definition is attached.
+     *
+     * <p>Once `Mob` implements `Unit`, every `instanceof Unit` check MUST be gated on this - otherwise
+     * every zombie, sheep and cow in the world would be treated as a unit.
+     */
+    default boolean isRtsUnit() {
+        return true;
+    }
+
     // if true, will ignore all commands except for stop (S)
     // used for things like channeling blizzard on the wraith to prevent accidental cancels
     default boolean ignoreNonStopCommands() {
