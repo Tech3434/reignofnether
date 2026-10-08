@@ -10,6 +10,7 @@ import com.solegendary.reignofnether.config.ConfigVanillaServerEvents;
 
 import com.solegendary.reignofnether.gamerules.GameruleServerEvents;
 import com.solegendary.reignofnether.research.ResearchServerEvents;
+import com.solegendary.reignofnether.faction.FactionServerEvents;
 
 import com.solegendary.reignofnether.hud.custombutton.CustomButtonServerEvents;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
@@ -54,6 +55,7 @@ public class ServerEventRegistrar {
         vanillaEventBus.register(CustomBuildingServerEvents.class);
         vanillaEventBus.register(CommandsServerEvents.class);
         vanillaEventBus.register(ResearchServerEvents.class);
+        vanillaEventBus.register(FactionServerEvents.class);
         vanillaEventBus.register(WorldBorderServerEvents.class);
         vanillaEventBus.register(CustomButtonServerEvents.class);
     }

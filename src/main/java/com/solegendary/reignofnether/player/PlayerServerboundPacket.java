@@ -40,6 +40,7 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
     public double x;
     public double y;
     public double z;
+    public String factionId = "";
 
     public static void teleportPlayer(Double x, Double y, Double z) {
         Minecraft MC = Minecraft.getInstance();
@@ -72,6 +73,10 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
     }
 
     public static void startRTS(Double x, Double y, Double z) {
+        startRTS(x, y, z, null);
+    }
+
+    public static void startRTS(Double x, Double y, Double z, ResourceLocation factionId) {
         Minecraft MC = Minecraft.getInstance();
 
         if (MC.player != null && MC.level != null) {
@@ -80,7 +85,8 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
                 HudClientEvents.showTemporaryMessage(I18n.get("hud.reignofnether.invalid_start_location"));
                 return;
             }
-            PacketHandler.sendToServer(new PlayerServerboundPacket(PlayerAction.START_RTS, MC.player.getId(), x, y, z));
+            PacketHandler.sendToServer(new PlayerServerboundPacket(PlayerAction.START_RTS, MC.player.getId(), x, y, z,
+                    factionId == null ? "" : factionId.toString()));
             CompletableFuture.delayedExecutor(2000, TimeUnit.MILLISECONDS).execute(() -> {
                 MC.player.sendSystemMessage(Component.literal(""));
                 MC.player.sendSystemMessage(Component.translatable("hud.gamemode.reignofnether.classic1")
@@ -131,6 +137,11 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
         this.z = z;
     }
 
+    public PlayerServerboundPacket(PlayerAction action, int playerId, Double x, Double y, Double z, String factionId) {
+        this(action, playerId, x, y, z);
+        this.factionId = factionId == null ? "" : factionId;
+    }
+
     public PlayerServerboundPacket(PlayerAction action, int playerId) {
         this(action, playerId, 0d, 0d, 0d);
     }
@@ -141,6 +152,7 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
         this.x = buffer.readDouble();
         this.y = buffer.readDouble();
         this.z = buffer.readDouble();
+        this.factionId = buffer.readUtf();
     }
 
     public void encode(RegistryFriendlyByteBuf buffer) {
@@ -149,6 +161,7 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
         buffer.writeDouble(this.x);
         buffer.writeDouble(this.y);
         buffer.writeDouble(this.z);
+        buffer.writeUtf(this.factionId == null ? "" : this.factionId);
     }
 
     private static final List<PlayerAction> opOnlyActions = List.of(
@@ -178,7 +191,8 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
                 case TELEPORT -> PlayerServerEvents.movePlayer(this.playerId, this.x, this.y, this.z);
                 case ENABLE_ORTHOVIEW -> PlayerServerEvents.enableOrthoview(this.playerId);
                 case DISABLE_ORTHOVIEW -> PlayerServerEvents.disableOrthoview(this.playerId);
-                case START_RTS -> PlayerServerEvents.startRTS(this.playerId, new Vec3(this.x, this.y, this.z));
+                case START_RTS -> PlayerServerEvents.startRTS(this.playerId, new Vec3(this.x, this.y, this.z),
+                        0, this.factionId == null || this.factionId.isEmpty() ? null : ResourceLocation.tryParse(this.factionId));
                 case DEFEAT -> PlayerServerEvents.defeat(this.playerId, Component.translatable("server.reignofnether.surrendered").getString());
                 case RESET_RTS -> PlayerServerEvents.resetRTS(false);
                 case RESET_RTS_HARD -> PlayerServerEvents.resetRTS(true);

@@ -184,6 +184,12 @@ JSON для юнитов/зданий/способностей — отложе�
 `reignofnether-add-faction` переписаны под реестр; `_GUIDES/05_hero.md` — под уровень/ману/ранги
 героя. Гейты `compileJava`/`validateMixins`/`runData` ✅.
 
+**Выбор фракции при входе (2026-10-08).** Команда `/startrts [<faction>]` (нужен RTS-пропуск)
+открывает клиентское меню фракций: без аргумента — выбирай любую; с фракцией — только её, остальные
+кнопки видны, но заблокированы. Список синхронизируется (`FactionClientboundPacket` →
+`FactionClientEvents` → `FactionMenu` в HUD); клик стартует матч с выбранной фракцией
+(`PlayerServerboundPacket.START_RTS` теперь несёт `factionId`). Гейты ✅.
+
 **П5 (2026-10-08).** `1.21.1-clean` fast-forward'нут на текущую работу (`wip/stage-d-deletions`);
 обе ветки указывали на `ec35ca7d`.
 

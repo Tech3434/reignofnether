@@ -1405,6 +1405,11 @@ public class HudClientEvents {
                     renderedButtons.addAll(gameruleButtons);
                 }
             }
+            // faction selection menu (opened by /startrts [faction])
+            if (com.solegendary.reignofnether.faction.FactionClientEvents.isMenuOpen()) {
+                renderedButtons.addAll(com.solegendary.reignofnether.faction.FactionMenu.render(
+                        evt.getGuiGraphics(), screenWidth, screenHeight, mouseX, mouseY));
+            }
         }
 
         // ---------------------------------

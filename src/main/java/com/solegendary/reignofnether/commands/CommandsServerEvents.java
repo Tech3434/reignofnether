@@ -13,6 +13,7 @@ import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.api.ReignOfNetherRegistries;
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.research.ResearchCommand;
+import com.solegendary.reignofnether.faction.FactionCommand;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuildingServerEvents;
@@ -75,6 +76,7 @@ public class CommandsServerEvents {
         CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
 		RTSApiCommands.register(dispatcher);
 		ResearchCommand.register(dispatcher);
+		FactionCommand.register(dispatcher);
 		
 		dispatcher.register(Commands.literal("rtsapi-place-building")
 			.requires(source -> source.hasPermission(2))
