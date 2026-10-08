@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public interface AttackerUnit {
+public interface AttackerUnit extends Unit {
 
     public static final float ATTACK_DAMAGE_REDUCTION_PER_WEAK = 0.2f;
     public static final float ATTACK_DAMAGE_INCREASE_PER_STRENGTH = 0.2f;

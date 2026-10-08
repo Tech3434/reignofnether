@@ -3,7 +3,7 @@ package com.solegendary.reignofnether.unit.interfaces;
 import com.solegendary.reignofnether.unit.goals.RangedAttackGroundGoal;
 import net.minecraft.world.entity.LivingEntity;
 
-public interface RangedAttackerUnit {
+public interface RangedAttackerUnit extends AttackerUnit {
 
     default RangedAttackGroundGoal<?> getRangedAttackGroundGoal() { return null; }
 
