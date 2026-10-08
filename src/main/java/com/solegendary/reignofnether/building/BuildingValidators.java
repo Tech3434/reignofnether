@@ -1,6 +1,5 @@
 package com.solegendary.reignofnether.building;
 
-import com.solegendary.reignofnether.building.buildings.villagers.TownCentre;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuilding;
 
 import com.solegendary.reignofnether.nether.NetherBlocks;

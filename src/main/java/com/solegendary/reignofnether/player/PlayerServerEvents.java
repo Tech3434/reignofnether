@@ -459,8 +459,10 @@ public class PlayerServerEvents {
             if (capitolBuilding == null)
                 capitolBuilding = com.solegendary.reignofnether.building.buildings.JsonBuildingManager.get(
                         ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "town_centre"));
-            if (capitolBuilding == null)
-                capitolBuilding = Buildings.TOWN_CENTRE;
+            if (capitolBuilding == null) {
+                ReignOfNether.LOGGER.error("startRTS: no capitol building found for faction {}", factionId);
+                return;
+            }
 
             // H.8: one spawn position per starting unit, spread out along x from the start position
             for (int startUnitIdx = 0; startUnitIdx < startUnitDefs.size(); startUnitIdx++) {

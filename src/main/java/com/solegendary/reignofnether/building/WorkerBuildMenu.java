@@ -22,8 +22,6 @@ public final class WorkerBuildMenu {
 
     public static List<Button> buildButtons() {
         List<Button> buttons = new ArrayList<>();
-        buttons.add(gate(Buildings.TOWN_CENTRE.getBuildButton(null), Buildings.TOWN_CENTRE));
-        buttons.add(gate(Buildings.BARRACKS.getBuildButton(null), Buildings.BARRACKS));
 
         CustomBuildingClientEvents.customBuildings.forEach(cb -> {
             if (cb.buildableByVillagers)

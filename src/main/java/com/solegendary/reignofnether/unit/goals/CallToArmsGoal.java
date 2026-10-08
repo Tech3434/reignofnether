@@ -3,7 +3,6 @@ package com.solegendary.reignofnether.unit.goals;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
 import com.solegendary.reignofnether.building.BuildingUtils;
-import com.solegendary.reignofnether.building.buildings.villagers.TownCentre;
 import com.solegendary.reignofnether.unit.Relationship;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.MiscUtil;
@@ -47,8 +46,8 @@ public class CallToArmsGoal extends MoveToTargetBlockGoal {
 
     public void setNearestTownCentreAsTarget() {
         BuildingPlacement building = BuildingUtils.findClosestBuilding(mob.level().isClientSide(), this.mob.getEyePosition(),
-                (b) -> b.isBuilt && b.ownerName.equals(((Unit) mob).getOwnerName()) && b.getBuilding() instanceof TownCentre);
-        if (building != null && building.getBuilding() instanceof TownCentre)
+                (b) -> b.isBuilt && b.ownerName.equals(((Unit) mob).getOwnerName()) && b.getBuilding().isCapitol);
+        if (building != null && building.getBuilding().isCapitol)
             setBuildingTarget(building);
     }
 

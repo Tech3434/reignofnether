@@ -3,7 +3,6 @@ package com.solegendary.reignofnether.building;
 import net.minecraft.core.HolderLookup;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.api.ReignOfNetherRegistries;
-import com.solegendary.reignofnether.building.buildings.villagers.*;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuilding;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuildingServerEvents;
 import com.solegendary.reignofnether.building.data.DataStorage;
@@ -155,10 +154,10 @@ public class BuildingSaveData extends SavedData {
     // backwards compatibility for old saves
     private static Building getOldBuilding(String name) {
         Building building = null;
-        switch(name) {
-            case Barracks.buildingName -> building = Buildings.BARRACKS;
-            case TownCentre.buildingName -> building = Buildings.TOWN_CENTRE;
-        }
+        // old code buildings are gone; try a data-driven definition by the same id
+        ResourceLocation id = ResourceLocation.tryParse(name);
+        if (id != null)
+            building = com.solegendary.reignofnether.building.buildings.JsonBuildingManager.get(id);
         return building;
     }
 }

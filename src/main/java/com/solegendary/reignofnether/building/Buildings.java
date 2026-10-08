@@ -1,19 +1,11 @@
 package com.solegendary.reignofnether.building;
 
-import com.solegendary.reignofnether.ReignOfNether;
-import com.solegendary.reignofnether.api.ReignOfNetherRegistries;
-
-import com.solegendary.reignofnether.building.buildings.villagers.*;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
-
+/**
+ * Code building registry. The template buildings are data-driven now (datapack
+ * {@link BuildingDefinition}s built into {@link buildings.JsonBuilding}); this hook is kept for a
+ * faction that needs a code building with custom behaviour. The code registry
+ * {@code ReignOfNetherRegistries.BUILDING} stays in place (currently empty).
+ */
 public class Buildings {
-    public static final TownCentre TOWN_CENTRE = register(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "town_centre"), new TownCentre());
-    public static final Barracks BARRACKS = register(ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "barracks"), new Barracks());
-
-    private static <T extends Building> T register(ResourceLocation id, T building) {
-        return Registry.register(ReignOfNetherRegistries.BUILDING, id, building);
-    }
-
     public static void init() {}
 }
