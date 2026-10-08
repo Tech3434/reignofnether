@@ -450,9 +450,15 @@ public class PlayerServerEvents {
                         startUnitDefs.add(su.entityType());
             if (startUnitDefs.isEmpty())
                 startUnitDefs.addAll(STARTING_ARMY);
-            Building capitolBuilding = faction != null
-                    ? com.solegendary.reignofnether.api.ReignOfNetherRegistries.BUILDING.get(faction.capitol())
-                    : null;
+            Building capitolBuilding = null;
+            if (faction != null) {
+                capitolBuilding = com.solegendary.reignofnether.api.ReignOfNetherRegistries.BUILDING.get(faction.capitol());
+                if (capitolBuilding == null)
+                    capitolBuilding = com.solegendary.reignofnether.building.buildings.JsonBuildingManager.get(faction.capitol());
+            }
+            if (capitolBuilding == null)
+                capitolBuilding = com.solegendary.reignofnether.building.buildings.JsonBuildingManager.get(
+                        ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "town_centre"));
             if (capitolBuilding == null)
                 capitolBuilding = Buildings.TOWN_CENTRE;
 
