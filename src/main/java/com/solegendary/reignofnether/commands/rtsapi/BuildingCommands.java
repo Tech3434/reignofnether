@@ -46,15 +46,16 @@ import java.util.stream.Stream;
 public class BuildingCommands {
 	
 	public static final SuggestionProvider<CommandSourceStack> BUILDINGS = (ctx, builder) -> {
-		List<ResourceLocation> locations = Stream.concat(
-			ReignOfNetherRegistries.BUILDING.stream(),
-			CustomBuildingServerEvents.customBuildings.stream()
-		).map(building -> {
+		List<ResourceLocation> locations = new ArrayList<>();
+		ReignOfNetherRegistries.BUILDING.stream().forEach(building -> {
 			ResourceLocation id = ReignOfNetherRegistries.BUILDING.getKey(building);
-			return id != null ? id : ResourceLocation.fromNamespaceAndPath(
-				"custom",
-				building.name.toLowerCase().replace(' ', '_'));
-		}).collect(Collectors.toList());
+			if (id != null)
+				locations.add(id);
+		});
+		com.solegendary.reignofnether.building.buildings.JsonBuildingManager.all()
+			.forEach(jsonBuilding -> locations.add(jsonBuilding.getDefinitionId()));
+		CustomBuildingServerEvents.customBuildings.forEach(building -> locations.add(
+			ResourceLocation.fromNamespaceAndPath("custom", building.name.toLowerCase().replace(' ', '_'))));
 		
 		SharedSuggestionProvider.suggestResource(locations, builder,
 			id -> id,

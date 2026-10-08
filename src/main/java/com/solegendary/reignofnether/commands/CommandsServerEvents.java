@@ -899,6 +899,9 @@ public class CommandsServerEvents {
 			location = ResourceLocation.tryParse(ReignOfNether.MOD_ID + ":" + input);
 		}
 		Building building = location == null ? null : ReignOfNetherRegistries.BUILDING.get(location);
+		if (building == null && location != null) {
+			building = com.solegendary.reignofnether.building.buildings.JsonBuildingManager.get(location);
+		}
 		if (building == null) {
 			building = CustomBuildingServerEvents.getCustomBuilding(
 				WordUtils.capitalize(

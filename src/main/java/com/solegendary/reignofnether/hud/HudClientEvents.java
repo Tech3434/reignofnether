@@ -352,15 +352,7 @@ public class HudClientEvents {
             // ---------------------------
             for (BuildingPlacement building : selBuildings) {
                 if (hudSelBuildingOwned && buildingButtons.size() < (buttonsPerRow * 2)) {
-                    String name = "";
-                    if (building.getBuilding() instanceof CustomBuilding customBuilding) {
-                        name = customBuilding.name;
-                    } else {
-                        ResourceLocation rl = ReignOfNetherRegistries.BUILDING.getKey(building.getBuilding());
-                        if (rl != null) {
-                            name = I18n.get("buildings.reignofnether." + rl.getPath());
-                        }
-                    }
+                    String name = building.getBuilding().getDisplayName();
                     buildingButtons.add(new ButtonBuilder(name)
                         .iconSize(iconSize)
                         .iconResource(building.getBuilding().icon)

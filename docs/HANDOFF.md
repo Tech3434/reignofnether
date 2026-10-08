@@ -218,6 +218,10 @@ cd ___temp
 `JsonBuildingManager.getOrCreate` (раньше `BUILDING.getKey(jsonBldg)` падал на сохранении, и здание терялось).
 `JsonBuildingManager.reload` теперь не пересоздаёт существующие инстансы. Гейты зелёные.
 
+**JSON-здания в командах/HUD:** `/rtsapi building place <id>` принимает id JSON-здания (suggestions +
+`CommandsServerEvents.resolveBuilding`), а `Building.getDisplayName()` даёт имя для HUD/портрета/порядка
+выделения — раньше у `JsonBuilding` имя было пустым, а `getKey(...).toString()` падал. Гейты зелёные.
+
 ---
 
 ## 5. Что осталось (по приоритету)

@@ -216,10 +216,17 @@ public abstract class Building {
     }
 
     public String getUpgradedName(BuildingPlacement buildingPlacement) {
+        return getDisplayName();
+    }
+
+    /**
+     * Localized display name for the HUD. Code buildings use their lang key; data-driven and custom
+     * buildings have no code key, so they fall back to their own (localized-from-data) name.
+     */
+    public String getDisplayName() {
         ResourceLocation key = ReignOfNetherRegistries.BUILDING.getKey(this);
-        if (key == null) {
-            return "Unknown";
-        }
-        return I18n.get("buildings." + key.getNamespace() + "." + key.getPath());
+        if (key != null)
+            return I18n.get("buildings." + key.getNamespace() + "." + key.getPath());
+        return name != null && !name.isBlank() ? name : structureName;
     }
 }
