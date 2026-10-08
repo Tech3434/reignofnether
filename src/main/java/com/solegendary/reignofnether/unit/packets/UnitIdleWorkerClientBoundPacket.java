@@ -4,6 +4,7 @@ import com.solegendary.reignofnether.registrars.PacketHandler;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.ArrayUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,7 +34,7 @@ public class UnitIdleWorkerClientBoundPacket  implements RTSSimplePayload {
     public static void sendIdleWorkerPacket() {
         var units = new LinkedList<Integer>();
         for (LivingEntity livingEntity : UnitServerEvents.getAllUnits()) {
-            if (livingEntity instanceof WorkerUnit wu && WorkerUnit.isIdle(wu)) units.add(livingEntity.getId());
+            if (livingEntity instanceof WorkerUnit wu && Unit.isWorkerIdle(wu)) units.add(livingEntity.getId());
         }
         PacketHandler.send(PacketHandler.allPlayers(),
             new UnitIdleWorkerClientBoundPacket(ArrayUtil.intListToArray(units)));

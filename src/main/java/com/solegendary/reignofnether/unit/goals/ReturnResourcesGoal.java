@@ -66,7 +66,7 @@ public class ReturnResourcesGoal extends MoveToTargetBlockGoal {
                     this.depositItems();
                     if (this.mob instanceof WorkerUnit worker) {
                         unit.resetBehaviours();
-                        WorkerUnit.resetBehaviours((WorkerUnit) unit);
+                        Unit.resetWorkerBehaviours((WorkerUnit) unit);
                         GatherResourcesGoal goal = worker.getGatherResourceGoal();
                         if (goal != null && goal.saveData.hasData()) {
                             goal.loadState();

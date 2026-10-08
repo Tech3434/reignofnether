@@ -341,8 +341,8 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
             this.setCanPickUpLoot(true);
             super.tick();
             Unit.tick(this);
-            AttackerUnit.tick(this);
-            WorkerUnit.tick(this);
+            Unit.tickAttacker(this);
+            Unit.tickWorker(this);
             this.callToArmsGoal.tick();
 
             if (tickCount % 20 == 0) {

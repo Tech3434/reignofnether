@@ -396,7 +396,7 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
         if (unit.getReturnResourcesGoal() != null) {
             this.saveState();
             unit.resetBehaviours();
-            WorkerUnit.resetBehaviours((WorkerUnit) unit);
+            Unit.resetWorkerBehaviours((WorkerUnit) unit);
             unit.getReturnResourcesGoal().returnToClosestBuilding();
         }
     }

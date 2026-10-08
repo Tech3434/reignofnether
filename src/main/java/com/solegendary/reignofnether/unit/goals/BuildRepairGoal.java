@@ -64,7 +64,7 @@ public class BuildRepairGoal extends MoveToTargetBlockGoal {
             return;
 
         if (buildingTarget == null) {
-            if (!this.mob.level().isClientSide() && WorkerUnit.isIdle((WorkerUnit) this.mob) && autocastRepair) {
+            if (!this.mob.level().isClientSide() && Unit.isWorkerIdle((WorkerUnit) this.mob) && autocastRepair) {
                 BuildingPlacement building = BuildingUtils.findClosestBuilding(
                         this.mob.level().isClientSide(),
                         this.mob.getEyePosition(),

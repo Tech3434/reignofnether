@@ -866,9 +866,9 @@ public class PlayerServerEvents {
                 unit.resetBehaviours();
                 Unit.resetBehaviours(unit);
                 if (unit instanceof AttackerUnit aUnit)
-                    AttackerUnit.resetBehaviours(aUnit);
+                    Unit.resetAttackerBehaviours(aUnit);
                 if (unit instanceof WorkerUnit wUnit)
-                    WorkerUnit.resetBehaviours(wUnit);
+                    Unit.resetWorkerBehaviours(wUnit);
             } catch (Exception e) {
                 ReignOfNether.LOGGER.error("Failed to reset behaviours of neutralised unit {}", entity.getId(), e);
             }

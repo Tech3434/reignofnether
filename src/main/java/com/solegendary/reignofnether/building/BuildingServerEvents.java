@@ -532,7 +532,7 @@ buildingData.buildings.forEach(b -> {
                 if (queue) {
                     if (workerUnit.getBuildRepairGoal().queuedBuildings.isEmpty()) {
                         ((Unit) entity).resetBehaviours();
-                        WorkerUnit.resetBehavioursExceptExploreBuild(workerUnit);
+                        Unit.resetWorkerBehavioursExceptExploreBuild(workerUnit);
                     }
                     workerUnit.getBuildRepairGoal().queuedBuildings.add(newBuilding);
                     if (workerUnit.getBuildRepairGoal().getBuildingTarget() == null) {
@@ -540,7 +540,7 @@ buildingData.buildings.forEach(b -> {
                     }
                 } else {
                     ((Unit) entity).resetBehaviours();
-                    WorkerUnit.resetBehavioursExceptExploreBuild(workerUnit);
+                    Unit.resetWorkerBehavioursExceptExploreBuild(workerUnit);
                     workerUnit.getBuildRepairGoal().setBuildingTarget(newBuilding);
                 }
             }

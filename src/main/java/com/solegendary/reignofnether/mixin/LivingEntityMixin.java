@@ -114,7 +114,7 @@ public abstract class LivingEntityMixin extends Entity {
 
         float dmg = attackerUnit.getUnitAttackDamage();
         if (isMelee && !(Unit.isWorker(pDamageSource.getEntity())))
-            dmg += AttackerUnit.getWeaponDamageModifier(attackerUnit);
+            dmg += Unit.getWeaponDamageModifier(attackerUnit);
 
         if (isHuntableAnimal && !(Unit.isWorker(pDamageSource.getEntity()))) {
             dmg *= 0.5f;

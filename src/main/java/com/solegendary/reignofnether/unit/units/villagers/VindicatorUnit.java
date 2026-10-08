@@ -230,7 +230,7 @@ public class VindicatorUnit extends Vindicator implements Unit, AttackerUnit {
         this.setCanPickUpLoot(true);
         super.tick();
         Unit.tick(this);
-        AttackerUnit.tick(this);
+        Unit.tickAttacker(this);
     }
 
     @Override

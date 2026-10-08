@@ -382,7 +382,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
         ArrayList<RenderedStat> renderedStats = new ArrayList<>();
 
         if (unit instanceof AttackerUnit attackerUnit) {
-            double atkDmg = attackerUnit.getUnitAttackDamage() + AttackerUnit.getWeaponDamageModifier(attackerUnit);
+            double atkDmg = attackerUnit.getUnitAttackDamage() + Unit.getWeaponDamageModifier(attackerUnit);
             if (Unit.isWorker(unit)) {
                 atkDmg = (int) attackerUnit.getUnitAttackDamage();
             }

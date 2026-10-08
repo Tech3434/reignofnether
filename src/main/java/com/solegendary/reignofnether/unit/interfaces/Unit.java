@@ -617,10 +617,10 @@ public interface Unit {
         unit.resetBehaviours();
         Unit.resetBehaviours(unit);
         if (unit instanceof WorkerUnit workerUnit) {
-            WorkerUnit.resetBehaviours(workerUnit);
+            Unit.resetWorkerBehaviours(workerUnit);
         }
         if (unit instanceof AttackerUnit attackerUnit) {
-            AttackerUnit.resetBehaviours(attackerUnit);
+            Unit.resetAttackerBehaviours(attackerUnit);
         }
     }
 
@@ -711,7 +711,7 @@ public interface Unit {
         if (this instanceof AttackerUnit attackerUnit) {
             idleAttacker = attackerUnit.getAttackMoveTarget() == null &&
                     !((Unit) attackerUnit).hasLivingTarget() &&
-                    !AttackerUnit.isAttackingBuilding(attackerUnit);
+                    !Unit.isAttackingBuilding(attackerUnit);
         }
         boolean idleRangedAttacker = true;
         if (this instanceof RangedAttackerUnit rangedAttackerUnit) {
@@ -720,7 +720,7 @@ public interface Unit {
         }
         boolean idleWorker = true;
         if (Unit.isWorker(this))
-            idleWorker = WorkerUnit.isIdle((WorkerUnit) this);
+            idleWorker = Unit.isWorkerIdle((WorkerUnit) this);
 
         for (Goal goal : ((Mob) this).goalSelector.getAvailableGoals()) {
             if (goal instanceof GenericUntargetedSpellGoal spellGoal && spellGoal.isCasting())
@@ -1209,6 +1209,187 @@ public interface Unit {
         else if (attackBuildingGoal instanceof MeleeAttackBuildingGoal mabg)
             isAttackingBuilding = mabg.getBuildingTarget() != null;
         return isAttackingBuilding;
+    }
+
+    // ==== worker/attacker tick helpers (merged from WorkerUnit / AttackerUnit) ====
+    static void tickWorker(Unit unit) {
+        com.solegendary.reignofnether.unit.goals.BuildRepairGoal buildRepairGoal = unit.getBuildRepairGoal();
+        if (buildRepairGoal != null)
+            buildRepairGoal.tick();
+        com.solegendary.reignofnether.unit.goals.GatherResourcesGoal gatherResourcesGoal = unit.getGatherResourceGoal();
+        if (gatherResourcesGoal != null)
+            gatherResourcesGoal.tick();
+
+        LivingEntity entity = (LivingEntity) unit;
+        ItemStack mainHandItem = entity.getItemBySlot(EquipmentSlot.MAINHAND);
+
+        if (unit.getBuildRepairGoal().isBuilding()) {
+            if (!mainHandItem.is(net.minecraft.world.item.Items.IRON_SHOVEL))
+                entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.IRON_SHOVEL));
+        }
+        else if (unit.getGatherResourceGoal().isGathering()) {
+            switch (unit.getGatherResourceGoal().getTargetResourceName()) {
+                case FOOD -> { if (!mainHandItem.is(net.minecraft.world.item.Items.IRON_HOE))
+                        entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.IRON_HOE)); }
+                case WOOD -> { if (!mainHandItem.is(net.minecraft.world.item.Items.IRON_AXE))
+                        entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.IRON_AXE)); }
+                case ORE -> { if (!mainHandItem.is(net.minecraft.world.item.Items.IRON_PICKAXE))
+                        entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.IRON_PICKAXE)); }
+                case NONE -> { if (!mainHandItem.is(net.minecraft.world.item.Items.AIR))
+                        entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.AIR)); }
+            }
+        } else if (unit.isAttacker() && unit.getTargetGoal().getTarget() != null) {
+            if (!mainHandItem.is(net.minecraft.world.item.Items.WOODEN_SWORD)) {
+                entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.WOODEN_SWORD));
+                if (!entity.level().isClientSide())
+                    UnitAnimationClientboundPacket.sendEntityPacket(UnitAnimationAction.NON_KEYFRAME_START, entity, unit.getTargetGoal().getTarget());
+            }
+        } else {
+            if (!mainHandItem.is(net.minecraft.world.item.Items.AIR)) {
+                entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.AIR));
+                if (!entity.level().isClientSide())
+                    UnitAnimationClientboundPacket.sendBasicPacket(UnitAnimationAction.NON_KEYFRAME_STOP, entity);
+            }
+        }
+    }
+
+    static void resetWorkerBehaviours(Unit unit) {
+        unit.getBuildRepairGoal().stopBuilding();
+        unit.getGatherResourceGoal().stopGathering();
+        unit.getExploreBuildLocationGoal().reset();
+    }
+
+    static void resetWorkerBehavioursExceptExploreBuild(Unit unit) {
+        unit.getBuildRepairGoal().stopBuilding();
+        unit.getGatherResourceGoal().stopGathering();
+    }
+
+    static boolean isWorkerIdle(Unit unit) {
+        com.solegendary.reignofnether.unit.goals.GatherResourcesGoal resGoal = unit.getGatherResourceGoal();
+        boolean isMoving = !((Mob) unit).getNavigation().isDone();
+        boolean isGathering = resGoal.isGathering();
+        boolean isGatheringIdle = resGoal.isIdle();
+        boolean isBuilding = unit.getBuildRepairGoal().getBuildingTarget() != null;
+        boolean isFarming = resGoal.isFarming();
+        boolean isAttacking = unit.getTargetGoal().getTarget() != null;
+        return !isMoving && !isGathering && !isBuilding && isGatheringIdle && !isAttacking && !isFarming;
+    }
+
+    static void resetAttackerBehaviours(Unit unit) {
+        unit.setUnitAttackTarget(null);
+        unit.setAttackMoveTarget(null);
+
+        Goal attackGoal = unit.getAttackGoal();
+        if (attackGoal instanceof MeleeWindupAttackUnitGoal mwaug)
+            mwaug.resetWindup();
+
+        Goal attackBuildingGoal = unit.getAttackBuildingGoal();
+        if (attackBuildingGoal instanceof RangedAttackBuildingGoal<?> rabg)
+            rabg.stop();
+        else if (attackBuildingGoal instanceof MeleeAttackBuildingGoal mabg)
+            mabg.stopAttacking();
+
+        unit.setEnemySearchBehaviour(com.solegendary.reignofnether.unit.EnemySearchBehaviour.NONE);
+    }
+
+    static void tickAttacker(Unit unit) {
+        Mob unitMob = (Mob) unit;
+
+        if (!unitMob.level().isClientSide) {
+            if (unit.getAttackGoal() instanceof AbstractMeleeAttackUnitGoal meleeAttackUnitGoal) {
+                meleeAttackUnitGoal.tickAttackCooldown();
+                if (unitMob.isVehicle())
+                    meleeAttackUnitGoal.tick();
+                if (meleeAttackUnitGoal instanceof MeleeWindupAttackUnitGoal goal)
+                    goal.checkAndPerformAttackWithWindup();
+            }
+            else if (unit.getAttackGoal() instanceof UnitRangedAttackGoal rangedAttackGoal)
+                rangedAttackGoal.tickAttackCooldown();
+            else if (unit.getAttackGoal() instanceof UnitBowAttackGoal rangedAttackGoal)
+                rangedAttackGoal.tickAttackCooldown();
+
+            if (unit.getAttackBuildingGoal() != null && unit.canAttackBuildings())
+                unit.getAttackBuildingGoal().tick();
+        }
+
+        if (!unitMob.level().isClientSide && unitMob.tickCount % 4 == 0) {
+            if (((LivingEntity) unit).getEffect(MobEffectHelpers.holder(MobEffectRegistrar.STUN.get())) != null ||
+                ((LivingEntity) unit).getEffect(MobEffectHelpers.holder(MobEffectRegistrar.FREEZE.get())) != null) {
+                Unit.fullResetBehaviours(unit);
+                return;
+            }
+
+            boolean isAttackingBuilding = isAttackingBuilding(unit);
+
+            if (unit.getAttackMoveTarget() != null && !unit.hasLivingTarget() && !isAttackingBuilding) {
+                unit.attackClosestEnemy((ServerLevel) unitMob.level());
+                if (unit.getTargetGoal().getTarget() == null &&
+                    unit.getMoveGoal().getMoveTarget() == null &&
+                    !isAttackingBuilding(unit))
+                    unit.setMoveTarget(unit.getAttackMoveTarget());
+            }
+
+            boolean isCasting = unit.isCasting();
+            boolean forced1 = unit.getTargetGoal().forced;
+            Goal attackBuildingGoal = unit.getAttackBuildingGoal();
+            boolean forced2 = attackBuildingGoal instanceof RangedAttackBuildingGoal<?> rabg && rabg.forced;
+            boolean forced3 = attackBuildingGoal instanceof MeleeAttackBuildingGoal mabg && mabg.forced;
+            boolean forced = forced1 || forced2 || forced3;
+
+            if (unitMob.getLastDamageSource() != null &&
+                    unit.getWillRetaliate() &&
+                    unit.getTargetGoal().getTarget() == null &&
+                    !isCasting && (unit.isIdle() || (isAttackingBuilding && !forced))) {
+
+                Entity lastDSEntity = unitMob.getLastDamageSource().getEntity();
+                com.solegendary.reignofnether.unit.Relationship rs = UnitServerEvents.getUnitToEntityRelationship(unit, lastDSEntity);
+
+                if (lastDSEntity instanceof LivingEntity &&
+                    !(lastDSEntity instanceof net.minecraft.world.entity.player.Player player && player.isCreative()) &&
+                    (rs == com.solegendary.reignofnether.unit.Relationship.NEUTRAL || rs == com.solegendary.reignofnether.unit.Relationship.HOSTILE)) {
+                    unit.setUnitAttackTarget((LivingEntity) lastDSEntity);
+                }
+            }
+            if (unit.isIdle() && !isCasting && unit.getAggressiveWhenIdle())
+                unit.attackClosestEnemy((ServerLevel) unitMob.level());
+
+            if (!forced)
+                unit.retargetToClosestUnit((ServerLevel) unitMob.level());
+        }
+
+        if (!unitMob.level().isClientSide && unitMob.tickCount % 40 == 0) {
+            if (unit.getAttackMoveTarget() != null && unit.getEnemySearchBehaviour() == com.solegendary.reignofnether.unit.EnemySearchBehaviour.NONE) {
+                boolean hasNoTargets = unit.getTargetGoal().getTarget() == null;
+                if (unit.getAttackBuildingGoal() instanceof MeleeAttackBuildingGoal mabg && mabg.getBuildingTarget() != null)
+                    hasNoTargets = false;
+                else if (unit.getAttackBuildingGoal() instanceof RangedAttackBuildingGoal<?> rabg && rabg.getBuildingTarget() != null)
+                    hasNoTargets = false;
+                if (hasNoTargets && unitMob.distanceToSqr(unit.getAttackMoveTarget().getCenter()) < 4)
+                    unit.setAttackMoveTarget(null);
+            }
+            if (unit.getAttackMoveTarget() == null || unit.isIdle()) {
+                switch (unit.getEnemySearchBehaviour()) {
+                    case NEAREST_ENEMY_BUILDING -> unit.attackMoveNearestEnemyBuilding();
+                    case NEAREST_ENEMY_UNIT -> unit.attackMoveNearestEnemyUnit(false);
+                    case NEAREST_ENEMY_WORKER -> unit.attackMoveNearestEnemyUnit(true);
+                }
+            }
+        }
+    }
+
+    static double getWeaponDamageModifier(Unit unit) {
+        ItemStack itemStack = ((LivingEntity) unit).getItemBySlot(EquipmentSlot.MAINHAND);
+        if (!itemStack.isEmpty()) {
+            ItemAttributeModifiers mods = itemStack.get(DataComponents.ATTRIBUTE_MODIFIERS);
+            if (mods == null) return 0;
+            for (ItemAttributeModifiers.Entry entry : mods.modifiers()) {
+                boolean applies = entry.slot() == EquipmentSlotGroup.MAINHAND || entry.slot() == EquipmentSlotGroup.HAND;
+                if (applies && entry.attribute().is(Attributes.ATTACK_DAMAGE)
+                        && entry.modifier().operation() == AttributeModifier.Operation.ADD_VALUE)
+                    return entry.modifier().amount();
+            }
+        }
+        return 0;
     }
 
     // ==== merged from RangedAttackerUnit ====
