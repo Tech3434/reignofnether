@@ -1,60 +1,90 @@
-# Исследования
+# Исследования (новая система)
 
-## Текущее состояние и что будет
+> Обновлено 2026-10-08. Прежняя система (`ResearchServerEvents`, флаги-`ProductionItem`,
+> `ResearchClient`) удалена. Ниже — действующая система (план `docs/RESEARCH_AND_EXTENSIBILITY_PLAN.md`).
 
-Исследования — это `ProductionItem` с `ProdDupeRule.DISALLOW`, производимый зданием. Отдельного
-класса `ResearchItem`, верстака, очков опыта и геймрула не существует. Дерева технологий нет:
-есть плоский список «игрок X владеет ключом Y».
+## Что это
 
-**Предметы исследований удаляются** (этап D.13 плана), состояние
-(`research/ResearchServerEvents`, `ResearchClient`, пакеты, `ResearchSaveData`) — остаётся как
-инфраструктура произвольных флагов у владельца.
+Исследования — **на игрока**. Дерево с предпосылками; условие умеет **инверсию** (требовать не
+только наличие, но и отсутствие технологии). Исследование открывает способности, новые
+здания/юниты и/или усиливает атрибуты. **Поражение игрока обнуляет его исследования.**
 
-## Если понадобится свой аналог
+Состояние: `ResearchSaveData` (`saved-research-data`, per-player, персистентно, лениво), клиенту
+синхронизируется `ResearchClientboundPacket` → `ResearchClientEvents`.
 
-Проще всего не заводить отдельную систему, а использовать то, что осталось: произвольные
-флаги у игрока.
+## Определения — данными (датапак)
 
-```java
-// сервер
-ResearchServerEvents.addResearch(ownerName, ResourceLocation);
-boolean has = ResearchServerEvents.playerHasResearch(ownerName, ResourceLocation);
+Файл: `data/<namespace>/research/<name>.json`, id исследования = `<namespace>:<name>`.
+Перечитывается на `/reload` (`ResearchJsonLoader`).
+
+```json
+{
+  "name": "research.reignofnether.example",          // ключ локализации (или литерал)
+  "icon": "reignofnether:textures/icons/items/shovel.png",
+  "type": "unlock",                                   // "unlock" (по умолчанию) | "attribute_boost"
+  "cost": { "food": 0, "wood": 100, "ore": 0, "seconds": 20 },  // необязательно = бесплатно
+  "prerequisites": [
+    { "research": "reignofnether:base", "invert": false }        // invert=true → требуется ОТСУТСТВИЕ
+  ],
+  "attributes": [                                     // только для type = attribute_boost
+    { "attribute": "minecraft:generic.attack_damage", "amount": 1.0,
+      "unit": "reignofnether:villager_unit" }         // "unit" необязательно = всем юнитам владельца
+  ]
+}
 ```
 
-`ResearchServerEvents.researchItems` — `ArrayList<Pair<String, ResourceLocation>>` в памяти;
-сохраняется в `ResearchSaveData` ("saved-research-data"), синхронизируется клиенту через
-`ResearchClientboundPacket`.
+* `icon` — полный путь текстуры (`<ns>:textures/...`); для ванили, напр.
+  `minecraft:textures/item/iron_pickaxe.png`.
+* `attributes[].attribute` — id ванильного или модового атрибута.
+* `attributes[].unit` — id типа сущности, если буст только для одного юнита.
 
-## Гейт доступности способности
+## Гейт (универсальный, с инверсией)
 
-Прежний код гейтил способности так:
+Условие: `ResearchCondition(researchId, invert)`. Проверка: `meets = hasResearch(id) != invert`.
+Наличие/отсутствие — один и тот же вызов.
 
 ```java
-() -> !ResearchClient.hasResearch(ProductionItems.RESEARCH_X) || ...
+// сервер (авторитетно):
+ResearchUtils.meets(level, ownerName, conditions);
+// клиент (для HUD):
+ResearchUtils.meetsClient(ownerName, conditions);
 ```
 
-⚠ **Это блокировало только кнопку.** Сервер применение не проверял. Если сделать такой же
-гейт на своём флаге — не считай его защитой.
+Гейты контента уже встроены: у `Ability`, `ProductionItem` и `Building` есть поле
+`requiredResearch` (список условий) и флюент-сеттер `requireResearch(condition...)`.
 
-Правильный способ — проверка в `isEnabled` **и** серверная проверка внутри самой способности,
-потому что игрок всё равно может отправить пакет.
+```java
+new DigAbility(UnitAction.DIG_BLOCK)
+    .requireResearch(ResearchCondition.of(ResourceLocation.parse("myfaction:toolsmith")));
 
-## Как добавить «галочку» вместо исследования
+Buildings.BARRACKS.requireResearch(
+    ResearchCondition.of(ResourceLocation.parse("myfaction:barracks")),
+    ResearchCondition.not(ResourceLocation.parse("myfaction:barracks_banned")));
+```
 
-1. Добавить константу-`ResourceLocation` на флаг.
-2. Проверка в панели способностей (клиент):
-   ```java
-   () -> !ResearchClient.hasResearch(new ResourceLocation(MOD_ID, "x_upgrade"))
-   ```
-3. Серверная проверка в `use(...)` — обязательна.
-4. Очистка флага — в `resetRTS` и `PlayerServerEvents.defeat`.
+Проверки выполняются **на сервере** (использование способности, старт производства, постановка
+здания) и в HUD (кнопки серые, пока условие не выполнено). GM-команды постановки здания гейт
+обходят.
 
-## Что нужно помнить
+## Атрибутные апгрейды
 
-* Исследование, производящееся зданием, требует здания. Если владелец хочет выдавать
-  исследование **без** здания — выноси выдачу в отдельную команду или в путь входа в
-  РТС-режим.
-* `ProductionItem.recordScore` жёстко классифицирует юнитов: только три предмета считаются
-  рабочими, остальные — военными. При добавлении своего предмета проверь, куда он попадёт.
-* Стоимость исследования задаётся `ResourceCost`, по тем же правилам, что в
-  `06_production.md`.
+`type = "attribute_boost"` накладывает модификаторы на юнитов владельца
+(`ResearchAttributeApplier`): при спавне юнита, при `grant/revoke/clear` и снимаются при
+поражении/`resetRTS`. Модификатор именован по id исследования → идемпотентно.
+
+## Команды (право 2)
+
+```
+/research grant  <player> <ns:id>
+/research revoke <player> <ns:id>
+/research clear  <player>
+/research list   <player>
+```
+
+## Что ещё не сделано
+
+* **JSON для юнитов/зданий/способностей** (класс способности — код, инстанс — JSON) — отложено до
+  совместной сессии (дизайн + отладка в игре).
+* **HUD-панель исследований** (дерево, стоимость, статус) — фаза 5 плана.
+* Генератор ресурсов — форма заложена (`ResourceGenerator` + `ResourceGenerators.produce`),
+  конкретные генераторы пишет автор фракции.
