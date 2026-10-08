@@ -140,6 +140,8 @@ this.productions.add(ProductionItems.X_UNIT, Keybindings.abilitySlot1);
 поднимает уровень placement на 1, меняет NBT-структуру (`structure`, путь без namespace), имя/иконку и
 `maxHealth`, синкается клиенту. Уровень хранится на `BuildingPlacement.upgradeLevel` и сохраняется
 (`BuildingSaveData`). **Пока не идут по уровням** `production`/`researches`/`addons`/способности.
+⚠ Апгрейд-структура должна иметь **тот же габарит/фундамент**, что и базовая: границы placement (`minCorner`/
+`maxCorner`/`centrePos`) считаются один раз при постановке и при смене структуры не пересчитываются.
 
 ## 5. Аддоны
 
