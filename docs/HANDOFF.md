@@ -105,17 +105,15 @@ cd ___temp
 
 ## 4. Что осталось (по приоритету)
 
-1. **Удалить код-здания `TownCentre`/`Barracks`** и их `getBuildButton`/структуры из кода:
-   - `building/WorkerBuildMenu.buildButtons()` сейчас добавляет `Buildings.TOWN_CENTRE`/`BARRACKS`
-     И JSON — оставить только JSON (+ custom).
-   - Убрать регистрации в `Buildings`/`EntityRegistrar`-подобных и всё, что ссылается на
-     `Buildings.TOWN_CENTRE`/`BARRACKS` (команды `CommandsServerEvents`/`BuildingCommands`, тесты,
-     `startRTS` фолбэк). `structures/town_centre.nbt` и `barracks.nbt` **оставить** — их грузит
-     `structureName` JSON-зданий.
+1. ~~**Удалить код-здания `TownCentre`/`Barracks`**~~ **СДЕЛАНО** (`d04f3a3e`): классы,
+   `TownCentrePlacement`, регистрации и ссылки удалены; здания только из JSON. Остаётся
+   `structures/town_centre.nbt`/`barracks.nbt` (грузятся `structureName`).
 2. **Здания из JSON:** `researches` (очередь общая с производством, отмена с возвратом — см.
    `RESEARCH_AND_EXTENSIBILITY_PLAN.md` §Отложено), `addons: [{type,…}]`, `upgrades` (цепочка
    уровней: структура/имя/стоимость/характеристики/производство/способности/аддоны/исследования).
    `researches`/`addons`/`upgrades` пока НЕ в `BuildingDefinition.CODEC`.
+   ⚠ `JsonBuilding` сейчас без `RangeIndicatorAddon`/капитолий-специфики, которые были у
+   `TownCentre` (populationSupply/isCapitol задаются из определения, но аддонных фич нет).
 3. **Фаза 4 JSON-контракта:** герой (`role: hero` — блок прокачки/маны/рангов), ranged
    (`projectile` + параметры). Часть инфраструктуры уже есть в `Unit` (hero defaults).
 4. **lang-дочистка:** `entity.reignofnether.villager_unit*` (используется тултипами `VillagerProd`/

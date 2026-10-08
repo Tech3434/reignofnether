@@ -192,6 +192,13 @@ JSON для юнитов/зданий/способностей — отложе�
 рендереры/модели/`EntityType`/спавн-яйца **удалены**; все под-интерфейсы сведены в один `Unit` +
 флаги. Проверено `runServer` (`Done (1.193s)!`, чистый стоп).
 
+**JSON-здания (2026-10-08).** Код-здания `TownCentre`/`Barracks` и их `TownCentrePlacement`
+**удалены**; здания описываются датапаком (`data/reignofnether/building/*.json`) и строятся как
+`JsonBuilding`. `Buildings` (кодовый реестр) пуст; ссылки в `WorkerBuildMenu`/`startRTS`/
+`CallToArmsGoal`/`BuildingSaveData`/`BuildingValidators` перенаправлены. Структуры
+`town_centre.nbt`/`barracks.nbt` оставлены (их грузит `structureName`). Проверено `runServer`
+(`Done (1.045s)!`, чистый стоп).
+
 **Выбор фракции при входе (2026-10-08).** Команда `/startrts [<faction>]` (нужен RTS-пропуск)
 открывает клиентское меню фракций: без аргумента — выбирай любую; с фракцией — только её, остальные
 кнопки видны, но заблокированы. Список синхронизируется (`FactionClientboundPacket` →
