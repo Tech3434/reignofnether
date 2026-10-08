@@ -626,7 +626,12 @@ public class UnitClientEvents {
         if (!OrthoviewClientEvents.isEnabled()) return;
         if (MC.level == null) return;
 
-        // prevent clicking behind HUDs
+        // prevent clicking behind HUDs - but never wipe the armed action when the click landed on a
+        // button: that button may be the one that just armed it. Ability buttons are handled by
+        // HudClientEvents on the same press event, and this handler (a separate subscriber, order
+        // not guaranteed) used to clear the action right after, so an armed DIG/order did nothing.
+        if (HudClientEvents.isMouseOverAnyButton())
+            return;
         if (HudClientEvents.isMouseOverAnyButtonOrHud()) {
             CursorClientEvents.setLeftClickAction(null);
             return;

@@ -2,12 +2,12 @@
 
 **Дата:** 2026-10-08
 **Ветка:** `wip/stage-d-deletions`
-**HEAD:** `21d511f3`
+**HEAD:** `ee616b00`
 **compileJava:** ✅ 0 ошибок
 **validateMixins:** ✅ 48 injection point'ов / 31 mixin-класс, все резолвятся
 **runData:** ✅ BUILD SUCCESSFUL
 **runServer:** ✅ `Done (1.005s)!`, 0 `mixin apply failed`, 0 SEVERE/ERROR
-**runClient:** ⏳ не прогонялся (нужен интерактивный запуск)
+**runClient:** ⚠ прогонялся владельцем — найдено 9 багов, разбор в `BUGS_RUNCLIENT.md`
 
 Версия: 1.4.4d, MC 1.21.1, NeoForge 21.1.250.
 
@@ -132,5 +132,6 @@ JAVA="/c/Program Files/Java/jdk-21/bin/java.exe"
 | `reference/README.md` | инвентарь удалённого контента |
 | `../_GUIDES/README.md` | как добавить юнит/здание/способность/фракцию |
 | `FEATURES.md` | каталог функций с вердиктами |
+| `BUGS_RUNCLIENT.md` | баги после первого `runClient`: разбор причин, вопросы, план правок |
 | `INTRUSION_AUDIT.md` | что мод ломал в обычном мире |
 | `../.agents/skills/` | навыки для ИИ-агентов |

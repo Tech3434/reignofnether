@@ -1,7 +1,6 @@
 package com.solegendary.reignofnether.ability;
 
 import com.solegendary.reignofnether.ReignOfNether;
-import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
 import com.solegendary.reignofnether.hud.buttons.AbilityButton;
@@ -33,22 +32,16 @@ import java.util.List;
  * corners, plumbed through UnitActionItem) and digs every non-building block inside it, up to a
  * hard cap so a wide drag cannot flatten a mountain.
  *
- * <p>Blocks that belong to a building are never dug: the dig is refused outright so it can never
- * carve a hole in any structure. Instead the hit deals percentage damage to the building's HP
- * (§14.5), so the building collapses from the top down.
+ * <p>DIG is a world-only order: blocks that belong to a building are never dug and never damaged,
+ * so digging can never carve a hole in a structure or chip its HP. Structures are broken with the
+ * normal attack orders (ATTACK_BUILDING / melee). This replaces the earlier §14.5 behaviour where
+ * a dig on a building block dealt percentage HP damage.
  */
 public class DigAbility extends Ability {
 
     public static final float DIG_RANGE = 12f;
     /** Cap on blocks a single DIG_AREA may remove. */
     public static final int MAX_AREA_BLOCKS = 256;
-    /**
-     * §14.5: fraction of a building's max HP dealt per dig hit. Digging a block that belongs to a
-     * building never removes the block - the dig is cancelled and the building takes this
-     * percentage of its max HP instead. Tunable design value.
-     */
-    public static final double BUILDING_DAMAGE_PERCENT_PER_HIT = 0.05d;
-
     public DigAbility(UnitAction action) {
         super(action, 20, DIG_RANGE, 0, false);
     }
@@ -96,15 +89,10 @@ public class DigAbility extends Ability {
 
     /** Removes one block and hands its drops to the unit. Returns true if a block was removed. */
     private boolean digBlock(ServerLevel level, Unit unit, BlockPos bp) {
-        // §14.5: a block that belongs to a building cannot be dug - the dig is cancelled and the
-        // building instead takes percentage damage (a fixed fraction of its max HP), collapsing
-        // from the top down.
-        if (BuildingUtils.isPosInsideAnyBuilding(false, bp)) {
-            BuildingPlacement building = BuildingUtils.findBuilding(false, bp);
-            if (building != null && building.isAttackable())
-                building.demolishTopDown(building.getMaxHealth() * BUILDING_DAMAGE_PERCENT_PER_HIT);
+        // DIG is world-only: a block that belongs to a building is left completely alone - no dig,
+        // no drops, no HP damage. Structures are destroyed with the normal attack orders.
+        if (BuildingUtils.isPosInsideAnyBuilding(false, bp))
             return false;
-        }
 
         BlockState bs = level.getBlockState(bp);
         if (bs.isAir())

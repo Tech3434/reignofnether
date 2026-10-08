@@ -408,6 +408,12 @@ public class CursorClientEvents {
             cursorLeftClickDownPos = new Vec2(floor(evt.getMouseX()), floor(evt.getMouseY()));
             cursorLeftClickDragPos = new Vec2(floor(evt.getMouseX()), floor(evt.getMouseY()));
             leftClickDown = true;
+
+            // §14.4: DIG_AREA is a drag - capture the first corner here, right next to the release
+            // that completes the rectangle. It used to be captured in UnitClientEvents, whose press
+            // handler is order-dependent relative to this one, so the corner could go missing.
+            if (leftClickAction == UnitAction.DIG_AREA)
+                setDigAreaStartBp(getPreselectedBlockPos());
         }
         if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_2) {
             cursorRightClickDownPos = new Vec2(floor(evt.getMouseX()), floor(evt.getMouseY()));

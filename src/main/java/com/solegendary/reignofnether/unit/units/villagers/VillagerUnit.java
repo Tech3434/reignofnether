@@ -108,9 +108,9 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
         ABILITIES.add(new DigAbility(UnitAction.DIG_AREA));
         MenuAbility orders = new MenuAbility("abilities.reignofnether.worker_orders",
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/items/hoe.png"));
-        orders.addSubAbility(new OrderAbility(UnitAction.TOGGLE_GATHER_TARGET,
-                "abilities.reignofnether.gather",
-                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/items/hoe.png"), false));
+        // GATHER is not put here: it is one of the worker's always-visible command abilities
+        // (Unit.getCommandAbilities), and having it in both places was a duplicate that also made
+        // clicking it in the menu look like it did nothing.
         orders.addSubAbility(new OrderAbility(UnitAction.RETURN_RESOURCES_TO_CLOSEST,
                 "abilities.reignofnether.return_resources",
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/items/hopper.png"), false));

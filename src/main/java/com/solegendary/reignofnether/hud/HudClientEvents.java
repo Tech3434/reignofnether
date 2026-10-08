@@ -151,6 +151,11 @@ public class HudClientEvents {
         abilityMenus.clear();
     }
 
+    // Where the unit orders row was drawn this frame. An open ability submenu (Orders / Build) is
+    // drawn here, replacing that row, instead of floating in the top-left corner of the screen.
+    private static int ordersRowX = 0;
+    private static int ordersRowY = 0;
+
     // unit that is selected in the list of unit icons
     public static LivingEntity hudSelectedEntity = null;
     // building that is selected in the list of unit icons
@@ -342,6 +347,10 @@ public class HudClientEvents {
         hudZones.clear();
         unitPortraitZone = null;
         buildingPortraitZone = null;
+
+        // default anchor for an ability submenu: where the unit orders row normally sits (bottom-left)
+        ordersRowX = 0;
+        ordersRowY = screenHeight - (iconFrameSize * 2) - 4;
 
         int blitX = hudStartingXPos;
         int blitY = MC.getWindow().getGuiScaledHeight();
@@ -836,10 +845,17 @@ public class HudClientEvents {
             blitX = 0;
             blitY = screenHeight - (iconFrameSize * 2) - 4;
 
+            // an open submenu for this unit takes the row's place instead of overlaying the screen
+            ordersRowX = 0;
+            ordersRowY = screenHeight - (iconFrameSize * 2) - 4;
+            boolean submenuReplacesOrders = !abilityMenus.isEmpty()
+                    && abilityMenus.peek().unit() != null
+                    && abilityMenus.peek().unit() == hudSelectedEntity;
+
             // includes worker building buttons
-            if (getPlayerToEntityRelationship(selUnits.get(0)) == Relationship.OWNED ||
+            if (!submenuReplacesOrders && (getPlayerToEntityRelationship(selUnits.get(0)) == Relationship.OWNED ||
                     !PlayerClientEvents.isRTSPlayer() ||
-                    AlliancesClient.canControlAlly(selUnits.get(0))) {
+                    AlliancesClient.canControlAlly(selUnits.get(0)))) {
                 List<Button> abilityButtons = List.of();
                 for (LivingEntity livingEntity : selUnits) {
                     if (livingEntity == hudSelectedEntity) {
@@ -1519,8 +1535,10 @@ public class HudClientEvents {
     // button closes one level; a sub-ability that is itself a menu opens another level (plan §14.1).
     private static void renderAbilitySubmenu(ScreenEvent.Render.Post evt, AbilityMenuFrame frame, int mouseX, int mouseY) {
         int subIconFrame = Button.DEFAULT_ICON_FRAME_SIZE;
-        int fx = 4;
-        int fy = 4;
+        // Draw over the orders row (bottom-left) so the menu replaces the orders instead of
+        // appearing in the top-left corner of the screen.
+        int fx = ordersRowX + 4;
+        int fy = ordersRowY;
 
         List<Keybinding> slots = List.of(
                 Keybindings.abilitySlot1, Keybindings.abilitySlot2, Keybindings.abilitySlot3,

@@ -684,7 +684,11 @@ public class BuildingPlacement {
             return true;
         }
         if (isBuilt) {
-            return getBlocksPlacedPercent() <= this.minBlocksPercent;
+            // getHealth() subtracts fractional damage (partialBlocksDestroyed), which the block
+            // percentage does not, so the HP bar can hit 0 a little before 50% of the blocks are
+            // gone. Treating 0 HP as destroyed as well keeps the bar and the collapse in step and
+            // stops a building standing there with no HP left.
+            return getBlocksPlacedPercent() <= this.minBlocksPercent || getHealth() <= 0;
         } else // if the building is still under construction, we instead use the highest health we've ever reached as
         // the effective max health
         {

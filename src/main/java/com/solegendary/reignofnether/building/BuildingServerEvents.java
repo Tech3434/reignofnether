@@ -767,8 +767,13 @@ buildingData.buildings.forEach(b -> {
             return false;
         });
 
-        for (BuildingPlacement building : buildingsToDestroy)
+        for (BuildingPlacement building : buildingsToDestroy) {
+            // Tell clients to drop the placement too. destroy() only clears the world blocks; without
+            // this the client keeps the building in its list, so a destroyed building stayed standing
+            // on screen and could not be repaired (the server no longer had it).
+            BuildingClientboundPacket.removeBuilding(building.originPos);
             building.destroy(serverLevel);
+        }
 
         ArrayList<BuildingPlacement> bpls = new ArrayList<>(buildings);
         for (BuildingPlacement building : bpls)
