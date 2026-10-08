@@ -15,6 +15,9 @@ public final class Addons {
 
     public static void init() {
         AddonTypes.register(id("night_source"), (spec, building) -> new NightSourceBuildingAddon(spec));
+        AddonTypes.register(id("range_indicator"), (spec, building) -> new RangeIndicatorBuildingAddon(spec));
+        AddonTypes.register(id("garrison"), (spec, building) -> new GarrisonBuildingAddon(spec));
+        AddonTypes.register(id("nether_converting"), (spec, building) -> new NetherConvertingBuildingAddon(spec));
     }
 
     private static ResourceLocation id(String path) {

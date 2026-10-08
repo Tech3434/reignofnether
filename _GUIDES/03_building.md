@@ -178,8 +178,12 @@ AddonTypes.register(ResourceLocation.fromNamespaceAndPath("myns", "my_addon"),
         (spec, building) -> new MyAddon(spec));
 ```
 
-Движковый пример — `reignofnether:night_source` (`NightSourceBuildingAddon` implements
-`NightSourceAddon`+`RangeIndicatorAddon`; params `range`, `showOnlyWhenSelected`).
+Движковые типы (`Addons.init()`): `reignofnether:night_source` (`range`/`showOnlyWhenSelected`),
+`reignofnether:range_indicator` (`range`, `showOnlyWhenSelected`), `reignofnether:garrison`
+(`capacity`, `attackRange`, `externalAttackRangeBonus`, `entryX/Y/Z`, `exitX/Y/Z`),
+`reignofnether:nether_converting` (`maxRange`, `startingRange`). Свой аддон при необходимости может
+реализовать lifecycle-хуки `BuildingAddon.onBuildingBuilt`/`onBuildingTick` (вызываются
+`Building.onBuilt`/`Building.tick`).
 
 ## 6. Блок лесов
 

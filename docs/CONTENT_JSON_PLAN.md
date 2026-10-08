@@ -75,9 +75,11 @@
   `researches: [ "…", … ]` — какие исследования здание предлагает; очередь общая с производством
   (`ResearchProductionItem`), отмена с возвратом, завершение выдаёт исследование владельцу и пересчитывает
   атрибуты. В демо: `example_research` у `barracks`.
-* **Аддоны** (реализовано) — `addons: [ { "type": "garrison", …params }, { "type": "night_source", … }, … ]`
-  (реестр код-типов аддонов с Codec'ами, как способности). Движковый пример — `reignofnether:night_source`
-  (`params`: `range`, `showOnlyWhenSelected`).
+* **Аддоны** (реализовано) — `addons: [ { "type": "reignofnether:garrison", "params": {…} }, … ]`
+  (реестр код-типов аддонов с Codec'ами, как способности). Движковые типы: `night_source`
+  (`range`, `showOnlyWhenSelected`), `range_indicator` (`range`, `showOnlyWhenSelected`),
+  `garrison` (`capacity`, `attackRange`, `externalAttackRangeBonus`, `entryX/Y/Z`, `exitX/Y/Z`),
+  `nether_converting` (`maxRange`, `startingRange`). Автор фракции расширяет через `AddonTypes.register`.
 * **Апгрейды** (реализованы частично) — `upgrades: [ { "structure": "…", "name": { "en_us": "…" },
   "icon": "…", "cost": {…}, "maxHealth": … }, … ]`. Апгрейд — шаг цепочки: `JsonUpgradeProductionItem`
   в очереди здания, поднимает уровень placement, меняет структуру/имя/maxHealth и синкается клиенту

@@ -195,6 +195,13 @@ public abstract class Building {
         activeAddons.put((Class<BuildingAddon>) (Class) addonClass, addon);
     }
 
+    /** Distinct registered addon instances (an addon registered under several interfaces appears once). */
+    private java.util.Collection<BuildingAddon> distinctAddons() {
+        java.util.Set<BuildingAddon> set = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        set.addAll(activeAddons.values());
+        return set;
+    }
+
     public boolean canDestroyBlock(BlockPos relativeBp, BuildingPlacement placement) {
         return true;
     }
@@ -204,7 +211,8 @@ public abstract class Building {
     }
 
     public void onBuilt(BuildingPlacement buildingPlacement) {
-
+        for (BuildingAddon addon : distinctAddons())
+            addon.onBuildingBuilt(buildingPlacement);
     }
 
     public void destroy(ServerLevel serverLevel, BuildingPlacement placement) {
@@ -212,7 +220,8 @@ public abstract class Building {
     }
 
     public void tick(Level tickLevel, BuildingPlacement buildingPlacement) {
-
+        for (BuildingAddon addon : distinctAddons())
+            addon.onBuildingTick(tickLevel, buildingPlacement);
     }
 
     public String getUpgradedName(BuildingPlacement buildingPlacement) {

@@ -118,16 +118,20 @@ cd ___temp
   `<T extends BuildingAddon> T getActiveAddon(Class<T>)`; `setActiveAddon(Class<T>, T, boolean active)`;
   `hasActiveAddon(Class<? extends BuildingAddon>)`; `addActiveAddon(BuildingAddon)` — регистрирует аддон
   под **всеми** реализуемыми им `BuildingAddon`-интерфейсами (+ под конкретным классом). Интерфейс
-  `building/addon/BuildingAddon`.
+  `building/addon/BuildingAddon` (+ lifecycle-хуки `onBuildingBuilt`/`onBuildingTick`, вызываются
+  `Building.onBuilt`/`Building.tick`; hook-и нарочно **не** совпадают по имени с `Building.onBuilt`/`tick`,
+  иначе `CustomBuilding` (addon=сам) рекурсировал бы).
 - **Каркас:** `building/addon/AddonSpec.java` (record `type`+`params Map<String,Double>`, Codec),
   `building/addon/AddonTypes.java` (реестр `type` → `Factory.create(spec, building)`),
   `building/addon/Addons.java` (`init()` — регистрация движковых типов; вызывается из конструктора
   `ReignOfNether`).
 - В `BuildingDefinition` поле `List<AddonSpec> addons` + строка в Codec.
 - **Сделано:** `JsonBuilding` создаёт аддоны из `definition.addons()` через `AddonTypes.create(...)` и
-  навешивает `addActiveAddon(...)`. Движковый пример: `night_source` (`NightSourceBuildingAddon`
-  implements `NightSourceAddon`+`RangeIndicatorAddon`, params `range`/`showOnlyWhenSelected`); прописан в
-  `town_centre.json` (`range: 24`). Гейты зелёные; в игре (`runClient`) не проверялось.
+  навешивает `addActiveAddon(...)`. Движковые типы (все — `AddonTypes` в `Addons.init()`): `night_source`
+  (`NightSourceAddon`+`RangeIndicatorAddon`), `range_indicator` (`RangeIndicatorAddon`), `garrison`
+  (`GarrisonableBuildingAddon`), `nether_converting` (`NetherConvertingAddon` + `onBuildingBuilt` создаёт
+  `NetherZone`). Примеры данных: `town_centre.json` — `night_source` (range 24), `barracks.json` — `garrison`
+  (capacity 3, attackRange 20). Гейты зелёные; в игре (`runClient`) не проверялось.
 
 ### Фракция — `data/<ns>/faction/<name>.json`
 `{ name, icon, capitol, starting_units:[{unit,count}], food/wood/ore/emerald }`. Реестр `FactionRegistries.FACTION_KEY`
@@ -244,12 +248,20 @@ cd ___temp
 спавнит снаряд на сервере (owner, урон = `damage` или `getUnitAttackDamage()`), дефолт — стрела.
 Демо `skeleton_unit.json` (база skeleton, лук+стрела) в производстве казармы. Гейты зелёные;**`runClient` не проверялся**.
 
+**Обобщение аддонов:** движковые типы `range_indicator`/`garrison`/`nether_converting` добавлены
+(`RangeIndicatorBuildingAddon`/`GarrisonBuildingAddon`/`NetherConvertingBuildingAddon`) и регистрируются в
+`Addons.init()`; `BuildingAddon` получил lifecycle-хуки `onBuildingBuilt`/`onBuildingTick`, которые
+`Building.onBuilt`/`Building.tick` вызывают у всех **уникальных** аддонов (важно: имена хуков не совпадают
+с `Building.onBuilt`/`tick`, иначе `CustomBuilding` как addon рекурсировал бы). Демо: `garrison` на
+`barracks.json`. Гейты зелёные; **`runClient` не проверялся**.
+
 ---
 
 ## 5. Что осталось (по приоритету)
 
-1. ✅ **Аддоны доведены** (`addon/Addons`+`NightSourceBuildingAddon`, навешивание в `JsonBuilding`).
-   Дальше: новые движковые типы (garrison/night/nether/range_indicator обобщённо) — по мере надобности.
+1. ✅ **Аддоны доведены и обобщены:** `Addons.init()` регистрирует движковые типы `night_source`,
+   `range_indicator`, `garrison`, `nether_converting`; добавлены lifecycle-хуки (`onBuildingBuilt`/
+   `onBuildingTick`). Демо: `night_source` (town_centre), `garrison` (barracks).
 2. ✅ **Исследования у зданий** (`ResearchProductionItem`, демо `example_research`). ✅ **Апгрейды (1-й срез)**
    (`UpgradeSpec`/`upgrades`, `JsonUpgradeProductionItem`, демо «Barracks II»; структура/имя/maxHealth/стоимость).
    Дальше по зданиям:
@@ -310,8 +322,9 @@ cd ___temp
 - `unit/`: UnitDefinition, UnitDefinitions, UnitDefinitionRuntime; `interfaces/DefinedUnit`.
 - `ability/`: AbilitySpec, AbilityTypes.
 - `building/`: BuildingDefinition, BuildingDefinitions, UpgradeSpec, WorkerBuildMenu; `buildings/JsonBuilding`,
-  `buildings/JsonBuildingManager`, `buildings/JsonUpgradeProductionItem`; `production/JsonProductionItem`;
-  `addon/AddonSpec`, `addon/AddonTypes`, `addon/Addons`, `addon/NightSourceBuildingAddon`.
+  `buildings/JsonBuildingManager`, `buildings/JsonUpgradeProductionItem`;   `production/JsonProductionItem`;
+  `addon/AddonSpec`, `addon/AddonTypes`, `addon/Addons`, `addon/NightSourceBuildingAddon`,
+  `addon/RangeIndicatorBuildingAddon`, `addon/GarrisonBuildingAddon`, `addon/NetherConvertingBuildingAddon`.
 - `mixin/`: UnitMobMixin.
 - Data JSON: `data/reignofnether/faction/villagers.json`, `unit/villager_unit.json`, `unit/vindicator_unit.json`,
   `building/town_centre.json`, `building/barracks.json`.

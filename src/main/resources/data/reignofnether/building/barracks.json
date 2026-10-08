@@ -4,6 +4,7 @@
   "populationSupply": 0,
   "production": [ "reignofnether:vindicator_unit", "reignofnether:skeleton_unit" ],
   "researches": [ "reignofnether:example_research" ],
+  "addons": [ { "type": "reignofnether:garrison", "params": { "capacity": 3, "attackRange": 20 } } ],
   "upgrades": [
     { "name": { "en_us": "Barracks II" }, "maxHealth": 250,
       "cost": { "food": 0, "wood": 75, "ore": 0, "seconds": 15 } }
