@@ -166,6 +166,11 @@ JSON-загрузчик — фазы 2/4.
 сущности). Хуки: спавн (`UnitServerEvents.onEntityJoin`), grant/revoke/clear (`ResearchCommand`),
 сброс при поражении и в `resetRTS`. Гейты `compileJava`/`validateMixins`/`runData` ✅.
 
+**Фаза 4 исследований (частично, 2026-10-08).** `ResearchJsonLoader` читает
+`data/<ns>/research/<name>.json` (`/reload`), id = `<ns>:<name>`; поля `name`, `icon`, `type`
+(`unlock`/`attribute_boost`), `cost`, `prerequisites` (с `invert`), `attributes` (со `unit`).
+JSON для юнитов/зданий/способностей — отложено до совместной сессии. Гейты ✅.
+
 ### Документация
 
 * `FEATURES.md` и `INTRUSION_AUDIT.md` — актуализировать (снять удалённое, отметить читы/туман).

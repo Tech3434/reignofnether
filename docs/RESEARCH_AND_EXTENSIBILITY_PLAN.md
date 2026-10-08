@@ -132,5 +132,8 @@
   юнитов владельца (модификатор именован по исследованию → идемпотентно; `unitFilter` — по типу
   сущности). Хуки: спавн юнита (`UnitServerEvents.onEntityJoin`), grant/revoke/clear
   (`ResearchCommand` → `refreshForOwner`), сброс при поражении/`resetRTS` (`removeFor`).
-- [ ] Фаза 4 — JSON-контент (исследования, способности, юниты/здания)
+- [x] Фаза 4 (частично) — загрузчик `research/*.json` (`ResearchJsonLoader`, `ResourceManagerReloadListener`,
+  перечитывается на `/reload`): id = `<ns>:<name>`, поля `name`/`icon`/`type`/`cost`/`prerequisites`
+  (с `invert`)/`attributes`. JSON для **юнитов/зданий/способностей** — отложено до совместной сессии
+  (дизайн-решения + отладка в игре).
 - [ ] Фаза 5 — UI исследований
