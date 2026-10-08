@@ -547,7 +547,9 @@ public class PlayerServerEvents {
         ServerPlayer leaving = getPlayerById(id);
         orthoviewPlayers.removeIf(p -> p.getId() == id);
         if (leaving != null) {
-            // nothing to do on leaving orthoview now that fog of war is gone
+            // Leaving the RTS camera must also drop the SPECTATOR mode that came with it, otherwise
+            // the player is left unable to break blocks anywhere afterwards - not just at buildings.
+            restoreGameModeOnLeave(leaving);
         }
     }
 
@@ -575,7 +577,12 @@ public class PlayerServerEvents {
 
             // Save original game mode only if it's not already saved for this session
             String playerName = serverPlayer.getName().getString();
-            playerDefaultGameModes.putIfAbsent(playerName, serverPlayer.gameMode.getGameModeForPlayer());
+            // SPECTATOR is never remembered as the mode to return to: it means the player was already
+            // spectating (or a previous RTS exit failed to restore), and saving it left players stuck
+            // in spectator - unable to break blocks anywhere - after leaving RTS.
+            GameType currentGameType = serverPlayer.gameMode.getGameModeForPlayer();
+            if (currentGameType != GameType.SPECTATOR)
+                playerDefaultGameModes.putIfAbsent(playerName, currentGameType);
 
             // Mark that this player has the GUI open
             playerGuiOpenStatus.put(playerName, true);
@@ -589,29 +596,23 @@ public class PlayerServerEvents {
 
     public static void closeTopdownGui(int playerId) {
         ServerPlayer serverPlayer = getPlayerById(playerId);
-
-        if (serverPlayer != null) {
-            String playerName = serverPlayer.getName().getString();
-
-            // Ensure player had GUI open before attempting to close
-            if (Boolean.TRUE.equals(playerGuiOpenStatus.get(playerName))) {
-                // Restore the player’s original game mode if saved
-                GameType originalGameType = playerDefaultGameModes.remove(playerName);
-
-                if (originalGameType != null) {
-                    serverPlayer.setGameMode(originalGameType);
-                } else {
-                    ReignOfNether.LOGGER.warn("No original game mode found for player {}", playerName);
-                }
-
-                // Mark that the GUI is now closed
-                playerGuiOpenStatus.remove(playerName);
-            } else {
-                ReignOfNether.LOGGER.warn("Attempted to close GUI for player {} who didn't have it open", playerName);
-            }
-        } else {
+        if (serverPlayer != null)
+            restoreGameModeOnLeave(serverPlayer);
+        else
             ReignOfNether.LOGGER.warn("serverPlayer is null, cannot close topdown GUI");
-        }
+    }
+
+    /**
+     * Returns a player to the game mode they had before entering RTS. Idempotent and safe to call
+     * from either the GUI-close or the orthoview-disable path, so whichever packet arrives does the
+     * restore exactly once. A player who was already spectating keeps spectating.
+     */
+    private static void restoreGameModeOnLeave(ServerPlayer serverPlayer) {
+        String playerName = serverPlayer.getName().getString();
+        playerGuiOpenStatus.remove(playerName);
+        GameType originalGameType = playerDefaultGameModes.remove(playerName);
+        if (originalGameType != null && originalGameType != GameType.SPECTATOR)
+            serverPlayer.setGameMode(originalGameType);
     }
 
     public static void movePlayer(int playerId, double x, double y, double z) {
@@ -764,18 +765,8 @@ public class PlayerServerEvents {
 
                     PlayerClientboundPacket.defeat(playerName);
 
-                    // Remove ownership from all units and buildings of the defeated player
-                    for (LivingEntity entity : UnitServerEvents.getAllUnits()) {
-                        if (entity instanceof Unit unit && unit.getOwnerName().equals(playerName)) {
-                            unit.resetBehaviours();
-                            Unit.resetBehaviours(unit);
-                            if (unit instanceof AttackerUnit aUnit)
-                                AttackerUnit.resetBehaviours(aUnit);
-                            if (unit instanceof WorkerUnit wUnit)
-                                WorkerUnit.resetBehaviours(wUnit);
-                            unit.setOwnerName("");
-                        }
-                    }
+                    // H.4: the defeated player's units go neutral right away, not on the next match reset
+                    neutraliseUnitsOf(playerName);
                     for (BuildingPlacement building : BuildingServerEvents.getBuildings()) {
                         if (building.ownerName.equals(playerName)) {
                             if (building instanceof ProductionPlacement productionBuilding)
@@ -822,6 +813,30 @@ public class PlayerServerEvents {
                 sendMessageToAllPlayers("server.reignofnether.victorious", true, winner.name);
                 PlayerClientboundPacket.victory(winner.name);
                 broadcastMatchStats(Set.of(winner.name));
+            }
+        }
+    }
+
+    /**
+     * H.4: a defeated player's units become neutral (owned by nobody) immediately, not on the next
+     * match reset. The owner name is cleared first, then the behaviour resets run in a try/catch per
+     * unit: previously a single reset that threw aborted the whole loop, leaving every remaining unit
+     * still owned by the defeated player.
+     */
+    public static void neutraliseUnitsOf(String playerName) {
+        for (LivingEntity entity : new ArrayList<>(UnitServerEvents.getAllUnits())) {
+            if (!(entity instanceof Unit unit) || !unit.getOwnerName().equals(playerName))
+                continue;
+            unit.setOwnerName("");
+            try {
+                unit.resetBehaviours();
+                Unit.resetBehaviours(unit);
+                if (unit instanceof AttackerUnit aUnit)
+                    AttackerUnit.resetBehaviours(aUnit);
+                if (unit instanceof WorkerUnit wUnit)
+                    WorkerUnit.resetBehaviours(wUnit);
+            } catch (Exception e) {
+                ReignOfNether.LOGGER.error("Failed to reset behaviours of neutralised unit {}", entity.getId(), e);
             }
         }
     }
@@ -933,7 +948,9 @@ public class PlayerServerEvents {
         for (ServerPlayer player : serverLevel.players())
             player.setGameMode(GameType.SPECTATOR);
 
-        playerDefaultGameModes.replaceAll((key, oldValue) -> GameType.SPECTATOR);
+        // deliberately NOT rewriting the saved pre-RTS modes to SPECTATOR: doing so meant a player who
+        // later left the RTS camera was restored straight back into spectator and could not break
+        // blocks anywhere. The saved originals must survive a match reset.
         AlliancesServerEvents.playersWithAlliedControl.clear();
 
         for (BuildingPlacement bpl : BuildingServerEvents.getBuildings())

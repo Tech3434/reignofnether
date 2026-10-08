@@ -117,10 +117,10 @@ public class MinimapClientEvents {
     private static int[][] mapColoursOverlays = new int[worldRadius * 2][worldRadius * 2]; // view quad, units, buildings
 
     private static int terrainPartition = 1;
-    private static final int TERRAIN_PARTITIONS_MAX = 10;
+    private static final int TERRAIN_PARTITIONS_MAX = 4;
     private static int darkTerrainPartition = 1;
-    private static final int DARK_TERRAIN_PARTITIONS_MAX = 5; // sub-partitions of terrain_partitions - so there will
-    // be 5*10 total
+    private static final int DARK_TERRAIN_PARTITIONS_MAX = 2; // sub-partitions of terrain_partitions - so there will
+    // be 2*4 total (light terrain every 4 ticks, dark every 8)
     private static boolean forceUpdateAllPartitions = true;
 
     private static int xc_world = 0; // world pos x centre, maps to xc

@@ -6,7 +6,6 @@ public enum UnitSyncAction {
     SYNC_RESOURCES, // syncs resources held and targeted resource
     SYNC_OWNERNAME,
     SYNC_SCENARIO_ROLE_INDEX,
-    MAKE_VILLAGER_VETERAN,
     SYNC_ANCHOR_POS,
     REMOVE_ANCHOR_POS,
 

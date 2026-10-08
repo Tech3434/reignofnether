@@ -54,8 +54,6 @@ import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
 
-import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
-import com.solegendary.reignofnether.unit.units.villagers.VillagerUnitProfession;
 import com.solegendary.reignofnether.util.MiscUtil;
 
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -957,12 +955,6 @@ public class BuildingPlacement {
         int builderCount = workerUnits.size();
 
         for (WorkerUnit workerUnit : workerUnits) {
-            if (workerUnit instanceof VillagerUnit vUnit && vUnit.getUnitProfession() == VillagerUnitProfession.MASON) {
-                if (vUnit.isVeteran())
-                    builderCount += 2;
-                else
-                    builderCount += 1;
-            }
             if (((Mob) workerUnit).getActiveEffectsMap().containsKey(MobEffects.DIG_SPEED) ||
                 ((Mob) workerUnit).getActiveEffectsMap().containsKey(MobEffectRegistrar.TEMPORARY_EFFICIENCY.get()))
                 builderCount += 1;
@@ -1003,16 +995,6 @@ public class BuildingPlacement {
                     if (!workerUnits.isEmpty()) {
                         WorkerUnit wUnit = workerUnits.get(0);
                         String ownerName = ((Unit) wUnit).getOwnerName();
-                        var count = 0;
-                        for (BuildingPlacement placement : BuildingServerEvents.getBuildings()) {
-                            if (!placement.ownerName.equals(ownerName)) continue;
-                            count++;
-                            if (count <= 1) continue;
-                            if (wUnit instanceof VillagerUnit vUnit) {
-                                vUnit.incrementMasonExp();
-                                break;
-                            }
-                        }
                         queueNextBlock(serverLevel, ownerName);
                     }
                 }

@@ -35,7 +35,9 @@ public class Abilities {
                 Keybindings.abilitySlot3,
                 Keybindings.abilitySlot4,
                 Keybindings.abilitySlot5,
-                Keybindings.abilitySlot6
+                Keybindings.abilitySlot6,
+                Keybindings.abilitySlot7,
+                Keybindings.abilitySlot8
         );
         List<AbilityButton> buttons = new ArrayList<>();
         if (FMLEnvironment.dist == Dist.CLIENT) {
@@ -56,7 +58,9 @@ public class Abilities {
                 Keybindings.abilitySlot3,
                 Keybindings.abilitySlot4,
                 Keybindings.abilitySlot5,
-                Keybindings.abilitySlot6
+                Keybindings.abilitySlot6,
+                Keybindings.abilitySlot7,
+                Keybindings.abilitySlot8
         );
         List<Button> buttons = new ArrayList<>();
         if (FMLEnvironment.dist == Dist.CLIENT) {

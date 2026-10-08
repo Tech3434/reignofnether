@@ -492,13 +492,6 @@ public class UnitServerEvents {
                 evt.getEntity().spawnAtLocation(itemStack);
         }
 
-        if (evt.getSource().getEntity() instanceof VillagerUnit vUnit &&
-            ResourceSources.isHuntableAnimal(evt.getEntity())) {
-            vUnit.incrementHunterExp();
-            if (!(evt.getEntity() instanceof Chicken))
-                vUnit.incrementHunterExp();
-        }
-
         if (evt.getEntity() instanceof Unit unitKilled && evt.getSource().getEntity() instanceof Unit unit) {
             float bountyPercent = 0;
             if (unitKilled.getOwnerName().isEmpty()) {
@@ -615,7 +608,7 @@ public class UnitServerEvents {
         if (evt.getLevel().isClientSide() || evt.getLevel().dimension() != Level.OVERWORLD) {
             return;
         }
-        // advance in-flight DIG_BLOCK / DIG_AREA digs (progressive block breaking)
+        // advance in-flight DIG_BLOCK digs (progressive block breaking)
         DigAbility.serverTick((ServerLevel) evt.getLevel());
 
         unitSyncTicks -= 1;
@@ -632,8 +625,6 @@ public class UnitServerEvents {
                         UnitSyncClientboundPacket.sendSyncAnchorPosPacket(entity, unit.getAnchor());
                     else
                         UnitSyncClientboundPacket.sendRemoveAnchorPosPacket(entity);
-                    if (entity instanceof VillagerUnit vUnit && vUnit.isVeteran())
-                        UnitSyncClientboundPacket.makeVillagerVeteran(vUnit);
                 }
                 if (entity instanceof WorkerUnit) {
                     UnitSyncWorkerClientBoundPacket.sendSyncWorkerPacket(entity);

@@ -99,7 +99,6 @@ import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
 
 import com.solegendary.reignofnether.unit.VirtualUnit;
 import com.solegendary.reignofnether.unit.units.villagers.VindicatorUnit;
-import com.solegendary.reignofnether.unit.units.villagers.VillagerUnitProfession;
 import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.unit.UnitAnimationAction;
@@ -129,7 +128,7 @@ public class UnitClientEvents {
 
     // list of vecs used in RenderChunkRegionMixin to replace leaf rendering
     private static final int WINDOW_RADIUS = 5; // size of area to hide leaves
-    public static final int WINDOW_UPDATE_TICKS_MAX = 5; // size of area to hide leaves
+    public static final int WINDOW_UPDATE_TICKS_MAX = 1; // re-dirty the leaf windows every tick while they move
     public static final List<ArrayList<Vec3>> unitWindowVecs = Collections.synchronizedList(new ArrayList<>());
 
     /** Per-entity mob effect icons, filled on effect add/remove and read by the HUD. */
@@ -493,6 +492,9 @@ public class UnitClientEvents {
         for(LivingEntity entity : allUnits) {
             if (entity.getId() == entityId && MC.level != null) {
                 if (entity instanceof Unit unit) {
+                    // the carried-resource display is rebuilt from scratch on every sync: appending
+                    // without clearing made the total grow with each packet (600 shown for 150 carried)
+                    unit.getItems().clear();
                     unit.getItems().add(new ItemStack(Items.SUGAR, res.food));
                     unit.getItems().add(new ItemStack(Items.STICK, res.wood));
                     unit.getItems().add(new ItemStack(Items.STONE, res.ore));
@@ -717,13 +719,6 @@ public class UnitClientEvents {
         // and consume in onWorldTick; we also can't add entities directly as they will not have goals populated
         if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_1) {
 
-            // §14.4: DIG_AREA is a drag - remember the first corner and let the release handle it
-            // (the usual path would clear the cursor action on press)
-            if (CursorClientEvents.getLeftClickAction() == UnitAction.DIG_AREA) {
-                CursorClientEvents.setDigAreaStartBp(CursorClientEvents.getPreselectedBlockPos());
-                return;
-            }
-
             if (!selectedUnits.isEmpty() && isLeftClickAttack()) {
                 // A + left click -> force attack single unit (even if friendly)
                 if (preselectedUnits.size() == 1 && !targetingSelf()) {
@@ -755,18 +750,13 @@ public class UnitClientEvents {
                         AlliancesClient.canControlAlly(selectedUnit)) {
 
                     for (LivingEntity entity : nearbyEntities) {
-                        boolean bothVillagers = entity instanceof VillagerUnit &&
-                                                selectedUnit instanceof VillagerUnit;
-                        boolean sameProfession = entity instanceof VillagerUnit vUnit1 &&
-                                                selectedUnit instanceof VillagerUnit vUnit2 &&
-                                                vUnit1.getUnitProfession() == vUnit2.getUnitProfession();
                         boolean garrisoned1 = selectedUnit instanceof Unit unit1 && GarrisonableBuildingAddon.getGarrison(unit1) != null;
                         boolean garrisoned2 = entity instanceof Unit unit2 && GarrisonableBuildingAddon.getGarrison(unit2) != null;
                         boolean garrionStatusMatches = (garrisoned1 && garrisoned2) || (!garrisoned1 && !garrisoned2);
                         if (entity == selectedUnit) continue;
                         if ((getPlayerToEntityRelationship(entity) == Relationship.OWNED ||
                                 AlliancesClient.canControlAlly(entity)) &&
-                                (!bothVillagers || sameProfession) && garrionStatusMatches) {
+                                garrionStatusMatches) {
                             addSelectedUnit(entity);
                         }
                     }
@@ -1406,10 +1396,7 @@ public class UnitClientEvents {
         for (LivingEntity entity : getAllUnits()) {
             if (entity instanceof WorkerUnit wUnit && entity instanceof AttackerUnit aUnit && entity.getId() == entityId) {
                 if (startAnimation && MC.level != null) {
-                    if (entity instanceof VillagerUnit vUnit && vUnit.getUnitProfession() == VillagerUnitProfession.HUNTER && vUnit.isVeteran())
-                        entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.STONE_SWORD));
-                    else
-                        entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WOODEN_SWORD));
+                    entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WOODEN_SWORD));
 
                     aUnit.setUnitAttackTarget((LivingEntity) MC.level.getEntity(targetId)); // set itself as a target just for animation purposes, doesn't tick clientside anyway
                 } else {
@@ -1461,12 +1448,6 @@ public class UnitClientEvents {
                     UnitClientEvents.idleWorkerIds.add(id);
             }
         }
-    }
-
-    public static void makeVillagerVeteran(int unitId) {
-        for (LivingEntity entity : getAllUnits())
-            if (entity instanceof VillagerUnit vUnit && unitId == entity.getId())
-                vUnit.isVeteran = true;
     }
 
     // used only for right click mounting shortcut

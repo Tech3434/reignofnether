@@ -159,14 +159,17 @@ public class ResourcesServerEvents {
 
     @SubscribeEvent
     public static void onPlayerBlockBreak(BlockEvent.BreakEvent evt) {
-        if (BuildingUtils.isPosInsideAnyBuilding(false, evt.getPos())) {
+        // A block that belongs to a building is never dug up: the break is cancelled on the spot (the
+        // block stays, nothing drops) and the building takes the damage instead - its own HP system
+        // removes blocks as the HP falls. Blocks outside every building are left entirely to vanilla.
+        BuildingPlacement building = BuildingUtils.findBuilding(false, evt.getPos());
+        if (building != null && building.isPosPartOfBuilding(evt.getPos(), true)) {
             evt.setCanceled(true);
-            if (evt.getLevel() instanceof ServerLevel serverLevel) {
-                serverLevel.setBlockAndUpdate(evt.getPos(), Blocks.AIR.defaultBlockState());
-            }
+            building.destroyRandomBlocks(building.getHealthPerBlock() / 2d);
+            return;
         }
 
-        if (isLogBlock(evt.getState()) && !BuildingUtils.isPosInsideAnyBuilding(false, evt.getPos())) {
+        if (isLogBlock(evt.getState())) {
             fellAdjacentLogs(evt.getPos(), new ArrayList<>(), (Level) evt.getLevel());
         }
     }

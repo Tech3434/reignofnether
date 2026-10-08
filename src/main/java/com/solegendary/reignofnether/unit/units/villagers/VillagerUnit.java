@@ -36,7 +36,6 @@ import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.goals.*;
 import com.solegendary.reignofnether.unit.interfaces.*;
 import com.solegendary.reignofnether.unit.packets.UnitConvertClientboundPacket;
-import com.solegendary.reignofnether.unit.packets.UnitSyncClientboundPacket;
 
 import net.minecraft.client.resources.language.I18n;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
@@ -87,7 +86,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.solegendary.reignofnether.unit.units.villagers.VillagerUnitProfession.*;
 import static com.solegendary.reignofnether.util.MiscUtil.fcs;
 import com.solegendary.reignofnether.util.EnchantmentUtil;
 
@@ -105,7 +103,6 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
     // abilities rather than from hard-coded per-class HUD branches.
     static {
         ABILITIES.add(new DigAbility(UnitAction.DIG_BLOCK));
-        ABILITIES.add(new DigAbility(UnitAction.DIG_AREA));
         MenuAbility orders = new MenuAbility("abilities.reignofnether.worker_orders",
                 ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/icons/items/hoe.png"));
         // GATHER is not put here: it is one of the worker's always-visible command abilities
@@ -220,12 +217,7 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
     // endregion
 
     public BlockState getReplantBlockState() {
-        if (getUnitProfession() == FARMER && !isVeteran)
-            return Blocks.CARROTS.defaultBlockState();
-        else if (getUnitProfession() == FARMER && isVeteran)
-            return Blocks.POTATOES.defaultBlockState();
-        else
-            return Blocks.WHEAT.defaultBlockState();
+        return Blocks.WHEAT.defaultBlockState();
     }
 
     final static public float attackDamage = 1.0f;
@@ -239,97 +231,6 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
     final static public float armorValue = 0.0f;
     final static public float movementSpeed = 0.25f;
     public int maxResources = 100;
-
-    public VillagerUnitProfession getUnitProfession() {
-        VillagerProfession profession = getProfession();
-        if (VillagerProfession.FARMER.equals(profession)) {
-            return FARMER;
-        } else if (VillagerProfession.FLETCHER.equals(profession)) {
-            return VillagerUnitProfession.LUMBERJACK;
-        } else if (VillagerProfession.TOOLSMITH.equals(profession)) {
-            return VillagerUnitProfession.MINER;
-        } else if (VillagerProfession.MASON.equals(profession)) {
-            return VillagerUnitProfession.MASON;
-        } else if (VillagerProfession.WEAPONSMITH.equals(profession)) {
-            return VillagerUnitProfession.HUNTER;
-        }
-        return VillagerUnitProfession.NONE;
-    }
-
-    public boolean isVeteran = false;
-    public boolean isVeteran() { return isVeteran; }
-    public void makeVeteran() {
-        isVeteran = true;
-        UnitSyncClientboundPacket.makeVillagerVeteran(this);
-    }
-
-    public boolean hasSpeedCheat() {
-        // research cheats were removed with the faction content
-        return false;
-    }
-
-    // equal to 4 full farm clears
-    // bonus == plants carrots instead of wheat (+25% food), potatoes for veteran (+50% food)
-    final static public int FARMER_EXP_REQ = 80;
-    public int farmerExp = 0; // farm food blocks gathered
-    public void incrementFarmerExp() {
-        farmerExp += hasSpeedCheat() ? 10 : 1;
-        if (farmerExp >= (FARMER_EXP_REQ / 2) && !hasUnitProfession()) {
-            setProfession(VillagerProfession.FARMER);
-        }
-        else if (farmerExp >= FARMER_EXP_REQ && !isVeteran && getUnitProfession() == FARMER)
-            makeVeteran();
-    }
-
-    // equal to ~4mins of log chopping, excludes leaves
-    final static public float LUMBERJACK_SPEED_MULT = 1.25f;
-    final static public float LUMBERJACK_SPEED_MULT_VETERAN = 1.5f;
-    final static public int LUMBERJACK_EXP_REQ = 30;
-    public int lumberjackExp = 0;
-    public void incrementLumberjackExp() {
-        lumberjackExp += hasSpeedCheat() ? 10 : 1;
-        if (lumberjackExp >= (LUMBERJACK_EXP_REQ / 2) && !hasUnitProfession())
-            setProfession(VillagerProfession.FLETCHER);
-        else if (lumberjackExp >= LUMBERJACK_EXP_REQ && !isVeteran && getUnitProfession() == LUMBERJACK)
-            makeVeteran();
-    }
-
-    // ~5mins of gathering
-    final static public float MINER_SPEED_MULT = 1.25f;
-    final static public float MINER_SPEED_MULT_VETERAN = 1.5f;
-    final static public int MINER_EXP_REQ = 6;
-    public int minerExp = 0; // ore blocks gathered
-    public void incrementMinerExp() {
-        minerExp += hasSpeedCheat() ? 10 : 1;
-        if (minerExp >= (MINER_EXP_REQ / 2) && !hasUnitProfession())
-            setProfession(VillagerProfession.TOOLSMITH);
-        else if (minerExp >= MINER_EXP_REQ && !isVeteran && getUnitProfession() == MINER)
-            makeVeteran();
-    }
-
-    // blocks built or repaired, excluding first capitol
-    // ~5mins of building
-    // counted as +1 worker when building/repairing (+2 for veteran)
-    final static public int MASON_EXP_REQ = 600;
-    public int masonExp = 0;
-    public void incrementMasonExp() {
-        masonExp += hasSpeedCheat() ? 10 : 1;
-        if (masonExp >= (MASON_EXP_REQ / 2) && !hasUnitProfession())
-            setProfession(VillagerProfession.MASON);
-        else if (masonExp >= MASON_EXP_REQ && !isVeteran && getUnitProfession() == MASON)
-            makeVeteran();
-    }
-
-    // chickens only worth 1, other animals worth 2, hunters do bonus damage to animals
-    final static public int HUNTER_EXP_REQ = 4;
-    public int hunterExp = 0;
-    public void incrementHunterExp() {
-        hunterExp += hasSpeedCheat() ? 10 : 1;
-        if (hunterExp >= (HUNTER_EXP_REQ / 2) && !hasUnitProfession())
-            setProfession(VillagerProfession.WEAPONSMITH);
-        else if (hunterExp >= HUNTER_EXP_REQ && !isVeteran && getUnitProfession() == HUNTER)
-            makeVeteran();
-    }
 
     public Item chestplate = Items.AIR;
     public boolean chestplateEnchanted = false;
@@ -459,12 +360,6 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
         DataResult<Tag> var10000 = VillagerData.CODEC.encodeStart(NbtOps.INSTANCE, this.getVillagerData());
         var10000.resultOrPartial((err) -> ReignOfNether.LOGGER.error("Failed to save villager data"))
                 .ifPresent((tag) -> pCompound.put("VillagerData", tag));
-        pCompound.putInt("farmerExp", this.farmerExp);
-        pCompound.putInt("lumberjackExp", this.lumberjackExp);
-        pCompound.putInt("minerExp", this.minerExp);
-        pCompound.putInt("masonExp", this.masonExp);
-        pCompound.putInt("hunterExp", this.hunterExp);
-        pCompound.putBoolean("isVeteran", this.isVeteran);
         pCompound.putInt("chestplateId", Item.getId(chestplate));
         pCompound.putBoolean("chestplateEnchanted", chestplateEnchanted);
         pCompound.putBoolean("swordEnchanted", swordEnchanted);
@@ -479,11 +374,6 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
             dataresult.resultOrPartial((err) -> ReignOfNether.LOGGER.error("Failed to load villager data"))
                     .ifPresent(this::setVillagerData);
         }
-        this.farmerExp = pCompound.getInt("farmerExp");
-        this.lumberjackExp = pCompound.getInt("lumberjackExp");
-        this.minerExp = pCompound.getInt("minerExp");
-        this.masonExp = pCompound.getInt("masonExp");
-        this.hunterExp = pCompound.getInt("hunterExp");
         if (pCompound.contains("chestplateId"))
             this.chestplate = Item.byId(pCompound.getInt("chestplateId"));
         if (pCompound.contains("chestplateEnchanted"))
@@ -492,8 +382,6 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
             this.swordEnchanted = pCompound.getBoolean("swordEnchanted");
         if (pCompound.contains("bowEnchanted"))
             this.bowEnchanted = pCompound.getBoolean("bowEnchanted");
-        if (!level().isClientSide() && pCompound.getBoolean("isVeteran"))
-            makeVeteran();
         this.readUnitSaveData(pCompound);
     }
 
@@ -556,18 +444,11 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
 
     @Override
     public List<FormattedCharSequence> getAttackDamageStatTooltip() {
-        if (getUnitProfession() == HUNTER) {
-            return List.of(
-                    fcs(I18n.get("unitstats.reignofnether.attack_damage"), true),
-                    fcs(I18n.get("unitstats.reignofnether.attack_damage_bonus_animals", isVeteran() ? "100%" : "50%"))
-            );
-        } else {
-            return List.of(fcs(I18n.get("unitstats.reignofnether.attack_damage"), true));
-        }
+        return List.of(fcs(I18n.get("unitstats.reignofnether.attack_damage"), true));
     }
     @Override
     public int getDamageTooltipColour() {
-        return getUnitProfession() == HUNTER ? TooltipColours.GREEN : TooltipColours.WHITE;
+        return TooltipColours.WHITE;
     }
 
     private static final EntityDataAccessor<VillagerData> VILLAGER_DATA;
@@ -590,18 +471,6 @@ public class VillagerUnit extends Vindicator implements Unit, WorkerUnit, Attack
     public void setVillagerData(@NotNull VillagerData data) {
         VillagerData villagerdata = this.getVillagerData();
         this.entityData.set(VILLAGER_DATA, data);
-    }
-
-    public void setProfession(VillagerProfession profession) {
-        this.setVillagerData(this.getVillagerData().setProfession(profession));
-        if (profession == VillagerProfession.FARMER && getItemBySlot(EquipmentSlot.HEAD).getItem() == Items.CARVED_PUMPKIN)
-            setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.AIR));
-    }
-    public VillagerProfession getProfession() {
-        return this.getVillagerData().getProfession();
-    }
-    public boolean hasUnitProfession() {
-        return this.getUnitProfession() != VillagerUnitProfession.NONE;
     }
 
     @Override

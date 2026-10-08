@@ -3,7 +3,6 @@ package com.solegendary.reignofnether.unit.modelling.renderers;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import com.solegendary.reignofnether.unit.modelling.models.VillagerUnitModel;
-import com.solegendary.reignofnether.unit.modelling.models.VillagerUnitProfessionLayer;
 import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -31,7 +30,6 @@ public class VillagerUnitRenderer extends AbstractVillagerUnitRenderer<AbstractI
                 }
             }
         });
-        this.addLayer(new VillagerUnitProfessionLayer(this, context.getResourceManager(), "villager"));
     }
 
     public ResourceLocation getTextureLocation(AbstractIllager p_116324_) {

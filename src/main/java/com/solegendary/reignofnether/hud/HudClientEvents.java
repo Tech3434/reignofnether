@@ -238,40 +238,8 @@ public class HudClientEvents {
             String nameCap = pName.substring(0, 1).toUpperCase() + pName.substring(1);
             name += " & " + nameCap;
         }
-        if (entity instanceof VillagerUnit vUnit) {
-            switch (vUnit.getUnitProfession()) {
-                case FARMER -> {
-                    if (vUnit.isVeteran())
-                        name = I18n.get("units.reignofnether.veteran_farmer");
-                    else
-                        name = I18n.get("units.reignofnether.farmer");
-                }
-                case LUMBERJACK -> {
-                    if (vUnit.isVeteran())
-                        name = I18n.get("units.reignofnether.veteran_lumberjack");
-                    else
-                        name = I18n.get("units.reignofnether.lumberjack");
-                }
-                case MINER -> {
-                    if (vUnit.isVeteran())
-                        name = I18n.get("units.reignofnether.veteran_miner");
-                    else
-                        name = I18n.get("units.reignofnether.miner");
-                }
-                case MASON -> {
-                    if (vUnit.isVeteran())
-                        name = I18n.get("units.reignofnether.veteran_mason");
-                    else
-                        name = I18n.get("units.reignofnether.mason");
-                }
-                case HUNTER -> {
-                    if (vUnit.isVeteran())
-                        name = I18n.get("units.reignofnether.veteran_hunter");
-                    else
-                        name = I18n.get("units.reignofnether.hunter");
-                }
-                default -> name = I18n.get("entity.reignofnether.villager_unit");
-            }
+        if (entity instanceof VillagerUnit) {
+            name = I18n.get("entity.reignofnether.villager_unit");
         }
         return name;
     }
@@ -1546,13 +1514,13 @@ public class HudClientEvents {
                 button.renderTooltip(evt.getGuiGraphics(), mouseX, mouseY);
     }
 
-    // Renders the open ability menu at the top-left, above everything except tooltips. The back
-    // button closes one level; a sub-ability that is itself a menu opens another level (plan §14.1).
+    // Renders the open ability menu in the same bottom-left row as the unit's abilities, so opening a
+    // menu temporarily REPLACES the ability row (it gets no frame of its own, unlike the old top-left
+    // popup). The back button closes one level; a sub-ability that is itself a menu opens another
+    // level (plan §14.1). Specialised menus, e.g. hero skill levelling, can keep using this stack.
     private static void renderAbilitySubmenu(ScreenEvent.Render.Post evt, AbilityMenuFrame frame, int mouseX, int mouseY) {
         int subIconFrame = Button.DEFAULT_ICON_FRAME_SIZE;
-        // Draw over the orders row (bottom-left) so the menu replaces the orders instead of
-        // appearing in the top-left corner of the screen.
-        int fx = ordersRowX + 4;
+        int fx = ordersRowX;
         int fy = ordersRowY;
 
         List<Keybinding> slots = List.of(
@@ -1580,15 +1548,6 @@ public class HudClientEvents {
                     subButtons.add(btn);
             }
         }
-
-        int total = subButtons.size() + 1; // includes the back button
-        int rows = Math.max(1, (int) Math.ceil((double) total / MAX_BUTTONS_PER_ROW));
-        int cols = Math.min(MAX_BUTTONS_PER_ROW, total);
-        hudZones.add(MyRenderer.renderFrameWithBg(evt.getGuiGraphics(),
-                fx - 4, fy - 4,
-                subIconFrame * cols + 8,
-                subIconFrame * rows + 8,
-                frameBgColour));
 
         Button back = new Button(
                 I18n.get("hud.reignofnether.ability_back"),

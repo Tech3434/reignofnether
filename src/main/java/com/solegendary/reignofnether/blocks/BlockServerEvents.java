@@ -1,11 +1,8 @@
 package com.solegendary.reignofnether.blocks;
 
-import com.solegendary.reignofnether.resources.ResourceSources;
-
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.registrars.BlockRegistrar;
-import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -17,7 +14,6 @@ import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 
 import java.util.*;
@@ -64,20 +60,6 @@ public class BlockServerEvents {
             evt.getLevel().setBlockAndUpdate(bp, bs);
         }
         blocksToPlace.clear();
-    }
-
-    @SubscribeEvent
-    public static void onPlayerBlockBreak(BlockEvent.BreakEvent evt) {
-        if (evt.getLevel().isClientSide() || evt.getLevel().getServer() == null)
-            return;
-
-        boolean isResource = ResourceSources.getFromBlockState(evt.getState()) != null;
-        boolean isBuilding = BuildingUtils.isPosInsideAnyBuilding(false, evt.getPos());
-
-        if (!evt.getLevel().getServer().getGameRules().getRule(GameRuleRegistrar.DO_PLAYER_GRIEFING).get() &&
-            !isResource && !isBuilding) {
-            evt.setCanceled(true);
-        }
     }
 
     private static HashMap<BlockPos, Integer> getPosesAndWeights(ServerLevel level, BlockPos pos, int centrePosLayers) {

@@ -89,15 +89,6 @@ public class UnitSyncClientboundPacket  implements RTSSimplePayload {
         );
     }
 
-    public static void makeVillagerVeteran(LivingEntity entity) {
-        PacketHandler.send(PacketHandler.allPlayers(),
-                new UnitSyncClientboundPacket(
-                        UnitSyncAction.MAKE_VILLAGER_VETERAN,
-                        entity.getId(), 0,
-                        0,0,0,0,0,0,0,0,0,0, "")
-        );
-    }
-
     public static void sendSyncAnchorPosPacket(LivingEntity entity, BlockPos bp) {
         PacketHandler.send(PacketHandler.allPlayers(),
                 new UnitSyncClientboundPacket(
@@ -206,7 +197,6 @@ public class UnitSyncClientboundPacket  implements RTSSimplePayload {
                                 this.entityId,
                                 new Resources("", this.food, this.wood, this.ore, this.emerald)
                         );
-                        case MAKE_VILLAGER_VETERAN -> UnitClientEvents.makeVillagerVeteran(this.entityId);
                         case SYNC_ANCHOR_POS -> UnitClientEvents.syncAnchorPos(
                                 this.entityId,
                                 new BlockPos((int) this.posX, (int) this.posY, (int) this.posZ)

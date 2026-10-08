@@ -28,9 +28,8 @@ public enum UnitAction {
 
     ATTACK_GROUND,
 
-    // worker digging orders (§14.4): remove a single block, or a small area around the target
+    // worker digging order (§14.4): remove a single block
     DIG_BLOCK,
-    DIG_AREA,
 
     // special abilities - these can also be assigned to cursor actions
     EXPLODE,

@@ -235,7 +235,6 @@
 
     "abilities.reignofnether.attack_ground": "Attack Ground",
     "abilities.reignofnether.dig_block": "Dig Block",
-    "abilities.reignofnether.dig_area": "Dig Area",
     "abilities.reignofnether.worker_orders": "Orders",
     "abilities.reignofnether.build": "Build",
     "abilities.reignofnether.gather": "Gather",
@@ -1578,17 +1577,6 @@
     "entity.reignofnether.hoglin_rider": "Hoglin Rider",
     "entity.reignofnether.reignofnether.baby": "Baby",
 
-    "units.reignofnether.farmer": "Farmer",
-    "units.reignofnether.lumberjack": "Lumberjack",
-    "units.reignofnether.miner": "Miner",
-    "units.reignofnether.mason": "Mason",
-    "units.reignofnether.hunter": "Hunter",
-    "units.reignofnether.veteran_farmer": "Veteran Farmer",
-    "units.reignofnether.veteran_lumberjack": "Veteran Lumberjack",
-    "units.reignofnether.veteran_miner": "Veteran Miner",
-    "units.reignofnether.veteran_mason": "Veteran Mason",
-    "units.reignofnether.veteran_hunter": "Veteran Hunter",
-
     "entity.reignofnether.charged_creeper": "Charged Creeper",
     "entity.reignofnether.creeper_unit": "Creeper",
     "entity.reignofnether.creeper_unit.tooltip1": "An explosive monster that can blow up units and buildings.",
@@ -2078,7 +2066,6 @@
     "unitstats.reignofnether.attack_damage_bonus_buildings": "%s to buildings",
     "unitstats.reignofnether.attack_damage_bonus_poison_damage": "+%d poison damage over %d seconds",
     "unitstats.reignofnether.attack_damage_bonus_fire_damage": "+%d fire damage over %d seconds",
-    "unitstats.reignofnether.attack_damage_bonus_animals": "+%s to animals",
     "unitstats.reignofnether.attack_speed": "Attacks per second",
     "unitstats.reignofnether.ghast_disarmed": "Can't attack while out of bounds",
     "unitstats.reignofnether.range": "Range",

@@ -2,12 +2,12 @@
 
 **Дата:** 2026-10-08
 **Ветка:** `wip/stage-d-deletions`
-**HEAD:** `fad1f813`
+**HEAD:** `67e020fd` + незакоммиченные правки повторного прогона (см. `BUGS_RUNCLIENT.md` §«Инкремент 4»)
 **compileJava:** ✅ 0 ошибок
 **validateMixins:** ✅ 48 injection point'ов / 31 mixin-класс, все резолвятся
 **runData:** ✅ BUILD SUCCESSFUL
-**runServer:** ✅ `Done (1.005s)!`, 0 `mixin apply failed`, 0 SEVERE/ERROR
-**runClient:** ⚠ прогонялся владельцем — найдено 9 багов, разбор в `BUGS_RUNCLIENT.md`
+**runServer:** ✅ `Done (1.031s)!`, 0 `mixin apply failed`, 0 SEVERE/ERROR
+**runClient:** ⚠ прогонялся владельцем — найдено 9 багов, разбор и правки в `BUGS_RUNCLIENT.md`
 
 Версия: 1.4.4d, MC 1.21.1, NeoForge 21.1.250.
 
@@ -79,16 +79,53 @@ H.1–H.8 сделаны (`15bd1a69`): пропуск = право операт�
 
 ### Система юнитов и строений «как в Warcraft 3» (§14 плана) — закрыта
 
-§14.1–§14.5 сделаны (коммиты `76f33930`, `4f9b893b`, `63bf1a14`, `46ed5856`, `a422e885`,
-`21d511f3`); подробности и остаток — `PLAN_RTS_ONLY.md` §15. Вкратце: подменю способностей
-(`Ability.subAbilities`, `MenuAbility`, стек меню в HUD); приказы и кнопки постройки — способности
-(`CommandAbility`, `CommandAbilities`, `BuildMenuAbility`, `ActionButtons` удалён); производство
-зданий — способности (`ProductionAbility`, HUD рисует один список); вскапывание
-`DIG_BLOCK`/`DIG_AREA` (`DigAbility`, дроп в `UnitInventory`) с рамкой box-select для области;
-вскапывание блока строения **отменяется** и наносит **процентный** урон по HP — 5 % максимального HP
-за удар (`DigAbility.BUILDING_DAMAGE_PERCENT_PER_HIT`), снос сверху вниз
-(`BuildingPlacement.demolishTopDown`). Открытых вопросов нет; дизайн-значения и HUD-прогресс сноса —
-на усмотрение владельца.
+§14.1–§14.4 сделаны; §14.5 (урон по HP от копания здания) **откачен** — см. ниже. Подробности и
+остаток — `PLAN_RTS_ONLY.md` §15. Вкратце: подменю способностей (`Ability.subAbilities`,
+`MenuAbility`, стек меню в HUD); приказы и кнопки постройки — способности (`CommandAbility`,
+`CommandAbilities`, `BuildMenuAbility`, `ActionButtons` удалён`); производство зданий — способности
+(`ProductionAbility`, HUD рисует один список); вскапывание `DIG_BLOCK`/`DIG_AREA` (`DigAbility`,
+дроп в `UnitInventory`) с рамкой box-select для области.
+
+**§14.5 откачен.** Копание по блоку строения **отменяется**: ни копания, ни дропа, ни урона.
+Процентный урон `DigAbility.BUILDING_DAMAGE_PERCENT_PER_HIT` и `BuildingPlacement.demolishTopDown`
+удалены (коммит `445447ad`). Здания ломаются обычной атакой.
+
+**Повторный `runClient` (правки не закоммичены).** `DIG_AREA` не копал, потому что при постановке
+отбрасывались блоки дальше `DIG_RANGE` — теперь копится вся очерченная область, а юнит идёт к
+недосягаемому блоку; смена режима сбора больше не сбрасывает приказы (`TOGGLE_GATHER_TARGET`);
+счётчик переноски снова пересобирается с нуля (`syncUnitResources`). Подробности —
+`BUGS_RUNCLIENT.md` §«Инкремент 4».
+
+**Прогон 2 `runClient` (правки не закоммичены).** По 8 пунктам владельца: `DIG_AREA` удалён
+целиком; режим сбора больше не сбрасывается через пару секунд (корень — `syncFromServer` затирал
+`targetResourceName` в `NONE`); иконка вскопки — железная кирка; листва: сброс режима при выходе из
+РТС и ускоренное переключение «вокруг юнитов/курсора»; миникарта ускорена (участок 4 тика);
+подменю абилок рисуется на месте нижнего ряда; профессии и ветеранство `VillagerUnit` удалены
+(вместе с `VillagerUnitProfession`, `VillagerUnitProfessionLayer`, синком `MAKE_VILLAGER_VETERAN` и
+бонусами). Гейты: `compileJava` ✅, `validateMixins` ✅ (48/31), `runData` ✅, `runServer` ✅
+`Done (1.120s)!`. Разбор — `BUGS_RUNCLIENT.md` §«Прогон 2».
+
+**Прогон 3.** После выхода из РТС игрок оставался в `SPECTATOR` и не мог ломать блоки нигде.
+Исправлено восстановление режима игры на выходе: `PlayerServerEvents.restoreGameModeOnLeave`
+вызывается из `closeTopdownGui` и `disableOrthoview`, `SPECTATOR` больше не сохраняется как
+исходный, `resetRTS` не перезаписывает исходные режимы. Заодно `Abilities.getButtons` расширен с 6
+до 8 слотов хоткеев (7-я абилка больше не роняет клиент). Гейты: `compileJava` ✅, `validateMixins`
+✅ (48/31), `runData` ✅, `runServer` ✅ `Done (0.956s)!`. Разбор — `BUGS_RUNCLIENT.md` §«Прогон 3».
+
+**Прогон 4.** Ломание блоков приведено к желаемому: блоки мира — обычная ванильная добыча в любом
+режиме (удалена отмена в `BlockServerEvents.onPlayerBlockBreak`); блоки строений РТС — поломка
+моментально отменяется, блок остаётся, а строение получает урон по HP
+(`ResourcesServerEvents.onPlayerBlockBreak` → `destroyRandomBlocks`). Геймрул `doPlayerGriefing`
+стал неиспользуемым. Гейты: `compileJava` ✅, `validateMixins` ✅ (48/31), `runData` ✅,
+`runServer` ✅ `Done (0.991s)!`. Разбор — `BUGS_RUNCLIENT.md` §«Прогон 4».
+
+**Прогон 5.** При поражении юниты игрока не становились нейтральными (только при новой игре):
+`defeat` ставил `ownerName = ""` после `resetBehaviours()`, и падение сброса обрывало цикл. Владение
+теперь очищается первым, а сброс поведения вынесен в `PlayerServerEvents.neutraliseUnitsOf` с
+`try/catch` на юнит. Гейты: `compileJava` ✅, `validateMixins` ✅ (48/31), `runData` ✅,
+`runServer` ✅ `Done (1.011s)!`. Разбор — `BUGS_RUNCLIENT.md` §«Прогон 5».
+
+**Инвентаризация изменений ванильных механик** — `docs/VANILLA_CHANGES.md`.
 
 ### Документация
 

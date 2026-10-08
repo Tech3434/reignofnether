@@ -711,17 +711,6 @@ buildingData.buildings.forEach(b -> {
         //ReignOfNether.LOGGER.info("Synced " + buildings.size() + " buildings with player logged in");
     }
 
-    // if blocks are destroyed manually by a player then help it along by causing periodic explosions
-    @SubscribeEvent
-    public static void onPlayerBlockBreak(BlockEvent.BreakEvent evt) {
-        if (!evt.getLevel().isClientSide()) {
-            for (BuildingPlacement building : buildings)
-                if (building.isPosPartOfBuilding(evt.getPos(), true)) {
-                    building.onBlockBreak((ServerLevel) evt.getLevel(), evt.getPos(), true);
-                }
-        }
-    }
-
     // prevent dungeons spawners from actually spawning
     // (1.21.1 removed MobSpawnEvent.FinalizeSpawn, so this hooks entity-joins instead and
     //  looks the building up at the mob.s position rather than at the spawner block)

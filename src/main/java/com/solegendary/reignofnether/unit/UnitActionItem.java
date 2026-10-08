@@ -172,24 +172,26 @@ public class UnitActionItem {
             }
 
             // any order other than a dig abandons an in-flight dig (progress is not kept)
-            if (action != UnitAction.DIG_BLOCK && action != UnitAction.DIG_AREA)
+            if (action != UnitAction.DIG_BLOCK)
                 DigAbility.clear(((Entity) unit).getId());
 
-            // have to do this before resetBehaviours so we can assign the correct resourceName first
+            // Changing the gather mode only retargets the worker; it must NOT reset behaviours, or
+            // pressing the toggle cancelled whatever the worker was doing. The goal re-tests its
+            // current target against the new mode each tick and re-searches on its own.
             if (action == UnitAction.TOGGLE_GATHER_TARGET) {
                 if (unit instanceof WorkerUnit workerUnit) {
                     GatherResourcesGoal goal = workerUnit.getGatherResourceGoal();
                     if (goal != null) {
-                        ResourceName targetResourceName = goal.getTargetResourceName();
-                        Unit.fullResetBehaviours(unit);
-                        if (targetResourceName != null) {
-                            switch (targetResourceName) {
-                                case NONE -> goal.setTargetResourceName(ResourceName.FOOD);
-                                case FOOD -> goal.setTargetResourceName(ResourceName.WOOD);
-                                case WOOD -> goal.setTargetResourceName(ResourceName.ORE);
-                                case ORE -> goal.setTargetResourceName(ResourceName.NONE);
-                            }
-                        }
+                        ResourceName current = goal.getTargetResourceName();
+                        ResourceName next = switch (current == null ? ResourceName.NONE : current) {
+                            case NONE -> ResourceName.FOOD;
+                            case FOOD -> ResourceName.WOOD;
+                            case WOOD -> ResourceName.ORE;
+                            case ORE, EMERALD -> ResourceName.NONE;
+                        };
+                        goal.setTargetResourceName(next);
+                        if (next == ResourceName.NONE)
+                            goal.removeGatherTarget();
                     }
                 }
             } else {
@@ -399,16 +401,6 @@ public class UnitActionItem {
                 case DISCARD -> {
                     if (unit instanceof ConvertableUnit cUnit) {
                         cUnit.setShouldDiscard(true);
-                    }
-                }
-                // §14.4: DIG_AREA carries an outlined rectangle - preselectedBlockPos and
-                // selectedBuildingPos are its two opposite corners
-                case DIG_AREA -> {
-                    for (Ability ability : unit.getAbilities().get()) {
-                        if (ability.action == UnitAction.DIG_AREA &&
-                            (ability.isOffCooldown(unit) || ability.canBypassCooldown(unit))) {
-                            ability.useArea(level, unit, preselectedBlockPos, selectedBuildingPos);
-                        }
                     }
                 }
                 // any other Ability not explicitly defined here

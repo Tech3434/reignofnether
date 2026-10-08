@@ -7,9 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
-// VindicatorUnit reuses the illager body model but has no villager profession, so it must not get
-// VillagerUnitProfessionLayer - that layer casts the rendered entity to VillagerDataHolder and
-// VindicatorUnit does not implement it.
+// VindicatorUnit reuses the illager body model without any villager profession overlay.
 @OnlyIn(Dist.CLIENT)
 public class VindicatorUnitRenderer extends AbstractVillagerUnitRenderer<VindicatorUnit> {
 

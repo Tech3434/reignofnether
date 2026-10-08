@@ -11,8 +11,6 @@ import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
 import com.solegendary.reignofnether.unit.packets.UnitSyncClientboundPacket;
 
-import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
-import com.solegendary.reignofnether.unit.units.villagers.VillagerUnitProfession;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -30,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import static com.solegendary.reignofnether.blocks.BlockUtils.isFallingLogBlock;
 import static com.solegendary.reignofnether.blocks.BlockUtils.isLogBlock;
 
 // Move towards the nearest open resource blocks and start gathering them
@@ -183,20 +180,17 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
     }
 
     public void syncFromServer(ResourceName gatherName, BlockPos gatherPos, int gatherTicks) {
-        // The server can send a unit that has no gather target (never selected, or just finished).
-        // "No target" is ResourceName.NONE, never null: TargetResourcesSave initialises the field
-        // that way, and callers either switch on it or call equals() on it - both of which throw on
-        // null. The null position has to be handled separately, since looking a resource up at a
-        // null BlockPos dereferences it inside BuildingUtils#isPosInsideFarm.
+        // The server always sends the currently selected mode in gatherName. When the worker has no
+        // active target (between blocks, or while searching) it sends a null position - the mode must
+        // survive that, or the HUD flipped back to "nothing" a couple of seconds after every toggle.
         this.data.gatherTarget = gatherPos;
         this.gatherTicksLeft = gatherTicks;
+        this.data.targetResourceName = gatherName == null ? ResourceName.NONE : gatherName;
         if (gatherPos == null) {
-            this.data.targetResourceName = ResourceName.NONE;
             this.data.targetResourceSource = null;
             this.gatherTicksLeft = 0;
             return;
         }
-        this.data.targetResourceName = gatherName == null ? ResourceName.NONE : gatherName;
         this.data.targetResourceSource = ResourceSources.getFromBlockPos(data.gatherTarget, mob.level());
     }
 
@@ -340,23 +334,6 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
                 else {
                     float ticksToProgress = (TICK_CD / 2);
 
-                    if (mob instanceof VillagerUnit vUnit) {
-                        if (ResourceSources.getBlockResourceName(getGatherTarget(), mob.level()) == ResourceName.WOOD &&
-                            vUnit.getUnitProfession() == VillagerUnitProfession.LUMBERJACK) {
-                            if (vUnit.isVeteran())
-                                ticksToProgress *= VillagerUnit.LUMBERJACK_SPEED_MULT_VETERAN;
-                            else
-                                ticksToProgress *= VillagerUnit.LUMBERJACK_SPEED_MULT;
-                        }
-                        else if (ResourceSources.getBlockResourceName(getGatherTarget(), mob.level()) == ResourceName.ORE &&
-                                vUnit.getUnitProfession() == VillagerUnitProfession.MINER) {
-                            if (vUnit.isVeteran())
-                                ticksToProgress *= VillagerUnit.MINER_SPEED_MULT_VETERAN;
-                            else
-                                ticksToProgress *= VillagerUnit.MINER_SPEED_MULT;
-                        }
-                    }
-
                     this.gatherTicksLeft -= ticksToProgress;
 
                     gatherTicksLeft = Math.min(gatherTicksLeft, data.targetResourceSource != null ? data.targetResourceSource.ticksToGather : Integer.MAX_VALUE);
@@ -365,28 +342,10 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
 
                         BlockState bs = this.mob.level().getBlockState(data.gatherTarget);
                         boolean isLogBlock = isLogBlock(bs);
-                        boolean isFallingLogBlock = isFallingLogBlock(bs);
                         if (isLogBlock)
                             ResourcesServerEvents.fellAdjacentLogs(data.gatherTarget, new ArrayList<>(), this.mob.level());
 
-                        ResourceName expName = ResourceName.NONE;
-                        if (ResourceSources.getBlockResourceName(getGatherTarget(), mob.level()) == ResourceName.FOOD && isFarming())
-                            expName = ResourceName.FOOD;
-                        else if (ResourceSources.getBlockResourceName(getGatherTarget(), mob.level()) == ResourceName.WOOD && (isLogBlock || isFallingLogBlock))
-                            expName = ResourceName.WOOD;
-                        else if (ResourceSources.getBlockResourceName(getGatherTarget(), mob.level()) == ResourceName.ORE && bs.getBlock() != Blocks.POINTED_DRIPSTONE)
-                            expName = ResourceName.ORE;
-
                         if (mob.level().destroyBlock(data.gatherTarget, false)) {
-
-                            if (mob instanceof VillagerUnit vUnit) {
-                                if (expName == ResourceName.FOOD)
-                                    vUnit.incrementFarmerExp();
-                                else if (expName == ResourceName.WOOD)
-                                    vUnit.incrementLumberjackExp();
-                                else if (expName == ResourceName.ORE)
-                                    vUnit.incrementMinerExp();
-                            }
 
                             // replace workers' mine ores with cobble to prevent creating potholes
                             if (data.targetResourceSource != null && data.targetResourceSource.resourceName == ResourceName.ORE && bsTarget.getBlock() != Blocks.POINTED_DRIPSTONE) {

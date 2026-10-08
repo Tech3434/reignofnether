@@ -98,17 +98,6 @@ public class CursorClientEvents {
     // action that is performed on the next left click
     private static UnitAction leftClickAction = null;
 
-    // §14.4: first corner of a DIG_AREA drag, captured on press and completed on release
-    private static BlockPos digAreaStartBp = new BlockPos(0, 0, 0);
-
-    public static BlockPos getDigAreaStartBp() {
-        return digAreaStartBp;
-    }
-
-    public static void setDigAreaStartBp(BlockPos bp) {
-        digAreaStartBp = bp == null ? new BlockPos(0, 0, 0) : bp;
-    }
-
     public static Vector3d getCursorWorldPos() {
         return cursorWorldPos;
     }
@@ -408,12 +397,6 @@ public class CursorClientEvents {
             cursorLeftClickDownPos = new Vec2(floor(evt.getMouseX()), floor(evt.getMouseY()));
             cursorLeftClickDragPos = new Vec2(floor(evt.getMouseX()), floor(evt.getMouseY()));
             leftClickDown = true;
-
-            // §14.4: DIG_AREA is a drag - capture the first corner here, right next to the release
-            // that completes the rectangle. It used to be captured in UnitClientEvents, whose press
-            // handler is order-dependent relative to this one, so the corner could go missing.
-            if (leftClickAction == UnitAction.DIG_AREA)
-                setDigAreaStartBp(getPreselectedBlockPos());
         }
         if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_2) {
             cursorRightClickDownPos = new Vec2(floor(evt.getMouseX()), floor(evt.getMouseY()));
@@ -443,24 +426,11 @@ public class CursorClientEvents {
         if (evt.getButton() == GLFW.GLFW_MOUSE_BUTTON_1) {
             leftClickDown = false;
 
-            // §14.4: finish a DIG_AREA drag - send the rectangle the player outlined
-            boolean wasDigArea = leftClickAction == UnitAction.DIG_AREA;
-            if (wasDigArea) {
-                BlockPos start = getDigAreaStartBp();
-                BlockPos end = getPreselectedBlockPos();
-                if (!start.equals(new BlockPos(0, 0, 0)) && !end.equals(new BlockPos(0, 0, 0))) {
-                    int[] ids = UnitClientEvents.getSelectedUnits().stream().mapToInt(LivingEntity::getId).toArray();
-                    UnitClientEvents.sendUnitCommandManual(UnitAction.DIG_AREA, -1, ids, start, end);
-                }
-                setDigAreaStartBp(new BlockPos(0, 0, 0));
-                setLeftClickAction(null);
-            }
-
             // enact box selection, excluding non-unit mobs
             // for single-click selection, see UnitClientEvents
             // except if attack-moving or no owned units are preselected (to prevent deselection)
             ArrayList<LivingEntity> preselectedUnit = UnitClientEvents.getPreselectedUnits();
-            if (!wasDigArea && preselectedUnit.size() > 0 && !cursorLeftClickDownPos.equals(cursorLeftClickDragPos)) {
+            if (preselectedUnit.size() > 0 && !cursorLeftClickDownPos.equals(cursorLeftClickDragPos)) {
 
                 // only act if there is at least 1 owned entity so we don't deselect things by box selecting only non-owned entities
                 int ownedEntities = 0;

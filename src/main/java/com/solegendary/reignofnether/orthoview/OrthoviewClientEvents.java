@@ -441,6 +441,9 @@ public class OrthoviewClientEvents {
         } else {
             PlayerServerboundPacket.disableOrthoview();
             TopdownGuiServerboundPacket.closeTopdownGui(MC.player.getId());
+            // Leaving RTS must restore normal rendering: the leaf-hiding mode was left set, so leaves
+            // kept rendering as glass in the ordinary view. Reset it; refreshLeafSections() repaints.
+            hideLeavesMethod = LeafHideMethod.NONE;
         }
     }
 

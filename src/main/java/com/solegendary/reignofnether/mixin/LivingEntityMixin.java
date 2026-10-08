@@ -7,8 +7,6 @@ import com.solegendary.reignofnether.resources.ResourceSources;
 import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
-import com.solegendary.reignofnether.unit.units.villagers.VillagerUnit;
-import com.solegendary.reignofnether.unit.units.villagers.VillagerUnitProfession;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -183,13 +181,8 @@ public abstract class LivingEntityMixin extends Entity {
         if (isMelee && !(pDamageSource.getEntity() instanceof WorkerUnit))
             dmg += AttackerUnit.getWeaponDamageModifier(attackerUnit);
 
-        if (isHuntableAnimal) {
-            if (pDamageSource.getEntity() instanceof VillagerUnit vUnit &&
-                    vUnit.getUnitProfession() == VillagerUnitProfession.HUNTER) {
-                dmg = vUnit.isVeteran() ? 2f : 1.5f;
-            } else if (!(pDamageSource.getEntity() instanceof WorkerUnit)) {
-                dmg *= 0.5f;
-            }
+        if (isHuntableAnimal && !(pDamageSource.getEntity() instanceof WorkerUnit)) {
+            dmg *= 0.5f;
         }
 
         if (this instanceof Unit unit) {
