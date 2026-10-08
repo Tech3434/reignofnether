@@ -137,6 +137,11 @@ public class UnitClientEvents {
     public static final List<BlockPos> windowPositions = Collections.synchronizedList(new ArrayList<>());
     public static int windowUpdateTicks = UnitClientEvents.WINDOW_UPDATE_TICKS_MAX;
 
+    // Chunk sections (stored as chunkX, sectionY, chunkZ) whose leaves were hidden at the last
+    // refresh, so they can be re-meshed to bring the leaves back once nothing is near them any more.
+    private static final Set<BlockPos> hiddenLeafSections = new HashSet<>();
+    private static OrthoviewClientEvents.LeafHideMethod lastLeafHideMethod = OrthoviewClientEvents.LeafHideMethod.NONE;
+
     // list of ids that correspond to idle workers - should only be updated from server side
     public static final ArrayList<Integer> idleWorkerIds = new ArrayList<>();
 
@@ -567,7 +572,78 @@ public class UnitClientEvents {
                 unitWindowVecs.clear();
             }
         }
+        refreshLeafSections();
         markSelectedUnitsChanged();
+    }
+
+    /**
+     * The leaf-swap mixin only runs while a render chunk is (re)meshed, so moving the hide-window
+     * does not repaint anything by itself. The old build re-meshed the chunks near the windows from a
+     * LevelRenderer mixin, and that mixin was deleted along with the fog-of-war package - which is why
+     * the leaves only changed on the odd incidental rebuild. Re-dirty the sections around the windows
+     * (and the ones hidden last time) here instead, throttled by WINDOW_UPDATE_TICKS_MAX.
+     */
+    private static void refreshLeafSections() {
+        if (MC.level == null || MC.levelRenderer == null)
+            return;
+
+        OrthoviewClientEvents.LeafHideMethod method = OrthoviewClientEvents.hideLeavesMethod;
+        if (method != lastLeafHideMethod) {
+            boolean wasAll = lastLeafHideMethod == OrthoviewClientEvents.LeafHideMethod.ALL;
+            lastLeafHideMethod = method;
+            if (method == OrthoviewClientEvents.LeafHideMethod.ALL || wasAll) {
+                // ALL replaces leaves everywhere and has no windows to walk; a full reload is the only
+                // way to repaint the whole world, and to put the leaves back when leaving it.
+                MC.levelRenderer.allChanged();
+                hiddenLeafSections.clear();
+                windowUpdateTicks = WINDOW_UPDATE_TICKS_MAX;
+                return;
+            }
+            windowUpdateTicks = 0; // force an immediate refresh with the new mode
+        }
+
+        if (method != OrthoviewClientEvents.LeafHideMethod.AROUND_UNITS_AND_CURSOR) {
+            // NONE: put back whatever was hidden
+            if (!hiddenLeafSections.isEmpty()) {
+                for (BlockPos s : hiddenLeafSections)
+                    MC.levelRenderer.setSectionDirty(s.getX(), s.getY(), s.getZ());
+                hiddenLeafSections.clear();
+            }
+            return;
+        }
+
+        windowUpdateTicks -= 1;
+        if (windowUpdateTicks > 0)
+            return;
+        windowUpdateTicks = WINDOW_UPDATE_TICKS_MAX;
+
+        Set<BlockPos> desired = new HashSet<>();
+        synchronized (windowPositions) {
+            for (BlockPos bp : windowPositions) {
+                int ccx = bp.getX() >> 4;
+                int ccz = bp.getZ() >> 4;
+                int csy = bp.getY() >> 4;
+                for (int dx = -1; dx <= 1; dx++)
+                    for (int dz = -1; dz <= 1; dz++)
+                        for (int dy = -1; dy <= 1; dy++) {
+                            int cx = ccx + dx, cz = ccz + dz, sy = csy + dy;
+                            // same 20-block radius the original chunk re-dirty used
+                            if (new BlockPos(cx * 16 + 8, sy * 16 + 8, cz * 16 + 8).distSqr(bp) <= 400)
+                                desired.add(new BlockPos(cx, sy, cz));
+                        }
+            }
+        }
+
+        if (desired.equals(hiddenLeafSections))
+            return;
+
+        Set<BlockPos> toRefresh = new HashSet<>(hiddenLeafSections);
+        toRefresh.addAll(desired);
+        hiddenLeafSections.clear();
+        hiddenLeafSections.addAll(desired);
+
+        for (BlockPos s : toRefresh)
+            MC.levelRenderer.setSectionDirty(s.getX(), s.getY(), s.getZ());
     }
 
     @SubscribeEvent

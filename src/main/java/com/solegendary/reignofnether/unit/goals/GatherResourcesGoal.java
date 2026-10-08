@@ -254,12 +254,16 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
                     }
                     else {
                         // increase search range until we've maxed out (to prevent idle workers using up too much CPU)
-                        int range = REACH_RANGE * (failedSearches + 1);
                         if (failedSearches > MAX_FAILED_SEARCHES) {
-                            //System.out.println("Failed too many searches.");
-                            stopGathering();
+                            // Give up searching for now, but keep the chosen resource mode. stopGathering()
+                            // resets targetResourceName to NONE, so a player who toggled gather to FOOD/WOOD/ORE
+                            // saw it flip itself back to "nothing" once no matching resource was nearby.
+                            // The idle bookkeeping below already parks the worker between attempts.
                             ticksIdle += 200;
+                            searchCdTicksLeft = MAX_SEARCH_CD_TICKS * MAX_FAILED_SEARCHES;
+                            return;
                         }
+                        int range = REACH_RANGE * (failedSearches + 1);
 
                         bpOpt = findClosest(
                             mob.level(),
