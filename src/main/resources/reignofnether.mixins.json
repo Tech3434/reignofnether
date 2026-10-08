@@ -20,6 +20,7 @@
         "StructureBlockEntityAccessor",
         "StructureBlockEntityMixin",
         "UnitInventoryMobMixin",
+    "UnitMobMixin",
         "VexMixin",
         "WitchMixin",
         "fire.WalkNodeEvaluatorMixin",
