@@ -144,3 +144,8 @@
 
 - [x] **H.9 — форма генератора ресурсов:** интерфейс `ResourceGenerator` + `ResourceGenerators.produce`.
 - [x] **D.21 — настраиваемый блок лесов:** уже реализован (`Building.scaffoldFill` / `scaffoldBlock`).
+
+## П5 — мерж
+
+- [x] `wip/stage-d-deletions` **fast-forward'нут** в `1.21.1-clean` (`0` позади / `49` впереди →
+  fast-forward, конфликтов нет).
