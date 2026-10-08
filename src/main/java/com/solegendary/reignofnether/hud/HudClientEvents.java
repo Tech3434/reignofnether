@@ -411,15 +411,10 @@ public class HudClientEvents {
 
                             for (int i = selBuildings.size() - numExtraBuildings; i < selBuildings.size(); i++) {
                                 BuildingPlacement placement = selBuildings.get(i);
-                                Building building = placement.getBuilding();
-                                ResourceLocation rl = ReignOfNetherRegistries.BUILDING.getKey(building);
-                                if (rl != null) {
-                                    String buildingName = I18n.get("buildings.reignofnether." + rl.getPath());
-                                    if (extraBuildingsMap.containsKey(buildingName))
-                                        extraBuildingsMap.put(buildingName, extraBuildingsMap.get(buildingName) + 1);
-                                    else
-                                        extraBuildingsMap.put(buildingName, 1);
-                                }
+                                String buildingName = placement.getBuilding().getDisplayName();
+                                if (buildingName == null || buildingName.isBlank())
+                                    continue;
+                                extraBuildingsMap.merge(buildingName, 1, Integer::sum);
                             }
                             for (String buildingName : extraBuildingsMap.keySet()) {
                                 int numBuildings = extraBuildingsMap.get(buildingName);

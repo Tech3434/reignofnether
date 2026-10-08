@@ -101,10 +101,14 @@ public class BuildingSelectorOptions {
 					SharedSuggestionProvider.suggestResource(
 						Stream.concat(
 							ReignOfNetherRegistries.BUILDING.stream(),
-							CustomBuildingClientEvents.customBuildings.stream()
+							Stream.concat(
+								CustomBuildingClientEvents.customBuildings.stream(),
+								com.solegendary.reignofnether.building.buildings.JsonBuildingManager.all().stream())
 						).collect(Collectors.toList()),
 						ctx,
 						building -> {
+							if (building instanceof com.solegendary.reignofnether.building.buildings.JsonBuilding jb)
+								return jb.getDefinitionId();
 							ResourceLocation id = ReignOfNetherRegistries.BUILDING.getKey(building);
 							return id != null ? id : ResourceLocation.fromNamespaceAndPath(
 								"custom",

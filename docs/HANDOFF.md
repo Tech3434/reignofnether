@@ -260,6 +260,10 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 учитывается для любого здания (`MiscUtil`), `Building.ScaffoldFill` стал `StringRepresentable`.
 `town_centre.json` — под `flags` (+`icon`/`portrait` polished_granite). Гейты зелёные.**`runClient` не проверялся**.
 
+**Мелкие остатки:** JSON-здания добавлены в suggestions `type` селектора зданий
+(`BuildingSelectorOptions`); «лишние здания» в тултипе группового выделения HUD теперь используют
+`Building.getDisplayName()` (у `JsonBuilding` раньше пропадали). Гейты зелёные.**`runClient` не проверялся**.
+
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)
 спавнит снаряд на сервере (owner, урон = `damage` или `getUnitAttackDamage()`), дефолт — стрела.
