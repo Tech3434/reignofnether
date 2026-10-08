@@ -6,6 +6,7 @@ public enum BuildingAction {
     PLACE_AND_QUEUE, // PLACE but add to the worker's queue action
     PLACE_CUSTOM, // custom building; itemName == structure name instead of a building registry key
     PLACE_AND_QUEUE_CUSTOM,
+    PLACE_JSON, // data-driven building; itemName == building definition id instead of a registry key
     DESTROY, // WIP building cancelled by owner or destroyed by someone
     REMOVE, // removes a building withouit destroying its blocks
     SYNC_BLOCKS_AND_OWNER, // sync client building health with server (client doesn't always have the blocks loaded to check natively)

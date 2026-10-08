@@ -28,17 +28,38 @@ public final class JsonBuildingManager {
     /** Rebuilds every JSON building from the server's datapack registry. */
     public static void reload(MinecraftServer server) {
         BUILDINGS.clear();
+        com.solegendary.reignofnether.research.ResearchProductionItem.clearCache();
         if (server == null)
             return;
         for (Map.Entry<net.minecraft.resources.ResourceKey<BuildingDefinition>, BuildingDefinition> entry
                 : BuildingDefinitions.get(server).entrySet()) {
             BuildingDefinition def = entry.getValue();
-            ResourceCost cost = def.cost()
-                    .map(c -> ResourceCost.Research(c.food(), c.wood(), c.ore(), c.seconds()))
-                    .orElseGet(() -> ResourceCost.Research(0, 0, 0, 0));
             ResourceLocation id = entry.getKey().location();
-            BUILDINGS.put(id, new JsonBuilding(id, def, cost));
+            BUILDINGS.put(id, create(id, def));
         }
+    }
+
+    private static JsonBuilding create(ResourceLocation id, BuildingDefinition def) {
+        ResourceCost cost = def.cost()
+                .map(c -> ResourceCost.Research(c.food(), c.wood(), c.ore(), c.seconds()))
+                .orElseGet(() -> ResourceCost.Research(0, 0, 0, 0));
+        return new JsonBuilding(id, def, cost);
+    }
+
+    /** Existing building, or one built from {@code level}'s (synced) datapack registry on a client. */
+    @Nullable
+    public static JsonBuilding getOrCreate(@Nullable net.minecraft.world.level.LevelAccessor level, ResourceLocation id) {
+        JsonBuilding existing = BUILDINGS.get(id);
+        if (existing != null)
+            return existing;
+        if (level == null)
+            return null;
+        BuildingDefinition def = level.registryAccess().registryOrThrow(BuildingDefinitions.BUILDING_KEY).get(id);
+        if (def == null)
+            return null;
+        JsonBuilding created = create(id, def);
+        BUILDINGS.put(id, created);
+        return created;
     }
 
     @Nullable

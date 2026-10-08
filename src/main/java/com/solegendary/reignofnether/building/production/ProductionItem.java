@@ -80,6 +80,16 @@ public abstract class ProductionItem {
 
     public abstract String getItemName();
 
+    /**
+     * Stable id used to identify this item across the network (it is echoed to the client queue and
+     * back). Code items use their registry key; data-driven items override this with their own id
+     * because they are not registered in the code registry.
+     */
+    public String getNetworkId() {
+        ResourceLocation key = com.solegendary.reignofnether.api.ReignOfNetherRegistries.PRODUCTION_ITEM.getKey(this);
+        return key != null ? key.toString() : getItemName();
+    }
+
     /** Icon shown on the ability button (plan §14.3). Null falls back to an empty frame. */
     @Nullable
     public ResourceLocation getIcon() {
@@ -188,7 +198,7 @@ public abstract class ProductionItem {
     // Button object to show in-progress items
     // firstItem means this button will cancel the currently-building item
     public StopProductionButton getCancelButton(ProductionPlacement prodBuilding, boolean first) {
-        return null;
+        return new StopProductionButton(getItemName(), getIcon(), prodBuilding, this, first);
     }
 
     public void recordScore(ProductionPlacement placement) {

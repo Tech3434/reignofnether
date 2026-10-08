@@ -67,7 +67,7 @@ public class BuildingProductionClientboundPacket  implements RTSSimplePayload {
     public static void startProduction(String ownerName, BlockPos buildingPos, ProductionItem item, float ticksLeft) {
         sendFiltered(ownerName, buildingPos,
                 new BuildingProductionClientboundPacket(BuildingAction.START_PRODUCTION,
-                        ReignOfNetherRegistries.PRODUCTION_ITEM.getKey(item).toString(),
+                        item.getNetworkId(),
                         buildingPos,
                         ticksLeft
                 )
@@ -149,6 +149,8 @@ public class BuildingProductionClientboundPacket  implements RTSSimplePayload {
                     productionItem = cbp.getProductionItem(this.itemName);
                 } else {
                     productionItem = ReignOfNetherRegistries.PRODUCTION_ITEM.get(ResourceLocation.tryParse(this.itemName));
+                    if (productionItem == null && building.getBuilding() instanceof com.solegendary.reignofnether.building.buildings.JsonBuilding jb)
+                        productionItem = jb.getProductionItem(this.itemName);
                 }
 
                 switch (action) {
@@ -179,7 +181,7 @@ public class BuildingProductionClientboundPacket  implements RTSSimplePayload {
                         if (building instanceof ProductionPlacement pBuilding) {
                             if (!pBuilding.productionQueue.isEmpty()) {
                                 for (ActiveProduction pItem : pBuilding.productionQueue) {
-                                    if (pItem.item.getItemName().equals(this.itemName) && !pItem.completed) {
+                                    if (pItem.item.getNetworkId().equals(this.itemName) && !pItem.completed) {
                                         pItem.complete(pBuilding);
                                         break;
                                     }

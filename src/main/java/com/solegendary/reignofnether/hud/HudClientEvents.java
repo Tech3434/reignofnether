@@ -1809,12 +1809,7 @@ public class HudClientEvents {
     private static void cycleBuildingSubgroups() {
         List<BuildingPlacement> selBuildings = BuildingClientEvents.getSelectedBuildings();
         List<String> buildingNames = selBuildings
-                .stream().map(b -> {
-                    if (b.getBuilding() instanceof CustomBuilding cb) {
-                        return cb.name;
-                    }
-                    return ReignOfNetherRegistries.BUILDING.getKey(b.getBuilding()).toString();
-                })
+                .stream().map(b -> BuildingUtils.getKeyString(b.getBuilding()))
                 .distinct().sorted(Comparator.comparing(b -> b))
                 .collect(Collectors.toList());
 
@@ -1822,7 +1817,7 @@ public class HudClientEvents {
             return;
 
         boolean reversed = Keybindings.shiftMod.isDown();
-        String selBuildingName = ReignOfNetherRegistries.BUILDING.getKey(hudSelectedPlacement.getBuilding()).toString();
+        String selBuildingName = BuildingUtils.getKeyString(hudSelectedPlacement.getBuilding());
 
         if (reversed)
             Collections.reverse(buildingNames);
@@ -1846,7 +1841,7 @@ public class HudClientEvents {
             }
         } else {
             for (BuildingPlacement bpl : selBuildings) {
-                String bplName = ReignOfNetherRegistries.BUILDING.getKey(bpl.getBuilding()).toString();
+                String bplName = BuildingUtils.getKeyString(bpl.getBuilding());
                 if (bplName.equals(newBuildingName)) {
                     hudSelectedPlacement = bpl;
                     break;

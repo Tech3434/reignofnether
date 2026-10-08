@@ -151,6 +151,24 @@ public class BuildingUtils {
         return buildingPlacement;
     }
 
+    /**
+     * A stable identity string for any building, used for sorting/grouping in the HUD. Code buildings
+     * use their registry key; data-driven and custom buildings have no code key, so they fall back to
+     * their definition id / structure name (never null).
+     */
+    public static String getKeyString(@Nullable Building building) {
+        if (building == null)
+            return "";
+        net.minecraft.resources.ResourceLocation key = com.solegendary.reignofnether.api.ReignOfNetherRegistries.BUILDING.getKey(building);
+        if (key != null)
+            return key.toString();
+        if (building instanceof com.solegendary.reignofnether.building.buildings.JsonBuilding jsonBuilding)
+            return jsonBuilding.getDefinitionId().toString();
+        if (building instanceof com.solegendary.reignofnether.building.custombuilding.CustomBuilding customBuilding)
+            return customBuilding.name != null ? customBuilding.name : customBuilding.structureName;
+        return building.name != null ? building.name : building.structureName;
+    }
+
     // note originPos may be an air block
     public static BuildingPlacement findBuilding(boolean isClientSide, BlockPos pos) {
         List<BuildingPlacement> buildings = isClientSide ? BuildingClientEvents.getBuildings() : BuildingServerEvents.getBuildings();

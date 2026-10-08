@@ -8,6 +8,7 @@ import com.solegendary.reignofnether.building.addon.AddonTypes;
 import com.solegendary.reignofnether.building.addon.BuildingAddon;
 import com.solegendary.reignofnether.building.production.JsonProductionItem;
 import com.solegendary.reignofnether.building.production.ProductionBuilding;
+import com.solegendary.reignofnether.building.production.ProductionItem;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.resources.ResourceCost;
@@ -16,6 +17,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.block.Blocks;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -45,6 +47,10 @@ public class JsonBuilding extends ProductionBuilding {
         for (ResourceLocation unitId : definition.production())
             this.productions.add(new JsonProductionItem(unitId, cost, unitId.getPath()), Keybindings.abilitySlot1);
 
+        for (ResourceLocation researchId : definition.researches())
+            this.productions.add(com.solegendary.reignofnether.research.ResearchProductionItem.fromId(researchId),
+                    Keybindings.abilitySlot1);
+
         for (AddonSpec spec : definition.addons()) {
             BuildingAddon addon = AddonTypes.create(spec, this);
             if (addon != null)
@@ -58,6 +64,15 @@ public class JsonBuilding extends ProductionBuilding {
 
     public BuildingDefinition getDefinition() {
         return definition;
+    }
+
+    /** Resolves one of this building's production/research items by its {@link ProductionItem#getNetworkId()}. */
+    @Nullable
+    public ProductionItem getProductionItem(String networkId) {
+        for (ProductionItem item : this.productions.get())
+            if (item.getNetworkId().equals(networkId))
+                return item;
+        return null;
     }
 
     public String getFaction() {

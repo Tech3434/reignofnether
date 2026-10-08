@@ -41,12 +41,7 @@ public class BuildingProductionServerboundPacket  implements RTSSimplePayload {
     public static void startProduction(ProductionItem item) {
         BuildingClientEvents.switchHudToIdlestBuilding();
         if (HudClientEvents.hudSelectedPlacement instanceof ProductionPlacement pp) {
-            String prodItemName;
-            if (pp instanceof CustomBuildingPlacement) {
-                prodItemName = item.getItemName();
-            } else {
-                prodItemName = ReignOfNetherRegistries.PRODUCTION_ITEM.getKey(item).toString();
-            }
+            String prodItemName = item.getNetworkId();
             if (prodItemName != null) {
                 PacketHandler.sendToServer(new BuildingProductionServerboundPacket(
                         BuildingAction.START_PRODUCTION,
@@ -57,13 +52,7 @@ public class BuildingProductionServerboundPacket  implements RTSSimplePayload {
     }
 
     public static void cancelProduction(BlockPos buildingPos, ProductionItem item, boolean frontItem) {
-        String prodItemName;
-        if (HudClientEvents.hudSelectedPlacement instanceof ProductionPlacement pp &&
-                pp instanceof CustomBuildingPlacement) {
-            prodItemName = item.getItemName();
-        } else {
-            prodItemName = ReignOfNetherRegistries.PRODUCTION_ITEM.getKey(item).toString();
-        }
+        String prodItemName = item.getNetworkId();
         if (prodItemName != null) {
             PacketHandler.sendToServer(new BuildingProductionServerboundPacket(
                     frontItem ? BuildingAction.CANCEL_PRODUCTION : BuildingAction.CANCEL_BACK_PRODUCTION,
@@ -128,6 +117,8 @@ public class BuildingProductionServerboundPacket  implements RTSSimplePayload {
                         productionItem = cbp.getProductionItem(this.itemName);
                     } else {
                         productionItem = ReignOfNetherRegistries.PRODUCTION_ITEM.get(ResourceLocation.tryParse(this.itemName));
+                        if (productionItem == null && pBuilding.getBuilding() instanceof com.solegendary.reignofnether.building.buildings.JsonBuilding jb)
+                            productionItem = jb.getProductionItem(this.itemName);
                     }
                     if (productionItem != null) {
                         switch (this.action) {

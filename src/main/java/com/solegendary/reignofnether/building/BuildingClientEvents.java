@@ -138,14 +138,7 @@ public class BuildingClientEvents {
             return;
         }
         selectedBuildings.add(building);
-        selectedBuildings.sort(Comparator.comparing(b -> {
-            if (b.getBuilding() instanceof CustomBuilding) {
-                return b.getBuilding().name;
-            } else {
-                ReignOfNetherRegistries.BUILDING.getKey(b.getBuilding()).toString();
-            }
-            return "";
-        }));
+        selectedBuildings.sort(Comparator.comparing(b -> BuildingUtils.getKeyString(b.getBuilding())));
         UnitClientEvents.clearSelectedUnits();
     }
 

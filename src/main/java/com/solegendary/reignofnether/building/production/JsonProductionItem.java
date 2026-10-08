@@ -36,6 +36,11 @@ public class JsonProductionItem extends ProductionItem {
     }
 
     @Override
+    public String getNetworkId() {
+        return unitDefinitionId.toString();
+    }
+
+    @Override
     public String getItemName() {
         return displayName;
     }

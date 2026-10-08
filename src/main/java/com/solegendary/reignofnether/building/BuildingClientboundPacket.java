@@ -1,6 +1,8 @@
 package com.solegendary.reignofnether.building;
 
 import com.solegendary.reignofnether.api.ReignOfNetherRegistries;
+import com.solegendary.reignofnether.building.buildings.JsonBuilding;
+import com.solegendary.reignofnether.building.buildings.JsonBuildingManager;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuilding;
 import com.solegendary.reignofnether.building.custombuilding.CustomBuildingClientEvents;
 
@@ -68,8 +70,12 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
             boolean isBuilt
     ) {
         sendFiltered(buildingPos, new BuildingClientboundPacket(
-                building instanceof CustomBuilding ? BuildingAction.PLACE_CUSTOM : BuildingAction.PLACE,
-                building instanceof CustomBuilding ? EMPTY : ReignOfNetherRegistries.BUILDING.getKey(building),
+                building instanceof CustomBuilding ? BuildingAction.PLACE_CUSTOM
+                        : building instanceof JsonBuilding ? BuildingAction.PLACE_JSON
+                        : BuildingAction.PLACE,
+                building instanceof CustomBuilding ? EMPTY
+                        : building instanceof JsonBuilding jsonBuilding ? jsonBuilding.getDefinitionId()
+                        : ReignOfNetherRegistries.BUILDING.getKey(building),
                 building.name,
                 buildingPos,
                 rotation,
@@ -212,7 +218,8 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
             DistHelper.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
                 BuildingPlacement building = null;
                 if (this.action != BuildingAction.PLACE &&
-                        this.action != BuildingAction.PLACE_CUSTOM) {
+                        this.action != BuildingAction.PLACE_CUSTOM &&
+                        this.action != BuildingAction.PLACE_JSON) {
                     building = findBuilding(true, this.buildingPos);
                     if (building == null) {
 
@@ -236,6 +243,16 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
                     );
                     case PLACE_CUSTOM -> BuildingClientEvents.placeBuilding(
                             CustomBuildingClientEvents.getCustomBuilding(this.itemName),
+                            this.buildingPos,
+                            this.rotation,
+                            this.ownerName,
+                            this.numQueuedBlocks,
+                            this.isDiagonalBridge,
+                            this.upgradeLevel,
+                            this.isBuilt
+                    );
+                    case PLACE_JSON -> BuildingClientEvents.placeBuilding(
+                            JsonBuildingManager.getOrCreate(net.minecraft.client.Minecraft.getInstance().level, this.itemKey),
                             this.buildingPos,
                             this.rotation,
                             this.ownerName,

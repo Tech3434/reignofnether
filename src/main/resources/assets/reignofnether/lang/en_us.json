@@ -1183,6 +1183,8 @@
     "hud.research.reignofnether.researched": "Researched",
     "hud.research.reignofnether.available": "Available",
     "hud.research.reignofnether.locked": "Locked (prerequisites missing)",
+    "hud.research.reignofnether.already_researched": "Already researched",
+    "hud.research.reignofnether.prerequisites_not_met": "Prerequisites not met",
     "server.reignofnether.lost_buildings": "lost all their buildings",
     "server.reignofnether.lost_capitol": "%s has lost their capitol and will be revealed in %d seconds unless they rebuild it!",
     "server.reignofnether.lost_all": "lost all their units and buildings",
