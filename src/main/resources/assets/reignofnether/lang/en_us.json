@@ -1177,8 +1177,6 @@
 
     "server.reignofnether.is_defeated": "%s has %s and is defeated!",
     "server.reignofnether.research_required": "%s requires research you have not completed",
-    "server.reignofnether.research_prereq": "Prerequisite researches are not completed",
-    "server.reignofnether.research_cant_afford": "Not enough resources for this research",
     "faction.reignofnether.villagers": "Villagers",
     "hud.research.reignofnether.menu": "Research",
     "hud.research.reignofnether.researched": "Researched",

@@ -59,7 +59,6 @@ public final class ResearchMenu {
         for (ResearchClientEvents.Def def : ResearchClientEvents.definitions()) {
             boolean researched = ResearchClientEvents.has(playerName, def.id());
             boolean available = researched || ResearchUtils.meetsClient(playerName, def.prerequisites());
-            boolean canStart = available && !researched;
 
             String statusKey = researched
                     ? "hud.research.reignofnether.researched"
@@ -68,6 +67,8 @@ public final class ResearchMenu {
             tooltip.add(Component.literal(I18n.get(def.nameKey())).getVisualOrderText());
             tooltip.add(Component.literal(I18n.get(statusKey)).getVisualOrderText());
 
+            // Status only: starting a research is done from the building UI (deferred to the
+            // buildings-JSON phase, where a building lists the researches it offers).
             Button button = new Button(
                     I18n.get(def.nameKey()),
                     frameSize,
@@ -75,8 +76,8 @@ public final class ResearchMenu {
                     (Keybinding) null,
                     () -> researched,
                     () -> false,
-                    () -> canStart,
-                    canStart ? () -> ResearchServerboundPacket.request(def.id()) : null,
+                    () -> researched,
+                    null,
                     null,
                     tooltip
             );
