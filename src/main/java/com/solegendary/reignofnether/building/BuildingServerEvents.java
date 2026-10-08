@@ -241,7 +241,16 @@ getBuildings().forEach(b -> {
             ArrayList<BlockPos> placedNZs = new ArrayList<>();
             BuildingServerEvents.getBuildings().clear();
 buildingData.buildings.forEach(b -> {
-                BuildingPlacement building = BuildingUtils.getNewBuildingPlacement(b.building,
+                Building resolvedBuilding = b.building;
+                if (b.building instanceof com.solegendary.reignofnether.building.buildings.JsonBuilding jsonBuilding
+                        && b.upgradeLevel > 0) {
+                    com.solegendary.reignofnether.building.buildings.JsonBuilding variant =
+                            com.solegendary.reignofnether.building.buildings.JsonBuildingManager.getLevel(
+                                    jsonBuilding.getDefinitionId(), b.upgradeLevel);
+                    if (variant != null)
+                        resolvedBuilding = variant;
+                }
+                BuildingPlacement building = BuildingUtils.getNewBuildingPlacement(resolvedBuilding,
                     level,
                     b.originPos,
                     b.rotation,

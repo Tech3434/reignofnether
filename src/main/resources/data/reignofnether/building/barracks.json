@@ -7,6 +7,10 @@
   "addons": [ { "type": "reignofnether:garrison", "params": { "capacity": 3, "attackRange": 20 } } ],
   "upgrades": [
     { "name": { "en_us": "Barracks II" }, "maxHealth": 250,
+      "addons": [
+        { "type": "reignofnether:garrison", "params": { "capacity": 3, "attackRange": 20 } },
+        { "type": "reignofnether:night_source", "params": { "range": 16 } }
+      ],
       "cost": { "food": 0, "wood": 75, "ore": 0, "seconds": 15 } }
   ]
 }

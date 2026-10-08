@@ -3,7 +3,6 @@ package com.solegendary.reignofnether.building.buildings;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingDefinition;
 import com.solegendary.reignofnether.building.BuildingPlaceButton;
-import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.UpgradeSpec;
 import com.solegendary.reignofnether.building.addon.AddonSpec;
 import com.solegendary.reignofnether.building.addon.AddonTypes;
@@ -25,18 +24,28 @@ import java.util.List;
 
 /**
  * A building fully described by a {@link BuildingDefinition} (plan CONTENT_JSON_PLAN.md, phase 5):
- * the block layout comes from the definition's NBT structure, everything else from data. One instance
- * is created per datapack building definition.
+ * the block layout comes from the definition's NBT structure, everything else from data.
+ *
+ * <p>Each datapack definition produces one instance per upgrade level: level 0 is the base definition,
+ * level {@code n} is the base with upgrades {@code 1..n} applied cumulatively ({@link UpgradeSpec}).
+ * A placement switches to the matching variant when it is upgraded, so production, researches, addons,
+ * name, icon, max health and structure all follow the level automatically.
  */
 public class JsonBuilding extends ProductionBuilding {
 
     private final ResourceLocation definitionId;
     private final BuildingDefinition definition;
+    private final int level;
 
     public JsonBuilding(ResourceLocation definitionId, BuildingDefinition definition, ResourceCost cost) {
+        this(definitionId, definition, cost, 0);
+    }
+
+    public JsonBuilding(ResourceLocation definitionId, BuildingDefinition definition, ResourceCost cost, int level) {
         super(definition.structure().getPath(), cost, definition.isCapitol());
         this.definitionId = definitionId;
         this.definition = definition;
+        this.level = level;
 
         this.name = definition.name()
                 .flatMap(m -> java.util.Optional.ofNullable(m.get("en_us")))
@@ -57,7 +66,7 @@ public class JsonBuilding extends ProductionBuilding {
 
         int upgradeLevel = 1;
         for (UpgradeSpec upgrade : definition.upgrades())
-            this.productions.add(new JsonUpgradeProductionItem(upgradeLevel++, upgrade, this.icon),
+            this.productions.add(new JsonUpgradeProductionItem(upgradeLevel++, definitionId, upgrade, this.icon),
                     Keybindings.abilitySlot1);
 
         for (AddonSpec spec : definition.addons()) {
@@ -75,6 +84,10 @@ public class JsonBuilding extends ProductionBuilding {
         return definition;
     }
 
+    public int getLevel() {
+        return level;
+    }
+
     /** Resolves one of this building's production/research items by its {@link ProductionItem#getNetworkId()}. */
     @Nullable
     public ProductionItem getProductionItem(String networkId) {
@@ -82,35 +95,6 @@ public class JsonBuilding extends ProductionBuilding {
             if (item.getNetworkId().equals(networkId))
                 return item;
         return null;
-    }
-
-    @Override
-    public String getUpgradedStructureName(int upgradeLevel) {
-        if (upgradeLevel > 0 && upgradeLevel <= definition.upgrades().size()) {
-            UpgradeSpec spec = definition.upgrades().get(upgradeLevel - 1);
-            if (spec.structure().isPresent())
-                return spec.structure().get().getPath();
-        }
-        return super.getUpgradedStructureName(upgradeLevel);
-    }
-
-    @Override
-    public String getUpgradedName(BuildingPlacement placement) {
-        int level = placement.getUpgradeLevel();
-        if (level > 0 && level <= definition.upgrades().size())
-            return definition.upgrades().get(level - 1).displayName().orElseGet(this::getDisplayName);
-        return getDisplayName();
-    }
-
-    @Override
-    public double getMaxHealth(BuildingPlacement placement) {
-        int level = placement.getUpgradeLevel();
-        if (level > 0 && level <= definition.upgrades().size()) {
-            UpgradeSpec spec = definition.upgrades().get(level - 1);
-            if (spec.maxHealth().isPresent())
-                return spec.maxHealth().get();
-        }
-        return super.getMaxHealth(placement);
     }
 
     public String getFaction() {

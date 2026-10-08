@@ -106,10 +106,13 @@ cd ___temp
   датапак-реестра). `ProductionItem.getNetworkId()` — стабильный id для очереди/кнопок (`JsonProductionItem` →
   id определения, `ResearchProductionItem` → id исследования, `JsonUpgradeProductionItem` → `upgrade:<n>`).
   `BuildingUtils.getKeyString` — null-safe id для HUD.
-- **Апгрейды (частично):** `upgrades: [...]` в определении → `JsonUpgradeProductionItem` в очереди здания;
-  уровень хранится на `BuildingPlacement.upgradeLevel`, синкается `SET_UPGRADE_LEVEL`, структура меняется
-  `CHANGE_STRUCTURE`, сохраняется в `BuildingSave`. Пока поддержаны структура/имя/maxHealth; `production`/
-  `researches`/`addons`/способности по уровням — нет.
+- **Апгрейды (полностью):** `upgrades: [...]` → `JsonBuildingManager` строит `JsonBuilding`-**вариант на
+  уровень** (база + кумулятивные `UpgradeSpec`; поля переопределяются, `production`/`addons` — заменяются).
+  `JsonUpgradeProductionItem` в очереди здания по завершении переключает placement на вариант
+  (`BuildingPlacement.applyUpgradeBuilding`), поэтому производство/исследования/аддоны/способности/имя/
+  иконка/структура/maxHealth меняются автоматически. Уровень — `BuildingPlacement.upgradeLevel`, синк
+  `SET_UPGRADE_LEVEL`+`CHANGE_STRUCTURE`, сохраняется. Демо: `barracks.json` → «Barracks II» (+maxHealth,
+  +night_source — показывает замену аддонов).
 - Строится `structureName` (`.nbt`); оставлены `town_centre.nbt`/`barracks.nbt`.
 
 ### Аддоны зданий — `addons: [{type, params}]` (готово)
@@ -237,11 +240,12 @@ cd ___temp
 `CommandsServerEvents.resolveBuilding`), а `Building.getDisplayName()` даёт имя для HUD/портрета/порядка
 выделения — раньше у `JsonBuilding` имя было пустым, а `getKey(...).toString()` падал. Гейты зелёные.
 
-**Апгрейды зданий (первый срез):** `UpgradeSpec` + `BuildingDefinition.upgrades`; `JsonUpgradeProductionItem`
-в очереди здания поднимает `BuildingPlacement.upgradeLevel` (новое поле, `Building.getUpgradeLevel` читает его),
-меняет структуру/имя/maxHealth и синкается (`BuildingAction.SET_UPGRADE_LEVEL` + существующий `CHANGE_STRUCTURE`).
-Сейв/лоад и клиентский place прокидывают уровень. Демо: `barracks.json` → «Barracks II» (+maxHealth). Гейты
-зелёные; **`runClient` не проверялся**. Не идут по уровням: production/researches/addons/способности/иконка.
+**Апгрейды зданий (полностью):** `UpgradeSpec` + `BuildingDefinition.upgrades` (+`withUpgrade`); уровни
+материализуются как `JsonBuilding`-варианты (`JsonBuildingManager.getLevel/getOrCreateLevel`), placement
+переключается на вариант через `BuildingPlacement.applyUpgradeBuilding` (структура/имя/иконка/maxHealth/
+populationSupply/production/researches/addons — всё per-level). `JsonUpgradeProductionItem` в очереди здания,
+синк `BuildingAction.SET_UPGRADE_LEVEL` + `CHANGE_STRUCTURE`, уровень сохраняется. Демо: `barracks.json` →
+«Barracks II» (+maxHealth, +night_source — замена аддонов). Гейты зелёные; **`runClient` не проверялся**.
 
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)
@@ -265,13 +269,11 @@ cd ___temp
 1. ✅ **Аддоны доведены и обобщены:** `Addons.init()` регистрирует движковые типы `night_source`,
    `range_indicator`, `garrison`, `nether_converting`; добавлены lifecycle-хуки (`onBuildingBuilt`/
    `onBuildingTick`). Демо: `night_source` (town_centre), `garrison` (barracks).
-2. ✅ **Исследования у зданий** (`ResearchProductionItem`, демо `example_research`). ✅ **Апгрейды (1-й срез)**
-   (`UpgradeSpec`/`upgrades`, `JsonUpgradeProductionItem`, демо «Barracks II»; структура/имя/maxHealth/стоимость).
-   Дальше по зданиям:
-   - `upgrades` — довести per-level `production`/`researches`/`addons`/способности/иконку (нужны per-placement
-     переопределения шаблона `Building`, т.к. сейчас они общие на определение).
-   - ⚠ `JsonBuilding` без капитолий-специфики, которая была у `TownCentre` (`populationSupply`/`isCapitol`
-     задаются из определения, но аддонных фич нет).
+2. ✅ **Исследования у зданий** (`ResearchProductionItem`, демо `example_research`). ✅ **Апгрейды (полностью)**
+   (`UpgradeSpec`/`upgrades` + `JsonBuilding`-варианты на уровень; per-level производство/исследования/аддоны/
+   способности/имя/иконка/структура). Дальше по зданиям:
+   - ⚠ `JsonBuilding` без капитолий-специфики, которая была у `TownCentre` (аддонных фич сверх `populationSupply`/
+     `isCapitol` нет).
 3. ✅ **Ranged-юнит:** `equipment` + `projectile` (`ProjectileSpec`) в определении; спавн в
    `UnitMobMixin.performUnitRangedAttack`; демо `skeleton_unit` (лук+стрела) в казарме.
 4. **lang-дочистка:** `entity.reignofnether.villager_unit*` (используется тултипами `VillagerProd`/`VindicatorProd`);

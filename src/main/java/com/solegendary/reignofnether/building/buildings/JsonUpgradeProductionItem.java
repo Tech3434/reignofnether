@@ -27,25 +27,27 @@ import java.util.List;
 public class JsonUpgradeProductionItem extends ProductionItem {
 
     private final int targetLevel;
+    private final ResourceLocation definitionId;
     private final String displayName;
     @Nullable private final ResourceLocation icon;
-    @Nullable private final ResourceLocation structure;
 
-    public JsonUpgradeProductionItem(int targetLevel, UpgradeSpec spec, ResourceLocation fallbackIcon) {
+    public JsonUpgradeProductionItem(int targetLevel, ResourceLocation definitionId, UpgradeSpec spec, ResourceLocation fallbackIcon) {
         super(spec.cost()
                 .map(c -> ResourceCost.Research(c.food(), c.wood(), c.ore(), c.seconds()))
                 .orElseGet(() -> ResourceCost.Research(0, 0, 0, 0)));
         this.targetLevel = targetLevel;
+        this.definitionId = definitionId;
         this.displayName = spec.displayName().orElse("Upgrade " + targetLevel);
         this.icon = spec.icon().orElse(fallbackIcon);
-        this.structure = spec.structure().orElse(null);
         this.dupeRule = ProdDupeRule.DISALLOW_FOR_BUILDING;
         this.onComplete = (Level level, ProductionPlacement placement) -> {
             if (level.isClientSide())
                 return;
-            placement.setUpgradeLevel(targetLevel);
-            if (structure != null)
-                placement.changeStructure(structure.getPath());
+            JsonBuilding target = JsonBuildingManager.getOrCreateLevel(level, definitionId, targetLevel);
+            if (target != null)
+                placement.applyUpgradeBuilding(target, targetLevel);
+            else
+                placement.setUpgradeLevel(targetLevel);
             BuildingClientboundPacket.setUpgradeLevel(placement.originPos, targetLevel);
         };
     }

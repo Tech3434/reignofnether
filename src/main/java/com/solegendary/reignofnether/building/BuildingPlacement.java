@@ -1325,6 +1325,22 @@ public class BuildingPlacement {
         }
     }
 
+    /**
+     * Switches this placement to another level's building variant (upgrade): swaps the building instance
+     * (so production/researches/addons/abilities/name/icon follow), refreshes the block layout if the
+     * level uses a different structure, and rebuilds the ability buttons.
+     */
+    public void applyUpgradeBuilding(Building newBuilding, int newLevel) {
+        if (newBuilding == null || newBuilding == this.building)
+            return;
+        String oldStructure = this.building.structureName;
+        this.building = newBuilding;
+        this.upgradeLevel = newLevel;
+        if (!newBuilding.structureName.equals(oldStructure))
+            changeStructure(newBuilding.structureName);
+        updateButtons();
+    }
+
     public void setCharges(Ability ability, int cooldown) {
         charges.put(ability, cooldown);
     }

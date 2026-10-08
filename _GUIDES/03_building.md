@@ -132,14 +132,23 @@ this.productions.add(ProductionItems.X_UNIT, Keybindings.abilitySlot1);
 ```json
 "upgrades": [
   { "structure": "myns:barracks_ii", "name": { "en_us": "Barracks II" },
-    "maxHealth": 250, "cost": { "wood": 75, "seconds": 15 } }
+    "icon": "myns:textures/...", "maxHealth": 250, "populationSupply": 0,
+    "production": [ "myns:unit_a", "myns:unit_b" ],
+    "researches": [ "myns:research_a" ],
+    "addons": [ { "type": "reignofnether:night_source", "params": { "range": 16 } } ],
+    "cost": { "wood": 75, "seconds": 15 } }
 ]
 ```
 
-Список — цепочка уровней. Каждый элемент — `JsonUpgradeProductionItem` в очереди здания: покупается из UI,
-поднимает уровень placement на 1, меняет NBT-структуру (`structure`, путь без namespace), имя/иконку и
-`maxHealth`, синкается клиенту. Уровень хранится на `BuildingPlacement.upgradeLevel` и сохраняется
-(`BuildingSaveData`). **Пока не идут по уровням** `production`/`researches`/`addons`/способности.
+Список — цепочка уровней. Каждое **опциональное** поле переопределяет предыдущий уровень (не указано —
+наследуется); `structure`/`name`/`icon`/`maxHealth`/`populationSupply`/`production`/`researches`/`addons`
+можно менять. `production`/`addons` при указании **заменяют** список целиком (повторите нужные элементы).
+
+Механика: `JsonBuildingManager` строит по одному `JsonBuilding` на уровень (база + кумулятивно применённые
+апгрейды). Апгрейд — `JsonUpgradeProductionItem` в очереди здания; по завершении placement переключается на
+вариант следующего уровня (`BuildingPlacement.applyUpgradeBuilding`) — поэтому производство/исследования/
+аддоны/способности/имя/иконка меняются автоматически. Уровень хранится на `BuildingPlacement.upgradeLevel`,
+синкается (`SET_UPGRADE_LEVEL` + `CHANGE_STRUCTURE`) и сохраняется (`BuildingSaveData`).
 ⚠ Апгрейд-структура должна иметь **тот же габарит/фундамент**, что и базовая: границы placement (`minCorner`/
 `maxCorner`/`centrePos`) считаются один раз при постановке и при смене структуры не пересчитываются.
 

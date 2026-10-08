@@ -270,7 +270,7 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
                             this.isBuilt
                     );
                     case PLACE_JSON -> BuildingClientEvents.placeBuilding(
-                            JsonBuildingManager.getOrCreate(net.minecraft.client.Minecraft.getInstance().level, this.itemKey),
+                            JsonBuildingManager.getOrCreateLevel(net.minecraft.client.Minecraft.getInstance().level, this.itemKey, this.upgradeLevel),
                             this.buildingPos,
                             this.rotation,
                             this.ownerName,
@@ -286,7 +286,15 @@ public class BuildingClientboundPacket  implements RTSSimplePayload {
                         building.changeStructure(itemName);
                     }
                     case SET_UPGRADE_LEVEL -> {
-                        building.setUpgradeLevel(this.upgradeLevel);
+                        JsonBuilding target = building.getBuilding() instanceof JsonBuilding jb
+                                ? JsonBuildingManager.getOrCreateLevel(
+                                        net.minecraft.client.Minecraft.getInstance().level,
+                                        jb.getDefinitionId(), this.upgradeLevel)
+                                : null;
+                        if (target != null)
+                            building.applyUpgradeBuilding(target, this.upgradeLevel);
+                        else
+                            building.setUpgradeLevel(this.upgradeLevel);
                     }
                     case REMOVE -> {
                         BuildingClientEvents.removeBuilding(buildingPos);

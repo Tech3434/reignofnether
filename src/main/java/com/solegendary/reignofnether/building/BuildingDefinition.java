@@ -50,4 +50,26 @@ public record BuildingDefinition(
             UpgradeSpec.CODEC.listOf().optionalFieldOf("upgrades", List.of()).forGetter(BuildingDefinition::upgrades),
             ResearchCondition.CODEC.listOf().optionalFieldOf("requiredResearch", List.of()).forGetter(BuildingDefinition::requiredResearch)
     ).apply(instance, BuildingDefinition::new));
+
+    /**
+     * Applies one upgrade on top of this definition, overriding only the fields the upgrade specifies
+     * (see {@link UpgradeSpec}). {@code upgrades}/{@code isCapitol}/{@code cost} are never changed by an
+     * upgrade. Used to build the cumulative definition for a given level.
+     */
+    public BuildingDefinition withUpgrade(UpgradeSpec upgrade) {
+        return new BuildingDefinition(
+                upgrade.structure().orElse(structure),
+                upgrade.name().isPresent() ? upgrade.name() : name,
+                upgrade.icon().isPresent() ? upgrade.icon() : icon,
+                cost,
+                upgrade.maxHealth().orElse(maxHealth),
+                upgrade.populationSupply().orElse(populationSupply),
+                isCapitol,
+                upgrade.production().orElse(production),
+                upgrade.researches().orElse(researches),
+                upgrade.addons().isPresent() ? upgrade.addons().get() : addons,
+                upgrades,
+                requiredResearch
+        );
+    }
 }

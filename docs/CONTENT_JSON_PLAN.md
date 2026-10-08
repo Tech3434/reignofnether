@@ -80,11 +80,12 @@
   (`range`, `showOnlyWhenSelected`), `range_indicator` (`range`, `showOnlyWhenSelected`),
   `garrison` (`capacity`, `attackRange`, `externalAttackRangeBonus`, `entryX/Y/Z`, `exitX/Y/Z`),
   `nether_converting` (`maxRange`, `startingRange`). Автор фракции расширяет через `AddonTypes.register`.
-* **Апгрейды** (реализованы частично) — `upgrades: [ { "structure": "…", "name": { "en_us": "…" },
-  "icon": "…", "cost": {…}, "maxHealth": … }, … ]`. Апгрейд — шаг цепочки: `JsonUpgradeProductionItem`
-  в очереди здания, поднимает уровень placement, меняет структуру/имя/maxHealth и синкается клиенту
-  (`SET_UPGRADE_LEVEL` + `CHANGE_STRUCTURE`). **Пока НЕ идут по уровням:** `production`/`researches`/`addons`/
-  способности/иконка (нужны per-placement переопределения шаблона здания).
+* **Апгрейды** (реализованы) — `upgrades: [ { "structure": "…", "name": { "en_us": "…" }, "icon": "…",
+  "cost": {…}, "maxHealth": …, "populationSupply": …, "production": […], "researches": […],
+  "addons": […] }, … ]`. Каждое поле — необязательное переопределение предыдущего уровня. Уровни
+  материализуются как `JsonBuilding`-варианты (`JsonBuildingManager`); апгрейд в очереди здания
+  (`JsonUpgradeProductionItem`) переключает placement на вариант следующего уровня, поэтому
+  производство/исследования/аддоны/способности/имя/иконка меняются автоматически.
 
 ## Способности (класс — код, инстанс — JSON)
 
