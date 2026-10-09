@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 /**
  * Registry of data-driven ability classes: an author's ability class registers its {@code type} id and
@@ -27,11 +26,6 @@ public final class AbilityTypes {
 
     public static void register(ResourceLocation type, Factory factory) {
         TYPES.put(type, factory);
-    }
-
-    /** Convenience for a factory that also wants the supplied params. */
-    public static void register(ResourceLocation type, BiFunction<AbilitySpec, Unit, Ability> factory) {
-        TYPES.put(type, factory::apply);
     }
 
     @Nullable

@@ -78,11 +78,16 @@ cd ___temp
 - `inherits` (id другого определения) — зарезервировано, **разрешение наследования НЕ реализовано**.
 
 ### Способности — класс в коде + инстанс в JSON
-- Класс регистрируется в `AbilityTypes.register(id, factory)` (id = `type` в JSON).
+- Класс регистрируется в `AbilityTypes.register(id, factory)` (id = `type` в JSON). Движковые типы —
+  `ability/BuiltInAbilities.init()` (вызывается из конструктора мода); сейчас это `reignofnether:heal`
+  (`SimpleHealAbility`, params `amount`), демо у `skeleton_unit`. Автор фракции регистрирует свои так же.
+- Активная способность рассылается по `UnitAction`: `UnitActionItem` находит ability с `action == action`
+  и зовёт `use(...)`; поэтому активному типу нужна **своя константа `UnitAction`**.
 - `AbilitySpec` (Codec): `type` + `cooldown`/`mana`/`passive`/`requiredResearch`/`params`
   (`params` сейчас `Map<String,Double>` — только числа; расширять при необходимости).
-- В `UnitDefinitionRuntime.buildAbilities` инстансы создаются и кладутся в `unit.getAbilities()`.
-- Конкретные «боевые» классы способностей пишет автор фракции — в каркасе их нет.
+- В `UnitDefinitionRuntime.buildAbilities` инстансы создаются и кладутся в `unit.getAbilities()`
+  (из spec берутся только `cooldown`/`requiredResearch`).
+- Конкретные «боевые» классы способностей пишет автор фракции — в каркасе один пример (`heal`).
 
 ### Здания — `data/<ns>/building/<name>.json` (реестр `reignofnether:building`)
 ```json
@@ -264,6 +269,11 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 (`BuildingSelectorOptions`); «лишние здания» в тултипе группового выделения HUD теперь используют
 `Building.getDisplayName()` (у `JsonBuilding` раньше пропадали). Гейты зелёные.**`runClient` не проверялся**.
 
+**Data-driven способности (каркас):** `AbilityTypes.register` теперь вызывается —
+`ability/BuiltInAbilities.init()` (из конструктора мода) регистрирует движковый тип `reignofnether:heal`
+(`SimpleHealAbility`, params `amount`; действие `UnitAction.HEAL_SELF`). Демо — у `skeleton_unit`. Убрана
+неоднозначная перегрузка `AbilityTypes.register(BiFunction)`. Гейты зелёные.**`runClient` не проверялся**.
+
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)
 спавнит снаряд на сервере (owner, урон = `damage` или `getUnitAttackDamage()`), дефолт — стрела.
@@ -345,7 +355,7 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 - `faction/`: StartingUnit, Faction (Codec), FactionRegistries, FactionClientboundPacket, FactionClientEvents,
   FactionMenu, FactionCommand, FactionServerEvents.
 - `unit/`: UnitDefinition, UnitDefinitions, UnitDefinitionRuntime; `interfaces/DefinedUnit`.
-- `ability/`: AbilitySpec, AbilityTypes.
+- `ability/`: AbilitySpec, AbilityTypes, BuiltInAbilities, SimpleHealAbility.
 - `building/`: BuildingDefinition, BuildingDefinitions, UpgradeSpec, WorkerBuildMenu; `buildings/JsonBuilding`,
   `buildings/JsonBuildingManager`, `buildings/JsonUpgradeProductionItem`;   `production/JsonProductionItem`;
   `addon/AddonSpec`, `addon/AddonTypes`, `addon/Addons`, `addon/NightSourceBuildingAddon`,

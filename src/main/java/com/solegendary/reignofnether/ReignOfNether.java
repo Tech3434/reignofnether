@@ -67,6 +67,7 @@ public class ReignOfNether {
         GameRuleRegistrar.init();
         Buildings.init();
         Addons.init();
+        com.solegendary.reignofnether.ability.BuiltInAbilities.init();
         ProductionItems.init();
         MobEffectRegistrar.init(container);
         ParticleRegistrar.init(container);

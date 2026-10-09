@@ -156,6 +156,8 @@ public enum UnitAction {
 
     SET_ATTACK_COUNT, // for marauders
 
+    HEAL_SELF, // generic data-driven self-heal ability (abilities: reignofnether:heal)
+
     DEBUG1,
     DEBUG2
 }

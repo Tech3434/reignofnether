@@ -11,9 +11,16 @@
   `UnitDefinition` (и зданий); `UnitDefinitionRuntime.buildAbilities` создаёт инстанс;
 * **кодом** — статикой класса-юнита (описано ниже).
 
-⚠ **`AbilityTypes.register(...)` пока не вызывается нигде** — движковых типов способностей нет, поэтому
-`type` из JSON резолвится в `null`. Автор фракции регистрирует свои типы так же, как аддоны в
-`Addons.init()`: `AbilityTypes.register(id, spec -> new MyAbility(spec))`. До этого рабочий путь — код.
+⚠ Активная способность рассылается по {@link UnitAction}: серверный `UnitActionItem` находит
+способность, у которой `ability.action == action`, и вызывает `use(...)`. Поэтому у активной способности
+должна быть **своя константа `UnitAction`** (одна на класс способности). Пассивные эффекты (атрибуты)
+можно навешивать прямо в фабрике при создании.
+
+**Data-driven способности работают:** движковый тип `reignofnether:heal` (`SimpleHealAbility`,
+params `amount`) зарегистрирован в `BuiltInAbilities.init()` (вызывается из конструктора мода),
+демо — у `skeleton_unit`. Автор фракции регистрирует свои типы так же:
+`AbilityTypes.register(id, (spec, unit) -> new MyAbility(spec))`. Тип, который не зарегистрирован,
+даёт `null` и способность молча не добавляется.
 
 ## Устройство
 

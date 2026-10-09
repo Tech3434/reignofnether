@@ -89,6 +89,11 @@
 
 ## Способности (класс — код, инстанс — JSON)
 
+> **Реализовано (базово):** реестр `AbilityTypes` + движковый тип `reignofnether:heal`
+> (`SimpleHealAbility`, params `amount`), регистрация в `BuiltInAbilities.init()`; `UnitDefinitionRuntime.
+> buildAbilities` создаёт инстансы из `abilities` и кладёт в `Unit.getAbilities()`. Активная способность
+> требует своей константы `UnitAction` (по ней её находит `UnitActionItem`).
+
 Общие поля инстанса: `type` (id код-класса), `cooldown`, `mana`, `requiredResearch`,
 `heroLevel`/`rank` (для героев), `autocast`, `range`, `passive` (пассивный эффект — яд при ударе и
 т.п.), `submenu`/`row`/`col`. Классовый `Codec` добавляет свои параметры (напр. `poison_on_hit` →

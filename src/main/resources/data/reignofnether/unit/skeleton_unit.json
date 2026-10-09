@@ -19,6 +19,7 @@
     "reignofnether:magic_damage_resist": 0
   },
   "projectile": { "entity": "minecraft:arrow", "velocity": 1.6, "damage": 3 },
+  "abilities": [ { "type": "reignofnether:heal", "cooldown": 200, "params": { "amount": 15 } } ],
   "cost": { "food": 60, "wood": 0, "ore": 0, "seconds": 15 },
   "population": 1
 }
