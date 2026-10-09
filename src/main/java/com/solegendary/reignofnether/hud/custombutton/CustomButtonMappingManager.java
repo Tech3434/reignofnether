@@ -38,6 +38,7 @@ public class CustomButtonMappingManager implements ResourceManagerReloadListener
 			} else {
 				Map<ResourceLocation, List<ResourceLocation>> entity_mappings = new HashMap<>();
 				Map<ResourceLocation, List<ResourceLocation>> building_mappings = new HashMap<>();
+				Map<ResourceLocation, List<ResourceLocation>> unit_definition_mappings = new HashMap<>();
 				for (Map.Entry<ResourceLocation, Resource> entry : resources.entrySet()) {
 					try (Reader reader = entry.getValue().openAsReader()) {
 						JsonElement jsonElement = JsonParser.parseReader(reader);
@@ -46,12 +47,13 @@ public class CustomButtonMappingManager implements ResourceManagerReloadListener
 						result.resultOrPartial(error ->
 							ReignOfNether.LOGGER.error("Load mapping file error: {}", error)
 						).ifPresent(data -> {
-							entity_mappings.putAll(data.entities);
-							building_mappings.putAll(data.buildings);
+							entity_mappings.putAll(data.entities());
+							building_mappings.putAll(data.buildings());
+							unit_definition_mappings.putAll(data.unitDefinitions());
 						});
 					}
 				}
-				CustomButtonServerEvents.registerButtons(new MappingData(entity_mappings, building_mappings));
+				CustomButtonServerEvents.registerButtons(new MappingData(entity_mappings, building_mappings, unit_definition_mappings));
 			}
 		} catch (Exception e) {
 			ReignOfNether.LOGGER.info("Mapping file not found: {}", MAPPING_PATH);
@@ -60,7 +62,8 @@ public class CustomButtonMappingManager implements ResourceManagerReloadListener
 	
 	public record MappingData(
 		Map<ResourceLocation, List<ResourceLocation>> entities,
-		Map<ResourceLocation, List<ResourceLocation>> buildings
+		Map<ResourceLocation, List<ResourceLocation>> buildings,
+		Map<ResourceLocation, List<ResourceLocation>> unitDefinitions
 	) {
 		public static final Codec<Map<ResourceLocation, List<ResourceLocation>>> MAPPING_CODEC = Codec.unboundedMap(
 			ResourceLocation.CODEC,
@@ -71,8 +74,9 @@ public class CustomButtonMappingManager implements ResourceManagerReloadListener
 		// below refers to MappingData::entities / MappingData::buildings by method reference, so it
 		// is not part of a static-initialisation cycle. RecordCodecBuilder already defers building.
 		public static final Codec<MappingData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			MAPPING_CODEC.fieldOf("entities").forGetter(MappingData::entities),
-			MAPPING_CODEC.fieldOf("buildings").forGetter(MappingData::buildings)
+			MAPPING_CODEC.optionalFieldOf("entities", Map.of()).forGetter(MappingData::entities),
+			MAPPING_CODEC.optionalFieldOf("buildings", Map.of()).forGetter(MappingData::buildings),
+			MAPPING_CODEC.optionalFieldOf("unit_definitions", Map.of()).forGetter(MappingData::unitDefinitions)
 		).apply(instance, MappingData::new));
 	}
 }

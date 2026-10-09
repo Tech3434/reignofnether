@@ -16,7 +16,8 @@ public class CustomButtonClientEvents {
 	
 	public static final Map<ResourceLocation, CustomButton> customButtons = new HashMap<>();
 	public static final Map<EntityType<?>, ArrayList<ResourceLocation>> entityMappings = new HashMap<>();
-	public static final Map<Building, ArrayList<ResourceLocation>> buildingMappings = new HashMap<>();
+	public static final Map<ResourceLocation, ArrayList<ResourceLocation>> buildingMappings = new HashMap<>();
+	public static final Map<ResourceLocation, ArrayList<ResourceLocation>> unitDefinitionMappings = new HashMap<>();
 	public static final ArrayList<ResourceLocation> alwaysRenderButtons = new ArrayList<>();
 //	public static final Map<ResourceLocation, CustomButton> customFrozenButtons = new HashMap<>();
 	
@@ -29,6 +30,7 @@ public class CustomButtonClientEvents {
 		alwaysRenderButtons.clear();
 		entityMappings.clear();
 		buildingMappings.clear();
+		unitDefinitionMappings.clear();
 	}
 	
 	
@@ -42,9 +44,16 @@ public class CustomButtonClientEvents {
 		}
 	}
 	
+	/** Keyed by full building id: code registry key or datapack definition id. */
 	public static void registerBuildingMappings(Map<ResourceLocation, List<ResourceLocation>> buttons) {
 		for (ResourceLocation building : buttons.keySet()) {
-			buildingMappings.put(ReignOfNetherRegistries.BUILDING.get(building), (ArrayList<ResourceLocation>) buttons.get(building));
+			buildingMappings.put(building, new ArrayList<>(buttons.get(building)));
+		}
+	}
+	
+	public static void registerUnitDefinitionMappings(Map<ResourceLocation, List<ResourceLocation>> buttons) {
+		for (ResourceLocation unitDefinition : buttons.keySet()) {
+			unitDefinitionMappings.put(unitDefinition, new ArrayList<>(buttons.get(unitDefinition)));
 		}
 	}
 	

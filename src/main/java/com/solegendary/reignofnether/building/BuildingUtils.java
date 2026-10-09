@@ -169,6 +169,21 @@ public class BuildingUtils {
         return building.name != null ? building.name : building.structureName;
     }
 
+    /**
+     * The building's id as a {@link net.minecraft.resources.ResourceLocation}: its code registry key,
+     * or the datapack definition id for a JSON building. Custom buildings have none (null).
+     */
+    public static net.minecraft.resources.ResourceLocation getResourceId(@Nullable Building building) {
+        if (building == null)
+            return null;
+        net.minecraft.resources.ResourceLocation key = com.solegendary.reignofnether.api.ReignOfNetherRegistries.BUILDING.getKey(building);
+        if (key != null)
+            return key;
+        if (building instanceof com.solegendary.reignofnether.building.buildings.JsonBuilding jsonBuilding)
+            return jsonBuilding.getDefinitionId();
+        return null;
+    }
+
     // note originPos may be an air block
     public static BuildingPlacement findBuilding(boolean isClientSide, BlockPos pos) {
         List<BuildingPlacement> buildings = isClientSide ? BuildingClientEvents.getBuildings() : BuildingServerEvents.getBuildings();

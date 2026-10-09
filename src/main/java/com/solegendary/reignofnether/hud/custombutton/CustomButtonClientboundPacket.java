@@ -89,7 +89,7 @@ public class CustomButtonClientboundPacket  implements RTSSimplePayload {
 				buf.readBoolean(),
 				buf.readBoolean()
 			);
-			case 2, 3, 4 -> new CustomButtonClientboundPacket(
+			case 2, 3, 4, 5 -> new CustomButtonClientboundPacket(
 				type,
 				null,
 				null,
@@ -124,7 +124,7 @@ public class CustomButtonClientboundPacket  implements RTSSimplePayload {
 				buf.writeBoolean(this.lightUpOnHover);
 				buf.writeBoolean(this.isEnabled);
 			}
-			case 2, 3, 4 -> writeMappings(buf, this.mappings);
+			case 2, 3, 4, 5 -> writeMappings(buf, this.mappings);
 		}
 	}
 
@@ -176,6 +176,7 @@ public class CustomButtonClientboundPacket  implements RTSSimplePayload {
 			case 2 -> CustomButtonClientEvents.registerEntityMappings(this.mappings);
 			case 3 -> CustomButtonClientEvents.registerBuildingMappings(this.mappings);
 			case 4 -> CustomButtonClientEvents.registerAlwaysRenderButtons(this.mappings.get(ALWAYS_KEY));
+			case 5 -> CustomButtonClientEvents.registerUnitDefinitionMappings(this.mappings);
 		}
 	}
 }

@@ -87,6 +87,9 @@
   материализуются как `JsonBuilding`-варианты (`JsonBuildingManager`); апгрейд в очереди здания
   (`JsonUpgradeProductionItem`) переключает placement на вариант следующего уровня, поэтому
   производство/исследования/аддоны/способности/имя/иконка меняются автоматически.
+* **Кастомные кнопки** (реализовано) — отдельный датапак `rts_buttons` + маппинг
+  `data/<ns>/reignofnether/custom_button_mappings.json`; привязываются к зданиям по id (код или JSON) и к
+  юнитам по id определения (`unit_definitions`) или телу (`entities`). Гайд `_GUIDES/10_custom_buttons.md`.
 
 ## Способности (класс — код, инстанс — JSON)
 

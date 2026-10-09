@@ -318,6 +318,13 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 показывал имя ванильного тела (`Skeleton`) вместо `UnitDefinition.name` (напр. «Skeleton Marksman»).
 `MiscUtil.getSimpleEntityName` теперь берёт имя из resolved-определения. Гейты зелёные.**`runClient` не проверялся**.
 
+**`rts_buttons` для JSON-контента:** маппинг кнопок больше не привязан к код-реестру зданий/телам.
+`data/<ns>/reignofnether/custom_button_mappings.json` получил секцию `unit_definitions`; `buildings`
+ключуется по **id** (код-ключ или id определения JSON), юниты — сначала по id определения
+(`unit_definitions`), затем по телу (`entities`). Сервер/клиент/пакет переведены на id-ключи
+(`BuildingUtils.getResourceId`, `CustomButtonClientEvents.unitDefinitionMappings`, новый case 5 пакета).
+Гайд — `_GUIDES/10_custom_buttons.md`. Гейты зелёные.**`runClient` не проверялся**.
+
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)
 спавнит снаряд на сервере (owner, урон = `damage` или `getUnitAttackDamage()`), дефолт — стрела.

@@ -1462,7 +1462,12 @@ public class HudClientEvents {
         }
 
         if (hudSelectedEntity != null) {
-            ArrayList<ResourceLocation> buttons = CustomButtonClientEvents.entityMappings.get(hudSelectedEntity.getType());
+            ArrayList<ResourceLocation> buttons = null;
+            if (hudSelectedEntity instanceof com.solegendary.reignofnether.unit.interfaces.DefinedUnit defined
+                    && defined.getUnitDefinitionId() != null)
+                buttons = CustomButtonClientEvents.unitDefinitionMappings.get(defined.getUnitDefinitionId());
+            if (buttons == null)
+                buttons = CustomButtonClientEvents.entityMappings.get(hudSelectedEntity.getType());
             if (buttons != null)
                 for (ResourceLocation rl : buttons) {
                     CustomButton button = CustomButtonClientEvents.getButton(rl);
@@ -1472,7 +1477,8 @@ public class HudClientEvents {
         }
 
         if (hudSelectedPlacement != null) {
-            ArrayList<ResourceLocation> buttons = CustomButtonClientEvents.buildingMappings.get(hudSelectedPlacement.getBuilding());
+            ArrayList<ResourceLocation> buttons = CustomButtonClientEvents.buildingMappings.get(
+                    com.solegendary.reignofnether.building.BuildingUtils.getResourceId(hudSelectedPlacement.getBuilding()));
             if (buttons != null) 
                 for (ResourceLocation rl : buttons) {
                     CustomButton button = CustomButtonClientEvents.getButton(rl);

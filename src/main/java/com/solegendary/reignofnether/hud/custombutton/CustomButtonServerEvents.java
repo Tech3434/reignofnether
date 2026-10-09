@@ -32,7 +32,8 @@ public class CustomButtonServerEvents {
 	
 	public static final Map<ResourceLocation, CustomButton> customButtons = new HashMap<>();
 	public static final Map<EntityType<?>, List<ResourceLocation>> entityMappings = new HashMap<>();
-	public static final Map<Building, List<ResourceLocation>> buildingMappings = new HashMap<>();
+	public static final Map<ResourceLocation, List<ResourceLocation>> buildingMappings = new HashMap<>();
+	public static final Map<ResourceLocation, List<ResourceLocation>> unitDefinitionMappings = new HashMap<>();
 	public static final ArrayList<ResourceLocation> alwaysRenderButtons = new ArrayList<>();
 //	public static final Map<ResourceLocation, CustomButton> customFrozenButtons = new HashMap<>();
 	
@@ -43,11 +44,13 @@ public class CustomButtonServerEvents {
 	public static void registerButtons(CustomButtonMappingManager.MappingData data) {
 		entityMappings.clear();
 		buildingMappings.clear();
+		unitDefinitionMappings.clear();
 		alwaysRenderButtons.clear();
 		
 		Set<ResourceLocation> allocated = new HashSet<>(customButtons.size());
 		Map<ResourceLocation, List<ResourceLocation>> entityMappings = new HashMap<>();
 		Map<ResourceLocation, List<ResourceLocation>> buildingMappings = new HashMap<>();
+		Map<ResourceLocation, List<ResourceLocation>> unitDefinitionMappings = new HashMap<>();
 		
 		for (Map.Entry<ResourceLocation, List<ResourceLocation>> entry : data.entities().entrySet()) {
 			EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(entry.getKey());
@@ -57,21 +60,30 @@ public class CustomButtonServerEvents {
 				if (!list.isEmpty()) {
 					CustomButtonServerEvents.entityMappings.put(entityType, list);
 					allocated.addAll(list);
-					entityMappings.put(entry.getKey(), entry.getValue());
+					entityMappings.put(entry.getKey(), list);
 				}
 			}
 		}
 		
+		// buildings/units are keyed by their full id (code registry key or datapack definition id), so
+		// data-driven content can attach custom buttons too; the client resolves them by the same id.
 		for (Map.Entry<ResourceLocation, List<ResourceLocation>> entry : data.buildings().entrySet()) {
-			Building building = ReignOfNetherRegistries.BUILDING.get(entry.getKey());
-			if (building != null) {
-				ArrayList<ResourceLocation> list = new ArrayList<>(entry.getValue());
-				list.retainAll(customButtons.keySet());
-				if (!list.isEmpty()) {
-					CustomButtonServerEvents.buildingMappings.put(building, list);
-					allocated.addAll(list);
-					buildingMappings.put(entry.getKey(), entry.getValue());
-				}
+			ArrayList<ResourceLocation> list = new ArrayList<>(entry.getValue());
+			list.retainAll(customButtons.keySet());
+			if (!list.isEmpty()) {
+				CustomButtonServerEvents.buildingMappings.put(entry.getKey(), list);
+				allocated.addAll(list);
+				buildingMappings.put(entry.getKey(), list);
+			}
+		}
+		
+		for (Map.Entry<ResourceLocation, List<ResourceLocation>> entry : data.unitDefinitions().entrySet()) {
+			ArrayList<ResourceLocation> list = new ArrayList<>(entry.getValue());
+			list.retainAll(customButtons.keySet());
+			if (!list.isEmpty()) {
+				CustomButtonServerEvents.unitDefinitionMappings.put(entry.getKey(), list);
+				allocated.addAll(list);
+				unitDefinitionMappings.put(entry.getKey(), list);
 			}
 		}
 		
@@ -80,7 +92,7 @@ public class CustomButtonServerEvents {
 				alwaysRenderButtons.add(button);
 			}
 		}
-		syncCustomButtons(entityMappings, buildingMappings);
+		syncCustomButtons(entityMappings, buildingMappings, unitDefinitionMappings);
 	}
 	
 	@SubscribeEvent
@@ -102,7 +114,9 @@ public class CustomButtonServerEvents {
 		}
 	}
 	
-	private static void syncCustomButtons(Map<ResourceLocation, List<ResourceLocation>> entityMappings, Map<ResourceLocation, List<ResourceLocation>> buildingMappings) {
+	private static void syncCustomButtons(Map<ResourceLocation, List<ResourceLocation>> entityMappings,
+										   Map<ResourceLocation, List<ResourceLocation>> buildingMappings,
+										   Map<ResourceLocation, List<ResourceLocation>> unitDefinitionMappings) {
 		PacketHandler.send(PacketHandler.allPlayers(), new CustomButtonClientboundPacket(
 			(byte) 0,
 			null,
@@ -170,6 +184,20 @@ public class CustomButtonServerEvents {
 			0,
 			0,
 			Map.of(CustomButtonClientboundPacket.ALWAYS_KEY, alwaysRenderButtons),
+			false,
+			false,
+			false,
+			false
+		));
+		PacketHandler.send(PacketHandler.allPlayers(), new CustomButtonClientboundPacket(
+			(byte) 5,
+			null,
+			null,
+			null,
+			0,
+			0,
+			0,
+			unitDefinitionMappings,
 			false,
 			false,
 			false,

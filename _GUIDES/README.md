@@ -4,7 +4,8 @@
 > `00_обзор.md` (карта, реестры, data-driven), `01_faction.md`, `02_unit.md` (JSON-юнит + ranged),
 > `03_building.md` (JSON-здание, производство/исследования/аддоны/апгрейды/флаги), `04_ability.md`
 > (код-класс + `AbilitySpec`), `05_hero.md`, `06_production.md` (JSON-предметы), `07_research.md`,
-> `08_commands.md`, `09_assets.md` (data-driven ассеты). Сверяйте с кодом при расхождении.
+> `08_commands.md`, `09_assets.md` (data-driven ассеты), `10_custom_buttons.md` (`rts_buttons`). Сверяйте с
+> кодом при расхождении.
 > Актуальное состояние/изменения ванили — `docs/STATUS.md`, `docs/HANDOFF.md`, `docs/VANILLA_CHANGES.md`.
 
 Пошаговые инструкции для будущих агентов и для владельца ветки. Каждый файл самодостаточен:
@@ -22,6 +23,7 @@
 | [`07_research.md`](07_research.md) | исследования и гейтирование способностей |
 | [`08_commands.md`](08_commands.md) | команды и аргумент-селекторы |
 | [`09_assets.md`](09_assets.md) | ассеты и локализация: что нужно для юнита и для здания |
+| [`10_custom_buttons.md`](10_custom_buttons.md) | кастомные HUD-кнопки (`rts_buttons`): привязка к JSON-зданиям/юнитам |
 
 ## Порядок при добавлении контента
 
