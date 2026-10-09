@@ -444,7 +444,7 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 
 ## 9. Сессия 2026-10-09 (аудит JSON-рантайма + каркас)
 
-Ветка `wip/stage-d-deletions`; коммиты `21f3f1eb`…`a15532f8` (10 шт). Гейты `compileJava`/
+Ветка `wip/stage-d-deletions`; коммиты `21f3f1eb`…`66d22e2d` (12 шт). Гейты `compileJava`/
 `validateMixins`/`runData` зелёные после каждого; `runClient` по-прежнему не запускался.
 
 ### 9.1 Найденные и исправленные баги (важно — рантайм JSON-контента)
@@ -477,6 +477,9 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
    стоимость здания (у демо-зданий её нет → 0), а не юнита; теперь берёт `cost`/`population` из
    `UnitDefinition`. `isTypeOf` у JSON-зданий сравнивает по `definitionId` (апгрейд больше не ломает
    проверки «есть готовое такое здание»). Убраны полоски здоровья над юнитами (по плану).
+
+7. **У юнитов не было способностей на клиенте** (`66d22e2d`). Сервер синкает только кулдауны/заряды «по индексу», а клиент abilities не строил → кнопки способностей у JSON-юнитов не появлялись.
+   Теперь `UnitClientEvents.onEntityJoin` строит их из синхронизированного определения (если список ещё пуст).
 
 ### 9.2 Новые возможности каркаса
 
