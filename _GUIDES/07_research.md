@@ -21,7 +21,7 @@
 {
   "name": "research.reignofnether.example",          // ключ локализации (или литерал)
   "icon": "reignofnether:textures/icons/items/shovel.png",
-  "type": "unlock",                                   // "unlock" (по умолчанию) | "attribute_boost"
+  "type": "unlock",                                   // "unlock" (по умолч.) | "attribute_boost" | "equip"
   "cost": { "food": 0, "wood": 100, "ore": 0, "seconds": 20 },  // необязательно = бесплатно
   "prerequisites": [
     { "research": "reignofnether:base", "invert": false }        // invert=true → требуется ОТСУТСТВИЕ
@@ -36,7 +36,8 @@
 * `icon` — полный путь текстуры (`<ns>:textures/...`); для ванили, напр.
   `minecraft:textures/item/iron_pickaxe.png`.
 * `attributes[].attribute` — id ванильного или модового атрибута.
-* `attributes[].unit` — id типа сущности, если буст только для одного юнита.
+* `attributes[].unit` — id юнита, если буст только для одного: id типа сущности (для ванильного тела)
+  **или** id определения юнита (`reignofnether:skeleton_unit`) для data-driven юнитов — матчится и то, и другое.
 
 ## Гейт (универсальный, с инверсией)
 
@@ -57,10 +58,14 @@ ResearchUtils.meetsClient(ownerName, conditions);
 new DigAbility(UnitAction.DIG_BLOCK)
     .requireResearch(ResearchCondition.of(ResourceLocation.parse("myfaction:toolsmith")));
 
-Buildings.BARRACKS.requireResearch(
+// у код-здания (свой class Building):
+myBuilding.requireResearch(
     ResearchCondition.of(ResourceLocation.parse("myfaction:barracks")),
     ResearchCondition.not(ResourceLocation.parse("myfaction:barracks_banned")));
 ```
+
+У JSON-зданий/юнитов условия задаются в определении: `"requiredResearch": [ { "research": "myns:x", "invert": false } ]`
+(здания, юниты, способности).
 
 Проверки выполняются **на сервере** (использование способности, старт производства, постановка
 здания) и в HUD (кнопки серые, пока условие не выполнено). GM-команды постановки здания гейт
@@ -71,6 +76,26 @@ Buildings.BARRACKS.requireResearch(
 `type = "attribute_boost"` накладывает модификаторы на юнитов владельца
 (`ResearchAttributeApplier`): при спавне юнита, при `grant/revoke/clear` и снимаются при
 поражении/`resetRTS`. Модификатор именован по id исследования → идемпотентно.
+
+## Экипировка (`type = "equip"`)
+
+Исследование-выдача снаряжения: по завершении владелец получает предметы у своих подходящих юнитов
+(`ResearchEquipApplier`; идемпотентно, только сервер; `revoke` снаряжение не снимает).
+
+```json
+{
+  "name": "research.myns.ironswords",
+  "icon": "minecraft:textures/item/iron_sword.png",
+  "type": "equip",
+  "equip": [
+    { "item": "minecraft:iron_sword", "slot": "mainhand", "unit": "myns:footman" },
+    { "item": "minecraft:iron_helmet", "slot": "head" }
+  ]
+}
+```
+
+* `equip[].item` — id предмета; `slot` — `mainhand` (по умолч.) / `offhand` / `head` / `chest` / `legs` / `feet`.
+* `equip[].unit` — необязательно: id типа сущности или id определения юнита.
 
 ## Команды (право 2)
 
@@ -99,5 +124,5 @@ Buildings.BARRACKS.requireResearch(
 ## Что ещё не сделано
 
 * **HUD-панель исследований** (дерево, стоимость, статус) — фаза 5 плана (статус уже есть).
-* Генератор ресурсов — форма заложена (`ResourceGenerator` + `ResourceGenerators.produce`),
-  конкретные генераторы пишет автор фракции.
+* Генератор ресурсов — сделан как аддон здания `reignofnether:resource_generator`
+  (`{ "resource": "wood", "amount": 5, "interval": 100, "capacity": 500 }`, см. `03_building.md`).

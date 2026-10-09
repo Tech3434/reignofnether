@@ -28,13 +28,20 @@
   "projectile": { "entity": "minecraft:arrow", "velocity": 1.6, "damage": 3, "inaccuracy": 1.0 },
   "cost": { "food": 60, "wood": 0, "ore": 0, "seconds": 15 },
   "population": 1,
+  "carryCapacity": 100,
   "requiredResearch": [ { "research": "myns:x", "invert": false } ],
   "abilities": [ { "type": "myns:some_ability", "cooldown": 100 } ]
 }
 ```
 
 * `role` строит goals (`UnitMobMixin.initialiseGoals`): melee → melee-goals; ranged → `UnitBowAttackGoal`
-  (+ `RangedAttackBuildingGoal`); worker → сбор/стройка; garrison — по флагу.
+  (+ `RangedAttackBuildingGoal`); worker → сбор/стройка; garrison — по флагу. Роль/goals берутся из
+  **resolved** определения, т.е. `inherits` влияет на роль (см. ниже).
+* Флаги из `flags` применяются: `holdPosition` → удержание позиции; `canGather` → `GatherResourcesGoal`
+  (worker получает его всегда); `canBuild` → `BuildRepairGoal` + `ExploreBuildLocationGoal`; `canGarrison`
+  → `GarrisonGoal`.
+* `carryCapacity` (worker) — сколько ресурсов воркер несёт до автодропа (по умолчанию 100 для `worker`,
+  0 иначе); порог автодропа — половина ёмкости (дефолт 50).
 * `equipment` — id предмета в главную руку при спавне (нужно ranged-юниту с луком: goal требует оружие в руке).
 * `projectile` (для `role: ranged`) — `entity` (id сущности-снаряда), `velocity` (по умолч. 1.6),
   `damage` (по умолч. −1 = урон юнита `getUnitAttackDamage()`), `inaccuracy`. Спавнится в

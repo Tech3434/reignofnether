@@ -20,8 +20,11 @@
 
 ## 1. Файл структуры
 
-Сохранить постройку Structure Block'ом в
-`src/main/resources/data/reignofnether/structures/<structure_name>.nbt`.
+Сохранить постройку Structure Block'ом в `<assets|data>/<namespace>/structures/<structure_name>.nbt`
+(сервер читает из `data/`, клиент — из `assets/`, поэтому для игры нужны обе копии). Поле `structure`
+JSON-здания — полный id `<namespace>:<structure_name>`: namespace может быть своим (`myns:barracks` →
+`assets/myns/structures/barracks.nbt`). Отсутствующий `.nbt` теперь даёт лог об ошибке и пустой список
+блоков (без NPE при постановке).
 
 Из содержимого выводится всё остальное:
 
@@ -134,9 +137,13 @@ this.productions.add(ProductionItems.X_UNIT, Keybindings.abilitySlot1);
 
 У data-driven здания (`JsonBuilding`) состав берётся из определения:
 ```json
-"production": [ "myns:some_unit" ],
+"production": [ "myns:some_unit", { "unit": "myns:other_unit", "costOverride": { "food": 30, "seconds": 8 } } ],
 "researches": [ "myns:some_research" ]
 ```
+
+Цена и население юнита по умолчанию берутся из его `UnitDefinition` (`cost`/`population`). Объектная
+форма `{ "unit": …, "costOverride": {…} }` задаёт **свою** цену для этого здания (заменяет целиком,
+это `ProductionSpec`).
 
 `production` → `JsonProductionItem` (спавн юнита по id определения), `researches` → `ResearchProductionItem`
 (общая очередь с производством, отмена с возвратом, по завершении — грант исследования владельцу).
@@ -205,7 +212,10 @@ AddonTypes.register(ResourceLocation.fromNamespaceAndPath("myns", "my_addon"),
 Движковые типы (`Addons.init()`): `reignofnether:night_source` (`range`/`showOnlyWhenSelected`),
 `reignofnether:range_indicator` (`range`, `showOnlyWhenSelected`), `reignofnether:garrison`
 (`capacity`, `attackRange`, `externalAttackRangeBonus`, `entryX/Y/Z`, `exitX/Y/Z`),
-`reignofnether:nether_converting` (`maxRange`, `startingRange`). Свой аддон при необходимости может
+`reignofnether:nether_converting` (`maxRange`, `startingRange`),
+`reignofnether:resource_generator` (`resource`/`amount`/`interval`/`capacity` — пассивно даёт ресурс
+владельцу, план H.9). **`params` типизированные** (число или строка, как у способностей), поэтому
+`"resource": "wood"` работает. Свой аддон при необходимости может
 реализовать lifecycle-хуки `BuildingAddon.onBuildingBuilt`/`onBuildingTick` (вызываются
 `Building.onBuilt`/`Building.tick`).
 

@@ -439,3 +439,69 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 (каркас зданий) · `b45f617c` (меню воркера) · `de6c42ed` (поток размещения) · `bc824899`
 (`town_centre.json`) · `d04f3a3e`/`821584e8` (удаление код-зданий) · `1712d129` (тик юнитов) ·
 `ec652683` (состояние героя).
+
+---
+
+## 9. Сессия 2026-10-09 (аудит JSON-рантайма + каркас)
+
+Ветка `wip/stage-d-deletions`; коммиты `21f3f1eb`…`a15532f8` (10 шт). Гейты `compileJava`/
+`validateMixins`/`runData` зелёные после каждого; `runClient` по-прежнему не запускался.
+
+### 9.1 Найденные и исправленные баги (важно — рантайм JSON-контента)
+
+Это первый проход, который системно искал регрессии от удаления код-классов героев/зданий. Всё
+найдено чтением (без `runClient`), исправления компилируются, но **в игре не проверялись**.
+
+1. **JSON-здание исчезало сразу после постановки** (`21f3f1eb`). У JSON-здания не был заполнен
+   `startingBlockTypes` (его выводили только код-здания и `CustomBuilding`), поэтому новый placement
+   ничего не ставил в `blockPlaceQueue`, а `BuildingPlacement.shouldBeDestroyed()` при
+   `getBlocksPlaced() <= 0` на первом серверном тике удалял здание. Теперь нижний слой NBT задаёт
+   `startingBlockTypes` (по образцу `CustomBuilding`).
+2. **Воркер не мог добывать вообще** (`6c1ac8b9`). `ron$maxResources` нигде не присваивался (=0),
+   `Unit.atMaxResources` = «сумма ≥ 0» всегда true → `GatherResourcesGoal.isGathering()` всегда false.
+   Добавлено поле `carryCapacity` в `UnitDefinition` (дефолт 100 для worker; у удалённого
+   `VillagerUnit` было 100), `getMaxResources()` выводится из определения, порог автодропа = половина
+   ёмкости (дефолт 50 — как было).
+3. **NPE в подсчёте населения/HUD** (`32045f99`). `Unit.getCost()` возвращал null у data-driven
+   юнитов, а `unit.getCost().population` читается в `UnitServerEvents/UnitClientEvents`,
+   `UnitSyncClientboundPacket`, `CursorClientEvents`, `ObserverPlayerDisplay`. Теперь стоимость берётся
+   из определения (никогда не null).
+4. **Инертные юниты после перезахода** (`b4cee1db`). На сервере `initialiseGoals()` звался только при
+   спавне; загруженный из сейва юнит не имел целей, а `tickWorker` затем падал бы. Теперь `initialiseGoals`
+   зовётся в конце `readAdditionalSaveData` (идемпотентно). Заодно null-guard'ы для опциональных
+   worker-целей (`canGather` без `canBuild` и т.п.).
+5. **`inherits` игнорировался для роли/целей** (`a15532f8`). `ron$role()` и `initialiseGoals()` читали
+   определение из реестра напрямую, а не через `UnitDefinitions.resolve`, поэтому `skeleton_marksman`
+   (наследует ranged-роль у `skeleton_unit`) становился melee с melee-целями.
+6. **Произведённые юниты были бесплатны и мгновенны** (`f30d926f`). `JsonProductionItem` использовал
+   стоимость здания (у демо-зданий её нет → 0), а не юнита; теперь берёт `cost`/`population` из
+   `UnitDefinition`. `isTypeOf` у JSON-зданий сравнивает по `definitionId` (апгрейд больше не ломает
+   проверки «есть готовое такое здание»). Убраны полоски здоровья над юнитами (по плану).
+
+### 9.2 Новые возможности каркаса
+
+- **`costOverride`** (`cb00550d`): `production: [ "id", { "unit": "id", "costOverride": { … } } ]`
+  (`ProductionSpec`, either-кодек как у `AbilityParam`).
+- **`reignofnether:resource_generator`** (`f30d926f`, план H.9): аддон здания
+  `{ "resource": "wood", "amount": 5, "interval": 100, "capacity": 500 }`. `AddonSpec.params`
+  стали типизированными (число или строка), как у способностей.
+- **`type: equip` у исследований** (`725e89f7`): `equip: [ { "item": "…", "slot": "mainhand", "unit": "…" } ]`
+  выдаёт снаряжение юнитам владельца (`ResearchEquipApplier`). Фильтры исследований (`attributes`/`equip`)
+  теперь матчатся и по id определения юнита, а не только по телу.
+- **namespace структур** (`c24ece5f`): JSON-здание грузит `.nbt` по полному id (`<ns>:structures/<path>.nbt`),
+  а не только из `reignofnether`; отсутствующий файл — лог + пустой список вместо NPE.
+
+### 9.3 Что осталось (после этой сессии)
+
+1. **`runClient` — по-прежнему НИ РАЗУ не запускался.** Обязательна ручная проверка владельцем; все
+   правки выше проверены только компиляцией/`runData`. Особенно: постановка JSON-здания (не исчезает),
+   добыча воркером, население/производство, апгрейд «Barracks II», `resource_generator`, `equip`.
+2. **Кодек `ProductionSpec`** (either-кодек `production`) не проверялся рантаймом: при старте сервера
+   он парсит `barracks.json`/`town_centre.json`. Паттерн тот же, что у `AbilityParam` (работает), но
+   подтвердить в игре нужно.
+3. **K4 (данные воркера)**: `carryCapacity` сделан; список добываемого/скорость стройки/перенос — нет.
+4. **K5 (прокачка героя)**: `role: hero` применяет статы уровня 1, но макс. уровень/формула опыта/
+   приросты — пока код.
+5. **K6 (submenu-раскладка `row`/`col`)** — не начат.
+6. lang-дочистка `entity.reignofnether.villager_unit*`; осиротевшие `.nbt` (~65) в
+   `assets/reignofnether/structures/` — не удалялись (владелец: «не срочно»).
