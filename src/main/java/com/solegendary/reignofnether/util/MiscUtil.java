@@ -825,6 +825,9 @@ public class MiscUtil {
                         .getDescription()
                         .getString();
             } else {
+                String definitionName = getUnitDefinitionName(entity);
+                if (definitionName != null)
+                    return definitionName;
                 return entity.getName()
                         .getString();
             }
@@ -832,6 +835,18 @@ public class MiscUtil {
             return entity.getName().getString().toLowerCase();
         }
         return "";
+    }
+
+    /** A data-driven unit's name from its definition, or null if it has none/uses the body's name. */
+    private static String getUnitDefinitionName(Entity entity) {
+        if (!(entity instanceof com.solegendary.reignofnether.unit.interfaces.DefinedUnit defined)
+                || defined.getUnitDefinitionId() == null)
+            return null;
+        com.solegendary.reignofnether.unit.UnitDefinition def = com.solegendary.reignofnether.unit.UnitDefinitions
+                .resolve(entity.level().registryAccess(), defined.getUnitDefinitionId());
+        if (def == null)
+            return null;
+        return def.name().flatMap(m -> java.util.Optional.ofNullable(m.get("en_us"))).orElse(null);
     }
 
     public static boolean isOnNetherTerrain(LivingEntity le) {

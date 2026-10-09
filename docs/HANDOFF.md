@@ -313,6 +313,11 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 `getActiveAddon(NetherConvertingAddon)`), addon-lifecycle там ок. В `changeStructure` добавлен warning,
 если структура апгрейда имеет другой габарит (границы placement не пересчитываются). Гейты зелёные.**`runClient` не проверялся**.
 
+**Аудит-3 (JSON-здания/юниты в UI):** проверены билдинг-интеграции (place/валидаторы/fog/миникарта/портрет/
+селекторы) — все используют здания обобщённо, code-key NPE нет. Найден видимый дефект имён **юнитов**: HUD
+показывал имя ванильного тела (`Skeleton`) вместо `UnitDefinition.name` (напр. «Skeleton Marksman»).
+`MiscUtil.getSimpleEntityName` теперь берёт имя из resolved-определения. Гейты зелёные.**`runClient` не проверялся**.
+
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)
 спавнит снаряд на сервере (owner, урон = `damage` или `getUnitAttackDamage()`), дефолт — стрела.
