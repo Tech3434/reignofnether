@@ -83,10 +83,10 @@ public class EvokerUnit extends Evoker implements Unit, AttackerUnit, RangedAtta
     }
     Object2ObjectArrayMap<Ability, Float> cooldowns = Unit.createCooldownMap();
     Object2ObjectArrayMap<Ability, Integer> charges = new Object2ObjectArrayMap<>();
-    @Override public Object2ObjectArrayMap<Ability, Float> getCooldowns() { return cooldowns; }
+    @Override public Object2ObjectArrayMap<Ability, Float> getAbilityCooldowns() { return cooldowns; }
     @Override public boolean hasAutocast(Ability ability) { return autocast == ability; }
     @Override public void setAutocast(Ability autocast) { this.autocast = autocast; }
-    @Override public Object2ObjectArrayMap<Ability, Integer> getCharges() { return charges; }
+    @Override public Object2ObjectArrayMap<Ability, Integer> getAbilityCharges() { return charges; }
 
     Ability autocast;
 
@@ -104,12 +104,14 @@ public class EvokerUnit extends Evoker implements Unit, AttackerUnit, RangedAtta
     public GarrisonGoal getGarrisonGoal() { return garrisonGoal; }
     public boolean canGarrison() { return getGarrisonGoal() != null; }
 
+    UnitItemGoal itemGoal;
+    @Override public UnitItemGoal getItemGoal() { return itemGoal; }
+
     UsePortalGoal usePortalGoal;
     public UsePortalGoal getUsePortalGoal() { return usePortalGoal; }
     public boolean canUsePortal() { return getUsePortalGoal() != null; }
 
-    public Faction getFaction() {return Faction.VILLAGERS;}
-    public Abilities getAbilities() {return abilities;}
+	public Abilities getAbilities() {return abilities;}
     public List<ItemStack> getItems() {return items;}
     public MoveToTargetBlockGoal getMoveGoal() {return moveGoal;}
     public SelectedTargetGoal<? extends LivingEntity> getTargetGoal() {return targetGoal;}
@@ -329,6 +331,7 @@ public class EvokerUnit extends Evoker implements Unit, AttackerUnit, RangedAtta
         this.moveGoal = new MoveToTargetBlockGoal(this, false, 0);
         this.targetGoal = new SelectedTargetGoal<>(this, true, true);
         this.garrisonGoal = new GarrisonGoal(this);
+        this.itemGoal = new UnitItemGoal(this);
         this.attackGoal = new UnitBowAttackGoal<>(this);
         this.returnResourcesGoal = new ReturnResourcesGoal(this);
         this.mountGoal = new MountGoal(this);

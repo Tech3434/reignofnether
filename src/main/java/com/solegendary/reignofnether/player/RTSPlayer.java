@@ -5,9 +5,9 @@ import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
 import com.solegendary.reignofnether.building.buildings.neutral.Beacon;
 import com.solegendary.reignofnether.building.buildings.placements.BeaconPlacement;
+import com.solegendary.reignofnether.faction.Faction;
 import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
 import com.solegendary.reignofnether.fogofwar.FogOfWarServerEvents;
-import com.solegendary.reignofnether.faction.Faction;
 import com.solegendary.reignofnether.items.ItemUtil;
 import com.solegendary.reignofnether.items.UnitItem;
 import com.solegendary.reignofnether.scenario.ScenarioUtils;
@@ -115,12 +115,12 @@ public class RTSPlayer {
     }
 
     private void initTradeRates() {
-        tradeRates.put(FOOD_FOR_EMERALD, START_BUY_RATE);
-        tradeRates.put(WOOD_FOR_EMERALD, START_BUY_RATE);
-        tradeRates.put(ORE_FOR_EMERALD, START_BUY_RATE);
-        tradeRates.put(EMERALD_FOR_FOOD, START_SELL_RATE);
-        tradeRates.put(EMERALD_FOR_WOOD, START_SELL_RATE);
-        tradeRates.put(EMERALD_FOR_ORE, START_SELL_RATE);
+        tradeRates.put(FOOD_FOR_EMERALD, START_SELL_RATE);
+        tradeRates.put(WOOD_FOR_EMERALD, START_SELL_RATE);
+        tradeRates.put(ORE_FOR_EMERALD, START_SELL_RATE);
+        tradeRates.put(EMERALD_FOR_FOOD, START_BUY_RATE);
+        tradeRates.put(EMERALD_FOR_WOOD, START_BUY_RATE);
+        tradeRates.put(EMERALD_FOR_ORE, START_BUY_RATE);
     }
 
     public boolean isBot() {

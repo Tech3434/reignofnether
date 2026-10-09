@@ -1,6 +1,7 @@
 package com.solegendary.reignofnether.player;
 
 import com.solegendary.reignofnether.faction.Faction;
+import com.solegendary.reignofnether.faction.Factions;
 import com.solegendary.reignofnether.matchstart.MatchEndClientEvents;
 import com.solegendary.reignofnether.registrars.PacketHandler;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -65,7 +66,7 @@ public class MatchStatsClientboundPacket  implements RTSSimplePayload {
         this.rows = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             String name = buffer.readUtf();
-            Faction faction = buffer.readEnum(Faction.class);
+            Faction faction = Factions.getFaction(buffer.readResourceLocation());
             boolean winner = buffer.readBoolean();
             int teamId = buffer.readVarInt();
             int[] scores = buffer.readVarIntArray();
@@ -78,7 +79,7 @@ public class MatchStatsClientboundPacket  implements RTSSimplePayload {
         buffer.writeInt(rows.size());
         for (MatchStatRow row : rows) {
             buffer.writeUtf(row.name);
-            buffer.writeEnum(row.faction);
+            buffer.writeResourceLocation(row.faction.key);
             buffer.writeBoolean(row.winner);
             buffer.writeVarInt(row.teamId);
             buffer.writeVarIntArray(row.scores);

@@ -25,7 +25,7 @@ import com.solegendary.reignofnether.unit.goals.*;
 import com.solegendary.reignofnether.unit.interfaces.AttackerUnit;
 import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import com.solegendary.reignofnether.faction.Faction;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 
 import net.minecraft.commands.CommandSourceStack;
@@ -75,10 +75,10 @@ public class WitherSkeletonUnit extends WitherSkeleton implements Unit, Attacker
     }
     Object2ObjectArrayMap<Ability, Float> cooldowns = Unit.createCooldownMap();
     Object2ObjectArrayMap<Ability, Integer> charges = new Object2ObjectArrayMap<>();
-    @Override public Object2ObjectArrayMap<Ability, Float> getCooldowns() { return cooldowns; }
+    @Override public Object2ObjectArrayMap<Ability, Float> getAbilityCooldowns() { return cooldowns; }
     @Override public boolean hasAutocast(Ability ability) { return autocast == ability; }
     @Override public void setAutocast(Ability autocast) { this.autocast = autocast; }
-    @Override public Object2ObjectArrayMap<Ability, Integer> getCharges() { return charges; }
+    @Override public Object2ObjectArrayMap<Ability, Integer> getAbilityCharges() { return charges; }
 
     Ability autocast;
 
@@ -95,12 +95,14 @@ public class WitherSkeletonUnit extends WitherSkeleton implements Unit, Attacker
     public GarrisonGoal getGarrisonGoal() { return garrisonGoal; }
     public boolean canGarrison() { return getGarrisonGoal() != null; }
 
+    UnitItemGoal itemGoal;
+    @Override public UnitItemGoal getItemGoal() { return itemGoal; }
+
     UsePortalGoal usePortalGoal;
     public UsePortalGoal getUsePortalGoal() { return usePortalGoal; }
     public boolean canUsePortal() { return getUsePortalGoal() != null; }
 
-    public Faction getFaction() {return Faction.PIGLINS;}
-    public Abilities getAbilities() {return abilities;}
+	public Abilities getAbilities() {return abilities;}
     public List<ItemStack> getItems() {return items;};
     public MoveToTargetBlockGoal getMoveGoal() {return moveGoal;}
     public SelectedTargetGoal<? extends LivingEntity> getTargetGoal() {return targetGoal;}
@@ -308,6 +310,7 @@ public class WitherSkeletonUnit extends WitherSkeleton implements Unit, Attacker
         this.moveGoal = new MoveToTargetBlockGoal(this, false, 0);
         this.targetGoal = new SelectedTargetGoal<>(this, true, true);
         this.garrisonGoal = new GarrisonGoal(this);
+        this.itemGoal = new UnitItemGoal(this);
         this.attackGoal = new MeleeAttackUnitGoal(this, false);
         this.returnResourcesGoal = new ReturnResourcesGoal(this);
         this.attackBuildingGoal = new MeleeAttackBuildingGoal(this);

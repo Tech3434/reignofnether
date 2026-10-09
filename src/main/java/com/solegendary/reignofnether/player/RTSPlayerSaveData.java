@@ -5,9 +5,12 @@ import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.ability.TradeAction;
 import com.solegendary.reignofnether.ability.abilities.TradeResources;
 import com.solegendary.reignofnether.faction.Faction;
+import com.solegendary.reignofnether.faction.Factions;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -95,7 +98,7 @@ public class RTSPlayerSaveData extends SavedData {
             cTag.putInt("id", p.id);
             cTag.putInt("ticksWithoutCapitol", p.ticksWithoutCapitol);
             cTag.putInt("beaconOwnerTicks", p.beaconOwnerTicks);
-            cTag.putString("faction", p.faction.name());
+            cTag.putString("faction", p.faction.key.toString());
             cTag.putIntArray("scores", p.scores.getScoreListAsArray());
             cTag.putInt("scenarioRoleIndex", p.scenarioRoleIndex);
             // 1.5.0 made rates per-direction, so the persisted keys changed too

@@ -89,7 +89,7 @@ public class ResourceCosts {
     public static final ResourceCost STRONGHOLD = new ResourceCost(ID, "STRONGHOLD");
     public static final ResourceCost ALTAR_OF_DARKNESS = new ResourceCost(ID, "ALTAR_OF_DARKNESS");
     public static final ResourceCost MONSTER_MARKET = new ResourceCost(ID, "MONSTER_MARKET");
-    //Villagers
+    //VillagersFaction
     public static final ResourceCost TOWN_CENTRE = new ResourceCost(ID, "TOWN_CENTRE");
     public static final ResourceCost VILLAGER_HOUSE = new ResourceCost(ID, "VILLAGER_HOUSE");
     public static final ResourceCost WHEAT_FARM = new ResourceCost(ID, "WHEAT_FARM");
@@ -125,6 +125,7 @@ public class ResourceCosts {
     public static final ResourceCost RESEARCH_MILITIA_BOWS = new ResourceCost(ID, "RESEARCH_MILITIA_BOWS");
     public static final ResourceCost RESEARCH_LAB_LIGHTNING_ROD = new ResourceCost(ID, "RESEARCH_LAB_LIGHTNING_ROD");
     public static final ResourceCost RESEARCH_RESOURCE_CAPACITY = new ResourceCost(ID, "RESEARCH_RESOURCE_CAPACITY");
+    public static final ResourceCost RESEARCH_ITEM_BACKPACKS = new ResourceCost(ID, "RESEARCH_ITEM_BACKPACK");
     public static final ResourceCost RESEARCH_SPIDER_JOCKEYS = new ResourceCost(ID, "RESEARCH_SPIDER_JOCKEYS");
     public static final ResourceCost RESEARCH_SPIDER_WEBS = new ResourceCost(ID, "RESEARCH_SPIDER_WEBS");
     public static final ResourceCost RESEARCH_POISON_SPIDERS = new ResourceCost(ID, "RESEARCH_POISON_SPIDERS");
@@ -238,7 +239,7 @@ public class ResourceCosts {
         WRETCHED_WRAITH.bakeValues(ReignOfNetherCommonConfigs.UnitCosts.WRETCHED_WRAITH);
         ZOMBIE_PIGLIN.bakeValues(ReignOfNetherCommonConfigs.UnitCosts.ZOMBIE_PIGLIN);
         ZOGLIN.bakeValues(ReignOfNetherCommonConfigs.UnitCosts.ZOGLIN);
-        // Villagers
+        // VillagersFaction
         VILLAGER.bakeValues(ReignOfNetherCommonConfigs.UnitCosts.VILLAGER);
         SCOUT_DOG.bakeValues(ReignOfNetherCommonConfigs.UnitCosts.SCOUT_DOG);
         SCOUT_CAT.bakeValues(ReignOfNetherCommonConfigs.UnitCosts.SCOUT_CAT);
@@ -300,7 +301,7 @@ public class ResourceCosts {
         STRONGHOLD.bakeValues(ReignOfNetherCommonConfigs.BuildingCosts.STRONGHOLD);
         ALTAR_OF_DARKNESS.bakeValues(ReignOfNetherCommonConfigs.BuildingCosts.ALTAR_OF_DARKNESS);
         MONSTER_MARKET.bakeValues(ReignOfNetherCommonConfigs.BuildingCosts.MONSTER_MARKET);
-        // Villagers
+        // VillagersFaction
         TOWN_CENTRE.bakeValues(ReignOfNetherCommonConfigs.BuildingCosts.TOWN_CENTRE);
         VILLAGER_HOUSE.bakeValues(ReignOfNetherCommonConfigs.BuildingCosts.VILLAGER_HOUSE);
         WHEAT_FARM.bakeValues(ReignOfNetherCommonConfigs.BuildingCosts.WHEAT_FARM);
@@ -334,6 +335,7 @@ public class ResourceCosts {
         RESEARCH_MILITIA_BOWS.bakeValues(ReignOfNetherCommonConfigs.ResearchCosts.RESEARCH_MILITIA_BOWS);
         RESEARCH_LAB_LIGHTNING_ROD.bakeValues(ReignOfNetherCommonConfigs.ResearchCosts.RESEARCH_LAB_LIGHTNING_ROD);
         RESEARCH_RESOURCE_CAPACITY.bakeValues(ReignOfNetherCommonConfigs.ResearchCosts.RESEARCH_RESOURCE_CAPACITY);
+        RESEARCH_ITEM_BACKPACKS.bakeValues(ReignOfNetherCommonConfigs.ResearchCosts.RESEARCH_ITEM_BACKPACK);
         RESEARCH_SPIDER_JOCKEYS.bakeValues(ReignOfNetherCommonConfigs.ResearchCosts.RESEARCH_SPIDER_JOCKEYS);
         RESEARCH_SPIDER_WEBS.bakeValues(ReignOfNetherCommonConfigs.ResearchCosts.RESEARCH_SPIDER_WEBS);
         RESEARCH_POISON_SPIDERS.bakeValues(ReignOfNetherCommonConfigs.ResearchCosts.RESEARCH_POISON_SPIDERS);

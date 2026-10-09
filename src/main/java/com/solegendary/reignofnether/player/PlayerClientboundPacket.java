@@ -1,9 +1,11 @@
 package com.solegendary.reignofnether.player;
 
 import com.solegendary.reignofnether.ability.TradeAction;
+import com.solegendary.reignofnether.faction.Faction;
+import com.solegendary.reignofnether.faction.Factions;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.registrars.PacketHandler;
-import com.solegendary.reignofnether.faction.Faction;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.neoforged.api.distmarker.Dist;
@@ -125,7 +127,7 @@ public class PlayerClientboundPacket  implements RTSSimplePayload {
         this.playerName = playerName;
         this.value1 = 0L;
         this.value2 = 0;
-        this.faction = Faction.NONE;
+        this.faction = Factions.NONE;
         this.tradeAction = TradeAction.EMERALD_FOR_FOOD; // dummy value
         this.pos = pos;
         this.isDogPerson = true;
@@ -147,7 +149,7 @@ public class PlayerClientboundPacket  implements RTSSimplePayload {
         this.playerName = playerName;
         this.value1 = value1;
         this.value2 = 0;
-        this.faction = Faction.NONE;
+        this.faction = Factions.NONE;
         this.tradeAction = TradeAction.EMERALD_FOR_FOOD; // dummy value
         this.pos = new BlockPos(0,0,0);
         this.isDogPerson = true;
@@ -158,7 +160,7 @@ public class PlayerClientboundPacket  implements RTSSimplePayload {
         this.playerName = playerName;
         this.value1 = value1;
         this.value2 = 0;
-        this.faction = Faction.NONE;
+        this.faction = Factions.NONE;
         this.tradeAction = tradeAction;
         this.pos = new BlockPos(0,0,0);
         this.isDogPerson = true;
@@ -169,7 +171,7 @@ public class PlayerClientboundPacket  implements RTSSimplePayload {
         this.playerName = buffer.readUtf();
         this.value1 = buffer.readLong();
         this.value2 = buffer.readInt();
-        this.faction = buffer.readEnum(Faction.class);
+        this.faction = Factions.getFaction(buffer.readResourceLocation());
         this.tradeAction = buffer.readEnum(TradeAction.class);
         this.pos = buffer.readBlockPos();
         this.isDogPerson = buffer.readBoolean();
@@ -180,7 +182,7 @@ public class PlayerClientboundPacket  implements RTSSimplePayload {
         buffer.writeUtf(this.playerName);
         buffer.writeLong(this.value1);
         buffer.writeInt(this.value2);
-        buffer.writeEnum(this.faction);
+        buffer.writeResourceLocation(this.faction.key);
         buffer.writeEnum(this.tradeAction);
         buffer.writeBlockPos(this.pos);
         buffer.writeBoolean(this.isDogPerson);

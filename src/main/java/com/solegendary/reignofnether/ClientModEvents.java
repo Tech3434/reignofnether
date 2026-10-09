@@ -84,7 +84,8 @@ public class ClientModEvents {
                 BlockRegistrar.WRAITH_SNOW_LAYER.get()
         );
 
-        // wrap every block's provider with the fog multiplier; skip biome-tinted (BiomeColorsMixin handles those)
+        // wrap every block's provider with the fog multiplier; biome-tinted ones only fog their untinted quads
+        // (BiomeColorsMixin fogs the biome colour itself)
         java.util.Set<Block> biomeTinted = java.util.Set.of(
                 Blocks.GRASS_BLOCK, Blocks.FERN, Blocks.SHORT_GRASS, Blocks.POTTED_FERN,
                 Blocks.PINK_PETALS, Blocks.SUGAR_CANE, Blocks.LARGE_FERN, Blocks.TALL_GRASS,

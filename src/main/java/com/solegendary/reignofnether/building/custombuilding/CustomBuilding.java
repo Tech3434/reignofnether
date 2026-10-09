@@ -13,13 +13,12 @@ import com.solegendary.reignofnether.building.production.CustomProductionItem;
 import com.solegendary.reignofnether.building.production.ProductionBuilding;
 import com.solegendary.reignofnether.building.production.ProductionItem;
 import com.solegendary.reignofnether.building.production.ProductionItems;
+import com.solegendary.reignofnether.faction.Factions;
 import com.solegendary.reignofnether.keybinds.Keybinding;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.registrars.BlockRegistrar;
-import com.solegendary.reignofnether.registrars.EntityRegistrar;
 import com.solegendary.reignofnether.resources.*;
 import com.solegendary.reignofnether.faction.Faction;
-import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.util.MiscUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.client.resources.language.I18n;
@@ -368,7 +367,7 @@ public class CustomBuilding extends ProductionBuilding implements GarrisonableBu
         return BuildingBlockData.getBuildingBlocksFromNbt(structureNbt);
     }
 
-    public Faction getFaction() {return Faction.NONE;}
+    public Faction getFaction() {return Factions.NONE;}
 
     public BuildingPlaceButton getWorkerBuildButton(Keybinding hotkey) {
         return new BuildingPlaceButton(

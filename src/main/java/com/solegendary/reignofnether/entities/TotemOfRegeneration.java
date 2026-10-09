@@ -15,5 +15,6 @@ public class TotemOfRegeneration extends AbstractTotem {
         super(pEntityType, pLevel);
         this.auraEffects.put(MobEffectHelpers.holder(MobEffects.REGENERATION), 0);
         this.lifeTimeTicks = UnitItems.TOTEM_OF_REGENERATION_DURATION_SECONDS * 20;
+        this.auraDurationTicks = 60;
     }
 }

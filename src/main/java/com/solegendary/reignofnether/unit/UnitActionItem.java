@@ -137,11 +137,13 @@ public class UnitActionItem {
     public void action(Level level) {
         Ability usedAbility = null;
 
-        boolean isSandboxPlayer;
-        if (level.isClientSide())
-            isSandboxPlayer = SandboxClientEvents.isSandboxPlayer(this.ownerName);
-        else
-            isSandboxPlayer = SandboxServer.isSandboxPlayer(this.ownerName);
+        boolean isSandboxPlayer = true;
+        if (this.ownerName != null) {
+            if (level.isClientSide())
+                isSandboxPlayer = SandboxClientEvents.isSandboxPlayer(this.ownerName);
+            else
+                isSandboxPlayer = SandboxServer.isSandboxPlayer(this.ownerName);
+        }
 
         // filter out unowned units and non-unit entities
         ArrayList<Unit> actionableUnits = new ArrayList<>();
@@ -158,7 +160,7 @@ public class UnitActionItem {
                     alliedControl = AlliancesServerEvents.canControlAlly(this.ownerName, unit.getOwnerName());
                     fullControl = NonUnitServerEvents.canControlAllMobs(entity.level(), this.ownerName);
                 }
-                if (unit.getOwnerName().equals(this.ownerName) || isSandboxPlayer || alliedControl || fullControl) {
+                if (this.ownerName == null || unit.getOwnerName().equals(this.ownerName) || isSandboxPlayer || alliedControl || fullControl) {
                     actionableUnits.add(unit);
                 }
             }

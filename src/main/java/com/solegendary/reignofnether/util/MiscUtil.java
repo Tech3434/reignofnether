@@ -15,6 +15,7 @@ import com.solegendary.reignofnether.building.buildings.placements.CustomBuildin
 import com.solegendary.reignofnether.building.buildings.shared.AbstractBridge;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
 import com.solegendary.reignofnether.faction.Faction;
+import com.solegendary.reignofnether.faction.Factions;
 import com.solegendary.reignofnether.keybinds.Keybindings;
 import com.solegendary.reignofnether.nether.NetherBlocks;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
@@ -403,7 +404,7 @@ public class MiscUtil {
                 return false;
 
             // don't target vanilla units of the same faction
-            if (!(targetEntity instanceof Unit) && NonUnitServerEvents.getNonUnitFaction(targetEntity) == ((Unit) unitMob).getFaction())
+            if (!(targetEntity instanceof Unit) && NonUnitServerEvents.getNonUnitFaction(targetEntity).equals(Factions.getFaction((Unit) unitMob)))
                 return false;
         }
 
@@ -989,17 +990,7 @@ public class MiscUtil {
         return (calendar.get(Calendar.MONTH) + 1 == 12 && calendar.get(Calendar.DATE) == 31) ||
                 (calendar.get(Calendar.MONTH) + 1 == 1 && calendar.get(Calendar.DATE) == 1);
     }
-
-    public static ResourceLocation getFactionIcon(Faction faction) {
-        return switch (faction) {
-            case VILLAGERS -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/villager.png");
-            case MONSTERS -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/creeper.png");
-            case PIGLINS -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/grunt.png");
-            case RANDOM -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/question_mark_bg.png");
-            default -> ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/mobheads/sheep.png");
-        };
-    }
-
+    
     public static boolean isConnected() {
         return Minecraft.getInstance().getConnection() != null;
     }
@@ -1010,7 +1001,7 @@ public class MiscUtil {
     }
 
     public static String getFactionName(Faction faction) {
-        return I18n.get(String.format("hud.faction.reignofnether.%s", faction.toString().toLowerCase()));
+        return I18n.get(String.format("hud.faction.reignofnether.%s", faction.getName()));
     }
 
     private record ColorEntry(int mapColorId, int hex, String englishName) {}

@@ -7,7 +7,6 @@ import com.solegendary.reignofnether.ability.abilities.ToggleFlying;
 import com.solegendary.reignofnether.blocks.RangeIndicator;
 import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.entities.WindcallerProjectile;
-import com.solegendary.reignofnether.faction.Faction;
 import com.solegendary.reignofnether.fogofwar.FogOfWarClientboundPacket;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.keybinds.Keybindings;
@@ -85,10 +84,10 @@ public class WindcallerUnit extends Pillager implements Unit, AttackerUnit, Rang
     }
     Object2ObjectArrayMap<Ability, Float> cooldowns = Unit.createCooldownMap();
     Object2ObjectArrayMap<Ability, Integer> charges = new Object2ObjectArrayMap<>();
-    @Override public Object2ObjectArrayMap<Ability, Float> getCooldowns() { return cooldowns; }
+    @Override public Object2ObjectArrayMap<Ability, Float> getAbilityCooldowns() { return cooldowns; }
     @Override public boolean hasAutocast(Ability ability) { return autocast == ability; }
     @Override public void setAutocast(Ability autocast) { this.autocast = autocast; }
-    @Override public Object2ObjectArrayMap<Ability, Integer> getCharges() { return charges; }
+    @Override public Object2ObjectArrayMap<Ability, Integer> getAbilityCharges() { return charges; }
 
     Ability autocast;
 
@@ -106,12 +105,14 @@ public class WindcallerUnit extends Pillager implements Unit, AttackerUnit, Rang
     public GarrisonGoal getGarrisonGoal() { return garrisonGoal; }
     public boolean canGarrison() { return getGarrisonGoal() != null; }
 
+    UnitItemGoal itemGoal;
+    @Override public UnitItemGoal getItemGoal() { return itemGoal; }
+
     UsePortalGoal usePortalGoal;
     public UsePortalGoal getUsePortalGoal() { return usePortalGoal; }
     public boolean canUsePortal() { return getUsePortalGoal() != null; }
 
-    public Faction getFaction() {return Faction.VILLAGERS;}
-    public Abilities getAbilities() {return abilities;};
+	public Abilities getAbilities() {return abilities;};
     public List<ItemStack> getItems() {return items;};
     public MoveToTargetBlockGoal getMoveGoal() {
         return isFlying() ? flyingMoveGoal : moveGoal;
@@ -525,6 +526,7 @@ public class WindcallerUnit extends Pillager implements Unit, AttackerUnit, Rang
         this.flyingMoveGoal = new FlyingMoveToTargetGoal(this, 0);
         this.targetGoal = new SelectedTargetGoal<>(this, true, false);
         this.garrisonGoal = new GarrisonGoal(this);
+        this.itemGoal = new UnitItemGoal(this);
         this.attackGoal = new UnitRangedAttackGoal<>(this, ATTACK_WINDUP_TICKS);
         this.returnResourcesGoal = new ReturnResourcesGoal(this);
     }

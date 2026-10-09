@@ -35,8 +35,8 @@ public class ReignOfNetherCommonConfigs {
         UnitCosts.ZOGLIN.define(BUILDER);
         UnitCosts.NECROMANCER.define(BUILDER);
         UnitCosts.WRETCHED_WRAITH.define(BUILDER);
-        //Villagers
-        BUILDER.comment("Villagers");
+        //VillagersFaction
+        BUILDER.comment("VillagersFaction");
         UnitCosts.VILLAGER.define(BUILDER);
         UnitCosts.SCOUT_DOG.define(BUILDER);
         UnitCosts.SCOUT_CAT.define(BUILDER);
@@ -100,8 +100,8 @@ public class ReignOfNetherCommonConfigs {
         BuildingCosts.STRONGHOLD.define(BUILDER);
         BuildingCosts.ALTAR_OF_DARKNESS.define(BUILDER);
         BuildingCosts.MONSTER_MARKET.define(BUILDER);
-        //Villagers
-        BUILDER.comment("Villagers");
+        //VillagersFaction
+        BUILDER.comment("VillagersFaction");
         BuildingCosts.TOWN_CENTRE.define(BUILDER);
         BuildingCosts.VILLAGER_HOUSE.define(BUILDER);
         BuildingCosts.WHEAT_FARM.define(BUILDER);
@@ -138,6 +138,7 @@ public class ReignOfNetherCommonConfigs {
         ResearchCosts.RESEARCH_MILITIA_BOWS.define(BUILDER);
         ResearchCosts.RESEARCH_LAB_LIGHTNING_ROD.define(BUILDER);
         ResearchCosts.RESEARCH_RESOURCE_CAPACITY.define(BUILDER);
+        ResearchCosts.RESEARCH_ITEM_BACKPACK.define(BUILDER);
         ResearchCosts.RESEARCH_SPIDER_JOCKEYS.define(BUILDER);
         ResearchCosts.RESEARCH_SPIDER_WEBS.define(BUILDER);
         ResearchCosts.RESEARCH_POISON_SPIDERS.define(BUILDER);
@@ -218,7 +219,7 @@ public class ReignOfNetherCommonConfigs {
         public static final ResourceCostConfigEntry ZOMBIE_PIGLIN = ResourceCostConfigEntry.Unit(75,0,0,18,1, ResourceCosts.ZOMBIE_PIGLIN, "Zombie Piglin Config");
         public static final ResourceCostConfigEntry ZOGLIN = ResourceCostConfigEntry.Unit(100,0,40,25,2, ResourceCosts.ZOGLIN, "Zoglin Config");
 
-        // Villagers
+        // VillagersFaction
         public static final ResourceCostConfigEntry VILLAGER = ResourceCostConfigEntry.Unit(50,0,0,15,1, ResourceCosts.VILLAGER, "Villager Config");
         public static final ResourceCostConfigEntry SCOUT_DOG = ResourceCostConfigEntry.Unit(50,0,0,15,1, ResourceCosts.SCOUT_DOG, "Scout Dog Config");
         public static final ResourceCostConfigEntry SCOUT_CAT = ResourceCostConfigEntry.Unit(50,0,0,15,1, ResourceCosts.SCOUT_CAT, "Scout Cat Config");
@@ -284,7 +285,7 @@ public class ReignOfNetherCommonConfigs {
         public static final ResourceCostConfigEntry ALTAR_OF_DARKNESS = ResourceCostConfigEntry.Building(0,125,50, 0, ResourceCosts.ALTAR_OF_DARKNESS, "Altar of Darkness Config");
         public static final ResourceCostConfigEntry MONSTER_MARKET = ResourceCostConfigEntry.Building(0,75,75, 0, ResourceCosts.MONSTER_MARKET, "Monster Market Config");
 
-        // Villagers
+        // VillagersFaction
         public static final ResourceCostConfigEntry TOWN_CENTRE = ResourceCostConfigEntry.Building(0,350,250, 10, ResourceCosts.TOWN_CENTRE, "Town Centre Config");
         public static final ResourceCostConfigEntry VILLAGER_HOUSE = ResourceCostConfigEntry.Building(0,90,0, 10, ResourceCosts.VILLAGER_HOUSE, "Villager House Config");
         public static final ResourceCostConfigEntry WHEAT_FARM = ResourceCostConfigEntry.Building(0,150,0, 0, ResourceCosts.WHEAT_FARM, "Wheat Farm Config");
@@ -320,6 +321,7 @@ public class ReignOfNetherCommonConfigs {
         public static final ResourceCostConfigEntry RESEARCH_MILITIA_BOWS = ResourceCostConfigEntry.Research(250,500,0, 160, ResourceCosts.RESEARCH_MILITIA_BOWS, "Militia Bows Research Config");
         public static final ResourceCostConfigEntry RESEARCH_LAB_LIGHTNING_ROD = ResourceCostConfigEntry.Research(0,0,400, 120, ResourceCosts.RESEARCH_LAB_LIGHTNING_ROD, "Lightning Lab Research Config");
         public static final ResourceCostConfigEntry RESEARCH_RESOURCE_CAPACITY = ResourceCostConfigEntry.Research(200,200,0, 90, ResourceCosts.RESEARCH_RESOURCE_CAPACITY, "Stockpile Resource Capacity Research Config");
+        public static final ResourceCostConfigEntry RESEARCH_ITEM_BACKPACK = ResourceCostConfigEntry.Research(0,75,75, 90, ResourceCosts.RESEARCH_ITEM_BACKPACKS, "Item Backpacks Research Config");
         public static final ResourceCostConfigEntry RESEARCH_SPIDER_JOCKEYS = ResourceCostConfigEntry.Research(300,250,0, 100, ResourceCosts.RESEARCH_SPIDER_JOCKEYS, "Spider Jockey Research Config");
         public static final ResourceCostConfigEntry RESEARCH_SPIDER_WEBS = ResourceCostConfigEntry.Research(0,300,300, 140, ResourceCosts.RESEARCH_SPIDER_WEBS, "Spider Webs Research Config");
         public static final ResourceCostConfigEntry RESEARCH_POISON_SPIDERS = ResourceCostConfigEntry.Research(400,0,250, 150, ResourceCosts.RESEARCH_POISON_SPIDERS, "Poison Spider Research Config");

@@ -1,8 +1,10 @@
 package com.solegendary.reignofnether.startpos;
 
 import com.solegendary.reignofnether.ReignOfNether;
-import com.solegendary.reignofnether.registrars.PacketHandler;
 import com.solegendary.reignofnether.faction.Faction;
+import com.solegendary.reignofnether.faction.Factions;
+import com.solegendary.reignofnether.registrars.PacketHandler;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -63,14 +65,14 @@ public class StartPosServerboundPacket  implements RTSSimplePayload {
     public StartPosServerboundPacket(RegistryFriendlyByteBuf buffer) {
         this.action = buffer.readEnum(StartPosAction.class);
         this.blockPos = buffer.readBlockPos();
-        this.faction = buffer.readEnum(Faction.class);
+        this.faction = Factions.getFaction(buffer.readResourceLocation());
         this.playerName = buffer.readUtf();
     }
 
     public void encode(RegistryFriendlyByteBuf buffer) {
         buffer.writeEnum(this.action);
         buffer.writeBlockPos(this.blockPos);
-        buffer.writeEnum(this.faction);
+        buffer.writeResourceLocation(this.faction.key);
         buffer.writeUtf(this.playerName);
     }
 

@@ -3,6 +3,7 @@ package com.solegendary.reignofnether.mixin;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.util.ItemTagCompat;
 import com.solegendary.reignofnether.building.BuildingPlacement;
+import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.hud.HudClientboundPacket;
 import com.solegendary.reignofnether.items.*;
@@ -54,6 +55,8 @@ import com.solegendary.reignofnether.items.ItemClientboundPacket;
 
 @Mixin(Mob.class)
 public abstract class UnitInventoryMobMixin extends LivingEntity implements UnitInventory {
+
+    @Shadow public abstract InteractionResult interact(Player pPlayer, InteractionHand pHand);
 
     @Unique
     private static final String RON$UNIT_ITEMS_KEY = "reignofnether:UnitItems";
@@ -360,7 +363,7 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
 
     @Unique
     private void ron$applyItemAttributes(ItemStack stack) {
-        if (this.level().isClientSide() || stack.isEmpty()) return;
+        if (this.level().isClientSide() || stack.isEmpty() || !(this instanceof HeroUnit)) return;
         UnitItem unitItem = ItemUtil.getUnitItem(stack);
         if (unitItem == null || unitItem.attributes.isEmpty()) return;
 
@@ -391,7 +394,7 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
 
     @Unique
     private void ron$removeItemAttributes(ItemStack stack) {
-        if (this.level().isClientSide() || stack.isEmpty()) return;
+        if (this.level().isClientSide() || stack.isEmpty() || !(this instanceof HeroUnit)) return;
         UnitItem unitItem = ItemUtil.getUnitItem(stack);
         CompoundTag tag = ItemTagCompat.tag(stack);
         if (unitItem == null || tag == null || !tag.hasUUID("uuid")) return;

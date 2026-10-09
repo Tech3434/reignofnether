@@ -2,7 +2,6 @@ package com.solegendary.reignofnether.blocks;
 
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.units.piglins.GruntUnit;
-import com.solegendary.reignofnether.faction.Faction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;

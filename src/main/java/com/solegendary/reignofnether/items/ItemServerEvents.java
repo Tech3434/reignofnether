@@ -75,15 +75,17 @@ public class ItemServerEvents {
             Entity entity = level.getEntity(targetId);
             ItemStack itemInHand = inv.get(itemUuid);
             if (action == ItemAction.USE) {
-                if (inv.use(ItemUtil.getUUID(itemInHand)))
+                if (inv.canUseUnitItems() && inv.use(ItemUtil.getUUID(itemInHand)))
                     Unit.fullResetBehaviours(unit);
             } else {
                 ItemEntity itemTarget = (entity instanceof ItemEntity ie) ? ie : null;
                 LivingEntity leTarget = (entity instanceof LivingEntity le2) ? le2 : null;
                 BuildingPlacement buildingTarget = blockTarget != null ? BuildingUtils.findBuilding(false, blockTarget) : null;
                 boolean useItem = List.of(ItemAction.USE_ON_BUILDING, ItemAction.USE_ON_BLOCK, ItemAction.USE_ON_ENTITY).contains(action);
-                Unit.fullResetBehaviours(unit);
-                unit.getItemGoal().start(itemInHand, itemTarget, leTarget, blockTarget, buildingTarget, useItem);
+                if (inv.canUseUnitItems() || !useItem) {
+                    Unit.fullResetBehaviours(unit);
+                    unit.getItemGoal().start(itemInHand, itemTarget, leTarget, blockTarget, buildingTarget, useItem);
+                }
             }
         }
     }

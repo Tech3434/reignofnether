@@ -58,10 +58,10 @@ public abstract class AbstractTotem extends Mob implements Unit, RangeIndicator 
     public void updateAbilityButtons() { }
     Object2ObjectArrayMap<Ability, Float> cooldowns = Unit.createCooldownMap();
     Object2ObjectArrayMap<Ability, Integer> charges = new Object2ObjectArrayMap<>();
-    @Override public Object2ObjectArrayMap<Ability, Float> getCooldowns() { return cooldowns; }
+    @Override public Object2ObjectArrayMap<Ability, Float> getAbilityCooldowns() { return cooldowns; }
     @Override public boolean hasAutocast(Ability ability) { return false; }
     @Override public void setAutocast(Ability autocast) {  }
-    @Override public Object2ObjectArrayMap<Ability, Integer> getCharges() { return charges; }
+    @Override public Object2ObjectArrayMap<Ability, Integer> getAbilityCharges() { return charges; }
 
     public void setEatingTicksLeft(int amount) {  }
     public int getEatingTicksLeft() { return 0; }
@@ -77,7 +77,6 @@ public abstract class AbstractTotem extends Mob implements Unit, RangeIndicator 
     public UsePortalGoal getUsePortalGoal() { return null; }
     public boolean canUsePortal() { return getUsePortalGoal() != null; }
 
-    public Faction getFaction() {return Faction.NEUTRAL;}
     public Abilities getAbilities() {return abilities;}
     public List<ItemStack> getItems() {return List.of();}
     public MoveToTargetBlockGoal getMoveGoal() {return moveGoal;}
@@ -149,6 +148,7 @@ public abstract class AbstractTotem extends Mob implements Unit, RangeIndicator 
     final static public float magicDamageResist = 0.5f;
 
     public int lifeTimeTicks = 30 * 20; // 20s
+    public int auraDurationTicks = 30;
 
     /** 1.21.1 hands mob effects out as Holder<MobEffect>, so the aura table is keyed by holder. */
     final protected HashMap<Holder<MobEffect>, Integer> auraEffects = new HashMap<>();
@@ -201,7 +201,7 @@ public abstract class AbstractTotem extends Mob implements Unit, RangeIndicator 
             updateHighlightBps(level());
         }
 
-        if (!level().isClientSide && tickCount % 20 == 0) {
+        if (!level().isClientSide && tickCount % (auraDurationTicks - 10) == 0) {
             SoundClientboundPacket.playSoundAtPos(SoundAction.BEACON_AMBIENT, blockPosition(), 1.5f);
             for (Mob mob : MiscUtil.getEntitiesWithinRange(position(), AURA_RANGE, Mob.class, level())) {
                 if (mob instanceof Unit unit && AlliancesServerEvents.isAlliedOrOwned(unit.getOwnerName(), getOwnerName()) && !(unit instanceof AbstractTotem)) {
