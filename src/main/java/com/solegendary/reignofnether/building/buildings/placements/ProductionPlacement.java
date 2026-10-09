@@ -167,11 +167,12 @@ public class ProductionPlacement extends BuildingPlacement {
 
     /** Data-driven spawn: resolves the base EntityType from a UnitDefinition and applies it. */
     public Entity produceUnit(ServerLevel level, net.minecraft.resources.ResourceLocation unitDefinitionId, String ownerName, boolean spawnIndoors, Vec3i spawnOffset) {
-        com.solegendary.reignofnether.unit.UnitDefinition def = level.registryAccess()
-                .registryOrThrow(com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY).get(unitDefinitionId);
+        com.solegendary.reignofnether.unit.UnitDefinition def =
+                com.solegendary.reignofnether.unit.UnitDefinitions.resolve(level.registryAccess(), unitDefinitionId);
         if (def == null)
             return null;
-        EntityType<?> base = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.get(def.base());
+        EntityType<?> base = def.base().isPresent()
+                ? net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.get(def.base().get()) : null;
         if (base == null)
             return null;
 
@@ -194,6 +195,7 @@ public class ProductionPlacement extends BuildingPlacement {
             com.solegendary.reignofnether.unit.UnitDefinitionRuntime.applyAttributes(def, mob);
             unit.setOwnerName(ownerName);
             unit.initialiseGoals();
+            com.solegendary.reignofnether.unit.UnitDefinitionRuntime.buildAbilities(def, unit);
             unit.setupEquipmentAndUpgradesServer();
             setDelayedRally(unit);
         }

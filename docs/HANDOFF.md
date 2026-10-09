@@ -75,7 +75,9 @@ cd ___temp
 - `projectile` (ranged) — `ProjectileSpec` (entity/velocity/damage/inaccuracy); спавн —
   `UnitMobMixin.performUnitRangedAttack` (раньше был no-op). Без `projectile` — `minecraft:arrow`. Демо:
   `skeleton_unit.json` (лук+стрела), производится в казарме.
-- `inherits` (id другого определения) — зарезервировано, **разрешение наследования НЕ реализовано**.
+- `inherits` (id другого определения) — **реализовано**: незаданные поля берутся у родителя (атрибуты
+  мержатся по ключам), транзитивно и с защитой от циклов (`UnitDefinitions.resolve`; все наследуемые поля
+  в `UnitDefinition` теперь `Optional`, есть `withInherited`). Демо: `skeleton_marksman` ← `skeleton_unit`.
 
 ### Способности — класс в коде + инстанс в JSON
 - Класс регистрируется в `AbilityTypes.register(id, factory)` (id = `type` в JSON). Движковые типы —
@@ -286,6 +288,13 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 на сервере для всех `passive`-способностей; активный диспатч (`UnitActionItem`) пропускает пассивки, а
 `buildAbilities` ставит `passive` только из `true`. Движковый пример — `reignofnether:regeneration`
 (`RegenerationAbility`, params `amount`/`interval`), демо у `skeleton_unit`. Гейты зелёные.**`runClient` не проверялся**.
+
+**`UnitDefinition.inherits`:** наследуемые поля сделаны `Optional`, добавлен `withInherited` (мерж: атрибуты
+по ключам, остальное «ребёнок или родитель»); `UnitDefinitions.resolve(registryAccess, id)` резолвит
+транзитивно с защитой от циклов; читатели (`UnitDefinitionRuntime`, `ProductionPlacement.produceUnit`,
+`UnitMobMixin`) переведены на resolved-определения. Заодно: `produceUnit` теперь зовёт
+`UnitDefinitionRuntime.buildAbilities` (раньше юниты из JSON-зданий **не получали способности** от
+определения). Демо: `skeleton_marksman` ← `skeleton_unit`. Гейты зелёные.**`runClient` не проверялся**.
 
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)

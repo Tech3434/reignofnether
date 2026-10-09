@@ -27,7 +27,7 @@ public final class UnitDefinitionRuntime {
     private UnitDefinitionRuntime() { }
 
     public static void applyAttributes(UnitDefinition def, Mob mob) {
-        for (Map.Entry<ResourceLocation, Double> entry : def.attributes().entrySet()) {
+        for (Map.Entry<ResourceLocation, Double> entry : def.attributesOrDefault().entrySet()) {
             Holder<Attribute> attribute = BuiltInRegistries.ATTRIBUTE.getHolder(entry.getKey()).orElse(null);
             if (attribute == null)
                 continue;
@@ -45,10 +45,10 @@ public final class UnitDefinitionRuntime {
     /** Creates the definition's base mob, applies its data and goals, but does NOT add it to the world. */
     @Nullable
     public static Mob create(ServerLevel level, ResourceLocation definitionId, String ownerName) {
-        UnitDefinition def = level.registryAccess().registryOrThrow(UnitDefinitions.UNIT_KEY).get(definitionId);
+        UnitDefinition def = UnitDefinitions.resolve(level.registryAccess(), definitionId);
         if (def == null)
             return null;
-        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(def.base());
+        EntityType<?> type = def.base().isPresent() ? BuiltInRegistries.ENTITY_TYPE.get(def.base().get()) : null;
         if (type == null)
             return null;
 
@@ -77,8 +77,8 @@ public final class UnitDefinitionRuntime {
     }
 
     /** Instantiates the definition's data-driven abilities and adds them to the unit. */
-    private static void buildAbilities(UnitDefinition def, Unit unit) {
-        for (com.solegendary.reignofnether.ability.AbilitySpec spec : def.abilities()) {
+    public static void buildAbilities(UnitDefinition def, Unit unit) {
+        for (com.solegendary.reignofnether.ability.AbilitySpec spec : def.abilitiesOrDefault()) {
             com.solegendary.reignofnether.ability.Ability ability =
                     com.solegendary.reignofnether.ability.AbilityTypes.create(spec, unit);
             if (ability == null)

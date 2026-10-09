@@ -40,7 +40,11 @@
   `damage` (по умолч. −1 = урон юнита `getUnitAttackDamage()`), `inaccuracy`. Спавнится в
   `UnitMobMixin.performUnitRangedAttack` (сервер). Без `projectile` ranged-юнит стреляет `minecraft:arrow`.
 * Данные-атрибуты `reignofnether:*` — id модовых атрибутов; `setStatsForLevel`/герой — из `UNIT`-атрибутов.
-* Демо: `skeleton_unit.json` (ranged, лук+стрела) производится в казарме.
+* `inherits` — id другого определения: незаданные поля берутся у родителя (атрибуты мержатся по ключам,
+  ребёнок побеждает), транзитивно и без циклов (`UnitDefinitions.resolve`). Пример: `skeleton_marksman.json`
+  наследует `skeleton_unit` и меняет имя/scale/урон/снаряд/стоимость.
+* `population`/`cost`/`requiredResearch`/`abilities` — тоже наследуются, если не заданы в ребёнке.
+* Демо: `skeleton_unit.json` (ranged, лук+стрела) и `skeleton_marksman.json` (наследник) в казарме.
 
 ---
 

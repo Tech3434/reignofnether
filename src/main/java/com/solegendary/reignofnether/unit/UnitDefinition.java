@@ -8,6 +8,7 @@ import com.solegendary.reignofnether.research.ResearchCondition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,22 +20,26 @@ import java.util.Optional;
  *
  * <p>Loaded from {@code data/<namespace>/unit/<name>.json} into the datapack registry
  * {@link UnitDefinitions#UNIT_KEY}. Rendering is free: the base mob draws itself.
+ *
+ * <p>Every inheritable field is {@link Optional}: a definition may set {@code inherits} to another id
+ * and override only what differs. Resolution (see {@link UnitDefinitions#resolve}) merges the parent's
+ * values for anything the child leaves unset.
  */
 public record UnitDefinition(
-        ResourceLocation base,
+        Optional<ResourceLocation> base,
         Optional<ResourceLocation> inherits,
         Optional<Map<String, String>> name,
         Optional<ResourceLocation> icon,
-        Role role,
-        Flags flags,
+        Optional<Role> role,
+        Optional<Flags> flags,
         Optional<Double> scale,
-        Map<ResourceLocation, Double> attributes,
+        Optional<Map<ResourceLocation, Double>> attributes,
         Optional<CostSpec> cost,
-        int population,
-        List<ResearchCondition> requiredResearch,
+        Optional<Integer> population,
+        Optional<List<ResearchCondition>> requiredResearch,
         Optional<ResourceLocation> equipment,
         Optional<ProjectileSpec> projectile,
-        List<AbilitySpec> abilities
+        Optional<List<AbilitySpec>> abilities
 ) {
 
     public enum Role implements StringRepresentable {
@@ -85,19 +90,80 @@ public record UnitDefinition(
     }
 
     public static final Codec<UnitDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            ResourceLocation.CODEC.fieldOf("base").forGetter(UnitDefinition::base),
+            ResourceLocation.CODEC.optionalFieldOf("base").forGetter(UnitDefinition::base),
             ResourceLocation.CODEC.optionalFieldOf("inherits").forGetter(UnitDefinition::inherits),
             Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("name").forGetter(UnitDefinition::name),
             ResourceLocation.CODEC.optionalFieldOf("icon").forGetter(UnitDefinition::icon),
-            StringRepresentable.fromEnum(Role::values).optionalFieldOf("role", Role.MELEE).forGetter(UnitDefinition::role),
-            Flags.CODEC.optionalFieldOf("flags", Flags.NONE).forGetter(UnitDefinition::flags),
+            StringRepresentable.fromEnum(Role::values).optionalFieldOf("role").forGetter(UnitDefinition::role),
+            Flags.CODEC.optionalFieldOf("flags").forGetter(UnitDefinition::flags),
             Codec.DOUBLE.optionalFieldOf("scale").forGetter(UnitDefinition::scale),
-            Codec.unboundedMap(ResourceLocation.CODEC, Codec.DOUBLE).optionalFieldOf("attributes", Map.of()).forGetter(UnitDefinition::attributes),
+            Codec.unboundedMap(ResourceLocation.CODEC, Codec.DOUBLE).optionalFieldOf("attributes").forGetter(UnitDefinition::attributes),
             CostSpec.CODEC.optionalFieldOf("cost").forGetter(UnitDefinition::cost),
-            Codec.INT.optionalFieldOf("population", 0).forGetter(UnitDefinition::population),
-            ResearchCondition.CODEC.listOf().optionalFieldOf("requiredResearch", List.of()).forGetter(UnitDefinition::requiredResearch),
+            Codec.INT.optionalFieldOf("population").forGetter(UnitDefinition::population),
+            ResearchCondition.CODEC.listOf().optionalFieldOf("requiredResearch").forGetter(UnitDefinition::requiredResearch),
             ResourceLocation.CODEC.optionalFieldOf("equipment").forGetter(UnitDefinition::equipment),
             ProjectileSpec.CODEC.optionalFieldOf("projectile").forGetter(UnitDefinition::projectile),
-            AbilitySpec.CODEC.listOf().optionalFieldOf("abilities", List.of()).forGetter(UnitDefinition::abilities)
+            AbilitySpec.CODEC.listOf().optionalFieldOf("abilities").forGetter(UnitDefinition::abilities)
     ).apply(instance, UnitDefinition::new));
+
+    /** Effective role, defaulting to melee when unset. */
+    public Role roleOrDefault() {
+        return role.orElse(Role.MELEE);
+    }
+
+    /** Effective flags, defaulting to none when unset. */
+    public Flags flagsOrDefault() {
+        return flags.orElse(Flags.NONE);
+    }
+
+    /** Effective attributes, defaulting to empty when unset. */
+    public Map<ResourceLocation, Double> attributesOrDefault() {
+        return attributes.orElse(Map.of());
+    }
+
+    public List<ResearchCondition> requiredResearchOrDefault() {
+        return requiredResearch.orElse(List.of());
+    }
+
+    public List<AbilitySpec> abilitiesOrDefault() {
+        return abilities.orElse(List.of());
+    }
+
+    public int populationOrDefault() {
+        return population.orElse(0);
+    }
+
+    /**
+     * Returns this definition with {@code base}'s values filled in wherever this one left a field unset.
+     * Attributes are merged per key (this definition wins), everything else is "this or base".
+     */
+    public UnitDefinition withInherited(UnitDefinition parent) {
+        Optional<Map<ResourceLocation, Double>> mergedAttributes;
+        if (attributes.isEmpty())
+            mergedAttributes = parent.attributes();
+        else if (parent.attributes().isEmpty())
+            mergedAttributes = attributes;
+        else {
+            Map<ResourceLocation, Double> merged = new HashMap<>(parent.attributes().get());
+            merged.putAll(attributes.get());
+            mergedAttributes = Optional.of(merged);
+        }
+
+        return new UnitDefinition(
+                base.isPresent() ? base : parent.base(),
+                Optional.empty(),
+                name.isPresent() ? name : parent.name(),
+                icon.isPresent() ? icon : parent.icon(),
+                role.isPresent() ? role : parent.role(),
+                flags.isPresent() ? flags : parent.flags(),
+                scale.isPresent() ? scale : parent.scale(),
+                mergedAttributes,
+                cost.isPresent() ? cost : parent.cost(),
+                population.isPresent() ? population : parent.population(),
+                requiredResearch.isPresent() ? requiredResearch : parent.requiredResearch(),
+                equipment.isPresent() ? equipment : parent.equipment(),
+                projectile.isPresent() ? projectile : parent.projectile(),
+                abilities.isPresent() ? abilities : parent.abilities()
+        );
+    }
 }

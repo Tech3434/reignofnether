@@ -1,0 +1,12 @@
+{
+  "inherits": "reignofnether:skeleton_unit",
+  "name": { "en_us": "Skeleton Marksman" },
+  "scale": 1.1,
+  "attributes": {
+    "reignofnether:attack_range": 20,
+    "reignofnether:attack_damage": 4
+  },
+  "projectile": { "entity": "minecraft:arrow", "velocity": 2.0, "damage": 4 },
+  "cost": { "food": 80, "wood": 0, "ore": 0, "seconds": 18 },
+  "population": 1
+}

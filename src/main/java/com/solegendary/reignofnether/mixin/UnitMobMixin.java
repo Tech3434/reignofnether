@@ -150,7 +150,7 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
         com.solegendary.reignofnether.unit.UnitDefinition def = level().registryAccess()
                 .registryOrThrow(com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY)
                 .get(ron$definitionId);
-        ron$roleCache = def == null ? null : def.role();
+        ron$roleCache = def == null ? null : def.roleOrDefault();
         return ron$roleCache;
     }
 
@@ -165,9 +165,8 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
         ron$definitionResolved = true;
         if (ron$definitionId == null)
             return null;
-        ron$definitionCache = level().registryAccess()
-                .registryOrThrow(com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY)
-                .get(ron$definitionId);
+        ron$definitionCache = com.solegendary.reignofnether.unit.UnitDefinitions.resolve(
+                level().registryAccess(), ron$definitionId);
         return ron$definitionCache;
     }
 
@@ -420,7 +419,7 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
             this.targetSelector.addGoal(5, ron$targetGoal);
         }
 
-        var role = def.role();
+        var role = def.roleOrDefault();
         boolean worker = role == com.solegendary.reignofnether.unit.UnitDefinition.Role.WORKER;
         boolean melee = role == com.solegendary.reignofnether.unit.UnitDefinition.Role.MELEE
                 || role == com.solegendary.reignofnether.unit.UnitDefinition.Role.HERO;
@@ -455,11 +454,11 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
             }
         }
 
-        if ((def.flags().canGather() || worker) && ron$gatherGoal == null) {
+        if ((def.flagsOrDefault().canGather() || worker) && ron$gatherGoal == null) {
             ron$gatherGoal = new com.solegendary.reignofnether.unit.goals.GatherResourcesGoal(self);
             this.goalSelector.addGoal(2, ron$gatherGoal);
         }
-        if (def.flags().canBuild()) {
+            if (def.flagsOrDefault().canBuild()) {
             if (ron$buildRepairGoal == null) {
                 ron$buildRepairGoal = new com.solegendary.reignofnether.unit.goals.BuildRepairGoal(self);
                 this.goalSelector.addGoal(2, ron$buildRepairGoal);
@@ -473,7 +472,7 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
             ron$returnResourcesGoal = new ReturnResourcesGoal(self);
             this.goalSelector.addGoal(2, ron$returnResourcesGoal);
         }
-        if (def.flags().canGarrison() && ron$garrisonGoal == null) {
+            if (def.flagsOrDefault().canGarrison() && ron$garrisonGoal == null) {
             ron$garrisonGoal = new GarrisonGoal(self);
             this.goalSelector.addGoal(2, ron$garrisonGoal);
         }

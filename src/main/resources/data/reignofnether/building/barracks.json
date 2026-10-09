@@ -2,7 +2,7 @@
   "structure": "reignofnether:barracks",
   "maxHealth": 150,
   "populationSupply": 0,
-  "production": [ "reignofnether:vindicator_unit", "reignofnether:skeleton_unit" ],
+  "production": [ "reignofnether:vindicator_unit", "reignofnether:skeleton_unit", "reignofnether:skeleton_marksman" ],
   "researches": [ "reignofnether:example_research" ],
   "addons": [ { "type": "reignofnether:garrison", "params": { "capacity": 3, "attackRange": 20 } } ],
   "upgrades": [
