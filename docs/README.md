@@ -2,33 +2,42 @@
 
 Репозиторий: `___temp/` (ветка `wip/stage-d-deletions`; **`ReignOfNether/` git-репозиторием не
 является**). Цель ветки: **чистый каркас РТС-системы** — механика остаётся, контент готовых фракций
-вырезан (см. `reference/`), поверх каркаса владелец пишет свою фракцию.
+вырезан (см. `reference/`), поверх каркаса владелец пишет свою фракцию **данными** (датапак JSON),
+без Java на каждый юнит/здание/способность.
 
 ## Карта документов
 
+**Актуальные (ведутся):**
+
 | Файл | О чём |
 |---|---|
-| [`HANDOFF.md`](HANDOFF.md) | **Точка входа для продолжения**: состояние, архитектура data-driven контента, что осталось, трапы и инвентарь файлов |
-| [`STATUS.md`](STATUS.md) | **Состояние**: ветки, гейты, что сделано по этапам, что осталось |
-| [`PLAN_RTS_ONLY.md`](PLAN_RTS_ONLY.md) | **Исходный план A–H**: этапы, решения владельца, гейты |
-| [`RESEARCH_AND_EXTENSIBILITY_PLAN.md`](RESEARCH_AND_EXTENSIBILITY_PLAN.md) | **План**: система исследований (на игрока, с инверсией) и JSON-расширяемость; остаток оригинального плана (G.2/G.5/H.9/§14.5) |
-| [`CONTENT_JSON_PLAN.md`](CONTENT_JSON_PLAN.md) | **План**: JSON-юниты (`Unit` на `Mob` + `UnitDefinition`, `base`/`inherits`, `role`+флаги, способности `type`+параметры), JSON-здания, JSON-способности |
-| [`BUGS_RUNCLIENT.md`](BUGS_RUNCLIENT.md) | Баги после `runClient`: разбор причин, правки по инкрементам/прогонам |
+| [`HANDOFF.md`](HANDOFF.md) | **Точка входа для продолжения**: состояние, архитектура data-driven контента, журнал инкрементов, что осталось, трапы, инвентарь файлов |
+| [`STATUS.md`](STATUS.md) | **Состояние**: гейты, что сделано, что осталось |
+| [`PLAN_RTS_ONLY.md`](PLAN_RTS_ONLY.md) | **Исходный план A–H**: этапы, решения владельца, §15 — остаток |
+| [`RESEARCH_AND_EXTENSIBILITY_PLAN.md`](RESEARCH_AND_EXTENSIBILITY_PLAN.md) | **План**: система исследований и JSON-расширяемость; остаток (G.2/G.5/H.9/§14.5) |
+| [`CONTENT_JSON_PLAN.md`](CONTENT_JSON_PLAN.md) | **План**: JSON-юниты, здания, способности, аддоны, апгрейды |
 | [`VANILLA_CHANGES.md`](VANILLA_CHANGES.md) | **Текущая инвентаризация изменений ванильных механик** (миксины, геймрулы, датапак/ассеты) |
-| [`FEATURES.md`](FEATURES.md) | Каталог функций с вердиктами (историческое обоснование плана) |
-| [`INTRUSION_AUDIT.md`](INTRUSION_AUDIT.md) | Что мод ломал в обычном мире (исходный аудит + поправки) |
-| [`CLEAN_FORK.md`](CLEAN_FORK.md) | Исходный план деинтрузивности (историческое) |
 | [`reference/`](reference/README.md) | Что удалено на этапе D и как вернуть (`git show 5079004e:<путь>`) |
 | [`../_GUIDES/README.md`](../_GUIDES/README.md) | **Инструкции по добавлению контента** (юнит, здание, способность, производство, исследование, ассеты) |
 | [`../.agents/skills/README.md`](../.agents/skills/README.md) | Навыки для ИИ-агентов |
 
+**Исторические снимки (не отражают текущий HEAD; сверяться с кодом):**
+
+| Файл | О чём |
+|---|---|
+| [`BUGS_RUNCLIENT.md`](BUGS_RUNCLIENT.md) | Баги первых ручных `runClient` (порт/ранний РТС); разбор и инкременты правок |
+| [`FEATURES.md`](FEATURES.md) | Каталог функций с вердиктами (обоснование плана) |
+| [`INTRUSION_AUDIT.md`](INTRUSION_AUDIT.md) | Что мод ломал в обычном мире (исходный аудит + поправки) |
+| [`CLEAN_FORK.md`](CLEAN_FORK.md) | Исходный план деинтрузивности |
+| `../PORT_STATUS.md`, `../AGENT_HANDOFF.md`, `../AGENT_MEMO.md`, `../PORT_ANALYSIS.md` | Материалы порта 1.20.1 → 1.21.1 (вне `docs/`) |
+
 ## Быстрый старт
 
 `gradlew.bat` **не работает**: он передаёт java одновременно `-classpath ""` и `-jar`. Запускать
-через java напрямую (только `cmd`-совместимо, из `___temp`):
+через java напрямую (из `___temp`):
 
-```bash
-"C:\Program Files\Java\jdk-21\bin\java.exe" -Dorg.gradle.appname=gradlew \
+```powershell
+& "C:\Program Files\Java\jdk-21\bin\java.exe" '-Dorg.gradle.appname=gradlew' `
   -jar gradle/wrapper/gradle-wrapper.jar <task> --offline --console=plain
 ```
 
@@ -48,6 +57,6 @@
    `git diff --numstat` и `git diff --ignore-cr-at-eol --numstat`.
 3. **`git show <ref>:<path> > file`** под PowerShell 5.1 пишет UTF-16LE — только
    `cmd /c "git show ... > file"`.
-4. **`validateMixins` не ловит часть ошибок** — они всплывают в `runServer`.
+4. **`validateMixins` не ловит часть ошибок** (`@Shadow`/`@Redirect`) — они всплывают в `runServer`.
 5. Перед удалением чего-либо из каркаса проверяй `reference/` и `_GUIDES/`: возможно, на это
    ссылается пример, который вы ещё держите как шаблон.

@@ -1,4 +1,4 @@
-# HANDOFF — полный контекст для продолжения (JSON-каркас, 2026-10-08)
+# HANDOFF — полный контекст для продолжения (JSON-каркас, 2026-10-09)
 
 **Это файл передачи контекста.** Следующий ИИ-агент/разработчик начинает ОТСЮДА. Читать вместе с:
 `docs/STATUS.md`, `docs/PLAN_RTS_ONLY.md`, `docs/RESEARCH_AND_EXTENSIBILITY_PLAN.md`,
@@ -7,11 +7,11 @@
 
 **Состояние на конец сессии**
 - Ветка: `wip/stage-d-deletions`; `1.21.1-clean` держится синхронно (`git branch -f 1.21.1-clean wip/stage-d-deletions`).
-- HEAD коммита: `ec652683`. Всего ~54 коммита поверх `ec35ca7d`.
-- Гейты: `compileJava` ✅ · `validateMixins` ✅ (47 injection point / 31 mixin) · `runData` ✅ ·
-  `runServer` ✅ (`Done (...)`, чистый стоп) · **`runClient` ⚠ НИ РАЗУ не запускался с этими изменениями.**
-- Аддоны зданий **доведены**: `JsonBuilding` навешивает их из JSON, движковый пример `night_source`
-  (см. §2 «Аддоны»).
+- HEAD: см. `git log` (после этой сессии — за `ec652683`; всего ~75 коммитов поверх `ec35ca7d`).
+- Гейты: `compileJava` ✅ · `validateMixins` ✅ · `runData` ✅ · `runServer` **не запускать** в этой среде
+  (см. §6) · **`runClient` ⚠ НИ РАЗУ не запускался с data-driven изменениями.**
+- Data-driven контент доведён: аддоны (обобщены), исследования у зданий, апгрейды (per-level),
+  ranged-юнит, клиентская синхронизация/сейв/HUD/команды JSON-зданий, флаги зданий (см. §2/§4).
 
 ---
 
@@ -299,8 +299,10 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 5. **`runClient` — НИ РАЗУ не запускался с этими изменениями.** Всё клиентское (рендер юнитов/зданий теперь
    ванильный, меню фракций/исследований, размещение, меню воркера, герои) проверено только сборкой и
    `runServer`. **Обязательна ручная проверка** владельцем.
-6. **Документация:** обновлять `docs/STATUS.md`/`CONTENT_JSON_PLAN.md` по мере продвижения; дописать
-   `_GUIDES/` про JSON-юниты/здания/способности/аддоны.
+6. ✅ **Документация актуализирована** (2026-10-09): `docs/STATUS.md`, `docs/README.md` переписаны;
+   гайды `_GUIDES/` `00/04/06/08/09` обновлены под data-driven; исторические снимки
+   (`FEATURES`/`INTRUSION_AUDIT`/`CLEAN_FORK`/`PORT_STATUS`/`AGENT_HANDOFF`/`BUGS_RUNCLIENT`) помечены.
+   Осталось: `CONTENT_JSON_PLAN.md` — сверять по мере продвижения.
 
 ---
 

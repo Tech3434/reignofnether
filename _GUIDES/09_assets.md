@@ -1,59 +1,59 @@
 # Ассеты и локализация
 
-## Юниту нужно
+> Для **data-driven** контента имя/иконка берутся из JSON определения, а тело — ванильный моб/блок.
+> Отдельные спавн-яйца и модели для такого контента обычно **не нужны**.
 
-| Ассет | Путь | Обязателен |
+## Юниту (data-driven)
+
+| Ассет | Откуда | Обязателен |
 |---|---|---|
-| Спавн-яйцо | `assets/reignofnether/models/item/x_unit_spawn_egg.json` | да |
-| Имя и тултип | `lang/*.json`: `entity.reignofnether.x_unit`, `.tooltip1..N` | да |
-| Иконка производства | `assets/reignofnether/textures/mobheads/x.png` | да, если есть производство |
-| Текстура модели | `assets/reignofnether/textures/entities/x.png` | если своя модель |
-| Модель | только кодом: `unit/modelling/models/` | если ванильной модели не хватает |
-| Звуки | `assets/reignofnether/sounds.json` + ключи `sounds.reignofnether.x_*` | по желанию |
+| Тело | поле `base` (`minecraft:villager`, `minecraft:skeleton`, …) — ванильная модель/рендерер | да |
+| Имя | `name: { "en_us": "…" }` в `UnitDefinition` | да (иначе путь id) |
+| Иконка производства | `icon: "ns:textures/…png"` в определении | если есть производство |
+| Предмет в руку | `equipment: "minecraft:bow"` | для ranged с луком |
+| Способности/снаряд | `abilities`/`projectile` (см. `02_unit.md`) | по желанию |
+| Спавн-яйцо / своя модель | **нет** — только если заводишь собственный `EntityType`/рендерер кодом | нет |
 
-Модель **не** описывается JSON'ом — это не ваниль. Только код + текстура.
+Свой рендерер/модель нужен только для нестандартного тела: `ClientModEvents.registerLayerDefinitions`
++ `registerEntityRenderer`. Несколько юнитов могут делить один рендерер.
 
-Спавн-яйцо — единственный файл, который можно просто скопировать из работающего:
+## Зданию (data-driven)
 
-```json
-{ "parent": "item/template_spawn_egg" }
-```
-
-## Зданию нужно
-
-| Ассет | Путь |
+| Ассет | Откуда |
 |---|---|
-| Имя и тултип | `lang/*.json`: `buildings.<ns>.<path>`, `.tooltip1..N` |
-| Иконка кнопки | `assets/reignofnether/textures/icons/buildings/x.png` |
-| Портрет | **блок**, не текстура: поле `portraitBlock` на здании |
-| Структура | `assets/reignofnether/data/reignofnether/structures/x.nbt` |
+| Имя | `name: { "en_us": "…" }` в `BuildingDefinition` |
+| Иконка кнопки | `icon: "ns:textures/…png"` |
+| Портрет | `flags.portrait` — **id блока** (не текстура), напр. `minecraft:polished_granite` |
+| Структура (блоки) | NBT `structures/<name>.nbt` в **обеих** ветках: `assets/reignofnether/structures/` (клиент) и `data/reignofnether/structures/` (сервер) |
+
+`structure` в JSON — id без пути NBT: `Building.Builder` берёт `structureName = structure.getPath()`,
+а `BuildingBlockData` ищет `reignofnether:structures/<structureName>.nbt`.
+
+⚠ В `assets/reignofnether/structures/` лежит **много осиротевших NBT** от вырезанных фракций
+(используются только `town_centre.nbt`/`barracks.nbt`, и те продублированы в `data/`). Кандидаты на
+чистку; перед удалением проверь `reference/` и гайды.
 
 ## Ключи локализации
 
 Схема: `<домен>.reignofnether.<путь>[.tooltipN|.pointN|.desc]`.
 
-| Домен | Пример |
-|---|---|
-| Строение | `buildings.reignofnether.laboratory` |
-| Юнит | `entity.reignofnether.husk_unit` |
-| Исследование | `research.reignofnether.sculk_amplifiers` |
-| Способность | `abilities.reignofnether.sonic_boom` |
-| Предмет | `item.reignofnether.broadsword`, `.desc`, `.point1..N` |
-| Тип предмета | `unititemtype.reignofnether.consumable` |
-| Ресурс | `resources.reignofnether.food` |
-| Вкладка | `creativetab.reignofnether.unit_spawn_eggs` |
-| Серверные сообщения | `server.reignofnether.*` |
-| Чары | удалены |
+| Домен | Пример | Откуда имя |
+|---|---|---|
+| Строение | `buildings.reignofnether.<path>` | код-здания; data-здания берут из JSON `name` |
+| Юнит | `entity.reignofnether.<path>` | код-юниты; data-юниты берут из JSON `name` |
+| Исследование | `research.<ns>.<path>` | `name` в `data/<ns>/research/<name>.json` |
+| Способность | `abilities.reignofnether.<x>` | код-способности; JSON-способности — из spec |
+| Предмет | `item.reignofnether.<x>`, `.desc`, `.point1..N` | код |
+| Ресурс | `resources.reignofnether.food` | код |
+| Серверные сообщения | `server.reignofnether.*` | код |
 
-⚠ **Имя чар** читается из датапак-описания, ключ `enchantment.reignofnether.<id>`. Таких ключей
-в lang-файлах не было — имена показывались сырыми ключами. Если чары вернутся, добавлять ключ
-обязательно.
+Чары перенесены на `Holder<Enchantment>`; имя чар читается из датапак-описания, ключ
+`enchantment.reignofnether.<id>`.
 
 ## Языки
 
 22 файла в `assets/reignofnether/lang/`, эталон — `en_us.json`. Остальные можно не трогать:
-недостающий ключ отдаёт пустую строку. Но если контент должен читаться по-русски,
-`ru_ru.json` придётся вести вручную.
+недостающий ключ отдаёт пустую строку. `ru_ru.json` ведётся вручную.
 
 ## Формат lang-файлов
 
@@ -69,21 +69,10 @@ Get-Content <файл> -Raw | ConvertFrom-Json
 Тот же приём спасает, если `Set-Content` уже испортил файл: прочитать как cp1251 и переписать
 как UTF-8.
 
-## Свои модели
+## Историческое
 
-`ClientModEvents.registerLayerDefinitions` — регистрация слоя:
-
-```java
-event.registerLayerDefinition(XUnitModel.LAYER_LOCATION, XUnitModel::createBodyLayer);
-```
-
-Рендерер — `event.registerEntityRenderer(EntityRegistrar.X_UNIT.get(), XRenderer::new)`.
-Несколько юнитов могут делить один рендерер — это нормально.
-
-База для своего рендерера: `unit/modelling/renderers/AbstractVillagerUnitRenderer.java`.
-
-## Что удаляется
-
-* `assets/minecraft/**` — подмена ванильных ресурсов (этап B.2).
-* Текстуры, звуки и ключи удаляемого контента — этап D.19.
-* Фракционные темы в `sounds.json` и вокал врайтов/Wildfire — удаляются вместе с контентом.
+Раньше под каждый юнит заводились спавн-яйцо (`models/item/x_unit_spawn_egg.json`) и
+`entity.reignofnether.x_unit` в lang; текстуры моделей и звуки лежали в
+`assets/reignofnether/textures/{entities,mobheads}/`. Для data-driven контента это не требуется —
+тело ванильное, имя/иконка из JSON. Папки удалённого контента (`assets/minecraft/**`, звуки/вокал)
+вычищены при вырезании фракций.

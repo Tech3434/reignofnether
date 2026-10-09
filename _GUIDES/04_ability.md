@@ -3,6 +3,18 @@
 > Гейт по исследованию: `ability.requireResearch(ResearchCondition...)` — проверяется на сервере и
 > блокирует кнопку в HUD (см. `07_research.md`; условие инвертируемо).
 
+## Два способа
+
+Способность — это код-класс (`extends Ability`) **и** инстанс, который объявляется двумя путями:
+
+* **данными** — `AbilitySpec` (`type` = id в реестре `AbilityTypes`) в списке `abilities` у
+  `UnitDefinition` (и зданий); `UnitDefinitionRuntime.buildAbilities` создаёт инстанс;
+* **кодом** — статикой класса-юнита (описано ниже).
+
+⚠ **`AbilityTypes.register(...)` пока не вызывается нигде** — движковых типов способностей нет, поэтому
+`type` из JSON резолвится в `null`. Автор фракции регистрирует свои типы так же, как аддоны в
+`Addons.init()`: `AbilityTypes.register(id, spec -> new MyAbility(spec))`. До этого рабочий путь — код.
+
 ## Устройство
 
 База — `ability/Ability.java`. Способность не регистрируется в реестре: юнит или здание
@@ -67,7 +79,7 @@ private Ability autocast;
 
 Кулдауны и заряды тикаются централизованно в `Unit.tick` — отдельно ничего делать не нужно.
 
-Если хоткей не указан, `Abilities.getButtons` назначит `abilitySlot1..6` по порядку.
+Если хоткей не указан, `Abilities.getButtons` назначит `abilitySlot1..8` по порядку.
 
 ## UnitAction
 
@@ -77,16 +89,16 @@ private Ability autocast;
 
 ## Гейт по исследованию
 
-Исследования удаляются (этап E.1 плана), поэтому `hasResearch` в коде не будет. Если
-способность должна открываться позже, делай это своим флагом на `RTSPlayer` либо проверкой
-владельца в `isEnabled`:
+Система исследований реализована (см. `07_research.md`): `Ability.requiredResearch(ResearchCondition...)`
+проверяется на сервере при использовании и блокирует кнопку в HUD (`isEnabled`). Условие инвертируемо
+(`invert`). Грант/отзыв — командой `/research grant|revoke`.
 
 ```java
-() -> BuildingClientEvents.getPlayerHasUpgrade(playerName, ProductionItems.X)
+() -> ResearchUtils.meets(level, ownerName, List.of(new ResearchCondition(id, false)))   // сервер
+() -> ResearchUtils.meetsClient(ownerName, List.of(new ResearchCondition(id, false)))    // клиент/HUD
 ```
 
-Прежний вариант `() -> !ResearchClient.hasResearch(...)` сервер применения **не блокировал** —
-серая была только кнопка. Не рассчитывай на это как на защиту.
+Клиентская проверка — только для HUD; серверная — обязательная защита.
 
 ## Способность, привязанная к юниту
 

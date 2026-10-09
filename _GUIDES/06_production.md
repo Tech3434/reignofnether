@@ -39,8 +39,11 @@
 
 ## Кнопки
 
-`getStartButton(ProductionPlacement, Keybinding)` и `getCancelButton`. **По умолчанию
-возвращают `null`** — если не переопределить, предмет не появится в UI.
+`getStartButton(ProductionPlacement, Keybinding)` по умолчанию возвращает `null` — легаси-путь
+`ProductionItemList.getButtons` его пропускает. У JSON-предметов (`JsonProductionItem`/`ResearchProductionItem`/
+`JsonUpgradeProductionItem`) кнопку запуска даёт `ProductionAbility` (из `getAbilities()` здания),
+поэтому `getStartButton` им не нужен. `getCancelButton` по умолчанию возвращает `StopProductionButton`
+(кнопка отмены в очереди) — переопределяй только для особой логики.
 
 ```java
 @Override
@@ -69,21 +72,26 @@ public StartProductionButton getStartButton(ProductionPlacement prodBuilding, Ke
 
 ## Лимит армии
 
-**Правило владельца ветки:** базовый лимит **1 юнит**, прирост даёт ратуша фракции.
+**Правило владельца ветки:** базовый лимит **1 юнит**, прирост даёт столица фракции.
 
-Текущий код так не устроен: `BuildingServerEvents.getTotalPopulationSupply` суммирует
-`cost.population` построенных зданий, а `ProductionItem.canAffordPopulation` сравнивает с ним.
-После этапа E.4 плана ожидается:
+Реализовано (этап E.4): `BuildingServerEvents.getTotalPopulationSupply` суммирует `populationSupply`
+построенных зданий (у JSON-здания — из определения), а `ProductionItem.canAffordPopulation` сравнивает
+текущее население (юниты владельца + предметы в очередях) с `maxPopulation = 1 + Σ populationSupply`.
 
-```java
-public static int maxPopulation = 1;                                   // база
-public static int getPopulationBonusFromCapitols(String ownerName) { ... }  // сумма по isCapitol
-```
+## JSON-предметы производства
 
-и сравнение `currentPop + population <= maxPopulation + бонус от ратуш`.
+У data-driven здания (`JsonBuilding`) очередь наполняется из определения:
 
-Счётчик `UnitServerEvents.getCurrentPopulation` считает население юнитов владельца плюс
-предметы в очередях производства.
+* `production: [ "ns:unit" ]` → `JsonProductionItem` (спавн юнита по id определения);
+* `researches: [ "ns:research" ]` → `ResearchProductionItem` (общая очередь; по завершении — грант
+  исследования владельцу + пересчёт атрибутов);
+* `upgrades: [ … ]` → `JsonUpgradeProductionItem` (поднимает уровень здания, переключает на вариант —
+  см. `03_building.md` «Апгрейды»).
+
+Сетевой id предмета — `ProductionItem.getNetworkId()`: код-предметы берут ключ из
+`ReignOfNetherRegistries.PRODUCTION_ITEM`, JSON/исследования/апгрейды переопределяют его (id определения/
+исследования/`upgrade:N`). Клиент шлёт этот id в `BuildingProductionServerboundPacket`, сервер резолвит
+через `JsonBuilding.getProductionItem(id)`.
 
 ## Ресурсы
 
@@ -95,16 +103,12 @@ public static int getPopulationBonusFromCapitols(String ownerName) { ... }  // �
 * Пакеты синхронизации: `ResourcesClientboundPacket` (сервер → клиент),
   `ResourcesServerboundPacket` (клиент → сервер).
 
-**Что удаляется на этапе D.14:** `ResourceSources` (перечень того, что собирается),
-`ResourceIndex` и `ResourceChunk` (пространственный индекс блоков по чанкам),
-`ResourcesSaveData`. Без них рабочими остаются баланс, списание, начисление и синхронизация.
-
-Начальные объёмы задаются в `ResourcesServerEvents` константами.
-
 ## Сбор ресурсов
 
-Цели сбора живут в `unit/goals/` и удаляются вместе с контентом. Если владелец захочет
-снабжение рабочих — это новая цель поверх пула `Resources`.
+`ResourceSources` (что выпадает с животных/блоков) и цели сбора (`unit/goals/GatherResourcesGoal`,
+`ReturnResourcesGoal`, `BuildRepairGoal`) — рабочий контур рабочего: добыча → переноска → доставка в
+здание с `flags.canAcceptResources` (у столицы — `true`). Начальные объёмы — константы в
+`ResourcesServerEvents`. Режим сбора — `UnitAction.TOGGLE_GATHER_TARGET` (Food/Wood/Ore).
 
 ## Проверка в игре
 
