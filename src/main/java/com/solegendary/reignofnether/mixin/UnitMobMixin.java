@@ -378,6 +378,20 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
 
     @Override
     public ResourceCost getCost() {
+        // the removed code unit classes returned their static ResourceCost here; a data-driven unit
+        // takes it from its definition. Never return null: callers read cost.population directly.
+        if (ron$cost != null)
+            return ron$cost;
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        if (def == null)
+            return ResourceCost.Unit(0, 0, 0, 0, 0);
+        com.solegendary.reignofnether.unit.UnitDefinition.CostSpec c = def.cost().orElse(null);
+        ResourceCost cost = c == null
+                ? ResourceCost.Unit(0, 0, 0, 0, def.populationOrDefault())
+                : ResourceCost.Unit(c.food(), c.wood(), c.ore(), c.seconds(), def.populationOrDefault());
+        if (c != null)
+            cost.emerald = c.emerald();
+        ron$cost = cost;
         return ron$cost;
     }
 
@@ -432,6 +446,9 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
             return;
         Mob self = (Mob) (Object) this;
         Unit me = (Unit) (Object) this;
+
+        // behaviour flags from the definition (hold-position etc.)
+        ron$holdPosition = def.flagsOrDefault().holdPosition();
 
         if (ron$moveGoal == null) {
             ron$moveGoal = new MoveToTargetBlockGoal(self, false, 0);
