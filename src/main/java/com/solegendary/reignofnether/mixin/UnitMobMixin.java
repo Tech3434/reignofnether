@@ -150,9 +150,8 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
         ron$roleResolved = true;
         if (ron$definitionId == null)
             return null;
-        com.solegendary.reignofnether.unit.UnitDefinition def = level().registryAccess()
-                .registryOrThrow(com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY)
-                .get(ron$definitionId);
+        // resolve() so a unit that inherits its role from a parent definition reports it correctly
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
         ron$roleCache = def == null ? null : def.roleOrDefault();
         return ron$roleCache;
     }
@@ -445,9 +444,8 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
     public void initialiseGoals() {
         if (ron$definitionId == null)
             return;
-        com.solegendary.reignofnether.unit.UnitDefinition def = level().registryAccess()
-                .registryOrThrow(com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY)
-                .get(ron$definitionId);
+        // resolve() so goals come from the effective (inherited) definition, not just this file's fields
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
         if (def == null)
             return;
         Mob self = (Mob) (Object) this;
