@@ -14,6 +14,8 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 
 /**
@@ -28,10 +30,12 @@ import java.util.List;
 public class SimpleHealAbility extends Ability {
 
     private final float amount;
+    @Nullable private final ResourceLocation soundId;
 
     public SimpleHealAbility(AbilitySpec spec) {
         super(UnitAction.HEAL_SELF, Math.round(spec.cooldown()), 0, 0, false);
         this.amount = (float) spec.param("amount", 20);
+        this.soundId = spec.resourceParam("sound");
     }
 
     @Override
@@ -45,6 +49,12 @@ public class SimpleHealAbility extends Ability {
         }
         if (living.isAlive()) {
             living.heal(amount);
+            if (soundId != null) {
+                net.minecraft.sounds.SoundEvent sound = net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.get(soundId);
+                if (sound != null)
+                    level.playSound(null, living.getX(), living.getY(), living.getZ(), sound,
+                            net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+            }
             setToMaxCooldown(unitUsing);
         }
     }

@@ -24,8 +24,12 @@ params `amount`) зарегистрирован в `BuiltInAbilities.init()` (в
 
 Общие поля `AbilitySpec` прокидываются в созданный инстанс (`UnitDefinitionRuntime.buildAbilities`):
 `cooldown`, `range`, `radius`, `canTargetEntities`, `oneClickOneUse`, `passive` (у пассивки нет кнопки),
-`mana` (для `HeroAbility`), `requiredResearch`. Для чисел `0`/`false` = «оставить дефолт класса»;
-`params` — числа, специфичные для типа.
+`mana` (для `HeroAbility`), `requiredResearch`. Для чисел `0`/`false` = «оставить дефолт класса».
+
+`params` — типизированные: **число** (`spec.param("amount", 20)`) или **строка**
+(`spec.stringParam(...)`, `spec.resourceParam("unit")` — парсит в `ResourceLocation`). Пример:
+`{ "type": "reignofnether:summon", "cooldown": 600, "params": { "unit": "reignofnether:vindicator_unit", "count": 1 } }`
+(Demo: движковый `reignofnether:summon` — `SummonUnitAbility`; `reignofnether:heal` умеет `params.sound`).
 
 **Пассивки:** `passive: true` (или класс задаёт `passive = true` в конструкторе) — кнопки нет, действие
 никогда не кликается; вместо этого сервер каждый тик зовёт `Ability.tickPassive(Unit)` (из `Unit.tick`).

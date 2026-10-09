@@ -20,8 +20,9 @@
   },
   "projectile": { "entity": "minecraft:arrow", "velocity": 1.6, "damage": 3 },
   "abilities": [
-    { "type": "reignofnether:heal", "cooldown": 200, "params": { "amount": 15 } },
-    { "type": "reignofnether:regeneration", "params": { "amount": 1, "interval": 40 } }
+    { "type": "reignofnether:heal", "cooldown": 200, "params": { "amount": 15, "sound": "minecraft:entity.player.levelup" } },
+    { "type": "reignofnether:regeneration", "params": { "amount": 1, "interval": 40 } },
+    { "type": "reignofnether:summon", "cooldown": 600, "params": { "unit": "reignofnether:vindicator_unit", "count": 1 } }
   ],
   "cost": { "food": 60, "wood": 0, "ore": 0, "seconds": 15 },
   "population": 1

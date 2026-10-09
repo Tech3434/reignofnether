@@ -102,7 +102,8 @@
 Общие поля инстанса: `type` (id код-класса), `cooldown`, `mana`, `requiredResearch`,
 `heroLevel`/`rank` (для героев), `autocast`, `range`, `passive` (пассивный эффект — яд при ударе и
 т.п.), `submenu`/`row`/`col`. Классовый `Codec` добавляет свои параметры (напр. `poison_on_hit` →
-`amount`).
+`amount`). `params` — типизированные: число или строка (`resourceParam` парсит `ResourceLocation`), напр.
+`"params": { "unit": "reignofnether:skeleton_unit", "count": 1 }`.
 
 * **Пассивки** — это те же способности с `passive: true` (отдельного списка `passives` нет); кнопки нет,
   сервер каждый тик зовёт `Ability.tickPassive(Unit)`. Движковый пример — `reignofnether:regeneration`

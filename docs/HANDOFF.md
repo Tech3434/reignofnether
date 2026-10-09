@@ -87,8 +87,9 @@ cd ___temp
   и зовёт `use(...)`; поэтому активному типу нужна **своя константа `UnitAction`**.
 - Пассивка (`passive: true`, кнопки нет) получает серверный тик через `Ability.tickPassive(Unit)` из
   `Unit.tick`. Движковый пример — `reignofnether:regeneration` (`RegenerationAbility`).
-- `AbilitySpec` (Codec): `type` + `cooldown`/`mana`/`passive`/`requiredResearch`/`params`
-  (`params` сейчас `Map<String,Double>` — только числа; расширять при необходимости).
+- `AbilitySpec` (Codec): `type` + `cooldown`/`mana`/`passive`/`requiredResearch`/`params`.
+  `params` — типизированные (`Map<String, AbilityParam>`: число или строка); геттеры `param(double)`,
+  `stringParam(...)`, `resourceParam(...)` (парсит `ResourceLocation` — сущность/звук/предмет).
 - В `UnitDefinitionRuntime.buildAbilities` инстансы создаются и кладутся в `unit.getAbilities()`;
   из spec прокидываются `cooldown`/`range`/`radius`/`canTargetEntities`/`oneClickOneUse`/`passive`/`mana`
   (для `HeroAbility`)/`requiredResearch` (числа `0`/`false` = дефолт класса).
@@ -325,6 +326,12 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 (`BuildingUtils.getResourceId`, `CustomButtonClientEvents.unitDefinitionMappings`, новый case 5 пакета).
 Гайд — `_GUIDES/10_custom_buttons.md`. Гейты зелёные.**`runClient` не проверялся**.
 
+**Типизированные params способностей:** `AbilityParam` (число или строка, `Codec.either`); `AbilitySpec.params`
+теперь `Map<String,AbilityParam>` с геттерами `param(double)`/`stringParam`/`resourceParam` (парсит
+`ResourceLocation`). Демо: `reignofnether:summon` (`SummonUnitAbility`, `params.unit`/`count` — спавн юнита по
+определению, новое `UnitAction.SUMMON_UNIT`), `reignofnether:heal` умеет `params.sound`. Демо в
+`skeleton_unit`. Гейты зелёные.**`runClient` не проверялся**.
+
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)
 спавнит снаряд на сервере (owner, урон = `damage` или `getUnitAttackDamage()`), дефолт — стрела.
@@ -406,7 +413,8 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 - `faction/`: StartingUnit, Faction (Codec), FactionRegistries, FactionClientboundPacket, FactionClientEvents,
   FactionMenu, FactionCommand, FactionServerEvents.
 - `unit/`: UnitDefinition, UnitDefinitions, UnitDefinitionRuntime; `interfaces/DefinedUnit`.
-- `ability/`: AbilitySpec, AbilityTypes, BuiltInAbilities, SimpleHealAbility, RegenerationAbility.
+- `ability/`: AbilitySpec, AbilityParam, AbilityTypes, BuiltInAbilities, SimpleHealAbility, RegenerationAbility,
+  SummonUnitAbility.
 - `building/`: BuildingDefinition, BuildingDefinitions, UpgradeSpec, WorkerBuildMenu; `buildings/JsonBuilding`,
   `buildings/JsonBuildingManager`, `buildings/JsonUpgradeProductionItem`;   `production/JsonProductionItem`;
   `addon/AddonSpec`, `addon/AddonTypes`, `addon/Addons`, `addon/NightSourceBuildingAddon`,

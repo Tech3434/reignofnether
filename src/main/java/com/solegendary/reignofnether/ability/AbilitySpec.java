@@ -6,6 +6,8 @@ import com.solegendary.reignofnether.research.ResearchCondition;
 
 import net.minecraft.resources.ResourceLocation;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +29,7 @@ public record AbilitySpec(
         boolean canTargetEntities,
         boolean oneClickOneUse,
         List<ResearchCondition> requiredResearch,
-        Map<String, Double> params
+        Map<String, AbilityParam> params
 ) {
 
     public static final Codec<AbilitySpec> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -40,10 +42,25 @@ public record AbilitySpec(
             Codec.BOOL.optionalFieldOf("canTargetEntities", false).forGetter(AbilitySpec::canTargetEntities),
             Codec.BOOL.optionalFieldOf("oneClickOneUse", false).forGetter(AbilitySpec::oneClickOneUse),
             ResearchCondition.CODEC.listOf().optionalFieldOf("requiredResearch", List.of()).forGetter(AbilitySpec::requiredResearch),
-            Codec.unboundedMap(Codec.STRING, Codec.DOUBLE).optionalFieldOf("params", Map.of()).forGetter(AbilitySpec::params)
+            Codec.unboundedMap(Codec.STRING, AbilityParam.CODEC).optionalFieldOf("params", Map.of()).forGetter(AbilitySpec::params)
     ).apply(instance, AbilitySpec::new));
 
+    /** A numeric param (JSON number), or {@code fallback} if absent. */
     public double param(String key, double fallback) {
-        return params.getOrDefault(key, fallback);
+        AbilityParam param = params.get(key);
+        return param == null ? fallback : param.asDouble(fallback);
+    }
+
+    /** A string param, or {@code fallback} if absent. */
+    public String stringParam(String key, String fallback) {
+        AbilityParam param = params.get(key);
+        return param == null ? fallback : param.asString(fallback);
+    }
+
+    /** A string param parsed as a {@link ResourceLocation} (entity/sound/item id), or null. */
+    @Nullable
+    public ResourceLocation resourceParam(String key) {
+        AbilityParam param = params.get(key);
+        return param == null ? null : param.asResource();
     }
 }
