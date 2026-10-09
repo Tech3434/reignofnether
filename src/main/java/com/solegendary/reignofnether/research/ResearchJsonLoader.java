@@ -31,11 +31,13 @@ import java.util.Map;
  * {
  *   "name": "research.reignofnether.example",      // translation key shown in the HUD
  *   "icon": "reignofnether:textures/icons/items/shovel.png",
- *   "type": "unlock" | "attribute_boost",           // optional, defaults to unlock
+ *   "type": "unlock" | "attribute_boost" | "equip", // optional, defaults to unlock
  *   "cost": { "food": 0, "wood": 100, "ore": 0, "seconds": 20 }, // optional = free
  *   "prerequisites": [ { "research": "reignofnether:other", "invert": false } ],
  *   "attributes": [ { "attribute": "minecraft:generic.attack_damage", "amount": 1.0,
- *                     "unit": "reignofnether:villager_unit" } ] // "unit" optional
+ *                     "unit": "reignofnether:villager_unit" } ], // "unit" optional
+ *   "equip": [ { "item": "minecraft:iron_sword", "slot": "mainhand",
+ *                "unit": "reignofnether:villager_unit" } ] // "slot"/"unit" optional
  * }
  * </pre>
  */
@@ -74,9 +76,14 @@ public class ResearchJsonLoader implements ResourceManagerReloadListener {
         ResourceLocation icon = json.has("icon")
                 ? ResourceLocation.parse(json.get("icon").getAsString())
                 : null;
-        ResearchType type = json.has("type") && json.get("type").getAsString().equalsIgnoreCase("attribute_boost")
-                ? ResearchType.ATTRIBUTE_BOOST
-                : ResearchType.UNLOCK;
+        ResearchType type = ResearchType.UNLOCK;
+        if (json.has("type")) {
+            String typeName = json.get("type").getAsString().trim().toLowerCase(java.util.Locale.ROOT);
+            if (typeName.equals("attribute_boost"))
+                type = ResearchType.ATTRIBUTE_BOOST;
+            else if (typeName.equals("equip"))
+                type = ResearchType.EQUIP;
+        }
 
         ResourceCost cost = null;
         if (json.has("cost")) {
@@ -111,6 +118,18 @@ public class ResearchJsonLoader implements ResourceManagerReloadListener {
             }
         }
 
-        return new Research(id, nameKey, icon, cost, prerequisites, attributes, type);
+        List<ResearchEquipModifier> equips = new ArrayList<>();
+        if (json.has("equip")) {
+            JsonArray arr = json.getAsJsonArray("equip");
+            for (JsonElement el : arr) {
+                JsonObject e = el.getAsJsonObject();
+                ResourceLocation item = ResourceLocation.parse(e.get("item").getAsString());
+                ResourceLocation unit = e.has("unit") ? ResourceLocation.parse(e.get("unit").getAsString()) : null;
+                String slot = e.has("slot") ? e.get("slot").getAsString() : ResearchEquipModifier.DEFAULT_SLOT;
+                equips.add(new ResearchEquipModifier(item, unit, slot));
+            }
+        }
+
+        return new Research(id, nameKey, icon, cost, prerequisites, attributes, equips, type);
     }
 }

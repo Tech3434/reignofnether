@@ -2,6 +2,7 @@ package com.solegendary.reignofnether.research;
 
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
+import com.solegendary.reignofnether.unit.interfaces.DefinedUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 
 import net.minecraft.core.Holder;
@@ -40,6 +41,7 @@ public final class ResearchAttributeApplier {
 
         LivingEntity living = (LivingEntity) unit;
         ResourceLocation typeId = BuiltInRegistries.ENTITY_TYPE.getKey(((Entity) unit).getType());
+        ResourceLocation definitionId = unit instanceof DefinedUnit defined ? defined.getUnitDefinitionId() : null;
 
         for (Research research : ResearchRegistry.all()) {
             if (research.getType() != ResearchType.ATTRIBUTE_BOOST)
@@ -47,7 +49,9 @@ public final class ResearchAttributeApplier {
             if (!ResearchUtils.isResearched(level, ownerName, research.getId()))
                 continue;
             for (ResearchAttributeModifier mod : research.getAttributeModifiers()) {
-                if (mod.unitFilter() != null && !mod.unitFilter().equals(typeId))
+                if (mod.unitFilter() != null
+                        && !mod.unitFilter().equals(typeId)
+                        && !mod.unitFilter().equals(definitionId))
                     continue;
                 Holder<Attribute> attribute = BuiltInRegistries.ATTRIBUTE.getHolder(mod.attributeId()).orElse(null);
                 if (attribute == null) {
