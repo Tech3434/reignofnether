@@ -6,6 +6,7 @@ import com.solegendary.reignofnether.building.BuildingBlockData;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingDefinition;
 import com.solegendary.reignofnether.building.BuildingPlaceButton;
+import com.solegendary.reignofnether.building.ProductionSpec;
 import com.solegendary.reignofnether.building.UpgradeSpec;
 import com.solegendary.reignofnether.building.addon.AddonSpec;
 import com.solegendary.reignofnether.building.addon.AddonTypes;
@@ -83,8 +84,9 @@ public class JsonBuilding extends ProductionBuilding {
                 this.portraitBlock = block;
         });
 
-        for (ResourceLocation unitId : definition.production())
-            this.productions.add(new JsonProductionItem(unitId, cost, unitId.getPath()), Keybindings.abilitySlot1);
+        for (ProductionSpec spec : definition.production())
+            this.productions.add(new JsonProductionItem(spec.unit(), cost, spec.unit().getPath(),
+                    spec.costOverride().orElse(null)), Keybindings.abilitySlot1);
 
         for (ResourceLocation researchId : definition.researches())
             this.productions.add(com.solegendary.reignofnether.research.ResearchProductionItem.fromId(researchId),

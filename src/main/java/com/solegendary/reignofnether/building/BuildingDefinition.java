@@ -19,9 +19,10 @@ import java.util.Optional;
  * {@code data/<namespace>/building/<name>.json} into the datapack registry
  * {@link BuildingDefinitions#BUILDING_KEY}.
  *
- * <p>{@code production} lists the unit-definition ids this building can train; {@code researches}
- * lists the research ids it offers; both share the building's queue (owner decision). The behaviour
- * flags mirror {@link Building}'s fields and live under {@code flags}.
+ * <p>{@code production} lists what this building can train (a plain unit-definition id, or an object
+ * with a {@code costOverride}); {@code researches} lists the research ids it offers; both share the
+ * building's queue (owner decision). The behaviour flags mirror {@link Building}'s fields and live
+ * under {@code flags}.
  */
 public record BuildingDefinition(
         ResourceLocation structure,
@@ -32,7 +33,7 @@ public record BuildingDefinition(
         int populationSupply,
         boolean isCapitol,
         Flags flags,
-        List<ResourceLocation> production,
+        List<ProductionSpec> production,
         List<ResourceLocation> researches,
         List<AddonSpec> addons,
         List<UpgradeSpec> upgrades,
@@ -80,7 +81,7 @@ public record BuildingDefinition(
             Codec.INT.optionalFieldOf("populationSupply", 0).forGetter(BuildingDefinition::populationSupply),
             Codec.BOOL.optionalFieldOf("isCapitol", false).forGetter(BuildingDefinition::isCapitol),
             Flags.CODEC.optionalFieldOf("flags", Flags.DEFAULT).forGetter(BuildingDefinition::flags),
-            ResourceLocation.CODEC.listOf().optionalFieldOf("production", List.of()).forGetter(BuildingDefinition::production),
+            ProductionSpec.CODEC.listOf().optionalFieldOf("production", List.of()).forGetter(BuildingDefinition::production),
             ResourceLocation.CODEC.listOf().optionalFieldOf("researches", List.of()).forGetter(BuildingDefinition::researches),
             AddonSpec.CODEC.listOf().optionalFieldOf("addons", List.of()).forGetter(BuildingDefinition::addons),
             UpgradeSpec.CODEC.listOf().optionalFieldOf("upgrades", List.of()).forGetter(BuildingDefinition::upgrades),

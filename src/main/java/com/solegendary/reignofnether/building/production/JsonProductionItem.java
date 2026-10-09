@@ -31,11 +31,18 @@ public class JsonProductionItem extends ProductionItem {
 
     private final ResourceLocation unitDefinitionId;
     private final String fallbackName;
+    private final UnitDefinition.CostSpec costOverride; // nullable: null = use the unit definition's own cost
 
     public JsonProductionItem(ResourceLocation unitDefinitionId, ResourceCost cost, String displayName) {
+        this(unitDefinitionId, cost, displayName, null);
+    }
+
+    public JsonProductionItem(ResourceLocation unitDefinitionId, ResourceCost cost, String displayName,
+                              @Nullable UnitDefinition.CostSpec costOverride) {
         super(cost);
         this.unitDefinitionId = unitDefinitionId;
         this.fallbackName = displayName;
+        this.costOverride = costOverride;
         this.onComplete = (Level level, ProductionPlacement placement) -> {
             if (!level.isClientSide())
                 placement.produceUnit((ServerLevel) level, unitDefinitionId, placement.ownerName, true, new Vec3i(0, 0, 0));
@@ -74,10 +81,13 @@ public class JsonProductionItem extends ProductionItem {
     @Override
     public ResourceCost getCost(boolean isClientSide, String ownerName) {
         UnitDefinition def = resolveDefinition(isClientSide);
-        if (def != null && def.cost().isPresent()) {
-            UnitDefinition.CostSpec c = def.cost().get();
-            ResourceCost unitCost = ResourceCost.Unit(c.food(), c.wood(), c.ore(), c.seconds(), def.population().orElse(1));
-            unitCost.emerald = c.emerald();
+        int population = def == null ? 1 : def.population().orElse(1);
+        // an explicit costOverride replaces the unit's own cost entirely
+        UnitDefinition.CostSpec spec = costOverride != null ? costOverride
+                : def != null ? def.cost().orElse(null) : null;
+        if (spec != null) {
+            ResourceCost unitCost = ResourceCost.Unit(spec.food(), spec.wood(), spec.ore(), spec.seconds(), population);
+            unitCost.emerald = spec.emerald();
             return unitCost;
         }
         return super.getCost(isClientSide, ownerName);
