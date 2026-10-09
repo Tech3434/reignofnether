@@ -33,18 +33,21 @@
 ## Старт матча по фракции
 
 `PlayerServerEvents.startRTS(playerId, pos, startPosColorId, factionId)` читает фракцию: ставит её
-`capitol`, спавнит `starting_units` (с учётом `count`). Если фракция или её энтри не найдены —
-фолбэк на константы (`STARTING_ARMY`, `Buildings.TOWN_CENTRE`). Путь входа (хоткей, команда,
+`capitol`, спавнит `starting_units` (с учётом `count`). Резолв столицы: код-`BUILDING` →
+`JsonBuildingManager` → дефолт id `reignofnether:town_centre`; стартовый отряд — из фракции либо
+фолбэк-константы (`STARTING_ARMY`/`STARTING_WORKER_DEF` — id определений). Путь входа (хоткей, команда,
 стартовый блок) передаёт id фракции; дефолт — `FactionRegistries.DEFAULT_FACTION`.
 
 ## Шаги
 
 1. **JSON фракции** — `data/<ns>/faction/<name>.json` (см. схему выше).
-2. **Юнит(ы)** — `02_unit.md`; зарегистрировать (`EntityRegistrar`) и указать в `starting_units`.
-3. **Столица** — `03_building.md`; её id идёт в `capitol`.
+2. **Юнит(ы)** — `02_unit.md` (JSON-определение в `data/<ns>/unit/`); id определения указывается в
+   `starting_units`. `EntityRegistrar` для data-driven юнитов **не нужен** (тело — ванильный моб).
+3. **Столица** — `03_building.md` (JSON-здание в `data/<ns>/building/`); её id идёт в `capitol`.
 4. **Производство** — `06_production.md`.
 5. **Исследования** — `07_research.md`.
-6. **Локализация** — `faction.<ns>.<name>`, `buildings.<faction>.<ns>.<path>`, `units…`.
+6. **Локализация** — `faction.<ns>.<name>`; имена зданий/юнитов — из их JSON (`name`), либо
+   `buildings.<ns>.<path>` для код-зданий.
 7. **Ассеты** — `09_assets.md`.
 
 ## Идентичность игрока
@@ -55,5 +58,5 @@
 ## Чего не делать
 
 * Не заводить enum `Faction` и не возвращать старый `FactionRegistries` — это удалено.
-* `Unit.getFaction()`/`Building.getFaction()` сейчас — **строковая метка** для lang-ключей
-  (`buildings.<faction>.<ns>.<path>`); при использовании реестра фракций указывайте там id фракции.
+* `Building.getFaction()` сейчас — **строковая метка** для код-зданий; у data-driven `JsonBuilding`
+  возвращает `""` (имена берутся из JSON-определения). Явного поля «фракция» у здания пока нет.

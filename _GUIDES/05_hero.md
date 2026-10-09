@@ -1,49 +1,45 @@
 # Герои
 
-> Переписано 2026-10-08 под текущий каркас.
+> Переписано под текущий каркас: юниты data-driven, интерфейс `HeroUnit` **удалён** — герой это
+> `Unit` с ролью `hero` и с геройским состоянием на `UnitMobMixin`.
 
-**Герой — это юнит, который прокачивается: у него есть уровень.** Некоторые способности могут
-требовать определённый уровень героя (и ману), а не только кулдаун. Это в дополнение к обычным
-требованиям `Ability` (кулдаун, мана, исследование — см. `07_research.md`).
+**Герой — это юнит (`role: "hero"`), который прокачивается: у него есть уровень.** Часть способностей
+может требовать уровень героя и ману, а не только кулдаун (в дополнение к обычным требованиям `Ability`:
+кулдаун/мана/исследование — см. `07_research.md`).
 
-## Контракт — `unit/interfaces/HeroUnit`
+## Определение героя (JSON)
 
-Реализуется **вместе** с обычными интерфейсами юнита:
+Тот же `UnitDefinition`, что и у обычного юнита, но `"role": "hero"`; при спавне
+`UnitDefinitionRuntime` применяет характеристики уровня 1, далее `Unit.tick` вызывает `tickHero`
+(мана/опыт/ранги).
 
-```java
-public class XHeroUnit extends Vindicator implements Unit, AttackerUnit, HeroUnit, KeyframeAnimated {
+```json
+{ "base": "minecraft:vindicator", "role": "hero",
+  "attributes": { "minecraft:generic.max_health": 100, "reignofnether:max_mana": 100 },
+  "abilities": [ { "type": "myns:x", "cooldown": 100 } ] }
 ```
 
-## Уровни и опыт
+## Состояние героя (на `Unit` / `UnitMobMixin`)
 
-* `HeroUnit.MAX_LEVEL = 10`; `MAX_NEUTRAL_EXP_LEVEL = 5` (с этого уровня нейтралы опыт не дают).
-* Опыт хранится суммарным; уровень считается по кривой `HeroUnit.getHeroLevel(exp)`
-  (первый порог `200 * 1.6`, далее `+100 * 1.6`).
-* `addExperience(amount)` → **+1 очко навыка за уровень**, звук/частицы, `setStatsForLevel()`, хил.
+* `Unit.isHero()` — роль `hero`.
+* `Unit.MAX_LEVEL = 10`.
+* Опыт/уровень: `getHeroLevel()`, `getExperience`/`addExperience`, `getExpOnCurrentLevel`/`getExpToNextlevel`.
+* Мана: `getMana`/`setMana`/`getMaxMana`; реген раз в секунду в `tickHero`.
+* Очки навыка/ранги: `getSkillPoints`, `getHeroAbilityRanks`, `isRankUpMenuOpen()`, меню прокачки.
+* `setStatsForLevel(boolean)` пересчитывает HP/урон/макс. ману/реген под уровень.
+* Синхронизация: `needsStatSync`.
 
-## Характеристики и мана
-
-* База и прирост за уровень — через атрибуты: `AttributeRegistrar.BASE_MAX_HEALTH`, `BASE_MAX_MANA`,
-  `MANA_REGEN_PER_SECOND`, `MAX_HEALTH_BONUS_PER_LEVEL`, `MAX_MANA_BONUS_PER_LEVEL`,
-  `ATTACK_DAMAGE_BONUS_PER_LEVEL`. Точка входа — `HeroUnit.createDefaultAttributes()`.
-* `setStatsForLevel()` пересчитывает HP/урон/макс. ману под текущий уровень.
-* Мана: `getMana`/`setMana`/`getMaxMana`; реген раз в секунду в `HeroUnit.tick`.
+Состояние хранится в `@Unique`-полях `UnitMobMixin` и переживает сейв (`addHeroUnitSaveData`/
+`readHeroUnitSaveData`): опыт, очки навыка, мана, ранги, заряды.
 
 ## Способности героя
 
-* `HeroAbility` — подвид `Ability`. Ранги: `getHeroAbilityRank` / `setHeroAbilityRank`
-  (хранятся в `getHeroAbilityRanks()`), усиливаются `updateStatsForRank(this)`.
-* Очки навыка тратятся на ранги; **ранг способности — это и есть требование по уровню героя**
-  (вместе с маной при применении).
-* UI рангов — `isRankUpMenuOpen()` / `showRankUpMenu(...)`.
-
-## Сохранение
-
-`addHeroUnitSaveData(CompoundTag)` / `readHeroUnitSaveData(CompoundTag)`: опыт, очки навыка, мана,
-ранги способностей, произвольные `charges`.
+* `HeroAbility` — подвид `Ability`. Ранги: `getHeroAbilityRank`/`setHeroAbilityRank`
+  (`getHeroAbilityRanks()`), усиливаются `updateStatsForRank(Unit)`.
+* Очки навыка тратятся на ранги; ранг способности — это и есть требование по уровню героя.
+* UI рангов — `isRankUpMenuOpen()` / `showRankUpMenu(...)`; полоса маны — `BarState.MANA`.
 
 ## Примечание
 
-Готовых героев в каркасе нет — `HeroUnit` это контракт, под который вы делаете своих героев.
-Требования способности по уровню героя реализуются в вашем гейте применения (по аналогии с
-маной/кулдауном/исследованием).
+Готовых героев в каркасе нет — заводите своего юнита с `role: "hero"`. Требование способности по
+уровню героя реализуется в вашем гейте применения (по аналогии с маной/кулдауном/исследованием).

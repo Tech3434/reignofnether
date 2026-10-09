@@ -1,14 +1,22 @@
 # Добавление здания
 
+> ⚠ **Актуальный путь — JSON-здание** (см. «Определение здания (JSON)» ниже): `JsonBuilding` +
+> `data/<ns>/building/<name>.json`. Разделы «Класс здания»/«Регистрация» — **legacy** (старый кодовый
+> путь); код-реестр `ReignOfNetherRegistries.BUILDING` в каркасе пуст.
+
 ## Что из чего состоит
 
 У здания **нет блока и нет блок-сущности**. Здание — это:
 
-1. Java-объект в кастомном реестре `ReignOfNetherRegistries.BUILDING`;
-2. файл NBT ванильного structure block в `data/reignofnether/structures/<structureName>.nbt`;
-3. в рантайме — экземпляр `BuildingPlacement` в статическом списке `BuildingServerEvents.buildings`.
+1. **определение** (`data/<ns>/building/<name>.json`, `BuildingDefinition`) → рантайм-объект
+   `JsonBuilding` (`JsonBuildingManager`);
+2. файл NBT ванильного structure block: `structures/<structureName>.nbt` в `assets/reignofnether/`
+   (клиент) и `data/reignofnether/` (сервер);
+3. в рантайме — экземпляр `BuildingPlacement` в `BuildingServerEvents.buildings`.
 
-Персистентность — через собственный `SavedData` (`building/BuildingSaveData.java`), не через чанк.
+Кодовый путь (свой `Building`-класс в реестре `BUILDING`) сохранён ниже как **legacy**.
+
+Персистентность — через `BuildingSaveData` (для JSON-зданий хранится `jsonDefinitionId`), не через чанк.
 
 ## 1. Файл структуры
 
@@ -27,7 +35,7 @@
 При загрузке (`BuildingBlockData.getBuildingBlocksFromNbt`) падающие брёвна превращаются в
 обычные, а **текучая вода, отличная от источника, отбрасывается**.
 
-## 2. Класс здания
+## 2. Класс здания (legacy)
 
 ```java
 public class XBuilding extends ProductionBuilding {
@@ -93,7 +101,7 @@ public BuildingPlaceButton getBuildButton(Keybinding hotkey) {
 ⚠ Ключ локализации — `buildings.<namespace>.<path>`. В коде до этапа C был вариант
 `buildings.<фракция>.<ns>.<path>`, которого нет ни в одном lang-файле: использовать первый.
 
-## 3. Регистрация
+## 3. Регистрация (legacy — реестр `BUILDING` в каркасе пуст; используйте JSON)
 
 `building/Buildings.java`:
 
