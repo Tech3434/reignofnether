@@ -688,6 +688,17 @@ public class UnitClientEvents {
             allUnits.add((LivingEntity) entity);
 
             unit.initialiseGoals(); // for clientside data tracking - server automatically does this via registerGoals();
+            // data-driven abilities are not sent over the network (only their cooldowns/charges are synced
+            // by index), so the client rebuilds them from the synced unit-definition registry
+            if (entity instanceof com.solegendary.reignofnether.unit.interfaces.DefinedUnit defined
+                    && defined.getUnitDefinitionId() != null
+                    && unit.getAbilities().isEmpty()) {
+                com.solegendary.reignofnether.unit.UnitDefinition def =
+                        com.solegendary.reignofnether.unit.UnitDefinitions.resolve(
+                                evt.getLevel().registryAccess(), defined.getUnitDefinitionId());
+                if (def != null)
+                    com.solegendary.reignofnether.unit.UnitDefinitionRuntime.buildAbilities(def, unit);
+            }
             unit.setupEquipmentAndUpgradesClient();
 
             UnitSyncServerboundPacket.requestSyncAbilities(entity.getId());
