@@ -357,7 +357,7 @@ buildingData.buildings.forEach(b -> {
         boolean fromCommand, // ignore resources, terrain or any other restrictions and self-build
         boolean ignoreFog
     ) {
-        if (serverLevel == null)
+        if (serverLevel == null || building == null)
             return null;
 
         // a building gated behind research cannot be started until its owner has it (GM commands bypass)

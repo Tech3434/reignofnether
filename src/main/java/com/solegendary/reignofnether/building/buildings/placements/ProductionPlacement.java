@@ -193,6 +193,7 @@ public class ProductionPlacement extends BuildingPlacement {
             definedUnit.setUnitDefinitionId(unitDefinitionId);
         if (entity instanceof Unit unit && entity instanceof net.minecraft.world.entity.Mob mob) {
             com.solegendary.reignofnether.unit.UnitDefinitionRuntime.applyAttributes(def, mob);
+            com.solegendary.reignofnether.unit.UnitDefinitionRuntime.applyEquipment(def, mob);
             unit.setOwnerName(ownerName);
             unit.initialiseGoals();
             com.solegendary.reignofnether.unit.UnitDefinitionRuntime.buildAbilities(def, unit);
@@ -394,7 +395,7 @@ public class ProductionPlacement extends BuildingPlacement {
             if (nextItem.item.tick(this, nextItem)) {
                 if (!tickLevel.isClientSide()) {
                     productionQueue.remove(0);
-                    BuildingProductionClientboundPacket.completeProduction(this.ownerName, this.originPos, nextItem.item.getItemName());
+                    BuildingProductionClientboundPacket.completeProduction(this.ownerName, this.originPos, nextItem.item.getNetworkId());
                 }
             }
         }

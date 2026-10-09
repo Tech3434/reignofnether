@@ -28,10 +28,32 @@ public final class WorkerBuildMenu {
                 buttons.add(gate(cb.getWorkerBuildButton(null), cb));
         });
 
-        for (JsonBuilding jb : JsonBuildingManager.all())
+        for (JsonBuilding jb : jsonBuildings())
             buttons.add(gate(jb.getBuildButton(null), jb));
 
         return buttons;
+    }
+
+    /**
+     * The datapack buildings to show. On an integrated server {@link JsonBuildingManager#all()} is
+     * already populated; on a remote client it is empty until a placement arrives, so fall back to the
+     * synced datapack registry and build the level-0 (base) variants from it.
+     */
+    private static List<JsonBuilding> jsonBuildings() {
+        List<JsonBuilding> buildings = new ArrayList<>(JsonBuildingManager.all());
+        if (!buildings.isEmpty())
+            return buildings;
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null)
+            return buildings;
+        for (net.minecraft.resources.ResourceLocation id
+                : mc.level.registryAccess().registryOrThrow(BuildingDefinitions.BUILDING_KEY).keySet()) {
+            JsonBuilding jb = JsonBuildingManager.getOrCreateLevel(mc.level, id, 0);
+            if (jb != null)
+                buildings.add(jb);
+        }
+        return buildings;
     }
 
     /** Disables a build button while the local player has not satisfied the building's research. */

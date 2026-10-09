@@ -26,6 +26,16 @@ public final class UnitDefinitionRuntime {
 
     private UnitDefinitionRuntime() { }
 
+    /** Puts the definition's {@code equipment} into the mob's main hand (needed by ranged units). */
+    public static void applyEquipment(UnitDefinition def, Mob mob) {
+        def.equipment().ifPresent(itemId -> {
+            net.minecraft.world.item.Item item = BuiltInRegistries.ITEM.get(itemId);
+            if (item != null && item != net.minecraft.world.item.Items.AIR)
+                mob.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                        new net.minecraft.world.item.ItemStack(item));
+        });
+    }
+
     public static void applyAttributes(UnitDefinition def, Mob mob) {
         for (Map.Entry<ResourceLocation, Double> entry : def.attributesOrDefault().entrySet()) {
             Holder<Attribute> attribute = BuiltInRegistries.ATTRIBUTE.getHolder(entry.getKey()).orElse(null);
@@ -61,13 +71,7 @@ public final class UnitDefinitionRuntime {
         if (mob instanceof Unit unit)
             unit.setOwnerName(ownerName);
 
-        def.equipment().ifPresent(itemId -> {
-            net.minecraft.world.item.Item item = BuiltInRegistries.ITEM.get(itemId);
-            if (item != null && item != net.minecraft.world.item.Items.AIR)
-                mob.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
-                        new net.minecraft.world.item.ItemStack(item));
-        });
-
+        applyEquipment(def, mob);
         applyAttributes(def, mob);
         if (mob instanceof Unit unit)
             unit.initialiseGoals();

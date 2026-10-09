@@ -296,6 +296,15 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 `UnitDefinitionRuntime.buildAbilities` (раньше юниты из JSON-зданий **не получали способности** от
 определения). Демо: `skeleton_marksman` ← `skeleton_unit`. Гейты зелёные.**`runClient` не проверялся**.
 
+**Аудит data-driven путей (багфиксы):** (1) `ProductionPlacement.produceUnit` не надевал `equipment` —
+произведённый лучник не держал лук (ranged-goal не срабатывал); вынесено в
+`UnitDefinitionRuntime.applyEquipment` и вызывается в обоих путях спавна. (2) Завершение производства
+слало `getItemName()`, а клиент сравнивал `getNetworkId()` — рассинхрон; теперь слать `getNetworkId()`.
+(3) `BuildingServerEvents.placeBuilding` падал на null-здании (неизвестный id) — добавлен guard.
+(4) `WorkerBuildMenu` на удалённом клиенте был пуст (`JsonBuildingManager.all()` server-only) — фолбэк на
+синхронизированный датапак-реестр. (5) `JsonProductionItem` показывал иконку меча и голый id — теперь
+имя/иконка/тултип из определения. Гейты зелёные.**`runClient` не проверялся**.
+
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)
 спавнит снаряд на сервере (owner, урон = `damage` или `getUnitAttackDamage()`), дефолт — стрела.
