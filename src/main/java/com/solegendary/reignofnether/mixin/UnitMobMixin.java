@@ -351,6 +351,13 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
 
     @Override
     public int getMaxResources() {
+        // derived lazily from the definition: nothing assigns ron$maxResources elsewhere, so without
+        // this a data-driven worker would report 0 and Unit.atMaxResources would always be true
+        if (ron$maxResources > 0)
+            return ron$maxResources;
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        if (def != null)
+            ron$maxResources = def.carryCapacityOrDefault();
         return ron$maxResources;
     }
 

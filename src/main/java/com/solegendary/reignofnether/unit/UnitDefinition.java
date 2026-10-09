@@ -39,7 +39,8 @@ public record UnitDefinition(
         Optional<List<ResearchCondition>> requiredResearch,
         Optional<ResourceLocation> equipment,
         Optional<ProjectileSpec> projectile,
-        Optional<List<AbilitySpec>> abilities
+        Optional<List<AbilitySpec>> abilities,
+        Optional<Integer> carryCapacity
 ) {
 
     public enum Role implements StringRepresentable {
@@ -103,7 +104,8 @@ public record UnitDefinition(
             ResearchCondition.CODEC.listOf().optionalFieldOf("requiredResearch").forGetter(UnitDefinition::requiredResearch),
             ResourceLocation.CODEC.optionalFieldOf("equipment").forGetter(UnitDefinition::equipment),
             ProjectileSpec.CODEC.optionalFieldOf("projectile").forGetter(UnitDefinition::projectile),
-            AbilitySpec.CODEC.listOf().optionalFieldOf("abilities").forGetter(UnitDefinition::abilities)
+            AbilitySpec.CODEC.listOf().optionalFieldOf("abilities").forGetter(UnitDefinition::abilities),
+            Codec.INT.optionalFieldOf("carryCapacity").forGetter(UnitDefinition::carryCapacity)
     ).apply(instance, UnitDefinition::new));
 
     /** Effective role, defaulting to melee when unset. */
@@ -131,6 +133,14 @@ public record UnitDefinition(
 
     public int populationOrDefault() {
         return population.orElse(0);
+    }
+
+    /**
+     * How many resources a worker may carry before it heads back to drop them off. Defaults to 100 for
+     * a worker (the value the removed code worker had) and 0 for anything else, which does not gather.
+     */
+    public int carryCapacityOrDefault() {
+        return carryCapacity.orElse(roleOrDefault() == Role.WORKER ? 100 : 0);
     }
 
     /**
@@ -163,7 +173,8 @@ public record UnitDefinition(
                 requiredResearch.isPresent() ? requiredResearch : parent.requiredResearch(),
                 equipment.isPresent() ? equipment : parent.equipment(),
                 projectile.isPresent() ? projectile : parent.projectile(),
-                abilities.isPresent() ? abilities : parent.abilities()
+                abilities.isPresent() ? abilities : parent.abilities(),
+                carryCapacity.isPresent() ? carryCapacity : parent.carryCapacity()
         );
     }
 }

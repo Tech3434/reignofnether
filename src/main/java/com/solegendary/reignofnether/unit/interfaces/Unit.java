@@ -607,8 +607,10 @@ public interface Unit {
     }
 
     private static int getThresholdResources(Unit unit) {
-        // The carry-bag research that used to double this threshold is gone, so the base value applies.
-        return 50;
+        // Scales with carry capacity (the default 100 gives the old 50); the removed carry-bag
+        // research used to double it.
+        int capacity = unit.getMaxResources();
+        return capacity > 0 ? Math.max(1, capacity / 2) : 50;
     }
 
     static boolean atMaxResources(Unit unit) {
