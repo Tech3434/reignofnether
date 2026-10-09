@@ -107,7 +107,7 @@ public abstract class HeroAbility extends Ability {
     }
 
     public static boolean allSkillsLearnt(Unit hero) {
-        if (hero.getHeroLevel() >= Unit.MAX_LEVEL && hero.getSkillPoints() <= 0)
+        if (hero.getHeroLevel() >= hero.getMaxHeroLevel() && hero.getSkillPoints() <= 0)
             return true;
         int totalSkillRanks = 0;
         for (HeroAbility ability : hero.getHeroAbilities()) {

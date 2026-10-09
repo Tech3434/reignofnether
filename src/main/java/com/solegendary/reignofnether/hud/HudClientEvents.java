@@ -593,7 +593,7 @@ public class HudClientEvents {
                 hudZones.add(zone);
                 if (zone.isMouseOver(mouseX, mouseY)) {
                     MyRenderer.renderTooltip(evt.getGuiGraphics(),
-                        heroUnit.getHeroLevel() >= Unit.MAX_LEVEL ?
+                        heroUnit.getHeroLevel() >= heroUnit.getMaxHeroLevel() ?
                             List.of(fcs(I18n.get("hud.hero.reignofnether.max_level"))) :
                             List.of(
                                     fcs(I18n.get("hud.hero.reignofnether.experience", heroUnit.getExpOnCurrentLevel(), heroUnit.getExpToNextlevel())),

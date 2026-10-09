@@ -401,6 +401,18 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
     }
 
     @Override
+    public int getMaxHeroLevel() {
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        return def == null ? Unit.MAX_LEVEL : def.maxLevelOrDefault();
+    }
+
+    @Override
+    public float getExpReqMultiplier() {
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        return def == null ? Unit.EXP_REQ_MULTIPLIER : def.expReqMultiplierOrDefault();
+    }
+
+    @Override
     public LivingEntity getFollowTarget() {
         return ron$followTarget;
     }

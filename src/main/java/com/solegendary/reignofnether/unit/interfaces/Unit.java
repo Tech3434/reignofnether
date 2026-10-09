@@ -1430,6 +1430,10 @@ public interface Unit {
     int MAX_LEVEL = 10;
     int MAX_NEUTRAL_EXP_LEVEL = 5;
 
+    /** Max hero level / exp-curve multiplier for this unit; a definition overrides (defaults = old constants). */
+    default int getMaxHeroLevel() { return MAX_LEVEL; }
+    default float getExpReqMultiplier() { return EXP_REQ_MULTIPLIER; }
+
     default boolean needsStatSync() { return false; }
     default void setNeedsStatSync(boolean value) { }
     default float getMana() { return 0; }
@@ -1496,7 +1500,7 @@ public interface Unit {
         if (((LivingEntity) this).level().isClientSide())
             return;
         int levelBefore = getHeroLevel();
-        if (levelBefore >= MAX_LEVEL)
+        if (levelBefore >= getMaxHeroLevel())
             return;
 
         setExperience(getExperience() + amount);
@@ -1513,24 +1517,21 @@ public interface Unit {
     }
 
     default int getHeroLevel() {
-        return getHeroLevel(getExperience());
-    }
-
-    static int getHeroLevel(int exp) {
         int level = 0;
-        int expToNextLevel = (int) (200 * EXP_REQ_MULTIPLIER);
+        int exp = getExperience();
+        int expToNextLevel = (int) (200 * getExpReqMultiplier());
         do {
             level += 1;
             exp -= expToNextLevel;
-            expToNextLevel += (100 * EXP_REQ_MULTIPLIER);
-        } while (exp >= 0 && level < MAX_LEVEL);
+            expToNextLevel += (100 * getExpReqMultiplier());
+        } while (exp >= 0 && level < getMaxHeroLevel());
         return level;
     }
 
     default int getExpOnCurrentLevel() {
-        if (getHeroLevel() >= MAX_LEVEL)
+        if (getHeroLevel() >= getMaxHeroLevel())
             return 0;
-        int expToNextLevel = (int) (200 * EXP_REQ_MULTIPLIER);
+        int expToNextLevel = (int) (200 * getExpReqMultiplier());
         int expCount = 0;
         int exp = getExperience();
         while (expCount < exp) {
@@ -1538,15 +1539,15 @@ public interface Unit {
                 return exp - expCount;
             }
             expCount += expToNextLevel;
-            expToNextLevel += (100 * EXP_REQ_MULTIPLIER);
+            expToNextLevel += (100 * getExpReqMultiplier());
         }
         return 0;
     }
 
     default int getExpToNextlevel() {
-        if (getHeroLevel() >= MAX_LEVEL)
+        if (getHeroLevel() >= getMaxHeroLevel())
             return 0;
-        return (int) ((getHeroLevel() + 1) * (100 * EXP_REQ_MULTIPLIER));
+        return (int) ((getHeroLevel() + 1) * (100 * getExpReqMultiplier()));
     }
 
     default List<HeroAbility> getHeroAbilities() {

@@ -40,8 +40,17 @@ public record UnitDefinition(
         Optional<ResourceLocation> equipment,
         Optional<ProjectileSpec> projectile,
         Optional<List<AbilitySpec>> abilities,
-        Optional<Integer> carryCapacity
+        Optional<Integer> carryCapacity,
+        Optional<HeroSpec> hero
 ) {
+
+    /** Hero levelling (plan CONTENT_JSON_PLAN.md): {@code { "maxLevel": 10, "expReqMultiplier": 1.6 } }. */
+    public record HeroSpec(int maxLevel, double expReqMultiplier) {
+        public static final Codec<HeroSpec> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.INT.optionalFieldOf("maxLevel", 10).forGetter(HeroSpec::maxLevel),
+                Codec.DOUBLE.optionalFieldOf("expReqMultiplier", 1.6).forGetter(HeroSpec::expReqMultiplier)
+        ).apply(instance, HeroSpec::new));
+    }
 
     public enum Role implements StringRepresentable {
         MELEE, RANGED, WORKER, FLYING, HERO;
@@ -105,7 +114,8 @@ public record UnitDefinition(
             ResourceLocation.CODEC.optionalFieldOf("equipment").forGetter(UnitDefinition::equipment),
             ProjectileSpec.CODEC.optionalFieldOf("projectile").forGetter(UnitDefinition::projectile),
             AbilitySpec.CODEC.listOf().optionalFieldOf("abilities").forGetter(UnitDefinition::abilities),
-            Codec.INT.optionalFieldOf("carryCapacity").forGetter(UnitDefinition::carryCapacity)
+            Codec.INT.optionalFieldOf("carryCapacity").forGetter(UnitDefinition::carryCapacity),
+            HeroSpec.CODEC.optionalFieldOf("hero").forGetter(UnitDefinition::hero)
     ).apply(instance, UnitDefinition::new));
 
     /** Effective role, defaulting to melee when unset. */
@@ -143,6 +153,16 @@ public record UnitDefinition(
         return carryCapacity.orElse(roleOrDefault() == Role.WORKER ? 100 : 0);
     }
 
+    /** Max hero level; only meaningful for {@code role: hero}. Defaults to the old 10. */
+    public int maxLevelOrDefault() {
+        return Math.max(1, hero.map(HeroSpec::maxLevel).orElse(10));
+    }
+
+    /** Hero experience-curve multiplier (defaults to the old 1.6); higher = slower levelling. */
+    public float expReqMultiplierOrDefault() {
+        return hero.map(HeroSpec::expReqMultiplier).orElse(1.6d).floatValue();
+    }
+
     /**
      * Returns this definition with {@code base}'s values filled in wherever this one left a field unset.
      * Attributes are merged per key (this definition wins), everything else is "this or base".
@@ -174,7 +194,8 @@ public record UnitDefinition(
                 equipment.isPresent() ? equipment : parent.equipment(),
                 projectile.isPresent() ? projectile : parent.projectile(),
                 abilities.isPresent() ? abilities : parent.abilities(),
-                carryCapacity.isPresent() ? carryCapacity : parent.carryCapacity()
+                carryCapacity.isPresent() ? carryCapacity : parent.carryCapacity(),
+                hero.isPresent() ? hero : parent.hero()
         );
     }
 }
