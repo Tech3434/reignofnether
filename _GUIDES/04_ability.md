@@ -27,6 +27,11 @@ params `amount`) зарегистрирован в `BuiltInAbilities.init()` (в
 `mana` (для `HeroAbility`), `requiredResearch`. Для чисел `0`/`false` = «оставить дефолт класса»;
 `params` — числа, специфичные для типа.
 
+**Пассивки:** `passive: true` (или класс задаёт `passive = true` в конструкторе) — кнопки нет, действие
+никогда не кликается; вместо этого сервер каждый тик зовёт `Ability.tickPassive(Unit)` (из `Unit.tick`).
+Движковый пример — `reignofnether:regeneration` (`RegenerationAbility`, params `amount`/`interval`).
+Свою пассивку делай так же: унаследуй `Ability`, переопредели `tickPassive`.
+
 ## Устройство
 
 База — `ability/Ability.java`. Способность не регистрируется в реестре: юнит или здание

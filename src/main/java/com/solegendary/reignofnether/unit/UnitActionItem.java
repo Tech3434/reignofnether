@@ -406,7 +406,7 @@ public class UnitActionItem {
                 // any other Ability not explicitly defined here
                 default -> {
                     for (Ability ability : unit.getAbilities().get()) {
-                        if (ability.action == action &&
+                        if (!ability.passive && ability.action == action &&
                             (ability.isOffCooldown(unit) || ability.canBypassCooldown(unit)) &&
                             ability.meetsResearch(level, unit.getOwnerName()) &&
                             canAffordManaCost(ability, unit)

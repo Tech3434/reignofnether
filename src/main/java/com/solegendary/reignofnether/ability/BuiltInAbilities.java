@@ -15,6 +15,7 @@ public final class BuiltInAbilities {
 
     public static void init() {
         AbilityTypes.register(id("heal"), (spec, unit) -> new SimpleHealAbility(spec));
+        AbilityTypes.register(id("regeneration"), (spec, unit) -> new RegenerationAbility(spec));
     }
 
     private static ResourceLocation id(String path) {

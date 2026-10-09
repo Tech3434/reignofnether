@@ -100,7 +100,9 @@
 т.п.), `submenu`/`row`/`col`. Классовый `Codec` добавляет свои параметры (напр. `poison_on_hit` →
 `amount`).
 
-* **Пассивки** — это те же способности с `passive: true` (отдельного списка `passives` нет).
+* **Пассивки** — это те же способности с `passive: true` (отдельного списка `passives` нет); кнопки нет,
+  сервер каждый тик зовёт `Ability.tickPassive(Unit)`. Движковый пример — `reignofnether:regeneration`
+  (`amount`/`interval`).
 * **Генератор ресурсов (H.9)** — тоже способность (пассивная у здания), тип `resource_generator`
   с параметрами `{ resource, amount, interval, capacity }`.
 * **Ranged** — атрибуты (`attack_range`, `attacks_per_second`, урон) + **тип снаряда**; набор

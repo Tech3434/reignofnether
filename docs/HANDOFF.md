@@ -83,6 +83,8 @@ cd ___temp
   (`SimpleHealAbility`, params `amount`), демо у `skeleton_unit`. Автор фракции регистрирует свои так же.
 - Активная способность рассылается по `UnitAction`: `UnitActionItem` находит ability с `action == action`
   и зовёт `use(...)`; поэтому активному типу нужна **своя константа `UnitAction`**.
+- Пассивка (`passive: true`, кнопки нет) получает серверный тик через `Ability.tickPassive(Unit)` из
+  `Unit.tick`. Движковый пример — `reignofnether:regeneration` (`RegenerationAbility`).
 - `AbilitySpec` (Codec): `type` + `cooldown`/`mana`/`passive`/`requiredResearch`/`params`
   (`params` сейчас `Map<String,Double>` — только числа; расширять при необходимости).
 - В `UnitDefinitionRuntime.buildAbilities` инстансы создаются и кладутся в `unit.getAbilities()`;
@@ -280,6 +282,11 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 `buildAbilities` прокидывает все общие поля (числа `0`/`false` = дефолт класса; `mana` — в `HeroAbility`).
 Гейты зелёные.**`runClient` не проверялся**.
 
+**Пассивные способности (хук):** `Ability.tickPassive(Unit)` (по умолчанию пусто) зовётся из `Unit.tick`
+на сервере для всех `passive`-способностей; активный диспатч (`UnitActionItem`) пропускает пассивки, а
+`buildAbilities` ставит `passive` только из `true`. Движковый пример — `reignofnether:regeneration`
+(`RegenerationAbility`, params `amount`/`interval`), демо у `skeleton_unit`. Гейты зелёные.**`runClient` не проверялся**.
+
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)
 спавнит снаряд на сервере (owner, урон = `damage` или `getUnitAttackDamage()`), дефолт — стрела.
@@ -361,7 +368,7 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 - `faction/`: StartingUnit, Faction (Codec), FactionRegistries, FactionClientboundPacket, FactionClientEvents,
   FactionMenu, FactionCommand, FactionServerEvents.
 - `unit/`: UnitDefinition, UnitDefinitions, UnitDefinitionRuntime; `interfaces/DefinedUnit`.
-- `ability/`: AbilitySpec, AbilityTypes, BuiltInAbilities, SimpleHealAbility.
+- `ability/`: AbilitySpec, AbilityTypes, BuiltInAbilities, SimpleHealAbility, RegenerationAbility.
 - `building/`: BuildingDefinition, BuildingDefinitions, UpgradeSpec, WorkerBuildMenu; `buildings/JsonBuilding`,
   `buildings/JsonBuildingManager`, `buildings/JsonUpgradeProductionItem`;   `production/JsonProductionItem`;
   `addon/AddonSpec`, `addon/AddonTypes`, `addon/Addons`, `addon/NightSourceBuildingAddon`,

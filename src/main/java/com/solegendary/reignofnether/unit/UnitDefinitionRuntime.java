@@ -93,7 +93,8 @@ public final class UnitDefinitionRuntime {
                 ability.canTargetEntities = true;
             if (spec.oneClickOneUse())
                 ability.oneClickOneUse = true;
-            ability.passive = spec.passive();
+            if (spec.passive())
+                ability.passive = true;
             if (ability instanceof com.solegendary.reignofnether.ability.HeroAbility heroAbility && spec.mana() > 0)
                 heroAbility.manaCost = Math.round(spec.mana());
             ability.requiredResearch = spec.requiredResearch();

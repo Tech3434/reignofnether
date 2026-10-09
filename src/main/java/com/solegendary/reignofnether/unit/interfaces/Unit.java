@@ -346,6 +346,13 @@ public interface Unit {
             }
         }
 
+        // passive abilities tick themselves (server-authoritative)
+        if (!unitMob.level().isClientSide()) {
+            for (Ability ability : unit.getAbilities().get())
+                if (ability.passive)
+                    ability.tickPassive(unit);
+        }
+
         // ------------- CHECKPOINT LOGIC ------------- //
         if (unitMob.level().isClientSide()) {
 

@@ -196,6 +196,13 @@ public class Ability {
 
     public void use(Level level, BuildingPlacement buildingUsing, BlockPos targetBp) { }
 
+    /**
+     * Per-tick hook for passive abilities ({@link #passive}), driven from {@code Unit.tick} on the
+     * server. Passive abilities have no button and are never clicked; behaviour that should happen
+     * continuously (regeneration, auras, on-interval buffs) goes here.
+     */
+    public void tickPassive(Unit unit) { }
+
     // assigns a default hotkey
     public AbilityButton getButton(BuildingPlacement placement) {
         return getButton(defaultHotkey, placement);
