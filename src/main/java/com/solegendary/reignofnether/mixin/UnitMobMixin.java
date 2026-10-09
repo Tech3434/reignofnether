@@ -263,6 +263,12 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
     @Inject(method = "readAdditionalSaveData", at = @At("RETURN"))
     private void ron$readUnitData(net.minecraft.nbt.CompoundTag tag, CallbackInfo ci) {
         ((Unit) (Object) this).readUnitSaveData(tag);
+        // a unit loaded from a save has its definition id only now, and the removed code units built
+        // their goals in their own constructor - without this a reloaded unit would have no goals at
+        // all. There is no registerGoals() hook for the mixin, despite what older comments claimed.
+        // initialiseGoals is idempotent (each goal is only added when its field is still null).
+        if (isRtsUnit())
+            ((Unit) (Object) this).initialiseGoals();
     }
 
     @Shadow protected net.minecraft.world.entity.ai.goal.GoalSelector goalSelector;

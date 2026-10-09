@@ -1240,12 +1240,12 @@ public interface Unit {
         LivingEntity entity = (LivingEntity) unit;
         ItemStack mainHandItem = entity.getItemBySlot(EquipmentSlot.MAINHAND);
 
-        if (unit.getBuildRepairGoal().isBuilding()) {
+        if (buildRepairGoal != null && buildRepairGoal.isBuilding()) {
             if (!mainHandItem.is(net.minecraft.world.item.Items.IRON_SHOVEL))
                 entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.IRON_SHOVEL));
         }
-        else if (unit.getGatherResourceGoal().isGathering()) {
-            switch (unit.getGatherResourceGoal().getTargetResourceName()) {
+        else if (gatherResourcesGoal != null && gatherResourcesGoal.isGathering()) {
+            switch (gatherResourcesGoal.getTargetResourceName()) {
                 case FOOD -> { if (!mainHandItem.is(net.minecraft.world.item.Items.IRON_HOE))
                         entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.IRON_HOE)); }
                 case WOOD -> { if (!mainHandItem.is(net.minecraft.world.item.Items.IRON_AXE))
@@ -1271,22 +1271,29 @@ public interface Unit {
     }
 
     static void resetWorkerBehaviours(Unit unit) {
-        unit.getBuildRepairGoal().stopBuilding();
-        unit.getGatherResourceGoal().stopGathering();
-        unit.getExploreBuildLocationGoal().reset();
+        // a worker need not have all of the gather/build goals: the flags decide which exist
+        if (unit.getBuildRepairGoal() != null)
+            unit.getBuildRepairGoal().stopBuilding();
+        if (unit.getGatherResourceGoal() != null)
+            unit.getGatherResourceGoal().stopGathering();
+        if (unit.getExploreBuildLocationGoal() != null)
+            unit.getExploreBuildLocationGoal().reset();
     }
 
     static void resetWorkerBehavioursExceptExploreBuild(Unit unit) {
-        unit.getBuildRepairGoal().stopBuilding();
-        unit.getGatherResourceGoal().stopGathering();
+        if (unit.getBuildRepairGoal() != null)
+            unit.getBuildRepairGoal().stopBuilding();
+        if (unit.getGatherResourceGoal() != null)
+            unit.getGatherResourceGoal().stopGathering();
     }
 
     static boolean isWorkerIdle(Unit unit) {
         com.solegendary.reignofnether.unit.goals.GatherResourcesGoal resGoal = unit.getGatherResourceGoal();
         boolean isMoving = !((Mob) unit).getNavigation().isDone();
-        boolean isGathering = resGoal.isGathering();
-        boolean isGatheringIdle = resGoal.isIdle();
-        boolean isBuilding = unit.getBuildRepairGoal().getBuildingTarget() != null;
+        boolean isGathering = resGoal != null && resGoal.isGathering();
+        boolean isGatheringIdle = resGoal == null || resGoal.isIdle();
+        com.solegendary.reignofnether.unit.goals.BuildRepairGoal buildGoal = unit.getBuildRepairGoal();
+        boolean isBuilding = buildGoal != null && buildGoal.getBuildingTarget() != null;
         boolean isFarming = resGoal.isFarming();
         boolean isAttacking = unit.getTargetGoal().getTarget() != null;
         return !isMoving && !isGathering && !isBuilding && isGatheringIdle && !isAttacking && !isFarming;
