@@ -1,6 +1,7 @@
 package com.solegendary.reignofnether.building.buildings.placements;
 
 import com.solegendary.reignofnether.util.MobEffectHelpers;
+import static com.solegendary.reignofnether.building.BuildingUtils.getAbsoluteBlockData;
 import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.blocks.BlockClientEvents;
 import com.solegendary.reignofnether.building.Building;

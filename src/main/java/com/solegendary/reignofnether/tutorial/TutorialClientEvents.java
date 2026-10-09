@@ -1,4 +1,5 @@
 package com.solegendary.reignofnether.tutorial;
+import com.solegendary.reignofnether.faction.Factions;
 
 import com.solegendary.reignofnether.util.GuiLayerCompat;
 import com.solegendary.reignofnether.ReignOfNether;
@@ -913,7 +914,7 @@ public class TutorialClientEvents {
                 if (stageProgress == 0) {
                     TutorialServerboundPacket.doServerAction(TutorialAction.EXPAND_MONSTER_BASE_B);
                     for (BuildingPlacement building : BuildingClientEvents.getBuildings())
-                        if (building.getHealth() < building.getMaxHealth() && building.getFaction() == Faction.VILLAGERS
+                        if (building.getHealth() < building.getMaxHealth() && building.getFaction() == Factions.VILLAGERS
                             && damagedBuildings.size() < 3) {
                             damagedBuildings.add(building);
                         }
@@ -1002,7 +1003,7 @@ public class TutorialClientEvents {
                     progressStageAfterDelay(200);
                 } else if (stageProgress == 3) {
                     for (BuildingPlacement building : BuildingClientEvents.getBuildings()) {
-                        if (building.getFaction() == Faction.MONSTERS
+                        if (building.getFaction() == Factions.MONSTERS
                             && building.getHealth() < building.getMaxHealth()) {
                             msg("tutorial.reignofnether.tip.monster_capitol");
                             progressStage();
@@ -1012,7 +1013,7 @@ public class TutorialClientEvents {
                 } else if (stageProgress == 4) {
                     boolean botAlive = false;
                     for (BuildingPlacement building : BuildingClientEvents.getBuildings())
-                        if (building.getFaction() == Faction.MONSTERS) {
+                        if (building.getFaction() == Factions.MONSTERS) {
                             botAlive = true;
                         }
 

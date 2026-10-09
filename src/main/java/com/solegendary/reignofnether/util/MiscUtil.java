@@ -1051,4 +1051,19 @@ public class MiscUtil {
         }
         return list.get(RANDOM.nextInt(list.size()));
     }
+    public static <T> T getNextItem(List<T> list, T object) {
+        if (list == null || list.isEmpty()) {
+            throw new IllegalArgumentException("List must not be null or empty");
+        }
+        int index = list.indexOf(object);
+        return index == -1 ? list.get(0) : list.get((index + 1) % list.size());
+    }
+
+    public static <T> T getLastItem(List<T> list, T object) {
+        if (list == null || list.isEmpty()) {
+            throw new IllegalArgumentException("List must not be null or empty");
+        }
+        int index = list.indexOf(object);
+        return index == -1 ? list.get(0) : list.get((index - 1 + list.size()) % list.size());
+    }
 }

@@ -36,23 +36,23 @@ public class StartPosServerboundPacket  implements RTSSimplePayload {
     }
 
     public static void unreservePos(BlockPos pos) {
-        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.UNRESERVE, pos, Faction.NONE, ""));
+        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.UNRESERVE, pos, Factions.NONE, ""));
     }
 
     public static void readyPlayer(String playerName) {
-        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.PLAYER_READY, new BlockPos(0,0,0), Faction.NONE, playerName));
+        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.PLAYER_READY, new BlockPos(0,0,0), Factions.NONE, playerName));
     }
 
     public static void unreadyPlayer(String playerName) {
-        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.PLAYER_UNREADY, new BlockPos(0,0,0), Faction.NONE, playerName));
+        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.PLAYER_UNREADY, new BlockPos(0,0,0), Factions.NONE, playerName));
     }
 
     public static void enablePos(BlockPos pos) {
-        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.ENABLE, pos, Faction.NONE, ""));
+        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.ENABLE, pos, Factions.NONE, ""));
     }
 
     public static void disablePos(BlockPos pos) {
-        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.DISABLE, pos, Faction.NONE, ""));
+        PacketHandler.sendToServer(new StartPosServerboundPacket(StartPosAction.DISABLE, pos, Factions.NONE, ""));
     }
 
     public StartPosServerboundPacket(StartPosAction action, BlockPos pos, Faction faction, String playerName) {

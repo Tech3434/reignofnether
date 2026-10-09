@@ -89,20 +89,10 @@ public class PlayerServerboundPacket  implements RTSSimplePayload {
                 HudClientEvents.showTemporaryMessage(I18n.get("hud.reignofnether.invalid_start_location"));
                 return;
             }
-            if (faction == Faction.NEUTRAL)
-                faction = Faction.NONE;
-            PlayerAction playerAction = switch (faction) {
-                case VILLAGERS -> PlayerAction.START_RTS_VILLAGERS;
-                case MONSTERS -> PlayerAction.START_RTS_MONSTERS;
-                case PIGLINS -> PlayerAction.START_RTS_PIGLINS;
-                case RANDOM -> MiscUtil.getRandomItem(List.of(
-                    PlayerAction.START_RTS_VILLAGERS,
-                    PlayerAction.START_RTS_MONSTERS,
-                    PlayerAction.START_RTS_PIGLINS
-                ));
-                default -> PlayerAction.START_RTS_SANDBOX;
-            };
-            PacketHandler.sendToServer(new PlayerServerboundPacket(playerAction, MC.player.getId(), x, y, z));
+            if (faction == Factions.NEUTRAL)
+                faction = Factions.NONE;
+            PlayerAction playerAction = faction.equals(Factions.NONE) ? PlayerAction.START_RTS_SANDBOX : PlayerAction.START_RTS;
+            PacketHandler.sendToServer(new PlayerServerboundPacket(playerAction, faction, MC.player.getId(), x, y, z));
             GameModeServerboundPacket.setAndLockAllClientGameModes(ClientGameModeHelper.gameMode);
             if (ClientGameModeHelper.gameMode == GameMode.SURVIVAL) {
                 SurvivalServerboundPacket.startSurvivalMode(SurvivalClientEvents.difficulty);

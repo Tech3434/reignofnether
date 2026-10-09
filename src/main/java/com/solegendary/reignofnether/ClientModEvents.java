@@ -97,9 +97,8 @@ public class ClientModEvents {
         java.util.Map<Holder.Reference<Block>, BlockColor> map =
                 ((BlockColorsAccessor) (Object) blockColors).getBlockColors();
         for (Block block : BuiltInRegistries.BLOCK) {
-            if (biomeTinted.contains(block)) continue;
             BlockColor existing = map.get(BuiltInRegistries.BLOCK.wrapAsHolder(block));
-            evt.register(new FogTintingBlockColor(existing), block);
+            evt.register(new FogTintingBlockColor(existing, biomeTinted.contains(block)), block);
         }
     }
 

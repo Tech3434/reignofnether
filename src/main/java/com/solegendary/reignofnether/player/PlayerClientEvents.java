@@ -1,4 +1,5 @@
 package com.solegendary.reignofnether.player;
+import com.solegendary.reignofnether.faction.Factions;
 
 import com.solegendary.reignofnether.util.GuiLayerCompat;
 import com.solegendary.reignofnether.ability.TradeAction;
@@ -97,7 +98,7 @@ public class PlayerClientEvents {
         for (RTSPlayer rtsPlayer : rtsPlayers)
             if (MC.player != null && rtsPlayer.name.equals(MC.player.getName().getString()))
                 return rtsPlayer.faction;
-        return Faction.NONE;
+        return Factions.NONE;
     }
 
     public static RTSPlayer getPlayer(String playerName) {
@@ -137,7 +138,7 @@ public class PlayerClientEvents {
     public static Faction getPlayerFaction(String playerName) {
         var player = getPlayer(playerName);
         if (player == null) {
-            return Faction.NONE;
+            return Factions.NONE;
         }
 
         return player.faction;
@@ -260,7 +261,7 @@ public class PlayerClientEvents {
             FogOfWarClientEvents.refreshLocalIsRTSPlayer();
             if (MC.player != null && MC.player.getName().getString().equals(playerName)) {
                 GameruleClient.gamerulesMenuOpen = false;
-                if (faction != Faction.NONE) {
+                if (faction != Factions.NONE) {
                     MC.getMusicManager().stopPlaying();
                     ResearchClient.removeAllCheats();
                 }
@@ -277,7 +278,7 @@ public class PlayerClientEvents {
             FogOfWarClientEvents.refreshLocalIsRTSPlayer();
             if (MC.player != null && MC.player.getName().getString().equals(playerName)) {
                 GameruleClient.gamerulesMenuOpen = false;
-                if (faction != Faction.NONE) {
+                if (faction != Factions.NONE) {
                     MC.getMusicManager().stopPlaying();
                     ResearchClient.removeAllCheats();
                 }

@@ -5,7 +5,7 @@ import com.solegendary.reignofnether.building.production.ProductionItems;
 import com.solegendary.reignofnether.commands.rtsapi.ResourceObjectiveCriteria;
 import com.solegendary.reignofnether.commands.rtsapi.argument.options.BuildingSelectorOptions;
 import com.solegendary.reignofnether.config.ReignOfNetherCommonConfigs;
-import com.solegendary.reignofnether.faction.FactionRegistries;
+import com.solegendary.reignofnether.faction.Factions;
 import com.solegendary.reignofnether.hud.custombutton.CustomButton;
 import com.solegendary.reignofnether.hud.custombutton.CustomButtonActions;
 import com.solegendary.reignofnether.hud.custombutton.CustomButtonMappingManager;
@@ -65,7 +65,6 @@ public class ReignOfNether {
         BlockEntityRegistrar.init(container);
         GameRuleRegistrar.init();
         Buildings.init();
-        FactionRegistries.register();
         ProductionItems.init();
         MobEffectRegistrar.init(container);
         ParticleRegistrar.init(container);
@@ -106,6 +105,9 @@ public class ReignOfNether {
     @SubscribeEvent
     public static void init(FMLCommonSetupEvent event) {
         ResourceCosts.deferredLoadResourceCosts();
+        // Faction registration reads DeferredHolder values (sounds, entity types, production items),
+        // which are only bound once the register events have run - the mod constructor is too early.
+        event.enqueueWork(() -> Factions.register());
     }
 
     @SubscribeEvent

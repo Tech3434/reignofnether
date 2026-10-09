@@ -1,4 +1,5 @@
 package com.solegendary.reignofnether.survival.spawners;
+import com.solegendary.reignofnether.faction.Factions;
 
 import com.solegendary.reignofnether.ability.abilities.*;
 import com.solegendary.reignofnether.building.BuildingPlacement;
@@ -194,6 +195,6 @@ public class IllagerWaveSpawner {
         if (remainingPop > 0) {
             PlayerServerEvents.sendMessageToAllPlayers("Failed to spawn " + remainingPop + "/" + pop + " population worth of villager units");
         }
-        lastFaction = Faction.VILLAGERS;
+        lastFaction = Factions.VILLAGERS;
     }
 }

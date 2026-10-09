@@ -80,13 +80,7 @@ public class ScenarioServerboundPacket  implements RTSSimplePayload {
 
     public static void setRoleFaction(int roleIndex, Faction faction) {
         if (!MiscUtil.isConnected()) return;
-        ScenarioAction scenarioAction = switch (faction) {
-            case VILLAGERS -> ScenarioAction.SET_ROLE_FACTION_VILLAGER;
-            case MONSTERS -> ScenarioAction.SET_ROLE_FACTION_MONSTER;
-            case PIGLINS -> ScenarioAction.SET_ROLE_FACTION_PIGLIN;
-            default -> ScenarioAction.SET_ROLE_FACTION_NEUTRAL;
-        };
-        PacketHandler.sendToServer(new ScenarioServerboundPacket(scenarioAction, roleIndex, 0,0,0, false, 0, ""));
+        PacketHandler.sendToServer(new ScenarioServerboundPacket(ScenarioAction.SET_ROLE_FACTION, roleIndex, 0,0,0, false, 0, "", faction));
     }
 
     public static void setRoleIsNpc(int roleIndex, boolean isNpc) {

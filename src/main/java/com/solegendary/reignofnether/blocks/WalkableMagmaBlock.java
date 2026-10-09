@@ -1,4 +1,5 @@
 package com.solegendary.reignofnether.blocks;
+import com.solegendary.reignofnether.faction.Factions;
 
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.units.piglins.GruntUnit;
@@ -33,7 +34,7 @@ public class WalkableMagmaBlock extends Block {
     }
 
     public void stepOn(Level pLevel, BlockPos pPos, BlockState pState, Entity pEntity) {
-        boolean isPiglinFaction = pEntity instanceof Unit unit && unit.getFaction() == Faction.PIGLINS && !pEntity.isOnFire();
+        boolean isPiglinFaction = pEntity instanceof Unit unit && Factions.getFaction(unit).equals(Factions.PIGLINS) && !pEntity.isOnFire();
         boolean isDamageTick = pEntity.tickCount % DAMAGE_DELAY == 0;
 
         if (!pEntity.isSteppingCarefully() &&

@@ -21,6 +21,7 @@ import com.solegendary.reignofnether.hud.effecticons.EnchantmentIcon;
 import com.solegendary.reignofnether.hud.effecticons.EnchantmentIcons;
 import com.solegendary.reignofnether.hud.effecticons.MobEffectIcon;
 import com.solegendary.reignofnether.items.ItemUtil;
+import com.solegendary.reignofnether.items.UnitInventory;
 import com.solegendary.reignofnether.items.UnitItem;
 import com.solegendary.reignofnether.items.unititems.EdibleFoodItem;
 import com.solegendary.reignofnether.keybinds.Keybindings;
@@ -304,11 +305,18 @@ public interface Unit {
         for (Map.Entry<Ability, Float> cooldownEntry : unit.getAbilityCooldowns().entrySet()) {
             Ability ability = cooldownEntry.getKey();
             float cooldown = cooldownEntry.getValue();
-            if (cooldown > 0 || unit.getCharges(ability) < ability.maxCharges) {
+            if (cooldown > 0 || unit.getAbilityCharges(ability) < ability.maxCharges) {
+                if (unitMob.tickCount % 2 == 0) {
+                    MobEffectInstance mei = unitMob.getEffect(MobEffectHelpers.holder(MobEffectRegistrar.VIGOR.get()));
+                    int amp = mei == null ? 0 : mei.getAmplifier() + 1;
+                    if (amp > 0 && unit instanceof HeroUnit heroUnit && unitMob.tickCount % 20 == 0) {
+                        heroUnit.setMana(heroUnit.getMana() + (0.5f * amp));
+                    }
+                }
                 if (((Entity) unit).level().isClientSide())
-                    unit.getCooldowns().put(ability, (float) (cooldown - (RtsDebugClientEvents.getCappedTPS() / 20D)));
+                    unit.getAbilityCooldowns().put(ability, (float) (cooldown - (RtsDebugClientEvents.getCappedTPS() / 20D)));
                 else
-                    unit.getCooldowns().put(ability, cooldown - 1);
+                    unit.getAbilityCooldowns().put(ability, cooldown - 1);
 
                 if (cooldown <= 0 && ability.usesCharges() && unit.getAbilityCharges(ability) < ability.maxCharges) {
                     unit.setCharges(ability, unit.getAbilityCharges(ability) + 1);

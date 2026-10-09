@@ -1,4 +1,6 @@
 package com.solegendary.reignofnether.survival;
+import com.solegendary.reignofnether.faction.Faction;
+import com.solegendary.reignofnether.faction.Factions;
 
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import com.solegendary.reignofnether.ReignOfNether;

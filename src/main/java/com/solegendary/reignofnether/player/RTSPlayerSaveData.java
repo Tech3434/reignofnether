@@ -55,7 +55,17 @@ public class RTSPlayerSaveData extends SavedData {
                 int id = ptag.getInt("id");
                 int ticksWithoutCapitol = ptag.getInt("ticksWithoutCapitol");
                 int beaconOwnerTicks = ptag.getInt("beaconOwnerTicks");
-                Faction faction = Faction.valueOf(ptag.getString("faction"));
+                Faction faction;
+                try {
+                    faction = Factions.getFaction(ResourceLocation.parse(ptag.getString("faction")));
+                } catch (Exception e) {
+                    faction = switch (ptag.getString("faction")) {
+                        case "VILLAGERS" -> Factions.VILLAGERS;
+                        case "MONSTERS" -> Factions.MONSTERS;
+                        case "PIGLINS" -> Factions.PIGLINS;
+                        default -> Factions.NEUTRAL;
+                    };
+                }
                 int[] scores = ptag.contains("sources") ? ptag.getIntArray("scores") : new RTSPlayerScores().getScoreListAsArray();
                 int scenarioRoleIndex = ptag.getInt("scenarioRoleIndex");
 

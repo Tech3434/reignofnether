@@ -189,3 +189,77 @@ cd ___temp
 Любую старую ветку можно вернуть по SHA из таблицы: `git push origin <SHA>:refs/heads/<имя>`.
 В refs локального клона остались устаревшие `refs/remotes/2b2m/*` — это следы другого (уже
 убранного из конфига) remote, к этому форку отношения не имеют.
+
+---
+
+## 10. Компиляция и гейты на `1.21.1-dev` (2026-10-09, вторая сессия)
+
+Ветка доведена до зелёных гейтов: `compileJava`, `validateMixins` (all injection points resolve),
+`runData` (BUILD SUCCESSFUL, мод конструируется и фракции регистрируются в рантайме).
+Затронуто 28 файлов.
+
+**Причина прежних 95 ошибок — сплайс:** часть файлов взяла версию 1.5.0, часть осталась нашим
+портом до 1.5.0, поэтому в дереве одновременно жили старый энум `Faction` и новый data-driven
+`Faction`/`Factions` (объекты в `ReignOfNetherRegistries.FACTIONS`).
+
+### Что менялось
+
+Фракционная система (все вызовы переведены на новый API, как в апстриме):
+- `Faction.X` → `Factions.X` — StartPosClientbound/ServerboundPacket, PlayerClientEvents,
+  TutorialClientEvents, OrthoviewClientEvents, UnitClientEvents, IllagerWaveSpawner, PlayerServerEvents;
+- `unit.getFaction()` → `Factions.getFaction(unit)` — WalkableMagmaBlock, MagmaBlockMixin,
+  NonUnitServerEvents; в StriderUnit/MarauderUnit метод `getFaction()` удалён, как в апстриме;
+- `switch (faction)` → сравнение с `Factions.*`: PlayerServerboundPacket теперь шлёт один
+  `START_RTS` с фракцией в пакете, ScenarioServerboundPacket — `SET_ROLE_FACTION` с фракцией,
+  SoundClientEvents — `faction.sound`;
+- `Faction.valueOf(nbt)` → `Factions.getFaction(ResourceLocation.parse(...))` с фолбэком на старые
+  имена (`VILLAGERS`/`MONSTERS`/`PIGLINS`) — RTSPlayerSaveData (совместимость со старыми сейвами);
+- `FactionRegistries.register()` → `Factions.register()`, и вызов перенесён из конструктора мода в
+  `FMLCommonSetupEvent#enqueueWork`: до завершения register-событий `DeferredHolder.get()` падает
+  с «Trying to access unbound value».
+
+Прочие следы сплайса:
+- Unit: `getCharges`/`getCooldowns` → `getAbilityCharges`/`getAbilityCooldowns`, возвращён импорт
+  `items.UnitInventory`;
+- Factions: неофордж-импорт `FMLEnvironment` + проверка `dist == Dist.CLIENT`;
+- PlayerServerEvents: `ForgeRegistries.ENTITY_TYPES` → `BuiltInRegistries.ENTITY_TYPE`;
+- ClientModEvents: `new FogTintingBlockColor(existing, biomeTinted.contains(block))` и убран
+  лишний `continue`, из-за которого биомные блоки вообще не получали fog-тинт;
+- восстановленные импорты: `Component` (IronGolemBuilding), `InteractionHand/InteractionResult/Player`
+  (UnitInventoryMobMixin), `static getAbsoluteBlockData` (BeaconPlacement), `static fcs` (PoisonSpiderUnit).
+
+### Доведённые до работоспособного состояния фичи 1.5.0
+
+- 14 звуков: `item_drop_common/rare/legendary`, `building_smash`, `buzzy_nest`, `critical_hit`,
+  `ghost_cloak`, `gong_of_weakning`, `ice_wand`, `shadow_shifter`, `tome_of_duplication`,
+  `totem_place`, `war_horn`, `potion_pop`. Энум `SoundAction`, `sounds.json` и .ogg уже были из
+  мержа, но регистраций в `SoundRegistrar` и записей в `SOUND_MAP` не было — теперь есть, так что
+  вызовы в `UnitItems`/`TotemItem` действительно начинают звучать;
+- Vigor → мана героя в `Unit.tick` (апстримный блок, в порте отсутствовал);
+- `MiscUtil.getNextItem`/`getLastItem` (нужны SandboxClientEvents/ScenarioMenu).
+
+### Известные пробелы 1.5.0 (не перенесено)
+
+- IllagerWaveSpawner: апстрим выдаёт снаряжение с зачарованиями (SHARPNESS/QUICK_CHARGE/MULTISHOT)
+  и лидер-баннер (`Raid.getLeaderBannerInstance()`); в порте этого нет;
+- UnitClientEvents: апстримная карта `mobEffectIcons` и часть отрисовки/подсказок;
+- остальные расхождения девяти файлов, где мерж оставил наш код (ReignOfNether, UnitClientEvents,
+  PlayerClientEvents, SoundClientEvents, OrthoviewClientEvents, TutorialClientEvents,
+  IllagerWaveSpawner, StriderUnit, MarauderUnit), в основном наши неофордж-адаптации событий,
+  но нужен отдельный ревизионный проход на предмет мелких фич;
+- `mixin/fogofwar/LiquidBlockRendererMixin` целится в фордж-класс
+  `net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions` — это было и до мержа
+  (есть в `1.21.1-dev-old` и в апстриме), компилируется, но в неофордже цель может не найтись.
+
+### Проверки
+
+```
+cd ___temp
+java -Dorg.gradle.appname=gradlew -jar gradle/wrapper/gradle-wrapper.jar compileJava  --offline --console=plain
+java ... validateMixins --offline --console=plain   # validateMixins: all injection points resolve
+java ... runData        --offline --console=plain   # BUILD SUCCESSFUL
+```
+
+Логи: `/tmp/c6.log` (compileJava), `/tmp/vm3.log` (validateMixins), `/tmp/rd4.log` (runData).
+`runServer` не запускался (AGENTS.md). CRLF: правки делались байтовым патчером, `git diff --numstat`
+совпадает с `git diff --ignore-cr-at-eol --numstat`.

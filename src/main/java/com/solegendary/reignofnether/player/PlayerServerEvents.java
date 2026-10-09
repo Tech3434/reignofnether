@@ -58,6 +58,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.MenuConstructor;
@@ -461,8 +462,8 @@ public class PlayerServerEvents {
             }
             boolean isDogPerson = random.nextBoolean();
 
-            EntityType<?> workerEntityType = ForgeRegistries.ENTITY_TYPES.getValue(faction.workerEntityType);
-	        EntityType<?> scoutEntityType = ForgeRegistries.ENTITY_TYPES.getValue(faction.scoutEntityType);
+            EntityType<?> workerEntityType = BuiltInRegistries.ENTITY_TYPE.get(faction.workerEntityType);
+	        EntityType<?> scoutEntityType = BuiltInRegistries.ENTITY_TYPE.get(faction.scoutEntityType);
 			if (faction.equals(Factions.VILLAGERS) && !isDogPerson) scoutEntityType = EntityRegistrar.SCOUT_CAT_UNIT.get();
             // first RTS join into a fresh game: snapshot the playable area for late joiners
             if (rtsPlayers.isEmpty() && !FogChunkSnapshot.hasAny() && WorldBorderServerEvents.isRtsOptimisedMap(serverLevel)) {
@@ -614,7 +615,7 @@ public class PlayerServerEvents {
                 level = (ServerLevel) players.get(0).level();
             }
 
-            EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(faction.workerEntityType);
+            EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(faction.workerEntityType);
             RTSPlayer bot = RTSPlayer.getNewBot(name, faction);
             rtsPlayers.add(bot);
             FogOfWarServerEvents.invalidateRtsCache();

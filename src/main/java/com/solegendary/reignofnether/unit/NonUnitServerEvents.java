@@ -113,7 +113,7 @@ public class NonUnitServerEvents {
 
         // prevent vanilla mobs attacking their RoN faction equivalents
         if (!(le instanceof Unit) && evt.getNewAboutToBeSetTarget() instanceof Unit unit)
-            if (unit.getFaction() == getNonUnitFaction(le))
+            if (Factions.getFaction(unit).equals(getNonUnitFaction(le)))
                 evt.setCanceled(true);
     }
 

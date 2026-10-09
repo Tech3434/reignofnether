@@ -1,4 +1,5 @@
 package com.solegendary.reignofnether.orthoview;
+import com.solegendary.reignofnether.faction.Factions;
 
 import com.solegendary.reignofnether.util.GuiLayerCompat;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
@@ -416,7 +417,7 @@ public class OrthoviewClientEvents {
             PlayerServerboundPacket.disableOrthoview();
             TopdownGuiServerboundPacket.closeTopdownGui(MC.player.getId());
             if (StartPosClientEvents.hasReservedPos()) {
-                StartPosClientEvents.selectedFaction = Faction.NONE;
+                StartPosClientEvents.selectedFaction = Factions.NONE;
                 StartPosServerboundPacket.unreservePos(StartPosClientEvents.getPos().pos);
             }
         }
