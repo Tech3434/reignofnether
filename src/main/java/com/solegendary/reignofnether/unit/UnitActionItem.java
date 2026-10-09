@@ -183,12 +183,15 @@ public class UnitActionItem {
                     GatherResourcesGoal goal = workerUnit.getGatherResourceGoal();
                     if (goal != null) {
                         ResourceName current = goal.getTargetResourceName();
-                        ResourceName next = switch (current == null ? ResourceName.NONE : current) {
-                            case NONE -> ResourceName.FOOD;
-                            case FOOD -> ResourceName.WOOD;
-                            case WOOD -> ResourceName.ORE;
-                            case ORE, EMERALD -> ResourceName.NONE;
-                        };
+                        // cycle through NONE plus only the resources this worker may gather (K4); a
+                        // current value outside that set (e.g. EMERALD) rolls back to NONE
+                        java.util.List<ResourceName> cycle = new java.util.ArrayList<>();
+                        cycle.add(ResourceName.NONE);
+                        for (ResourceName r : workerUnit.getGatherableResources())
+                            if (r != ResourceName.NONE && r != ResourceName.EMERALD && !cycle.contains(r))
+                                cycle.add(r);
+                        int idx = cycle.indexOf(current == null ? ResourceName.NONE : current);
+                        ResourceName next = cycle.get((idx + 1) % cycle.size());
                         goal.setTargetResourceName(next);
                         if (next == ResourceName.NONE)
                             goal.removeGatherTarget();

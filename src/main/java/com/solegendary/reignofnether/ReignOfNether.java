@@ -136,5 +136,7 @@ public class ReignOfNether {
     public static void reloadListener(AddReloadListenerEvent evt) {
         evt.addListener(new CustomButtonMappingManager());
         evt.addListener(new com.solegendary.reignofnether.research.ResearchJsonLoader());
+        // reports definition fields the codecs silently ignore (a typo in an author's datapack)
+        evt.addListener(new com.solegendary.reignofnether.data.ContentValidationReloadListener());
     }
 }

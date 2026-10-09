@@ -22,7 +22,13 @@
   "abilities": [
     { "type": "reignofnether:heal", "cooldown": 200, "params": { "amount": 15, "sound": "minecraft:entity.player.levelup" } },
     { "type": "reignofnether:regeneration", "params": { "amount": 1, "interval": 40 } },
-    { "type": "reignofnether:summon", "cooldown": 600, "params": { "unit": "reignofnether:vindicator_unit", "count": 1 } }
+    { "type": "reignofnether:summon", "cooldown": 600, "params": { "unit": "reignofnether:vindicator_unit", "count": 1 } },
+    { "type": "reignofnether:menu", "name": "abilities.reignofnether.menu", "submenu": [
+      { "ability": { "type": "reignofnether:heal", "cooldown": 200, "params": { "amount": 15 } }, "row": 0, "col": 0 },
+      { "command": "stop", "row": 0, "col": 1 },
+      { "command": "hold", "row": 1, "col": 0 },
+      { "ability": { "type": "reignofnether:menu", "name": "abilities.reignofnether.menu", "submenu": [ { "command": "attack" } ] }, "row": 1, "col": 2 }
+    ] }
   ],
   "cost": { "food": 60, "wood": 0, "ore": 0, "seconds": 15 },
   "population": 1

@@ -1,32 +1,50 @@
 ---
 name: reignofnether-add-building
-description: Как добавить здание в Reign of Nether — класс, NBT-структура, HP, регистрация, кнопка, аддоны. Использовать при создании нового строения.
+description: Как добавить здание в Reign of Nether — JSON-определение, NBT-структура, производство, исследования, аддоны, апгрейды. Использовать при создании нового строения.
 ---
 
-# Как добавить здание
+# Как добавить здание (data-driven)
 
-Полный разбор — `_GUIDES/03_building.md`. Шаблоны — `building/buildings/villagers/TownCentre`
-(ратуша) и `Barracks` (производство).
+Здание — **данные**: NBT-структура + JSON-определение. Полный разбор — `_GUIDES/03_building.md`.
+Реестр — `reignofnether:building` (датапак).
 
 ## Шаги
 
-1. **Класс** `building/buildings/<Group>/<Name>.java` — наследует `Building`; при необходимости
-   override `getFaction()` (строка для lang-ключей), `getBuildButton`, затраты (`cost`).
-2. **Структура** — NBT `.nbt` (в старом дереве лежали в `data/reignofnether/structures/`), из него
-   выводятся блоки, HP по блокам, `minBlocksPercent`.
-3. **Производство** — `this.productions.add(ProductionItems.X, Keybindings.abilitySlotN)` в
-   конструкторе, если здание что-то учит.
-4. **Регистрация** — реестр `ReignOfNetherRegistries.BUILDING` (через `Buildings.init()`).
-5. **Размещение** — при нестандартном поведении создай `placements/<Name>Placement`; для обычного
-   производства хватает общего `ProductionPlacement` (он восстановлен и нужен ядру).
-6. **Кнопка** — `BuildingPlaceButton` в `getBuildButton(hotkey)`; предусловие ставить через
-   `hasFinishedBuilding(...)`.
-7. **Аддоны** — `building/addon/**` (гарнизон, аура, конвертация, магазин). HP/починка/каптюр —
-   поля `Building` (`capturable`, `invulnerable`, `repairable`, `populationSupply`).
-8. **Ассеты и переводы** — `reignofnether-add-assets`.
+1. **Структура** — построй здание Structure Block-ом, экспортируй `.nbt`. Нужны **обе** копии:
+   `data/<ns>/structures/<name>.nbt` (сервер) и `assets/<ns>/structures/<name>.nbt` (клиент).
+2. **Файл** `data/<namespace>/building/<name>.json`, id = `<namespace>:<name>`; поле
+   `structure` = `<ns>:<name>`.
+3. **Базовые поля** — `name` (`{ "en_us": … }`), `icon`, `cost`, `maxHealth`, `populationSupply`,
+   `isCapitol`, `requiredResearch`.
+4. **Флаги** — `flags`: `canAcceptResources`, `buildTimeModifier`, `captureRange`, `capturable`,
+   `invulnerable`, `repairable`, `repairTimeModifier`, `drawAggro`, `scaffoldFill`, `scaffoldBlock`,
+   `portrait`, `foundationYLayers` (сколько нижних Y-слоёв — фундамент: их типы становятся
+   `startingBlockTypes` и пре-ставятся при размещении; дефолт 1).
+5. **Производство** — `production: [ "ns:unit", { "unit": "ns:unit", "costOverride": {…} } ]`.
+6. **Исследования** — `researches: [ "ns:research", … ]` (общая с производством очередь,
+   `reignofnether-add-research`).
+7. **Аддоны** — `addons: [ { "type": "reignofnether:garrison", "params": {…} } ]`. Движковые типы:
+   `night_source`, `range_indicator`, `garrison`, `nether_converting`, `resource_generator`.
+8. **Апгрейды** — `upgrades: [ { "structure": …, "name": {…}, "icon": …, "cost": {…}, "maxHealth": …,
+   "populationSupply": …, "production": […], "researches": […], "addons": […] } ]`. Каждый уровень —
+   отдельный `JsonBuilding`-вариант; производство/исследования/аддоны/имя/иконка/структура per-level.
+9. **Кнопка постройки** — приходит автоматически (`JsonBuilding.getBuildButton`); воркер видит все
+   здания в меню постройки. Кастомно отфильтровать список — через `reignofnether:menu` с элементами
+   `building` (`reignofnether-add-ability`).
 
 ## Грабли
 
-* Не удаляй каталог `buildings/placements/` целиком: там общий `ProductionPlacement` и код ядра.
-* Лимит армии: прирост даёт ратуша — выставляй `populationSupply` только у ратуши.
-* Инструмент кастомных строений (`building/custombuilding/**`) — отдельный, самодостаточный.
+* Кодового реестра `ReignOfNetherRegistries.BUILDING` для JSON-зданий нет (он пуст и заморожен):
+  id — это `definitionId`, сохраняется как `jsonDefinitionId`.
+* Пустой `startingBlockTypes` → здание считалось «уничтоженным» на 1-м тике; поэтому
+  `foundationYLayers` важен, когда у структуры есть фундамент.
+* Производство/исследования идентифицируются по `ProductionItem.getNetworkId()`, а не код-реестром.
+* Кастомные строения (`building/custombuilding/**`) — отдельный инструмент, не смешивай.
+* **Опечатки в полях ловятся явно:** имя каждого поля сверяется с record'ом `BuildingDefinition` —
+  `test` (`ContentValidationTest`) валит сборку, а в игре ошибка пишется в лог при загрузке мира и на
+  `/reload`: `[content-validation] <file> '<path>': unknown field 'x' (accepted: …)`. Свободные карты
+  (`params` аддонов, локализованный `name`) принимают любые ключи; обе формы `production` — валидны.
+
+## Гейт
+
+`compileJava` → `validateMixins` → `runData` → `test`.

@@ -37,5 +37,12 @@ description: Как собрать фракцию на РТС-каркас Reign
 
 ## Гейты
 
-`compileJava` → `validateMixins` → `runData` (см. `reignofnether-build`). **`runServer` не
-поднимать** (см. `AGENTS.md`).
+`compileJava` → `validateMixins` → `runData` → `test` (см. `reignofnether-build`). **`runServer` не
+поднимать** (см. `AGENTS.md`); проверка в игре — один сеанс по `docs/RUNCLIENT_CHECKLIST.md`.
+
+## Опечатки в JSON
+
+Кодеки определений молча отбрасывают незнакомые поля, поэтому каждое поле сверяется с record'ом:
+`test` (`ContentValidationTest`) валит сборку, а в рантайме то же сообщение пишется в лог при загрузке
+мира и на `/reload` — `[content-validation] <file> '<path>': unknown field 'x' (accepted: …)`.
+Свободные карты (`attributes`, `params`, локализованный `name`) принимают любые ключи.

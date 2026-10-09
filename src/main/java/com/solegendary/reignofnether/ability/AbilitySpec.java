@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A data-driven ability instance (plan CONTENT_JSON_PLAN.md): {@code type} names a code ability class
@@ -18,6 +19,9 @@ import java.util.Map;
  *
  * <p>For the numeric flags a value of {@code 0}/{@code false} means "leave the ability class's own
  * default" — the class knows its range/radius/targeting, and JSON only overrides when it says so.
+ *
+ * <p>{@code name}/{@code icon} are only used by abilities that render a button of their own (chiefly
+ * the data-driven menu, {@link DataMenuAbility}), and {@code submenu} lists that menu's entries.
  */
 public record AbilitySpec(
         ResourceLocation type,
@@ -29,7 +33,10 @@ public record AbilitySpec(
         boolean canTargetEntities,
         boolean oneClickOneUse,
         List<ResearchCondition> requiredResearch,
-        Map<String, AbilityParam> params
+        Map<String, AbilityParam> params,
+        Optional<String> name,
+        Optional<ResourceLocation> icon,
+        List<MenuEntrySpec> submenu
 ) {
 
     public static final Codec<AbilitySpec> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -42,7 +49,12 @@ public record AbilitySpec(
             Codec.BOOL.optionalFieldOf("canTargetEntities", false).forGetter(AbilitySpec::canTargetEntities),
             Codec.BOOL.optionalFieldOf("oneClickOneUse", false).forGetter(AbilitySpec::oneClickOneUse),
             ResearchCondition.CODEC.listOf().optionalFieldOf("requiredResearch", List.of()).forGetter(AbilitySpec::requiredResearch),
-            Codec.unboundedMap(Codec.STRING, AbilityParam.CODEC).optionalFieldOf("params", Map.of()).forGetter(AbilitySpec::params)
+            Codec.unboundedMap(Codec.STRING, AbilityParam.CODEC).optionalFieldOf("params", Map.of()).forGetter(AbilitySpec::params),
+            Codec.STRING.optionalFieldOf("name").forGetter(AbilitySpec::name),
+            ResourceLocation.CODEC.optionalFieldOf("icon").forGetter(AbilitySpec::icon),
+            // lazy: a menu entry contains another AbilitySpec, so the two codecs reference each other
+            Codec.lazyInitialized(() -> MenuEntrySpec.CODEC).listOf()
+                    .optionalFieldOf("submenu", List.of()).forGetter(AbilitySpec::submenu)
     ).apply(instance, AbilitySpec::new));
 
     /** A numeric param (JSON number), or {@code fallback} if absent. */

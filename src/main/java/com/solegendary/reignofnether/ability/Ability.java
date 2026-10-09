@@ -118,6 +118,23 @@ public class Ability {
         return null;
     }
 
+    /**
+     * Optional explicit {@code [row, col]} grid position for one of this menu's sub-abilities; a null
+     * return means the HUD lays it out automatically. Used by {@link DataMenuAbility} for row/col.
+     */
+    public int[] getSubButtonPosition(Ability subAbility) {
+        return null;
+    }
+
+    /**
+     * Optional explicit grid positions for the buttons returned by {@link #getSubButtons}, parallel to
+     * that list (a null entry means auto layout). Used by {@link DataMenuAbility}, whose sub-buttons mix
+     * abilities and building-place buttons and are therefore built on demand.
+     */
+    public java.util.List<int[]> getSubButtonPositions(Unit unit) {
+        return null;
+    }
+
     /** Adds a sub-ability and returns this ability so menus can be built fluently. */
     public Ability addSubAbility(Ability subAbility) {
         subAbilities.add(subAbility);

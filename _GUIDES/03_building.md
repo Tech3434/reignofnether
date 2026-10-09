@@ -32,7 +32,7 @@ JSON-здания — полный id `<namespace>:<structure_name>`: namespace 
 |---|---|
 | Габарит `minCorner`/`maxCorner` | из списка блоков |
 | HP | по умолчанию 1 на блок, если не задано `maxHealth` |
-| `startingBlockTypes` | слой `y = 0` |
+| `startingBlockTypes` | нижние `flags.foundationYLayers` слоёв (по умолчанию слой `y = 0`) |
 | Портрет (варианты) | все не-маркерные блоки |
 
 При загрузке (`BuildingBlockData.getBuildingBlocksFromNbt`) падающие брёвна превращаются в
@@ -130,7 +130,10 @@ this.productions.add(ProductionItems.X_UNIT, Keybindings.abilitySlot1);
 `cost`, `maxHealth`, `populationSupply`, `isCapitol`, `production`, `researches`, `addons`, `upgrades`,
 `requiredResearch`. Флаги — под `"flags"`: `canAcceptResources` (дроп-офф ресурсов — нужно столице),
 `buildTimeModifier`, `captureRange`, `capturable`, `invulnerable`, `repairable`, `repairTimeModifier`,
-`drawAggro`, `scaffoldFill` (`SCAFFOLDING`/`CUSTOM`/`BIOME_AWARE`), `scaffoldBlock`, `portrait` (id блока).
+`drawAggro`, `scaffoldFill` (`SCAFFOLDING`/`CUSTOM`/`BIOME_AWARE`), `scaffoldBlock`, `portrait` (id блока),
+`foundationYLayers` (целое ≥1, дефолт 1 — сколько нижних Y-слоёв структуры считать фундаментом: их типы
+блоков становятся `startingBlockTypes` и пре-ставятся сразу при размещении, а сами слои не участвуют в
+проверке «не достроено → уничтожить»; по сути это и есть «из чего здание начинает расти»).
 Идентичность — id определения; апгрейды создают варианты уровней (см. «Апгрейды»).
 
 ### Производство и исследования в JSON-зданиях
@@ -281,3 +284,20 @@ public Block scaffoldBlock = null;                            // только д
 * Повреждение блоков здания уменьшает HP, при 50 % блоков здание разрушается.
 * Кнопка производства в панели выделения запускает очередь и списывает стоимость.
 * При потере здания владелец теряет сессию, юниты становятся нейтральными.
+
+## Строгая проверка полей (обязательно знать)
+
+Кодеки определений (`RecordCodecBuilder`) **молча отбрасывают** незнакомые поля: опечатка не даст
+ошибки, контент просто не сделает того, что задумано. Поэтому есть отдельный проход:
+
+* **В игре** — на загрузке мира и на каждом `/reload`:
+  `[content-validation] <file> '<path>': unknown field 'x' (accepted: a, b, c)` (чистый контент даёт
+  INFO-строку с числом проверенных файлов).
+* **В гейте** — `ContentValidationTest` (задача `test`) валит сборку при неизвестном поле в
+  поставляемых `unit`/`building`/`faction` файлах.
+* **Не проверено:** `research/*.json` (разбирается вручную).
+
+Правила: имена сверяются по компонентам record'ов (новое поле в record'е автоматически разрешено);
+свободные карты (`attributes`, `params`, локализованный `name`) принимают любые ключи; значения,
+диапазоны и обязательность полей остаются на кодеке. Единственное место, которое нужно править руками
+при переименовании **поля кодека** (а не компонента) — `ContentValidator.JSON_FIELD_NAMES`.

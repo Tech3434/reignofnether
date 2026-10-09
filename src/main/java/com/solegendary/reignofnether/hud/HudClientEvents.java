@@ -1536,11 +1536,17 @@ public class HudClientEvents {
 
         // A menu either declares sub-abilities, or hands out pre-built buttons (the worker's build menu).
         List<Button> subButtons = new ArrayList<>();
+        List<int[]> subPositions = new ArrayList<>(); // parallel to subButtons; null entry = auto layout
         List<Button> dynamic = frame.unit() != null
                 ? frame.menu().getSubButtons(frame.unit())
                 : null;
         if (dynamic != null) {
             subButtons.addAll(dynamic);
+            List<int[]> dynPositions = frame.unit() != null
+                    ? frame.menu().getSubButtonPositions(frame.unit())
+                    : null;
+            for (int i = 0; i < dynamic.size(); i++)
+                subPositions.add(dynPositions != null && i < dynPositions.size() ? dynPositions.get(i) : null);
         } else {
             List<Ability> subs = frame.menu().getSubAbilities();
             for (int i = 0; i < subs.size(); i++) {
@@ -1549,8 +1555,10 @@ public class HudClientEvents {
                 AbilityButton btn = frame.unit() != null
                         ? sub.getButton(hk, frame.unit())
                         : sub.getButton(hk, frame.placement());
-                if (btn != null)
+                if (btn != null) {
                     subButtons.add(btn);
+                    subPositions.add(frame.menu().getSubButtonPosition(sub));
+                }
             }
         }
 
@@ -1570,9 +1578,18 @@ public class HudClientEvents {
         renderedButtons.add(back);
 
         int i = 1;
-        for (Button btn : subButtons) {
-            int gx = fx + (i % MAX_BUTTONS_PER_ROW) * subIconFrame;
-            int gy = fy + (i / MAX_BUTTONS_PER_ROW) * subIconFrame;
+        for (int bi = 0; bi < subButtons.size(); bi++) {
+            Button btn = subButtons.get(bi);
+            int[] pos = bi < subPositions.size() ? subPositions.get(bi) : null;
+            int gx, gy;
+            if (pos != null) {
+                // explicit row/col: column 0 is reserved for the back button, so shift columns by 1
+                gx = fx + (pos[1] + 1) * subIconFrame;
+                gy = fy + pos[0] * subIconFrame;
+            } else {
+                gx = fx + (i % MAX_BUTTONS_PER_ROW) * subIconFrame;
+                gy = fy + (i / MAX_BUTTONS_PER_ROW) * subIconFrame;
+            }
             btn.render(evt.getGuiGraphics(), gx, gy, mouseX, mouseY);
             renderedButtons.add(btn);
             i += 1;

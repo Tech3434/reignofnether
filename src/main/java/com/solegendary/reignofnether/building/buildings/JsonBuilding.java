@@ -72,6 +72,7 @@ public class JsonBuilding extends ProductionBuilding {
         this.repairable = flags.repairable();
         this.repairTimeModifier = (float) flags.repairTimeModifier();
         this.drawAggro = flags.drawAggro();
+        this.foundationYLayers = Math.max(1, flags.foundationYLayers());
         flags.scaffoldFill().ifPresent(fill -> this.scaffoldFill = fill);
         flags.scaffoldBlock().ifPresent(id -> {
             net.minecraft.world.level.block.Block block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(id);
@@ -133,8 +134,11 @@ public class JsonBuilding extends ProductionBuilding {
             int minY = Integer.MAX_VALUE;
             for (BuildingBlock block : blocks)
                 minY = Math.min(minY, block.getBlockPos().getY());
+            // the bottom `foundationYLayers` Y layers are the foundation: their block types are pre-queued
+            // so the placement is never empty (see BuildingPlacement#shouldBeDestroyed)
+            int foundationMaxY = minY + Math.max(1, this.foundationYLayers) - 1;
             for (BuildingBlock block : blocks) {
-                if (block.getBlockPos().getY() != minY || block.getBlockState().isAir())
+                if (block.getBlockPos().getY() > foundationMaxY || block.getBlockState().isAir())
                     continue;
                 Block type = block.getBlockState().getBlock();
                 if (!this.startingBlockTypes.contains(type))

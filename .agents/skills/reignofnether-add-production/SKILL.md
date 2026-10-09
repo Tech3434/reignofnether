@@ -1,32 +1,44 @@
 ---
 name: reignofnether-add-production
-description: Как добавить элемент производства (обучение юнита) в Reign of Nether — ProductionItem, стоимость, очередь, getEntityType. Использовать при привязке юнита к зданию.
+description: Как привязать обучение юнита к зданию в Reign of Nether — production в JSON-здании, costOverride, очередь. Использовать при добавлении юнита в производство.
 ---
 
-# Как добавить элемент производства
+# Как добавить производство
 
-Полный разбор — `_GUIDES/06_production.md`. Каркас — `building/production/**` (не удалялся).
+Производство перечисляется **на здании** (не на юните). Полный разбор — `_GUIDES/06_production.md`.
 
-## Шаги
+## Шаги (данные)
 
-1. **Класс** `unit/units/<group>/<Name>Prod.java extends ProductionItem`. Обязательно override
-   `getEntityType()`, возвращающий `EntityType<? extends Mob>` этого юнита — именно так элемент
-   сопоставляется с юнитом (решение 12.6, этап E.9).
-2. **Стоимость** — живёт **на самом `ProductionItem`** (`ResourceCost`), а не в списке юнитов по
-   enum. `ReignOfNetherCommonConfigs` сведён к пустому spec.
-3. **Регистрация** — реестр `ReignOfNetherRegistries.PRODUCTION_ITEM` (через
-   `ProductionItems.init()`), статическое поле в `ProductionItems`.
-4. **Привязка к зданию** — `this.productions.add(ProductionItems.X, Keybindings.abilitySlotN)` в
-   конструкторе здания.
-5. **Дублирование** — `ProdDupeRule`; очередь — `ActiveProduction` на `ProductionPlacement`.
+1. В `data/<ns>/building/<name>.json` добавь `production`:
+   ```json
+   "production": [ "ns:unit", { "unit": "ns:unit", "costOverride": { "food": 80, "seconds": 20 } } ]
+   ```
+   Элемент — либо строка-id юнита, либо объект `{ unit, costOverride? }` (`ProductionSpec`).
+2. Стоимость и население берутся из **определения юнита** (`cost`/`population`), `costOverride`
+   переопределяет для этого здания.
+3. Юнит спавнится на маркер-блоке `production_spawn_block` (если есть; иначе рядом со зданием) и идёт
+   к ралли-точке.
+4. Очередь общая с исследованиями/апгрейдами; отмена — с возвратом.
+
+## Когда нужен код
+
+Если автору нужно производство, которое не выражается `ProductionSpec` (особая логика завершения),
+пишется свой `ProductionItem`:
+
+1. Класс `... extends ProductionItem`, `getNetworkId()` — стабильный строковый id (обязательно, если
+   предмет не в код-реестре).
+2. Регистрация — реестр `ReignOfNetherRegistries.PRODUCTION_ITEM` (`ProductionItems.init()`), если
+   предмет должен быть в код-реестре; иначе достаточно строкового `getNetworkId`.
+3. Привязка — к `productions` здания (код) или через JSON `production` (данные).
 
 ## Грабли
 
-* **Не** возвращайся к строковому сопоставлению по `itemName` — только `EntityType<?>`.
-* `ProductionItems.getProductionItem(EntityType)` сравнивает `prodItem.getEntityType() == entityType`.
-* Лимит армии: `ProductionItem.isBelowMaxPopulation` считает `maxPopulation + бонус ратуши`.
-* Для кастомных строений `CustomProductionItem` копирует `entityType` из исходного item — не забудь.
+* Сетевой id производств — `ProductionItem.getNetworkId()`, а не код-реестр: JSON/исследования там
+  не зарегистрированы.
+* `ProductionItems.getProductionItem(EntityType)` — только для код-предметов; для JSON-зданий
+  используется `JsonProductionItem` по id определения.
+* Лимит армии: база + прирост от столицы (`populationSupply`).
 
 ## Гейт
 
-`compileJava` → `validateMixins` → `runData` → `runServer`.
+`compileJava` → `validateMixins` → `runData` → `test`.

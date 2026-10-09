@@ -1,33 +1,48 @@
 ---
 name: reignofnether-add-unit
-description: Как добавить юнита в Reign of Nether — класс, атрибуты, цели, тик, NBT, регистрация, рендер. Использовать при создании нового юнита.
+description: Как добавить юнита в Reign of Nether — JSON-определение, роль, атрибуты, способности, производство. Использовать при создании нового юнита.
 ---
 
-# Как добавить юнита
+# Как добавить юнита (data-driven)
 
-Полный разбор — `_GUIDES/02_unit.md`. Шаблон для копирования — `unit/units/villagers/VillagerUnit`
-(воркер) или `VindicatorUnit` (боевой).
+Юнит — это **данные**, а не Java-класс: ванильный/модовый моб (`base`) + JSON-определение.
+Полный разбор — `_GUIDES/02_unit.md`. Реестр — `reignofnether:unit` (датапак).
 
 ## Шаги
 
-1. **Класс** `unit/units/<Name>Unit.java` — наследует `PathfinderMob` и реализует нужные
-   интерфейсы: `Unit` обязательно; `AttackerUnit` (боевой), `WorkerUnit` (строитель),
-   `RangedAttackerUnit`, `HeroUnit`.
-2. **Атрибуты** — `public static AttributeSupplier.Builder createAttributes()`, начинать с
-   `Unit.createDefaultAttributes()`. В билдер сущности атрибуты **не** передаются.
-3. **Синхронизация** — `defineSynchedData` (через `Unit.defineSynchedData`).
-4. **Цели** — `initialiseGoals`/`registerGoals`; используй `unit/goals/**`.
-5. **Тик** — `tick()` + `Unit.tick()`.
-6. **NBT** — `addUnitSaveData`/`readUnitSaveData` (+ `Unit.addUnitSaveData`).
-7. **Регистрация** — `registrars/EntityRegistrar`:
-   `DeferredRegister<EntityType<?>>`, `EntityType.Builder.of(...).sized(w,h).clientTrackingRange(100)`.
-8. **Производство** — `<Name>Prod extends ProductionItem` с `getEntityType()` (см.
-   `reignofnether-add-production`).
-9. **Рендер** — `unit/modelling/renderers/**` + регистрация в клиентском событии.
-10. **Ассеты и переводы** — `reignofnether-add-assets`.
+1. **Файл** `data/<namespace>/unit/<name>.json`, id = `<namespace>:<name>`.
+2. **Тело** — `base`: id `EntityType` (напр. `minecraft:skeleton`). Моб рисует себя сам, своя
+   модель/рендер не нужны.
+3. **Роль** — `role`: `melee` | `ranged` | `worker` | `flying` | `hero`. Из неё
+   `UnitMobMixin.initialiseGoals` строит цели (melee/ranged/worker/garrison по флагу).
+4. **Флаги** — `flags`: `canGather`/`canBuild`/`canGarrison`/`holdPosition`/`canPickupEquipment`.
+5. **Атрибуты** — карта `attribute-id → значение`; `scale` — ванильный `SCALE`. Модовые атрибуты
+   `reignofnether:*` (`attack_damage`, `attacks_per_second`, `attack_range`, `sight_range`,
+   `aggro_range`, `*_damage_resist`).
+6. **Ranged** — `equipment` (предмет в руку) + `projectile` (`entity`/`velocity`/`damage`/`inaccuracy`).
+7. **Способности** — `abilities: [ { "type": …, "cooldown": …, "params": {…} } ]`. Движковые типы:
+   `heal`, `regeneration`, `summon`, `menu` (меню с `submenu`, см. `reignofnether-add-ability`).
+8. **Экономика** — `cost` (`food`/`wood`/`ore`/`emerald`/`seconds`), `population`,
+   `requiredResearch`.
+9. **Воркер** — `worker: { "gatherable": ["food","wood","ore"], "buildSpeed": 1.0, "carryCapacity": 100 }`
+   (только для `role: worker`).
+10. **Герой** — `hero: { "maxLevel": 10, "expReqMultiplier": 1.6 }` (только для `role: hero`).
+11. **Наследование** — `inherits: "<id>"`: незаданные поля берутся у родителя (атрибуты мержатся).
+12. **Производство** — перечисляется **на здании** (`production`), а не на юните
+    (`reignofnether-add-production`).
 
 ## Грабли
 
-* `Unit.createDefaultAttributes()` — точка входа; не изобретай базовые атрибуты.
-* `ProductionItems.getProductionItem` сопоставляет по `EntityType<?>` напрямую (E.9), не по имени.
-* Лимит армии базово 1; прирост даёт ратуша.
+* Идентичность юнита — **определение**, а не `EntityType`: два юнита могут делить тело.
+* Всё, что раньше брало имя/иконку у тела, берёт их из определения (см. `MiscUtil`).
+* `instanceof Unit` заменён на `isRtsUnit()`/роль-флаги; не возвращай под-интерфейсы.
+* Новая форма поведения (не покрытая ролью/типом способности) — это код-тип способности
+  (`reignofnether-add-ability`), а не класс юнита.
+* **Опечатки в полях ловятся явно:** имя каждого поля сверяется с record'ом `UnitDefinition` —
+  `test` (`ContentValidationTest`) валит сборку, а в игре ошибка пишется в лог при загрузке мира и на
+  `/reload`: `[content-validation] <file> '<path>': unknown field 'x' (accepted: …)`. Свободные карты
+  (`attributes`, локализованный `name`) принимают любые ключи, `params` способностей — тоже.
+
+## Гейт
+
+`compileJava` → `validateMixins` → `runData` → `test` (декодирует все поставляемые JSON).

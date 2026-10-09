@@ -213,6 +213,22 @@ public interface Unit {
     int getMaxResources();
 
     /**
+     * Resources this worker may gather (plan CONTENT_JSON_PLAN.md, K4). Only the toggle cycle and the
+     * search guard use it; a data-driven worker takes it from its definition, everyone else defaults to
+     * all three classic resources.
+     */
+    default List<com.solegendary.reignofnether.resources.ResourceName> getGatherableResources() {
+        return List.of(com.solegendary.reignofnether.resources.ResourceName.FOOD,
+                com.solegendary.reignofnether.resources.ResourceName.WOOD,
+                com.solegendary.reignofnether.resources.ResourceName.ORE);
+    }
+
+    /** How fast this worker advances a building site; 1.0 is the classic speed. */
+    default float getBuildSpeed() {
+        return 1.0f;
+    }
+
+    /**
      * Tool tier used by {@link com.solegendary.reignofnether.ability.DigAbility} to decide how fast
      * this unit breaks a block. It is a property of the unit and is iron by default; a unit may
      * override it.
@@ -717,8 +733,9 @@ public interface Unit {
     }
 
     static Ability getAbility(Unit unit, UnitAction abilityAction) {
+        // a menu ability has a null action - without the guard this NPEs on any unit that owns one
         for (Ability ability : unit.getAbilities().get())
-            if (ability.action.equals(abilityAction))
+            if (ability.action != null && ability.action.equals(abilityAction))
                 return ability;
         return null;
     }

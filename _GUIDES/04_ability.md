@@ -36,6 +36,37 @@ params `amount`) зарегистрирован в `BuiltInAbilities.init()` (в
 Движковый пример — `reignofnether:regeneration` (`RegenerationAbility`, params `amount`/`interval`).
 Свою пассивку делай так же: унаследуй `Ability`, переопредели `tickPassive`.
 
+## Меню-способность (data-driven)
+
+Движковый тип `reignofnether:menu` (`DataMenuAbility`) открывает подменю из поля `submenu`. Поле
+`name` — ключ локализации (или строка) кнопки, `icon` — её иконка. Каждый элемент `submenu` — это
+либо **инлайн-способность** (`ability: { type, … }`, может быть вложенным `reignofnether:menu`),
+либо **стандартный приказ** (`command`), плюс необязательные `row`/`col`:
+
+```json
+{ "type": "reignofnether:menu", "name": "abilities.reignofnether.menu", "submenu": [
+  { "ability": { "type": "reignofnether:heal", "cooldown": 200, "params": { "amount": 15 } }, "row": 0, "col": 0 },
+  { "command": "stop", "row": 0, "col": 1 },
+  { "command": "hold", "row": 1, "col": 0 },
+  { "ability": { "type": "reignofnether:menu", "name": "abilities.reignofnether.menu", "submenu": [ { "command": "attack" } ] }, "row": 1, "col": 2 }
+] }
+```
+
+* `command`: `attack`, `stop`, `hold`, `build`, `gather`, `garrison`, `ungarrison` (те же приказы, что
+  в основном ряду кнопок).
+* `building: "ns:barracks"` — кнопка **постановки здания** (та же, что в меню постройки воркера). Так автор
+  курирует список и порядок зданий; работает и у не-воркера. Требует, чтобы здание существовало (JSON-здание
+  или код-реестр).
+* `row`/`col` 0-based; `col` — колонка элемента (кнопка «Назад» — левее колонки 0). Элементы **без**
+  позиции раскладываются автоматически в оставшиеся ячейки; элементы **с** позицией её сохраняют.
+* Вложенный `reignofnether:menu` даёт меню-в-меню; кнопка «Назад» закрывает уровень.
+* Демо — у `skeleton_unit.json`.
+* Иконка/имя элемента берутся из класса способности (инлайн `label`/`icon` у элемента не применяются).
+* «Производство» элементом меню **не** является: состав производства перечисляет само здание
+  (`production`). А «постановка здания» — это элемент `building`.
+* Гейт по исследованию: у инлайн-способности с `requiredResearch` кнопка внутри меню серая
+  (`Abilities.applyResearchGate`), у элемента `building` — research-гейт самого здания.
+
 ## Устройство
 
 База — `ability/Ability.java`. Способность не регистрируется в реестре: юнит или здание

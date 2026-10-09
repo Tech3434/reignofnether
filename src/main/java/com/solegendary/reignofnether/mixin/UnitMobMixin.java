@@ -367,6 +367,18 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
     }
 
     @Override
+    public java.util.List<com.solegendary.reignofnether.resources.ResourceName> getGatherableResources() {
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        return def != null ? def.gatherableOrDefault() : Unit.super.getGatherableResources();
+    }
+
+    @Override
+    public float getBuildSpeed() {
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        return def != null ? def.buildSpeedOrDefault() : 1.0f;
+    }
+
+    @Override
     public MoveToTargetBlockGoal getMoveGoal() {
         return ron$moveGoal;
     }

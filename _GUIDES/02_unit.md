@@ -28,9 +28,9 @@
   "projectile": { "entity": "minecraft:arrow", "velocity": 1.6, "damage": 3, "inaccuracy": 1.0 },
   "cost": { "food": 60, "wood": 0, "ore": 0, "seconds": 15 },
   "population": 1,
-  "carryCapacity": 100,
   "requiredResearch": [ { "research": "myns:x", "invert": false } ],
-  "abilities": [ { "type": "myns:some_ability", "cooldown": 100 } ]
+  "abilities": [ { "type": "myns:some_ability", "cooldown": 100 } ],
+  "worker": { "gatherable": ["food", "wood", "ore"], "buildSpeed": 1.0, "carryCapacity": 100 }
 }
 ```
 
@@ -40,8 +40,16 @@
 * Флаги из `flags` применяются: `holdPosition` → удержание позиции; `canGather` → `GatherResourcesGoal`
   (worker получает его всегда); `canBuild` → `BuildRepairGoal` + `ExploreBuildLocationGoal`; `canGarrison`
   → `GarrisonGoal`.
-* `carryCapacity` (worker) — сколько ресурсов воркер несёт до автодропа (по умолчанию 100 для `worker`,
-  0 иначе); порог автодропа — половина ёмкости (дефолт 50).
+* `worker` (только для `role: worker`, необязательно):
+  * `gatherable` — список ресурсов, между которыми воркер переключается (`food`/`wood`/`ore`; по умолч.
+    все три). Воркер не может выбрать/начать добывать ресурс вне списка.
+  * `buildSpeed` — множитель вклада в стройку (по умолч. 1.0). Время стройки считается как
+    `3 * base / (Σ buildSpeed + 2)`; эффект спешки (`DIG_SPEED`/`TEMPORARY_EFFICIENCY`) по-прежнему
+    добавляет «+1 воркер».
+  * `carryCapacity` — сколько ресурсов воркер несёт до автодропа (по умолч. 100 для `worker`, 0 иначе);
+    порог автодропа — половина ёмкости (дефолт 50).
+* **Способности и меню:** `abilities` — список `{ "type": …, … }`; тип `reignofnether:menu` открывает
+  подменю из `submenu` (вложенные меню, стандартные приказы `command`, явные `row`/`col`) — см. `04_ability.md`.
 * `equipment` — id предмета в главную руку при спавне (нужно ranged-юниту с луком: goal требует оружие в руке).
 * `projectile` (для `role: ranged`) — `entity` (id сущности-снаряда), `velocity` (по умолч. 1.6),
   `damage` (по умолч. −1 = урон юнита `getUnitAttackDamage()`), `inaccuracy`. Спавнится в
@@ -243,3 +251,20 @@ public class XProd extends ProductionItem {
 * Владелец определяется верно: в панели выделения имя игрока, цвет по отношениям.
 * Юнит умирает и теряет инвентарь без ошибок в логе.
 * Путь: `/gamerule rtsPathfinding true`, юнит обходит препятствия, а не идёт напролом.
+
+## Строгая проверка полей (обязательно знать)
+
+Кодеки определений (`RecordCodecBuilder`) **молча отбрасывают** незнакомые поля: опечатка не даст
+ошибки, контент просто не сделает того, что задумано. Поэтому есть отдельный проход:
+
+* **В игре** — на загрузке мира и на каждом `/reload`:
+  `[content-validation] <file> '<path>': unknown field 'x' (accepted: a, b, c)` (чистый контент даёт
+  INFO-строку с числом проверенных файлов).
+* **В гейте** — `ContentValidationTest` (задача `test`) валит сборку при неизвестном поле в
+  поставляемых `unit`/`building`/`faction` файлах.
+* **Не проверено:** `research/*.json` (разбирается вручную).
+
+Правила: имена сверяются по компонентам record'ов (новое поле в record'е автоматически разрешено);
+свободные карты (`attributes`, `params`, локализованный `name`) принимают любые ключи; значения,
+диапазоны и обязательность полей остаются на кодеке. Единственное место, которое нужно править руками
+при переименовании **поля кодека** (а не компонента) — `ContentValidator.JSON_FIELD_NAMES`.

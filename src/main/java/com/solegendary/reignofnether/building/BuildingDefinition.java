@@ -52,10 +52,11 @@ public record BuildingDefinition(
             boolean drawAggro,
             Optional<Building.ScaffoldFill> scaffoldFill,
             Optional<ResourceLocation> scaffoldBlock,
-            Optional<ResourceLocation> portrait
+            Optional<ResourceLocation> portrait,
+            int foundationYLayers
     ) {
         public static final Flags DEFAULT = new Flags(false, 1.0, 20, false, false, true, 1.25, true,
-                Optional.empty(), Optional.empty(), Optional.empty());
+                Optional.empty(), Optional.empty(), Optional.empty(), 1);
 
         public static final Codec<Flags> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.BOOL.optionalFieldOf("canAcceptResources", false).forGetter(Flags::canAcceptResources),
@@ -68,7 +69,11 @@ public record BuildingDefinition(
                 Codec.BOOL.optionalFieldOf("drawAggro", true).forGetter(Flags::drawAggro),
                 StringRepresentable.fromEnum(Building.ScaffoldFill::values).optionalFieldOf("scaffoldFill").forGetter(Flags::scaffoldFill),
                 ResourceLocation.CODEC.optionalFieldOf("scaffoldBlock").forGetter(Flags::scaffoldBlock),
-                ResourceLocation.CODEC.optionalFieldOf("portrait").forGetter(Flags::portrait)
+                ResourceLocation.CODEC.optionalFieldOf("portrait").forGetter(Flags::portrait),
+                // how many bottom Y layers of the structure are foundation: their block types become
+                // startingBlockTypes (pre-queued on placement) and they are exempt from the
+                // "not yet built -> destroyed" check
+                Codec.INT.optionalFieldOf("foundationYLayers", 1).forGetter(Flags::foundationYLayers)
         ).apply(instance, Flags::new));
     }
 

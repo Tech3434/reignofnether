@@ -17,5 +17,5 @@
   },
   "cost": { "food": 50, "wood": 0, "ore": 0, "seconds": 15 },
   "population": 1,
-  "carryCapacity": 100
+  "worker": { "carryCapacity": 100 }
 }
