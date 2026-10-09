@@ -2,6 +2,7 @@ package com.solegendary.reignofnether.building.buildings;
 
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.building.BuildingBlock;
+import com.solegendary.reignofnether.building.BuildingBlockData;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingDefinition;
 import com.solegendary.reignofnether.building.BuildingPlaceButton;
@@ -125,7 +126,7 @@ public class JsonBuilding extends ProductionBuilding {
      */
     @Override
     public ArrayList<BuildingBlock> getRelativeBlockData(LevelAccessor level) {
-        ArrayList<BuildingBlock> blocks = super.getRelativeBlockData(level);
+        ArrayList<BuildingBlock> blocks = BuildingBlockData.getBuildingBlocksFromNbt(definition.structure(), level);
         if (this.startingBlockTypes.isEmpty() && !blocks.isEmpty()) {
             int minY = Integer.MAX_VALUE;
             for (BuildingBlock block : blocks)
