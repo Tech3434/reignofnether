@@ -41,10 +41,11 @@
 
 | Место | Что требует |
 |---|---|
-| `ProductionItems.getProductionItem` | прямой `EntityType<?>`, **не** строковое имя (после этапа E.9 плана) |
-| `ProductionItem.canAffordPopulation` | лимит армии; базовое значение 1, прирост даёт ратуша (этап E.4) |
-| `FogOfWar*` | удалён целиком (этап B.3 плана) |
-| Чары | удалены (этап E.1 плана) |
+| JSON-здание без `flags.canAcceptResources` | рабочие не сдадут ресурсы (нужно столице) |
+| JSON-здание без `production`/`researches` | очередь пуста, кнопок нет |
+| JSON-юнит `role: ranged` без `equipment` | лучник не удержит лук, цель не активируется |
+| Способности из JSON (`abilities`) | `AbilityTypes.register(...)` пуст — тип нужно зарегистрировать |
+| Аддоны из JSON (`addons`) | тип должен быть в `AddonTypes` (движковые — в `Addons.init`) |
 
 ## Ссылка на удалённый контент
 
