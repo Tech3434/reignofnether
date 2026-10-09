@@ -91,8 +91,9 @@
 
 > **Реализовано (базово):** реестр `AbilityTypes` + движковый тип `reignofnether:heal`
 > (`SimpleHealAbility`, params `amount`), регистрация в `BuiltInAbilities.init()`; `UnitDefinitionRuntime.
-> buildAbilities` создаёт инстансы из `abilities` и кладёт в `Unit.getAbilities()`. Активная способность
-> требует своей константы `UnitAction` (по ней её находит `UnitActionItem`).
+> buildAbilities` создаёт инстансы из `abilities` и прокидывает `cooldown`/`range`/`radius`/
+> `canTargetEntities`/`oneClickOneUse`/`passive`/`mana` (для героя)/`requiredResearch`. Активная
+> способность требует своей константы `UnitAction` (по ней её находит `UnitActionItem`).
 
 Общие поля инстанса: `type` (id код-класса), `cooldown`, `mana`, `requiredResearch`,
 `heroLevel`/`rank` (для героев), `autocast`, `range`, `passive` (пассивный эффект — яд при ударе и

@@ -85,6 +85,17 @@ public final class UnitDefinitionRuntime {
                 continue;
             if (spec.cooldown() > 0)
                 ability.cooldownMax = Math.round(spec.cooldown());
+            if (spec.range() > 0)
+                ability.range = spec.range();
+            if (spec.radius() > 0)
+                ability.radius = spec.radius();
+            if (spec.canTargetEntities())
+                ability.canTargetEntities = true;
+            if (spec.oneClickOneUse())
+                ability.oneClickOneUse = true;
+            ability.passive = spec.passive();
+            if (ability instanceof com.solegendary.reignofnether.ability.HeroAbility heroAbility && spec.mana() > 0)
+                heroAbility.manaCost = Math.round(spec.mana());
             ability.requiredResearch = spec.requiredResearch();
             unit.getAbilities().add(ability);
         }

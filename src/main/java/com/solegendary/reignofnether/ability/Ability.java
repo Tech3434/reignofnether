@@ -19,8 +19,9 @@ public class Ability {
     public float cooldownMax;
     public float range; // if <= 0, is melee
     public float radius; // if <= 0, is single target
-    public final boolean canTargetEntities;
+    public boolean canTargetEntities;
     public boolean oneClickOneUse; // if true, a group of units/buildings will use their abilities one by one
+    public boolean passive; // passive abilities have no button and are never clicked
 
     /**
      * Researches that must be satisfied before this ability can be used (empty = always available).

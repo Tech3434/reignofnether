@@ -85,8 +85,9 @@ cd ___temp
   и зовёт `use(...)`; поэтому активному типу нужна **своя константа `UnitAction`**.
 - `AbilitySpec` (Codec): `type` + `cooldown`/`mana`/`passive`/`requiredResearch`/`params`
   (`params` сейчас `Map<String,Double>` — только числа; расширять при необходимости).
-- В `UnitDefinitionRuntime.buildAbilities` инстансы создаются и кладутся в `unit.getAbilities()`
-  (из spec берутся только `cooldown`/`requiredResearch`).
+- В `UnitDefinitionRuntime.buildAbilities` инстансы создаются и кладутся в `unit.getAbilities()`;
+  из spec прокидываются `cooldown`/`range`/`radius`/`canTargetEntities`/`oneClickOneUse`/`passive`/`mana`
+  (для `HeroAbility`)/`requiredResearch` (числа `0`/`false` = дефолт класса).
 - Конкретные «боевые» классы способностей пишет автор фракции — в каркасе один пример (`heal`).
 
 ### Здания — `data/<ns>/building/<name>.json` (реестр `reignofnether:building`)
@@ -273,6 +274,11 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 `ability/BuiltInAbilities.init()` (из конструктора мода) регистрирует движковый тип `reignofnether:heal`
 (`SimpleHealAbility`, params `amount`; действие `UnitAction.HEAL_SELF`). Демо — у `skeleton_unit`. Убрана
 неоднозначная перегрузка `AbilityTypes.register(BiFunction)`. Гейты зелёные.**`runClient` не проверялся**.
+
+**AbilitySpec доведён:** добавлены поля `range`/`radius`/`canTargetEntities`/`oneClickOneUse`; `Ability` —
+`passive` (пассивки не рисуют кнопку в `Abilities.getButtons`) и `canTargetEntities` больше не `final`.
+`buildAbilities` прокидывает все общие поля (числа `0`/`false` = дефолт класса; `mana` — в `HeroAbility`).
+Гейты зелёные.**`runClient` не проверялся**.
 
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)

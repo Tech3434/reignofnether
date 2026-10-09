@@ -43,6 +43,8 @@ public class Abilities {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             for (int i = 0; i < abilities.size(); i++) {
                 Pair<Ability, Keybinding> ability = abilities.get(i);
+                if (ability.getA().passive)
+                    continue;
                 AbilityButton button = ability.getA().getButton(ability.getB() != null ? ability.getB() : keybindings.get(i) , placement);
                 if (button != null) {
                     applyResearchGate(button, ability.getA(), placement.level, placement.ownerName);
@@ -68,6 +70,8 @@ public class Abilities {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             for (int i = 0; i < abilities.size(); i++) {
                 Pair<Ability, Keybinding> ability = abilities.get(i);
+                if (ability.getA().passive)
+                    continue;
                 Button button = ability.getA().getButton(ability.getB() != null ? ability.getB() : keybindings.get(i) , unit);
                 if (button != null) {
                     applyResearchGate(button, ability.getA(),

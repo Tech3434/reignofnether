@@ -22,6 +22,11 @@ params `amount`) зарегистрирован в `BuiltInAbilities.init()` (в
 `AbilityTypes.register(id, (spec, unit) -> new MyAbility(spec))`. Тип, который не зарегистрирован,
 даёт `null` и способность молча не добавляется.
 
+Общие поля `AbilitySpec` прокидываются в созданный инстанс (`UnitDefinitionRuntime.buildAbilities`):
+`cooldown`, `range`, `radius`, `canTargetEntities`, `oneClickOneUse`, `passive` (у пассивки нет кнопки),
+`mana` (для `HeroAbility`), `requiredResearch`. Для чисел `0`/`false` = «оставить дефолт класса»;
+`params` — числа, специфичные для типа.
+
 ## Устройство
 
 База — `ability/Ability.java`. Способность не регистрируется в реестре: юнит или здание
