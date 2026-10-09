@@ -528,6 +528,8 @@ public interface Unit {
     // call from addAdditionalSaveData
     public default void addUnitSaveData(@NotNull CompoundTag pCompound) {
         pCompound.putString("ownerName", getOwnerName());
+        if (this instanceof DefinedUnit definedUnit && definedUnit.getUnitDefinitionId() != null)
+            pCompound.putString("unitDefinitionId", definedUnit.getUnitDefinitionId().toString());
         if (getAnchor() != null) {
             pCompound.putInt("anchorPosX", getAnchor().getX());
             pCompound.putInt("anchorPosY", getAnchor().getY());
@@ -547,6 +549,12 @@ public interface Unit {
     // call from readAdditionalSaveData
     public default void readUnitSaveData(@NotNull CompoundTag pCompound) {
         setOwnerName(pCompound.getString("ownerName"));
+        if (this instanceof DefinedUnit definedUnit && pCompound.contains("unitDefinitionId")) {
+            net.minecraft.resources.ResourceLocation id =
+                    net.minecraft.resources.ResourceLocation.tryParse(pCompound.getString("unitDefinitionId"));
+            if (id != null)
+                definedUnit.setUnitDefinitionId(id);
+        }
         BlockPos anchorPos = new BlockPos(
             pCompound.getInt("anchorPosX"),
             pCompound.getInt("anchorPosY"),

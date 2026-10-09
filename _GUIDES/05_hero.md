@@ -15,9 +15,21 @@
 
 ```json
 { "base": "minecraft:vindicator", "role": "hero",
-  "attributes": { "minecraft:generic.max_health": 100, "reignofnether:max_mana": 100 },
+  "attributes": {
+    "reignofnether:base_max_health": 100,
+    "reignofnether:attack_damage": 8,
+    "reignofnether:base_max_mana": 100,
+    "reignofnether:mana_regen_per_second": 2,
+    "reignofnether:max_health_bonus_per_level": 10,
+    "reignofnether:attack_damage_bonus_per_level": 1,
+    "reignofnether:max_mana_bonus_per_level": 5
+  },
   "abilities": [ { "type": "myns:x", "cooldown": 100 } ] }
 ```
+
+⚠ У героя `setStatsForLevel` **перезаписывает** `minecraft:generic.max_health`/`attack_damage` из
+`reignofnether:base_max_health`/`attack_damage`, так что задавай именно модовые hero-атрибуты
+(`base_max_health`, `attack_damage`, `base_max_mana`, `mana_regen_per_second`, `*_bonus_per_level`).
 
 ## Состояние героя (на `Unit` / `UnitMobMixin`)
 

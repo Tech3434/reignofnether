@@ -305,6 +305,14 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 синхронизированный датапак-реестр. (5) `JsonProductionItem` показывал иконку меча и голый id — теперь
 имя/иконка/тултип из определения. Гейты зелёные.**`runClient` не проверялся**.
 
+**Аудит-2 (герой/аддоны/апгрейды):** найдена **регрессия персистентности юнитов** — удалённые код-классы
+вызывали `Unit#addUnitSaveData` из `addAdditionalSaveData`, а `UnitMobMixin` — нет, поэтому у data-driven
+юнитов терялись owner/anchor/hero-состояние **и id определения** при перезагрузке мира. Добавлены
+`@Inject` в `UnitMobMixin` (зовёт `addUnitSaveData`/`readUnitSaveData`), а сам `addUnitSaveData` теперь
+пишет `unitDefinitionId`. Nether-зоны при загрузке восстанавливаются отдельно (`NetherZoneSaveData` +
+`getActiveAddon(NetherConvertingAddon)`), addon-lifecycle там ок. В `changeStructure` добавлен warning,
+если структура апгрейда имеет другой габарит (границы placement не пересчитываются). Гейты зелёные.**`runClient` не проверялся**.
+
 **Ranged-юнит (projectile):** `UnitDefinition` получил `equipment` (предмет в руку) и `projectile`
 (`ProjectileSpec`: entity/velocity/damage/inaccuracy); `UnitMobMixin.performUnitRangedAttack` (был no-op)
 спавнит снаряд на сервере (owner, урон = `damage` или `getUnitAttackDamage()`), дефолт — стрела.

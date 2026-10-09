@@ -28,6 +28,9 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -247,6 +250,19 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
         ron$roleCache = null;
         ron$definitionResolved = false;
         ron$definitionCache = null;
+    }
+
+    // The removed code unit classes used to call Unit#addUnitSaveData from their addAdditionalSaveData
+    // override; data-driven units have no such class, so persist the generic unit state here.
+    @Inject(method = "addAdditionalSaveData", at = @At("RETURN"))
+    private void ron$saveUnitData(net.minecraft.nbt.CompoundTag tag, CallbackInfo ci) {
+        if (isRtsUnit())
+            ((Unit) (Object) this).addUnitSaveData(tag);
+    }
+
+    @Inject(method = "readAdditionalSaveData", at = @At("RETURN"))
+    private void ron$readUnitData(net.minecraft.nbt.CompoundTag tag, CallbackInfo ci) {
+        ((Unit) (Object) this).readUnitSaveData(tag);
     }
 
     @Shadow protected net.minecraft.world.entity.ai.goal.GoalSelector goalSelector;

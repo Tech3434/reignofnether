@@ -1207,6 +1207,15 @@ public class BuildingPlacement {
 
     public void changeStructure(String newStructureName) {
         ArrayList<BuildingBlock> newBlocks = BuildingBlockData.getBuildingBlocksFromNbt(newStructureName, this.getLevel());
+        if (!newBlocks.isEmpty()) {
+            BlockPos relMin = getMinCorner(newBlocks);
+            BlockPos relMax = getMaxCorner(newBlocks);
+            if (relMax.getX() - relMin.getX() != maxCorner.getX() - minCorner.getX()
+                    || relMax.getY() - relMin.getY() != maxCorner.getY() - minCorner.getY()
+                    || relMax.getZ() - relMin.getZ() != maxCorner.getZ() - minCorner.getZ())
+                ReignOfNether.LOGGER.warn("changeStructure: '{}' has a different footprint than the placement; "
+                        + "minCorner/maxCorner/centrePos are NOT recalculated (see _GUIDES/03_building.md)", newStructureName);
+        }
         setBlocks(getAbsoluteBlockData(newBlocks, this.getLevel(), originPos, rotation));
         refreshBlocks();
         if (!level.isClientSide())
