@@ -37,6 +37,7 @@
         "FrustumMixin",
         "LivingEntityRendererMixin",
         "MixinMinecraft",
+        "OrthoChatGuiMixin",
         "OrthoViewMixin",
         "RenderChunkRegionMixin",
         "ResourceLoadStateTrackerMixin"]

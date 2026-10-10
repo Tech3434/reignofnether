@@ -122,3 +122,24 @@ tasks.withType(JavaCompile).configureEach {
     // default 100 error cap would hide the tail of the list every run.
     options.compilerArgs += ["-Xmaxerrs", "500000"]
 }
+
+// META-INF/neoforge.mods.toml is a template, and nothing expanded it: FML parses loaderVersion and
+// every dependency versionRange into VersionRange objects the moment it reads the mod file, so a
+// shipped jar carried the literal placeholders below and a real install refused it (the required
+// neoforge dependency resolved to the single version string "${neo_version_range}"). The Forge
+// build expanded these in processResources; the rename to neoforge.mods.toml dropped the step, and
+// that stayed invisible for as long as only dev runs were ever loaded - a dev run loads the mod
+// from the classes directory and tolerates the placeholders, a production install does not.
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range
+    ]
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}
