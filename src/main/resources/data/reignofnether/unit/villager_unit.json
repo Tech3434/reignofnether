@@ -16,5 +16,6 @@
     "reignofnether:magic_damage_resist": 0
   },
   "cost": { "food": 50, "wood": 0, "ore": 0, "seconds": 15 },
-  "population": 1
+  "population": 1,
+  "worker": { "carryCapacity": 100 }
 }

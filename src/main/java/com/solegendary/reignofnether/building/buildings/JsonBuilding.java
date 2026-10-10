@@ -1,8 +1,12 @@
 package com.solegendary.reignofnether.building.buildings;
 
+import com.solegendary.reignofnether.building.Building;
+import com.solegendary.reignofnether.building.BuildingBlock;
+import com.solegendary.reignofnether.building.BuildingBlockData;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingDefinition;
 import com.solegendary.reignofnether.building.BuildingPlaceButton;
+import com.solegendary.reignofnether.building.ProductionSpec;
 import com.solegendary.reignofnether.building.UpgradeSpec;
 import com.solegendary.reignofnether.building.addon.AddonSpec;
 import com.solegendary.reignofnether.building.addon.AddonTypes;
@@ -17,9 +21,12 @@ import com.solegendary.reignofnether.resources.ResourceCost;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -65,6 +72,7 @@ public class JsonBuilding extends ProductionBuilding {
         this.repairable = flags.repairable();
         this.repairTimeModifier = (float) flags.repairTimeModifier();
         this.drawAggro = flags.drawAggro();
+        this.foundationYLayers = Math.max(1, flags.foundationYLayers());
         flags.scaffoldFill().ifPresent(fill -> this.scaffoldFill = fill);
         flags.scaffoldBlock().ifPresent(id -> {
             net.minecraft.world.level.block.Block block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(id);
@@ -77,8 +85,9 @@ public class JsonBuilding extends ProductionBuilding {
                 this.portraitBlock = block;
         });
 
-        for (ResourceLocation unitId : definition.production())
-            this.productions.add(new JsonProductionItem(unitId, cost, unitId.getPath()), Keybindings.abilitySlot1);
+        for (ProductionSpec spec : definition.production())
+            this.productions.add(new JsonProductionItem(spec.unit(), cost, spec.unit().getPath(),
+                    spec.costOverride().orElse(null)), Keybindings.abilitySlot1);
 
         for (ResourceLocation researchId : definition.researches())
             this.productions.add(com.solegendary.reignofnether.research.ResearchProductionItem.fromId(researchId),
@@ -98,6 +107,45 @@ public class JsonBuilding extends ProductionBuilding {
 
     public ResourceLocation getDefinitionId() {
         return definitionId;
+    }
+
+    /**
+     * Two variants of the same definition (upgrade levels are separate instances) are the same type
+     * of building: this keeps "has a finished one" checks and the build menu working after an
+     * upgrade replaces the placement's building with a higher-level variant.
+     */
+    @Override
+    public boolean isTypeOf(Building building) {
+        if (building instanceof JsonBuilding other)
+            return this.definitionId.equals(other.definitionId);
+        return super.isTypeOf(building);
+    }
+
+    /**
+     * Derives the foundation block types from the structure NBT (the bottom layer), the same way a
+     * custom building does. Without this, {@code startingBlockTypes} stays empty, so a freshly placed
+     * JSON building queues no blocks and {@link com.solegendary.reignofnether.building.BuildingPlacement#shouldBeDestroyed()}
+     * can treat the still-empty placement as destroyed on the first server tick.
+     */
+    @Override
+    public ArrayList<BuildingBlock> getRelativeBlockData(LevelAccessor level) {
+        ArrayList<BuildingBlock> blocks = BuildingBlockData.getBuildingBlocksFromNbt(definition.structure(), level);
+        if (this.startingBlockTypes.isEmpty() && !blocks.isEmpty()) {
+            int minY = Integer.MAX_VALUE;
+            for (BuildingBlock block : blocks)
+                minY = Math.min(minY, block.getBlockPos().getY());
+            // the bottom `foundationYLayers` Y layers are the foundation: their block types are pre-queued
+            // so the placement is never empty (see BuildingPlacement#shouldBeDestroyed)
+            int foundationMaxY = minY + Math.max(1, this.foundationYLayers) - 1;
+            for (BuildingBlock block : blocks) {
+                if (block.getBlockPos().getY() > foundationMaxY || block.getBlockState().isAir())
+                    continue;
+                Block type = block.getBlockState().getBlock();
+                if (!this.startingBlockTypes.contains(type))
+                    this.startingBlockTypes.add(type);
+            }
+        }
+        return blocks;
     }
 
     public BuildingDefinition getDefinition() {

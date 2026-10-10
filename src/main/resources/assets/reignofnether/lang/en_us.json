@@ -1241,6 +1241,7 @@
     "abilities.reignofnether.heal": "Heal",
     "abilities.reignofnether.heal.tooltip1": "Heals %s health of this unit",
     "abilities.reignofnether.summon": "Summon",
+    "abilities.reignofnether.menu": "Abilities",
     "hud.upgrade.reignofnether.not_next": "This upgrade is not available yet",
     "server.reignofnether.lost_buildings": "lost all their buildings",
     "server.reignofnether.lost_capitol": "%s has lost their capitol and will be revealed in %d seconds unless they rebuild it!",

@@ -69,7 +69,7 @@ public class HealthBarClientEvents {
     }
 
     private static boolean shouldShowHealthBar(Entity entity, Minecraft client) {
-        return entity instanceof LivingEntity && !(entity instanceof ArmorStand) &&
+        return entity instanceof LivingEntity && !Unit.isUnit(entity) && !(entity instanceof ArmorStand) &&
                    (!entity.isInvisibleTo(client.player) || entity.isCurrentlyGlowing() || entity.isOnFire() ||
                    entity instanceof Creeper && ((Creeper) entity).isPowered() ||
                    hasAnyEquippedItem(entity)) &&

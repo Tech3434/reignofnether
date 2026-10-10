@@ -585,7 +585,7 @@ public class PortraitRendererUnit<T extends LivingEntity, M extends EntityModel<
         ResourceLocation expBarFullRl = ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, "textures/hud/experience_bar_full.png");
         RenderSystem.setShaderTexture(0, expBarFullRl);
         float expPercent = (float) heroUnit.getExpOnCurrentLevel() / heroUnit.getExpToNextlevel();
-        if (heroUnit.getHeroLevel() >= Unit.MAX_LEVEL)
+        if (heroUnit.getHeroLevel() >= heroUnit.getMaxHeroLevel())
             expPercent = 1.0f;
         guiGraphics.blit(expBarFullRl,
                 x, y, 0,

@@ -28,6 +28,16 @@ public class MenuAbility extends Ability {
         this.icon = icon;
     }
 
+    /**
+     * Whether the menu button must be hidden because it would open an empty menu. A subclass whose
+     * items are not stored in {@link #subAbilities} (see {@link DataMenuAbility}, which mixes abilities
+     * and building-place buttons) must override this, or a menu holding only such items would be hidden
+     * and could never be opened.
+     */
+    protected boolean hasNoEntries() {
+        return subAbilities.isEmpty();
+    }
+
     @Override
     public AbilityButton getButton(Keybinding hotkey, Unit unit) {
         return new AbilityButton(
@@ -35,7 +45,7 @@ public class MenuAbility extends Ability {
                 icon,
                 hotkey,
                 () -> HudClientEvents.isSubmenuOpenFor(this, unit, null),
-                () -> subAbilities.isEmpty(),
+                () -> hasNoEntries(),
                 () -> true,
                 () -> HudClientEvents.openSubmenu(this, unit),
                 null,
@@ -52,7 +62,7 @@ public class MenuAbility extends Ability {
                 icon,
                 hotkey,
                 () -> HudClientEvents.isSubmenuOpenFor(this, null, placement),
-                () -> subAbilities.isEmpty(),
+                () -> hasNoEntries(),
                 () -> true,
                 () -> HudClientEvents.openSubmenu(this, placement),
                 null,

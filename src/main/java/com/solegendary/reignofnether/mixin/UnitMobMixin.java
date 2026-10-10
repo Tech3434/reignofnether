@@ -150,9 +150,8 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
         ron$roleResolved = true;
         if (ron$definitionId == null)
             return null;
-        com.solegendary.reignofnether.unit.UnitDefinition def = level().registryAccess()
-                .registryOrThrow(com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY)
-                .get(ron$definitionId);
+        // resolve() so a unit that inherits its role from a parent definition reports it correctly
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
         ron$roleCache = def == null ? null : def.roleOrDefault();
         return ron$roleCache;
     }
@@ -263,6 +262,12 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
     @Inject(method = "readAdditionalSaveData", at = @At("RETURN"))
     private void ron$readUnitData(net.minecraft.nbt.CompoundTag tag, CallbackInfo ci) {
         ((Unit) (Object) this).readUnitSaveData(tag);
+        // a unit loaded from a save has its definition id only now, and the removed code units built
+        // their goals in their own constructor - without this a reloaded unit would have no goals at
+        // all. There is no registerGoals() hook for the mixin, despite what older comments claimed.
+        // initialiseGoals is idempotent (each goal is only added when its field is still null).
+        if (isRtsUnit())
+            ((Unit) (Object) this).initialiseGoals();
     }
 
     @Shadow protected net.minecraft.world.entity.ai.goal.GoalSelector goalSelector;
@@ -351,7 +356,26 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
 
     @Override
     public int getMaxResources() {
+        // derived lazily from the definition: nothing assigns ron$maxResources elsewhere, so without
+        // this a data-driven worker would report 0 and Unit.atMaxResources would always be true
+        if (ron$maxResources > 0)
+            return ron$maxResources;
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        if (def != null)
+            ron$maxResources = def.carryCapacityOrDefault();
         return ron$maxResources;
+    }
+
+    @Override
+    public java.util.List<com.solegendary.reignofnether.resources.ResourceName> getGatherableResources() {
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        return def != null ? def.gatherableOrDefault() : Unit.super.getGatherableResources();
+    }
+
+    @Override
+    public float getBuildSpeed() {
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        return def != null ? def.buildSpeedOrDefault() : 1.0f;
     }
 
     @Override
@@ -371,7 +395,33 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
 
     @Override
     public ResourceCost getCost() {
+        // the removed code unit classes returned their static ResourceCost here; a data-driven unit
+        // takes it from its definition. Never return null: callers read cost.population directly.
+        if (ron$cost != null)
+            return ron$cost;
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        if (def == null)
+            return ResourceCost.Unit(0, 0, 0, 0, 0);
+        com.solegendary.reignofnether.unit.UnitDefinition.CostSpec c = def.cost().orElse(null);
+        ResourceCost cost = c == null
+                ? ResourceCost.Unit(0, 0, 0, 0, def.populationOrDefault())
+                : ResourceCost.Unit(c.food(), c.wood(), c.ore(), c.seconds(), def.populationOrDefault());
+        if (c != null)
+            cost.emerald = c.emerald();
+        ron$cost = cost;
         return ron$cost;
+    }
+
+    @Override
+    public int getMaxHeroLevel() {
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        return def == null ? Unit.MAX_LEVEL : def.maxLevelOrDefault();
+    }
+
+    @Override
+    public float getExpReqMultiplier() {
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
+        return def == null ? Unit.EXP_REQ_MULTIPLIER : def.expReqMultiplierOrDefault();
     }
 
     @Override
@@ -418,13 +468,15 @@ public abstract class UnitMobMixin extends LivingEntity implements Unit, com.sol
     public void initialiseGoals() {
         if (ron$definitionId == null)
             return;
-        com.solegendary.reignofnether.unit.UnitDefinition def = level().registryAccess()
-                .registryOrThrow(com.solegendary.reignofnether.unit.UnitDefinitions.UNIT_KEY)
-                .get(ron$definitionId);
+        // resolve() so goals come from the effective (inherited) definition, not just this file's fields
+        com.solegendary.reignofnether.unit.UnitDefinition def = ron$definition();
         if (def == null)
             return;
         Mob self = (Mob) (Object) this;
         Unit me = (Unit) (Object) this;
+
+        // behaviour flags from the definition (hold-position etc.)
+        ron$holdPosition = def.flagsOrDefault().holdPosition();
 
         if (ron$moveGoal == null) {
             ron$moveGoal = new MoveToTargetBlockGoal(self, false, 0);

@@ -26,19 +26,31 @@ import java.util.Optional;
 public class BuildingBlockData {
 
     public static ArrayList<BuildingBlock> getBuildingBlocksFromNbt(String structureName, LevelAccessor level) {
+        // legacy call sites pass a bare path; those structures live in this mod's namespace
+        return getBuildingBlocksFromNbt(
+                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, structureName), level);
+    }
+
+    /**
+     * Loads a structure by its full id ({@code <namespace>:structures/<path>.nbt}), so a data-driven
+     * building can ship its structure under the author's own namespace.
+     */
+    public static ArrayList<BuildingBlock> getBuildingBlocksFromNbt(ResourceLocation structureId, LevelAccessor level) {
         ResourceManager resourceManager;
         if (level.isClientSide())
             resourceManager = Minecraft.getInstance().getResourceManager();
         else
             resourceManager = level.getServer().getResourceManager();
 
-        CompoundTag nbt = getBuildingNbt(structureName, resourceManager);
+        CompoundTag nbt = getBuildingNbt(structureId, resourceManager);
 
         return getBuildingBlocksFromNbt(nbt);
     }
 
     public static ArrayList<BuildingBlock> getBuildingBlocksFromNbt(CompoundTag nbt) {
         ArrayList<BuildingBlock> blocks = new ArrayList<>();
+        if (nbt == null)
+            return blocks;
 
         // load in blocks (list of blockPos and their palette index)
         ListTag blocksNbt = nbt.getList("blocks", 10);
@@ -69,11 +81,22 @@ public class BuildingBlockData {
     }
 
     public static CompoundTag getBuildingNbt(String structureName, ResourceManager resManager) {
+        // legacy call sites pass a bare path; those structures live in this mod's namespace
+        return getBuildingNbt(
+                ResourceLocation.fromNamespaceAndPath(ReignOfNether.MOD_ID, structureName), resManager);
+    }
+
+    /** Reads {@code <namespace>:structures/<path>.nbt}; null (with a log) if it is missing or unreadable. */
+    public static CompoundTag getBuildingNbt(ResourceLocation structureId, ResourceManager resManager) {
 
         try {
-            ResourceLocation rl = ResourceLocation.fromNamespaceAndPath("reignofnether", "structures/" + structureName + ".nbt");
+            ResourceLocation rl = ResourceLocation.fromNamespaceAndPath(
+                    structureId.getNamespace(), "structures/" + structureId.getPath() + ".nbt");
             Optional<Resource> rs = resManager.getResource(rl);
-            if (rs.isEmpty()) return null;
+            if (rs.isEmpty()) {
+                ReignOfNether.LOGGER.error("Missing building structure NBT: {}", rl);
+                return null;
+            }
             return NbtIo.readCompressed(rs.get().open(), NbtAccounter.unlimitedHeap());
         } catch (IOException e) {
             ReignOfNether.LOGGER.error(e.getMessage(), e);

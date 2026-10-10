@@ -17,6 +17,7 @@ public final class BuiltInAbilities {
         AbilityTypes.register(id("heal"), (spec, unit) -> new SimpleHealAbility(spec));
         AbilityTypes.register(id("regeneration"), (spec, unit) -> new RegenerationAbility(spec));
         AbilityTypes.register(id("summon"), (spec, unit) -> new SummonUnitAbility(spec));
+        AbilityTypes.register(id("menu"), DataMenuAbility::new);
     }
 
     private static ResourceLocation id(String path) {

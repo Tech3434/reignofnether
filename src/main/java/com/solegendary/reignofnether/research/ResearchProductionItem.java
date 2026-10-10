@@ -53,6 +53,7 @@ public class ResearchProductionItem extends ProductionItem {
             data.save();
             ResearchClientboundPacket.sync(placement.ownerName, data.getFor(placement.ownerName));
             ResearchAttributeApplier.refreshForOwner(level, placement.ownerName);
+            ResearchEquipApplier.refreshForOwner(level, placement.ownerName);
         };
     }
 

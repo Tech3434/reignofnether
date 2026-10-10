@@ -1,28 +1,32 @@
 ---
 name: reignofnether-add-hero
-description: Как добавить героя в Reign of Nether — уровни, мана, ранги, воскрешение, HeroUnit. Использовать при создании геройского юнита.
+description: Как добавить героя в Reign of Nether — role hero, уровни, мана, ранги способностей. Использовать при создании геройского юнита.
 ---
 
 # Как добавить героя
 
-Полный разбор — `_GUIDES/05_hero.md`. Контракт — `unit/interfaces/HeroUnit` (широко используется
-HUD, healthbars и целями; **оставлен** после этапа D).
+Герой — это обычный data-driven юнит с `role: hero` (см. `reignofnether-add-unit`). JAVA-класса нет.
 
 ## Шаги
 
-1. **Юнит** — обычный юнит (`reignofnether-add-unit`), дополнительно реализует `HeroUnit`.
-2. **Уровни и опыт** — опыт через предмет (`HeroExperienceBottleItem` — предметный слой удалён,
-   при необходимости восстанови из `5079004e` или сделай свой источник).
-3. **Мана** — атрибут маны и её реген; см. `AttackerUnit`/`HeroUnit` (атрибут `mania_*`
-   и подобные остались в `AttributeRegistrar`).
-4. **Ранги/скиллы** — меню повышения ранга рисует `HudClientEvents` через
-   `HeroAbility.allSkillsLearnt` / `isRankUpMenuOpen`.
-5. **Воскрешение** — свои правила смерти героя (старые `HeroUnitSave`/`HeroUnitSaveData` удалены
-   на этапе D и **не восстанавливаются** как есть — сделай хранение под свою фракцию).
-6. **Локализация/иконки** — `reignofnether-add-assets`.
+1. **Определение юнита** — `data/<ns>/unit/<name>.json`, `"role": "hero"`, тело `base` — ванильный/
+   модовый моб.
+2. **Прокачка** — необязательный блок `hero`:
+   `{ "maxLevel": 10, "expReqMultiplier": 1.6 }` (по умолчанию 10 и 1.6, как было у код-героев).
+   Формула опыта — `(getHeroLevel() + 1) * 100 * expReqMultiplier`.
+3. **Мана/атрибуты** — обычные атрибуты определения; мана-атрибут даёт `Unit.getMaxMana`.
+4. **Способности** — `abilities`; для геройских способностей указывай `mana` и ранги (`heroLevel`/
+   `rank`) в spec. `HeroAbility` — базовый тип для таких способностей.
+5. **Спавн** — `role: hero` при спавне применяет характеристики уровня 1 и далее тикается `tickHero`.
 
 ## Грабли
 
-* Не тяни обратно `HeroUnitSave`/`HeroUnitSaveData` целиком: их вызовы вычищены из
-  `UnitServerEvents`, и они завязаны на удалённую фракционную логику.
-* Гейт `ALLOWED_HEROES` ограничивает число героев (геймрул `allowedHeroes`).
+* Старые `HeroUnitSave`/`HeroUnitSaveData` и предметный слой героя удалены — не тяни их обратно;
+  состояние героя (опыт/мана/ранги) хранится в `UnitMobMixin` и сохраняется через
+  `addUnitSaveData`/`readUnitSaveData`.
+* Гейт `ALLOWED_HEROES` (геймрул `allowedHeroes`) ограничивает число героев.
+* Кнопка повышения ранга рисуется HUD'ом через `HeroAbility.isRankUpMenuOpen`/`allSkillsLearnt`.
+
+## Гейт
+
+`compileJava` → `validateMixins` → `runData` → `test`.

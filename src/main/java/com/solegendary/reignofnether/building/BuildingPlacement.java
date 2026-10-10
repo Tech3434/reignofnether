@@ -953,9 +953,12 @@ public class BuildingPlacement {
 
     private void handleServerTick(ServerLevel serverLevel, float blocksPlaced, float blocksTotal) {
         ArrayList<Unit> workerUnits = getBuilders();
-        int builderCount = workerUnits.size();
+        // a worker's contribution is scaled by its build speed (K4); the default 1.0 keeps the classic
+        // AoE2-style formula, and a haste effect still counts as one extra builder
+        float builderCount = 0f;
 
         for (Unit workerUnit : workerUnits) {
+            builderCount += Math.max(0.01f, workerUnit.getBuildSpeed());
             if (((Mob) workerUnit).getActiveEffectsMap().containsKey(MobEffects.DIG_SPEED) ||
                 ((Mob) workerUnit).getActiveEffectsMap().containsKey(MobEffectRegistrar.TEMPORARY_EFFICIENCY.get()))
                 builderCount += 1;

@@ -55,6 +55,7 @@ public class ResearchCommand {
         data.save();
         ResearchClientboundPacket.sync(playerName, data.getFor(playerName));
         ResearchAttributeApplier.refreshForOwner(ctx.getSource().getLevel(), playerName);
+        ResearchEquipApplier.refreshForOwner(ctx.getSource().getLevel(), playerName);
         ctx.getSource().sendSuccess(() -> Component.literal(
                 (grant ? "Granted " : "Revoked ") + id + " for " + playerName), false);
         return 1;
@@ -67,6 +68,7 @@ public class ResearchCommand {
         data.save();
         ResearchClientboundPacket.sync(playerName, Set.of());
         ResearchAttributeApplier.refreshForOwner(ctx.getSource().getLevel(), playerName);
+        ResearchEquipApplier.refreshForOwner(ctx.getSource().getLevel(), playerName);
         ctx.getSource().sendSuccess(() -> Component.literal("Cleared research for " + playerName), false);
         return 1;
     }

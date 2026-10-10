@@ -20,8 +20,11 @@
 
 ## 1. Файл структуры
 
-Сохранить постройку Structure Block'ом в
-`src/main/resources/data/reignofnether/structures/<structure_name>.nbt`.
+Сохранить постройку Structure Block'ом в `<assets|data>/<namespace>/structures/<structure_name>.nbt`
+(сервер читает из `data/`, клиент — из `assets/`, поэтому для игры нужны обе копии). Поле `structure`
+JSON-здания — полный id `<namespace>:<structure_name>`: namespace может быть своим (`myns:barracks` →
+`assets/myns/structures/barracks.nbt`). Отсутствующий `.nbt` теперь даёт лог об ошибке и пустой список
+блоков (без NPE при постановке).
 
 Из содержимого выводится всё остальное:
 
@@ -29,7 +32,7 @@
 |---|---|
 | Габарит `minCorner`/`maxCorner` | из списка блоков |
 | HP | по умолчанию 1 на блок, если не задано `maxHealth` |
-| `startingBlockTypes` | слой `y = 0` |
+| `startingBlockTypes` | нижние `flags.foundationYLayers` слоёв (по умолчанию слой `y = 0`) |
 | Портрет (варианты) | все не-маркерные блоки |
 
 При загрузке (`BuildingBlockData.getBuildingBlocksFromNbt`) падающие брёвна превращаются в
@@ -127,16 +130,23 @@ this.productions.add(ProductionItems.X_UNIT, Keybindings.abilitySlot1);
 `cost`, `maxHealth`, `populationSupply`, `isCapitol`, `production`, `researches`, `addons`, `upgrades`,
 `requiredResearch`. Флаги — под `"flags"`: `canAcceptResources` (дроп-офф ресурсов — нужно столице),
 `buildTimeModifier`, `captureRange`, `capturable`, `invulnerable`, `repairable`, `repairTimeModifier`,
-`drawAggro`, `scaffoldFill` (`SCAFFOLDING`/`CUSTOM`/`BIOME_AWARE`), `scaffoldBlock`, `portrait` (id блока).
+`drawAggro`, `scaffoldFill` (`SCAFFOLDING`/`CUSTOM`/`BIOME_AWARE`), `scaffoldBlock`, `portrait` (id блока),
+`foundationYLayers` (целое ≥1, дефолт 1 — сколько нижних Y-слоёв структуры считать фундаментом: их типы
+блоков становятся `startingBlockTypes` и пре-ставятся сразу при размещении, а сами слои не участвуют в
+проверке «не достроено → уничтожить»; по сути это и есть «из чего здание начинает расти»).
 Идентичность — id определения; апгрейды создают варианты уровней (см. «Апгрейды»).
 
 ### Производство и исследования в JSON-зданиях
 
 У data-driven здания (`JsonBuilding`) состав берётся из определения:
 ```json
-"production": [ "myns:some_unit" ],
+"production": [ "myns:some_unit", { "unit": "myns:other_unit", "costOverride": { "food": 30, "seconds": 8 } } ],
 "researches": [ "myns:some_research" ]
 ```
+
+Цена и население юнита по умолчанию берутся из его `UnitDefinition` (`cost`/`population`). Объектная
+форма `{ "unit": …, "costOverride": {…} }` задаёт **свою** цену для этого здания (заменяет целиком,
+это `ProductionSpec`).
 
 `production` → `JsonProductionItem` (спавн юнита по id определения), `researches` → `ResearchProductionItem`
 (общая очередь с производством, отмена с возвратом, по завершении — грант исследования владельцу).
@@ -205,7 +215,10 @@ AddonTypes.register(ResourceLocation.fromNamespaceAndPath("myns", "my_addon"),
 Движковые типы (`Addons.init()`): `reignofnether:night_source` (`range`/`showOnlyWhenSelected`),
 `reignofnether:range_indicator` (`range`, `showOnlyWhenSelected`), `reignofnether:garrison`
 (`capacity`, `attackRange`, `externalAttackRangeBonus`, `entryX/Y/Z`, `exitX/Y/Z`),
-`reignofnether:nether_converting` (`maxRange`, `startingRange`). Свой аддон при необходимости может
+`reignofnether:nether_converting` (`maxRange`, `startingRange`),
+`reignofnether:resource_generator` (`resource`/`amount`/`interval`/`capacity` — пассивно даёт ресурс
+владельцу, план H.9). **`params` типизированные** (число или строка, как у способностей), поэтому
+`"resource": "wood"` работает. Свой аддон при необходимости может
 реализовать lifecycle-хуки `BuildingAddon.onBuildingBuilt`/`onBuildingTick` (вызываются
 `Building.onBuilt`/`Building.tick`).
 
@@ -271,3 +284,20 @@ public Block scaffoldBlock = null;                            // только д
 * Повреждение блоков здания уменьшает HP, при 50 % блоков здание разрушается.
 * Кнопка производства в панели выделения запускает очередь и списывает стоимость.
 * При потере здания владелец теряет сессию, юниты становятся нейтральными.
+
+## Строгая проверка полей (обязательно знать)
+
+Кодеки определений (`RecordCodecBuilder`) **молча отбрасывают** незнакомые поля: опечатка не даст
+ошибки, контент просто не сделает того, что задумано. Поэтому есть отдельный проход:
+
+* **В игре** — на загрузке мира и на каждом `/reload`:
+  `[content-validation] <file> '<path>': unknown field 'x' (accepted: a, b, c)` (чистый контент даёт
+  INFO-строку с числом проверенных файлов).
+* **В гейте** — `ContentValidationTest` (задача `test`) валит сборку при неизвестном поле в
+  поставляемых `unit`/`building`/`faction` файлах.
+* **Не проверено:** `research/*.json` (разбирается вручную).
+
+Правила: имена сверяются по компонентам record'ов (новое поле в record'е автоматически разрешено);
+свободные карты (`attributes`, `params`, локализованный `name`) принимают любые ключи; значения,
+диапазоны и обязательность полей остаются на кодеке. Единственное место, которое нужно править руками
+при переименовании **поля кодека** (а не компонента) — `ContentValidator.JSON_FIELD_NAMES`.

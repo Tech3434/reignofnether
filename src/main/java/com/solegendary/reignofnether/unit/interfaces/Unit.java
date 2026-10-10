@@ -213,6 +213,22 @@ public interface Unit {
     int getMaxResources();
 
     /**
+     * Resources this worker may gather (plan CONTENT_JSON_PLAN.md, K4). Only the toggle cycle and the
+     * search guard use it; a data-driven worker takes it from its definition, everyone else defaults to
+     * all three classic resources.
+     */
+    default List<com.solegendary.reignofnether.resources.ResourceName> getGatherableResources() {
+        return List.of(com.solegendary.reignofnether.resources.ResourceName.FOOD,
+                com.solegendary.reignofnether.resources.ResourceName.WOOD,
+                com.solegendary.reignofnether.resources.ResourceName.ORE);
+    }
+
+    /** How fast this worker advances a building site; 1.0 is the classic speed. */
+    default float getBuildSpeed() {
+        return 1.0f;
+    }
+
+    /**
      * Tool tier used by {@link com.solegendary.reignofnether.ability.DigAbility} to decide how fast
      * this unit breaks a block. It is a property of the unit and is iron by default; a unit may
      * override it.
@@ -607,8 +623,10 @@ public interface Unit {
     }
 
     private static int getThresholdResources(Unit unit) {
-        // The carry-bag research that used to double this threshold is gone, so the base value applies.
-        return 50;
+        // Scales with carry capacity (the default 100 gives the old 50); the removed carry-bag
+        // research used to double it.
+        int capacity = unit.getMaxResources();
+        return capacity > 0 ? Math.max(1, capacity / 2) : 50;
     }
 
     static boolean atMaxResources(Unit unit) {
@@ -715,8 +733,9 @@ public interface Unit {
     }
 
     static Ability getAbility(Unit unit, UnitAction abilityAction) {
+        // a menu ability has a null action - without the guard this NPEs on any unit that owns one
         for (Ability ability : unit.getAbilities().get())
-            if (ability.action.equals(abilityAction))
+            if (ability.action != null && ability.action.equals(abilityAction))
                 return ability;
         return null;
     }
@@ -1238,12 +1257,12 @@ public interface Unit {
         LivingEntity entity = (LivingEntity) unit;
         ItemStack mainHandItem = entity.getItemBySlot(EquipmentSlot.MAINHAND);
 
-        if (unit.getBuildRepairGoal().isBuilding()) {
+        if (buildRepairGoal != null && buildRepairGoal.isBuilding()) {
             if (!mainHandItem.is(net.minecraft.world.item.Items.IRON_SHOVEL))
                 entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.IRON_SHOVEL));
         }
-        else if (unit.getGatherResourceGoal().isGathering()) {
-            switch (unit.getGatherResourceGoal().getTargetResourceName()) {
+        else if (gatherResourcesGoal != null && gatherResourcesGoal.isGathering()) {
+            switch (gatherResourcesGoal.getTargetResourceName()) {
                 case FOOD -> { if (!mainHandItem.is(net.minecraft.world.item.Items.IRON_HOE))
                         entity.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.IRON_HOE)); }
                 case WOOD -> { if (!mainHandItem.is(net.minecraft.world.item.Items.IRON_AXE))
@@ -1269,22 +1288,29 @@ public interface Unit {
     }
 
     static void resetWorkerBehaviours(Unit unit) {
-        unit.getBuildRepairGoal().stopBuilding();
-        unit.getGatherResourceGoal().stopGathering();
-        unit.getExploreBuildLocationGoal().reset();
+        // a worker need not have all of the gather/build goals: the flags decide which exist
+        if (unit.getBuildRepairGoal() != null)
+            unit.getBuildRepairGoal().stopBuilding();
+        if (unit.getGatherResourceGoal() != null)
+            unit.getGatherResourceGoal().stopGathering();
+        if (unit.getExploreBuildLocationGoal() != null)
+            unit.getExploreBuildLocationGoal().reset();
     }
 
     static void resetWorkerBehavioursExceptExploreBuild(Unit unit) {
-        unit.getBuildRepairGoal().stopBuilding();
-        unit.getGatherResourceGoal().stopGathering();
+        if (unit.getBuildRepairGoal() != null)
+            unit.getBuildRepairGoal().stopBuilding();
+        if (unit.getGatherResourceGoal() != null)
+            unit.getGatherResourceGoal().stopGathering();
     }
 
     static boolean isWorkerIdle(Unit unit) {
         com.solegendary.reignofnether.unit.goals.GatherResourcesGoal resGoal = unit.getGatherResourceGoal();
         boolean isMoving = !((Mob) unit).getNavigation().isDone();
-        boolean isGathering = resGoal.isGathering();
-        boolean isGatheringIdle = resGoal.isIdle();
-        boolean isBuilding = unit.getBuildRepairGoal().getBuildingTarget() != null;
+        boolean isGathering = resGoal != null && resGoal.isGathering();
+        boolean isGatheringIdle = resGoal == null || resGoal.isIdle();
+        com.solegendary.reignofnether.unit.goals.BuildRepairGoal buildGoal = unit.getBuildRepairGoal();
+        boolean isBuilding = buildGoal != null && buildGoal.getBuildingTarget() != null;
         boolean isFarming = resGoal.isFarming();
         boolean isAttacking = unit.getTargetGoal().getTarget() != null;
         return !isMoving && !isGathering && !isBuilding && isGatheringIdle && !isAttacking && !isFarming;
@@ -1421,6 +1447,10 @@ public interface Unit {
     int MAX_LEVEL = 10;
     int MAX_NEUTRAL_EXP_LEVEL = 5;
 
+    /** Max hero level / exp-curve multiplier for this unit; a definition overrides (defaults = old constants). */
+    default int getMaxHeroLevel() { return MAX_LEVEL; }
+    default float getExpReqMultiplier() { return EXP_REQ_MULTIPLIER; }
+
     default boolean needsStatSync() { return false; }
     default void setNeedsStatSync(boolean value) { }
     default float getMana() { return 0; }
@@ -1487,7 +1517,7 @@ public interface Unit {
         if (((LivingEntity) this).level().isClientSide())
             return;
         int levelBefore = getHeroLevel();
-        if (levelBefore >= MAX_LEVEL)
+        if (levelBefore >= getMaxHeroLevel())
             return;
 
         setExperience(getExperience() + amount);
@@ -1504,24 +1534,21 @@ public interface Unit {
     }
 
     default int getHeroLevel() {
-        return getHeroLevel(getExperience());
-    }
-
-    static int getHeroLevel(int exp) {
         int level = 0;
-        int expToNextLevel = (int) (200 * EXP_REQ_MULTIPLIER);
+        int exp = getExperience();
+        int expToNextLevel = (int) (200 * getExpReqMultiplier());
         do {
             level += 1;
             exp -= expToNextLevel;
-            expToNextLevel += (100 * EXP_REQ_MULTIPLIER);
-        } while (exp >= 0 && level < MAX_LEVEL);
+            expToNextLevel += (100 * getExpReqMultiplier());
+        } while (exp >= 0 && level < getMaxHeroLevel());
         return level;
     }
 
     default int getExpOnCurrentLevel() {
-        if (getHeroLevel() >= MAX_LEVEL)
+        if (getHeroLevel() >= getMaxHeroLevel())
             return 0;
-        int expToNextLevel = (int) (200 * EXP_REQ_MULTIPLIER);
+        int expToNextLevel = (int) (200 * getExpReqMultiplier());
         int expCount = 0;
         int exp = getExperience();
         while (expCount < exp) {
@@ -1529,15 +1556,15 @@ public interface Unit {
                 return exp - expCount;
             }
             expCount += expToNextLevel;
-            expToNextLevel += (100 * EXP_REQ_MULTIPLIER);
+            expToNextLevel += (100 * getExpReqMultiplier());
         }
         return 0;
     }
 
     default int getExpToNextlevel() {
-        if (getHeroLevel() >= MAX_LEVEL)
+        if (getHeroLevel() >= getMaxHeroLevel())
             return 0;
-        return (int) ((getHeroLevel() + 1) * (100 * EXP_REQ_MULTIPLIER));
+        return (int) ((getHeroLevel() + 1) * (100 * getExpReqMultiplier()));
     }
 
     default List<HeroAbility> getHeroAbilities() {

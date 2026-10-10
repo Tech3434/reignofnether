@@ -29,7 +29,7 @@ public record UpgradeSpec(
         Optional<UnitDefinition.CostSpec> cost,
         Optional<Integer> maxHealth,
         Optional<Integer> populationSupply,
-        Optional<List<ResourceLocation>> production,
+        Optional<List<ProductionSpec>> production,
         Optional<List<ResourceLocation>> researches,
         Optional<List<AddonSpec>> addons
 ) {
@@ -41,7 +41,7 @@ public record UpgradeSpec(
             UnitDefinition.CostSpec.CODEC.optionalFieldOf("cost").forGetter(UpgradeSpec::cost),
             Codec.INT.optionalFieldOf("maxHealth").forGetter(UpgradeSpec::maxHealth),
             Codec.INT.optionalFieldOf("populationSupply").forGetter(UpgradeSpec::populationSupply),
-            ResourceLocation.CODEC.listOf().optionalFieldOf("production").forGetter(UpgradeSpec::production),
+            ProductionSpec.CODEC.listOf().optionalFieldOf("production").forGetter(UpgradeSpec::production),
             ResourceLocation.CODEC.listOf().optionalFieldOf("researches").forGetter(UpgradeSpec::researches),
             AddonSpec.CODEC.listOf().optionalFieldOf("addons").forGetter(UpgradeSpec::addons)
     ).apply(instance, UpgradeSpec::new));

@@ -19,9 +19,10 @@ import java.util.Optional;
  * {@code data/<namespace>/building/<name>.json} into the datapack registry
  * {@link BuildingDefinitions#BUILDING_KEY}.
  *
- * <p>{@code production} lists the unit-definition ids this building can train; {@code researches}
- * lists the research ids it offers; both share the building's queue (owner decision). The behaviour
- * flags mirror {@link Building}'s fields and live under {@code flags}.
+ * <p>{@code production} lists what this building can train (a plain unit-definition id, or an object
+ * with a {@code costOverride}); {@code researches} lists the research ids it offers; both share the
+ * building's queue (owner decision). The behaviour flags mirror {@link Building}'s fields and live
+ * under {@code flags}.
  */
 public record BuildingDefinition(
         ResourceLocation structure,
@@ -32,7 +33,7 @@ public record BuildingDefinition(
         int populationSupply,
         boolean isCapitol,
         Flags flags,
-        List<ResourceLocation> production,
+        List<ProductionSpec> production,
         List<ResourceLocation> researches,
         List<AddonSpec> addons,
         List<UpgradeSpec> upgrades,
@@ -51,10 +52,11 @@ public record BuildingDefinition(
             boolean drawAggro,
             Optional<Building.ScaffoldFill> scaffoldFill,
             Optional<ResourceLocation> scaffoldBlock,
-            Optional<ResourceLocation> portrait
+            Optional<ResourceLocation> portrait,
+            int foundationYLayers
     ) {
         public static final Flags DEFAULT = new Flags(false, 1.0, 20, false, false, true, 1.25, true,
-                Optional.empty(), Optional.empty(), Optional.empty());
+                Optional.empty(), Optional.empty(), Optional.empty(), 1);
 
         public static final Codec<Flags> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.BOOL.optionalFieldOf("canAcceptResources", false).forGetter(Flags::canAcceptResources),
@@ -67,7 +69,11 @@ public record BuildingDefinition(
                 Codec.BOOL.optionalFieldOf("drawAggro", true).forGetter(Flags::drawAggro),
                 StringRepresentable.fromEnum(Building.ScaffoldFill::values).optionalFieldOf("scaffoldFill").forGetter(Flags::scaffoldFill),
                 ResourceLocation.CODEC.optionalFieldOf("scaffoldBlock").forGetter(Flags::scaffoldBlock),
-                ResourceLocation.CODEC.optionalFieldOf("portrait").forGetter(Flags::portrait)
+                ResourceLocation.CODEC.optionalFieldOf("portrait").forGetter(Flags::portrait),
+                // how many bottom Y layers of the structure are foundation: their block types become
+                // startingBlockTypes (pre-queued on placement) and they are exempt from the
+                // "not yet built -> destroyed" check
+                Codec.INT.optionalFieldOf("foundationYLayers", 1).forGetter(Flags::foundationYLayers)
         ).apply(instance, Flags::new));
     }
 
@@ -80,7 +86,7 @@ public record BuildingDefinition(
             Codec.INT.optionalFieldOf("populationSupply", 0).forGetter(BuildingDefinition::populationSupply),
             Codec.BOOL.optionalFieldOf("isCapitol", false).forGetter(BuildingDefinition::isCapitol),
             Flags.CODEC.optionalFieldOf("flags", Flags.DEFAULT).forGetter(BuildingDefinition::flags),
-            ResourceLocation.CODEC.listOf().optionalFieldOf("production", List.of()).forGetter(BuildingDefinition::production),
+            ProductionSpec.CODEC.listOf().optionalFieldOf("production", List.of()).forGetter(BuildingDefinition::production),
             ResourceLocation.CODEC.listOf().optionalFieldOf("researches", List.of()).forGetter(BuildingDefinition::researches),
             AddonSpec.CODEC.listOf().optionalFieldOf("addons", List.of()).forGetter(BuildingDefinition::addons),
             UpgradeSpec.CODEC.listOf().optionalFieldOf("upgrades", List.of()).forGetter(BuildingDefinition::upgrades),

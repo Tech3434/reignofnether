@@ -86,9 +86,11 @@ public class Abilities {
     /**
      * Disables a freshly built ability button while the owner has not satisfied the ability's
      * required researches. Server-side use is re-checked independently, so this is presentation only.
+     * Public because menus that build their sub-buttons outside this class (e.g. {@link DataMenuAbility})
+     * must apply the same gate to their entries.
      */
-    private static void applyResearchGate(Button button, Ability ability,
-                                          net.minecraft.world.level.Level level, String ownerName) {
+    public static void applyResearchGate(Button button, Ability ability,
+                                         net.minecraft.world.level.Level level, String ownerName) {
         if (ability.requiredResearch.isEmpty())
             return;
         java.util.function.Supplier<Boolean> original = button.isEnabled;
@@ -96,12 +98,26 @@ public class Abilities {
                 && ability.meetsResearch(level, ownerName);
     }
 
+    /**
+     * All abilities reachable from this list, including abilities nested inside menus, in menu order.
+     * Server dispatch ({@code UnitActionItem}), passive ticking and cooldown bookkeeping all run over
+     * this flat view, so an active ability placed inside a data menu still works. Cycles do not occur
+     * in practice, but a visited set keeps this safe.
+     */
     public List<Ability> get() {
         var list = new ArrayList<Ability>();
         for (Pair<Ability, Keybinding> ability : abilities) {
-            list.add(ability.getA());
+            collect(ability.getA(), list, new java.util.IdentityHashMap<>());
         }
         return list;
+    }
+
+    private static void collect(Ability ability, List<Ability> out, java.util.Map<Ability, Boolean> seen) {
+        if (ability == null || seen.put(ability, Boolean.TRUE) != null)
+            return;
+        out.add(ability);
+        for (Ability sub : ability.subAbilities)
+            collect(sub, out, seen);
     }
 
     public Ability getDefaultAutocast() {

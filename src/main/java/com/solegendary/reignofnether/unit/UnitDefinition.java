@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.solegendary.reignofnether.ability.AbilitySpec;
 import com.solegendary.reignofnether.research.ResearchCondition;
+import com.solegendary.reignofnether.resources.ResourceName;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
@@ -39,8 +40,36 @@ public record UnitDefinition(
         Optional<List<ResearchCondition>> requiredResearch,
         Optional<ResourceLocation> equipment,
         Optional<ProjectileSpec> projectile,
-        Optional<List<AbilitySpec>> abilities
+        Optional<List<AbilitySpec>> abilities,
+        Optional<HeroSpec> hero,
+        Optional<WorkerSpec> worker
 ) {
+
+    /** Hero levelling (plan CONTENT_JSON_PLAN.md): {@code { "maxLevel": 10, "expReqMultiplier": 1.6 } }. */
+    public record HeroSpec(int maxLevel, double expReqMultiplier) {
+        public static final Codec<HeroSpec> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.INT.optionalFieldOf("maxLevel", 10).forGetter(HeroSpec::maxLevel),
+                Codec.DOUBLE.optionalFieldOf("expReqMultiplier", 1.6).forGetter(HeroSpec::expReqMultiplier)
+        ).apply(instance, HeroSpec::new));
+    }
+
+    /**
+     * Worker behaviour (plan CONTENT_JSON_PLAN.md): {@code gatherable} limits which resources the worker
+     * may toggle between (default food/wood/ore) and {@code buildSpeed} scales its contribution to a
+     * building site (default 1.0, the classic speed). Only meaningful for {@code role: worker}.
+     */
+    public record WorkerSpec(List<ResourceName> gatherable, double buildSpeed, int carryCapacity) {
+        public static final Codec<WorkerSpec> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                StringRepresentable.fromEnum(ResourceName::values).listOf()
+                        .optionalFieldOf("gatherable", List.of(ResourceName.FOOD, ResourceName.WOOD, ResourceName.ORE))
+                        .forGetter(WorkerSpec::gatherable),
+                Codec.DOUBLE.optionalFieldOf("buildSpeed", 1.0).forGetter(WorkerSpec::buildSpeed),
+                Codec.INT.optionalFieldOf("carryCapacity", 100).forGetter(WorkerSpec::carryCapacity)
+        ).apply(instance, WorkerSpec::new));
+
+        public static final WorkerSpec DEFAULT = new WorkerSpec(
+                List.of(ResourceName.FOOD, ResourceName.WOOD, ResourceName.ORE), 1.0, 100);
+    }
 
     public enum Role implements StringRepresentable {
         MELEE, RANGED, WORKER, FLYING, HERO;
@@ -103,7 +132,9 @@ public record UnitDefinition(
             ResearchCondition.CODEC.listOf().optionalFieldOf("requiredResearch").forGetter(UnitDefinition::requiredResearch),
             ResourceLocation.CODEC.optionalFieldOf("equipment").forGetter(UnitDefinition::equipment),
             ProjectileSpec.CODEC.optionalFieldOf("projectile").forGetter(UnitDefinition::projectile),
-            AbilitySpec.CODEC.listOf().optionalFieldOf("abilities").forGetter(UnitDefinition::abilities)
+            AbilitySpec.CODEC.listOf().optionalFieldOf("abilities").forGetter(UnitDefinition::abilities),
+            HeroSpec.CODEC.optionalFieldOf("hero").forGetter(UnitDefinition::hero),
+            WorkerSpec.CODEC.optionalFieldOf("worker").forGetter(UnitDefinition::worker)
     ).apply(instance, UnitDefinition::new));
 
     /** Effective role, defaulting to melee when unset. */
@@ -131,6 +162,36 @@ public record UnitDefinition(
 
     public int populationOrDefault() {
         return population.orElse(0);
+    }
+
+    /**
+     * How many resources a worker may carry before it heads back to drop them off. Defaults to 100 for
+     * a worker (the value the removed code worker had) and 0 for anything else, which does not gather.
+     */
+    public int carryCapacityOrDefault() {
+        if (worker.isPresent())
+            return worker.get().carryCapacity();
+        return roleOrDefault() == Role.WORKER ? 100 : 0;
+    }
+
+    /** Max hero level; only meaningful for {@code role: hero}. Defaults to the old 10. */
+    public int maxLevelOrDefault() {
+        return Math.max(1, hero.map(HeroSpec::maxLevel).orElse(10));
+    }
+
+    /** Hero experience-curve multiplier (defaults to the old 1.6); higher = slower levelling. */
+    public float expReqMultiplierOrDefault() {
+        return hero.map(HeroSpec::expReqMultiplier).orElse(1.6d).floatValue();
+    }
+
+    /** Resources a worker may gather, defaulting to food/wood/ore. */
+    public List<ResourceName> gatherableOrDefault() {
+        return worker.map(WorkerSpec::gatherable).orElse(WorkerSpec.DEFAULT.gatherable());
+    }
+
+    /** Worker build-speed multiplier (defaults to the classic 1.0). */
+    public float buildSpeedOrDefault() {
+        return worker.map(WorkerSpec::buildSpeed).orElse(1.0d).floatValue();
     }
 
     /**
@@ -163,7 +224,9 @@ public record UnitDefinition(
                 requiredResearch.isPresent() ? requiredResearch : parent.requiredResearch(),
                 equipment.isPresent() ? equipment : parent.equipment(),
                 projectile.isPresent() ? projectile : parent.projectile(),
-                abilities.isPresent() ? abilities : parent.abilities()
+                abilities.isPresent() ? abilities : parent.abilities(),
+                hero.isPresent() ? hero : parent.hero(),
+                worker.isPresent() ? worker : parent.worker()
         );
     }
 }

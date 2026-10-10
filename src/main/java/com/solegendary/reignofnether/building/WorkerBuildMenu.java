@@ -35,6 +35,20 @@ public final class WorkerBuildMenu {
     }
 
     /**
+     * The place-button for one building id (code or JSON), or null if it cannot be resolved. Used by a
+     * data menu's {@code building} entry to curate the worker's build list. Client-only.
+     */
+    public static Button buildButtonFor(net.minecraft.resources.ResourceLocation id) {
+        Building building = com.solegendary.reignofnether.api.ReignOfNetherRegistries.BUILDING.get(id);
+        if (building == null) {
+            net.minecraft.client.Minecraft mc = Minecraft.getInstance();
+            if (mc.level != null)
+                building = JsonBuildingManager.getOrCreateLevel(mc.level, id, 0);
+        }
+        return building == null ? null : gate(building.getBuildButton(null), building);
+    }
+
+    /**
      * The datapack buildings to show. On an integrated server {@link JsonBuildingManager#all()} is
      * already populated; on a remote client it is empty until a placement arrives, so fall back to the
      * synced datapack registry and build the level-0 (base) variants from it.

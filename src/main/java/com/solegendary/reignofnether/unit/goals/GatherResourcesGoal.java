@@ -479,6 +479,11 @@ public class GatherResourcesGoal extends MoveToTargetBlockGoal {
     }
 
     public void setTargetResourceName(ResourceName resourceName) {
+        // ignore a resource this worker may not gather (K4 gatherable list); NONE always allowed so
+        // stopping/re-targeting still works
+        if (resourceName != null && resourceName != ResourceName.NONE && mob instanceof Unit unit
+                && !unit.getGatherableResources().contains(resourceName))
+            return;
         data.targetResourceName = resourceName;
     }
 

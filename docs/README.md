@@ -13,6 +13,7 @@
 |---|---|
 | [`HANDOFF.md`](HANDOFF.md) | **Точка входа для продолжения**: состояние, архитектура data-driven контента, журнал инкрементов, что осталось, трапы, инвентарь файлов |
 | [`STATUS.md`](STATUS.md) | **Состояние**: гейты, что сделано, что осталось |
+| [`RUNCLIENT_CHECKLIST.md`](RUNCLIENT_CHECKLIST.md) | **Что проверить в игре**: пошаговый сценарий одного сеанса `runClient` (все фичи за один заход) |
 | [`PLAN_RTS_ONLY.md`](PLAN_RTS_ONLY.md) | **Исходный план A–H**: этапы, решения владельца, §15 — остаток |
 | [`RESEARCH_AND_EXTENSIBILITY_PLAN.md`](RESEARCH_AND_EXTENSIBILITY_PLAN.md) | **План**: система исследований и JSON-расширяемость; остаток (G.2/G.5/H.9/§14.5) |
 | [`CONTENT_JSON_PLAN.md`](CONTENT_JSON_PLAN.md) | **План**: JSON-юниты, здания, способности, аддоны, апгрейды |
@@ -41,9 +42,12 @@
   -jar gradle/wrapper/gradle-wrapper.jar <task> --offline --console=plain
 ```
 
-Гейты: `compileJava` · `validateMixins` · `runData`. ⚠ **`runServer` не запускать**: dev-сервер в
+Гейты: `compileJava` · `validateMixins` · `runData` · `test` (`DataCodecTest` декодирует все
+поставляемые `unit`/`building`/`faction` JSON). ⚠ **`runServer` не запускать**: dev-сервер в
 этой среде печатает `Done (...)` но сам не завершается; если всё же поднимали — увиденный
 `Done (...)` уже доказывает рантайм-инициализацию. Подробно — `../AGENTS.md`.
+
+Проверка в игре — один сеанс `runClient` по [`RUNCLIENT_CHECKLIST.md`](RUNCLIENT_CHECKLIST.md).
 
 Ни один автоматический гейт не проверяет геометрию на экране и поведение клиента — это только ручной
 прогон в игре.
@@ -57,6 +61,13 @@
    `git diff --numstat` и `git diff --ignore-cr-at-eol --numstat`.
 3. **`git show <ref>:<path> > file`** под PowerShell 5.1 пишет UTF-16LE — только
    `cmd /c "git show ... > file"`.
-4. **`validateMixins` не ловит часть ошибок** (`@Shadow`/`@Redirect`) — они всплывают в `runServer`.
+4. **`validateMixins` не ловит часть ошибок** (`@Shadow`/`@Redirect`, `Invalid LVT row`) — они всплывают
+   в рантайме. `runServer` в этой среде не запускать; автоматически ловит кодеки/схемы гейт `test`, а
+   клиент проверяется вручную по `RUNCLIENT_CHECKLIST.md`.
 5. Перед удалением чего-либо из каркаса проверяй `reference/` и `_GUIDES/`: возможно, на это
    ссылается пример, который вы ещё держите как шаблон.
+6. **Опечатка в поле JSON определения** теперь видна явно: гейт `test` (`ContentValidationTest`) и лог
+   `[content-validation] <file> '<path>': unknown field 'x' (accepted: …)` на загрузке мира/`/reload`.
+   Схема берётся из record'ов, так что новое поле кодека разрешено автоматически; исключение —
+   `ContentValidator.JSON_FIELD_NAMES` (когда JSON-имя не совпадает с именем компонента).
+7. JSON исследований пока **не** покрыт этой проверкой (`ResearchJsonLoader` разбирает его вручную).

@@ -24,7 +24,7 @@ cd ___temp
 & "C:\Program Files\Java\jdk-21\bin\java.exe" '-Dorg.gradle.appname=gradlew' -jar gradle/wrapper/gradle-wrapper.jar <task> --offline --console=plain
 ```
 
-Гейты на каждом шаге: `compileJava` → `validateMixins` → `runData`.
+Гейты на каждом шаге: `compileJava` → `validateMixins` → `runData` → `test`.
 `runServer` — **не запускать** обычным способом: dev-сервер в этой среде печатает `Done (...)` и сам не
 завершается; процесс висит до ручного вмешательства владельца (см. `AGENTS.md` и §6 «Трапы»). Если всё же
 надо — только через `background_process` monitor с `ready.pattern: "Done \\("` и `stop` в пределах 15 с.
@@ -63,7 +63,8 @@ cd ___temp
   "attributes": { "minecraft:generic.max_health": 25, "reignofnether:attack_damage": 1 },
   "abilities": [ { "type": "myns:some_ability", "cooldown": 100, "params": { "amount": 1 } } ],
   "cost": { "food": 50, "wood": 0, "ore": 0, "emerald": 0, "seconds": 15 },
-  "population": 1, "requiredResearch": [ { "research": "myns:x", "invert": false } ] }
+  "population": 1, "requiredResearch": [ { "research": "myns:x", "invert": false } ],
+  "worker": { "gatherable": ["food", "wood", "ore"], "buildSpeed": 1.0, "carryCapacity": 100 } }
 ```
 - `role`: `melee`/`ranged`/`worker`/`flying`/`hero`. Движок (`UnitMobMixin.initialiseGoals`) строит goals:
   melee→`MeleeAttackUnitGoal`+`MeleeAttackBuildingGoal`; ranged→`UnitBowAttackGoal`+`RangedAttackBuildingGoal`;
@@ -87,9 +88,12 @@ cd ___temp
   и зовёт `use(...)`; поэтому активному типу нужна **своя константа `UnitAction`**.
 - Пассивка (`passive: true`, кнопки нет) получает серверный тик через `Ability.tickPassive(Unit)` из
   `Unit.tick`. Движковый пример — `reignofnether:regeneration` (`RegenerationAbility`).
-- `AbilitySpec` (Codec): `type` + `cooldown`/`mana`/`passive`/`requiredResearch`/`params`.
+- `AbilitySpec` (Codec): `type` + `cooldown`/`mana`/`passive`/`requiredResearch`/`params`, а для меню —
+  ещё `name`/`icon`/`submenu` (`List<MenuEntrySpec>`; рекурсивный кодек через `Codec.lazyInitialized`).
   `params` — типизированные (`Map<String, AbilityParam>`: число или строка); геттеры `param(double)`,
   `stringParam(...)`, `resourceParam(...)` (парсит `ResourceLocation` — сущность/звук/предмет).
+- Движковые типы: `heal` (`amount`, `sound`), `regeneration` (`amount`/`interval`), `summon`
+  (`unit`/`count`), `menu` (см. §10 «K6»: `submenu` из инлайн-`ability`/`command`/`building` + `row`/`col`).
 - В `UnitDefinitionRuntime.buildAbilities` инстансы создаются и кладутся в `unit.getAbilities()`;
   из spec прокидываются `cooldown`/`range`/`radius`/`canTargetEntities`/`oneClickOneUse`/`passive`/`mana`
   (для `HeroAbility`)/`requiredResearch` (числа `0`/`false` = дефолт класса).
@@ -100,8 +104,10 @@ cd ___temp
 { "structure": "reignofnether:barracks", "maxHealth": 150, "populationSupply": 0,
   "isCapitol": false,
   "flags": { "canAcceptResources": false, "buildTimeModifier": 1.0, "capturable": false,
-             "invulnerable": false, "repairable": true, "drawAggro": true, "captureRange": 20 },
-  "production": [ "reignofnether:vindicator_unit" ],
+             "invulnerable": false, "repairable": true, "drawAggro": true, "captureRange": 20,
+             "foundationYLayers": 1 },
+  "production": [ "reignofnether:vindicator_unit",
+                  { "unit": "reignofnether:skeleton_marksman", "costOverride": { "food": 55, "seconds": 8 } } ],
   "researches": [], "addons": [ { "type": "myns:garrison", "params": {} } ],
   "requiredResearch": [] }
 ```
@@ -359,14 +365,15 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
    способности/имя/иконка/структура). Дальше по зданиям:
    - Флаги здания из JSON (`flags`): `canAcceptResources`, `buildTimeModifier`, `captureRange`, `capturable`,
      `invulnerable`, `repairable`, `repairTimeModifier`, `drawAggro`, `scaffoldFill`, `scaffoldBlock`,
-     `portrait`. Не портировано: милиция (система удалена).
+     `portrait`, `foundationYLayers`. Не портировано: милиция (система удалена).
 3. ✅ **Ranged-юнит:** `equipment` + `projectile` (`ProjectileSpec`) в определении; спавн в
    `UnitMobMixin.performUnitRangedAttack`; демо `skeleton_unit` (лук+стрела) в казарме.
 4. **lang-дочистка:** `entity.reignofnether.villager_unit*` (используется тултипами `VillagerProd`/`VindicatorProd`);
    в остальных локалях — по желанию.
 5. **`runClient` — НИ РАЗУ не запускался с этими изменениями.** Всё клиентское (рендер юнитов/зданий теперь
-   ванильный, меню фракций/исследований, размещение, меню воркера, герои) проверено только сборкой и
-   `runServer`. **Обязательна ручная проверка** владельцем.
+   ванильный, меню фракций/исследований, размещение, меню воркера/способностей, герои) проверено только
+   сборкой и `test`. **Обязательна ручная проверка** владельцем — сценарий одного сеанса:
+   [`RUNCLIENT_CHECKLIST.md`](RUNCLIENT_CHECKLIST.md).
 6. ✅ **Документация актуализирована** (2026-10-09): `docs/STATUS.md`, `docs/README.md` переписаны;
    гайды `_GUIDES/` `00/04/06/08/09` обновлены под data-driven; исторические снимки
    (`FEATURES`/`INTRUSION_AUDIT`/`CLEAN_FORK`/`PORT_STATUS`/`AGENT_HANDOFF`/`BUGS_RUNCLIENT`) помечены.
@@ -393,9 +400,10 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 - **Производство/исследования по сети** идентифицируются `ProductionItem.getNetworkId()`, а не код-реестром
   `PRODUCTION_ITEM` (JSON/исследования там не зарегистрированы). При добавлении новых `ProductionItem`
   переопределять `getNetworkId`, если предмет не в код-реестре.
-- **`validateMixins` не ловит часть mixin-ошибок** — всплывают в рантайме. Надёжный гейт — `runServer`/`runClient`.
-- **`runServer`.** Запускать только через `background_process` monitor (`ready.pattern: "Done \\("`), затем
-  `stop` в пределах 15 с. Не оставлять висящий процесс.
+- **`validateMixins` не ловит часть mixin-ошибок** (`@Shadow`/`@Redirect`, `Invalid LVT row`) — они всплывают
+  в рантайме. **`runServer` в этой среде не запускать** (dev-сервер печатает `Done (...)`, но сам не
+  завершается — висит до ручного вмешательства владельца). Надёжный оставшийся гейт — `test`
+  (кодеки/схемы) и ручной `runClient` по `RUNCLIENT_CHECKLIST.md`.
 - **`git show <ref>:<path> > file`** под PowerShell 5.1 пишет UTF-16LE → javac `unmappable character`.
   Только `cmd /c "git show ... > file"`.
 - **Лимит армии** — база 1, прирост даёт столица (`populationSupply`). Цены — на определении юнита
@@ -439,3 +447,200 @@ populationSupply/production/researches/addons — всё per-level). `JsonUpgrad
 (каркас зданий) · `b45f617c` (меню воркера) · `de6c42ed` (поток размещения) · `bc824899`
 (`town_centre.json`) · `d04f3a3e`/`821584e8` (удаление код-зданий) · `1712d129` (тик юнитов) ·
 `ec652683` (состояние героя).
+
+---
+
+## 9. Сессия 2026-10-09 (аудит JSON-рантайма + каркас)
+
+Ветка `wip/stage-d-deletions`; коммиты `21f3f1eb`…`66d22e2d` (12 шт). Гейты `compileJava`/
+`validateMixins`/`runData` зелёные после каждого; `runClient` по-прежнему не запускался.
+
+### 9.1 Найденные и исправленные баги (важно — рантайм JSON-контента)
+
+Это первый проход, который системно искал регрессии от удаления код-классов героев/зданий. Всё
+найдено чтением (без `runClient`), исправления компилируются, но **в игре не проверялись**.
+
+1. **JSON-здание исчезало сразу после постановки** (`21f3f1eb`). У JSON-здания не был заполнен
+   `startingBlockTypes` (его выводили только код-здания и `CustomBuilding`), поэтому новый placement
+   ничего не ставил в `blockPlaceQueue`, а `BuildingPlacement.shouldBeDestroyed()` при
+   `getBlocksPlaced() <= 0` на первом серверном тике удалял здание. Теперь нижний слой NBT задаёт
+   `startingBlockTypes` (по образцу `CustomBuilding`).
+2. **Воркер не мог добывать вообще** (`6c1ac8b9`). `ron$maxResources` нигде не присваивался (=0),
+   `Unit.atMaxResources` = «сумма ≥ 0» всегда true → `GatherResourcesGoal.isGathering()` всегда false.
+   Добавлено поле `carryCapacity` в `UnitDefinition` (дефолт 100 для worker; у удалённого
+   `VillagerUnit` было 100), `getMaxResources()` выводится из определения, порог автодропа = половина
+   ёмкости (дефолт 50 — как было).
+3. **NPE в подсчёте населения/HUD** (`32045f99`). `Unit.getCost()` возвращал null у data-driven
+   юнитов, а `unit.getCost().population` читается в `UnitServerEvents/UnitClientEvents`,
+   `UnitSyncClientboundPacket`, `CursorClientEvents`, `ObserverPlayerDisplay`. Теперь стоимость берётся
+   из определения (никогда не null).
+4. **Инертные юниты после перезахода** (`b4cee1db`). На сервере `initialiseGoals()` звался только при
+   спавне; загруженный из сейва юнит не имел целей, а `tickWorker` затем падал бы. Теперь `initialiseGoals`
+   зовётся в конце `readAdditionalSaveData` (идемпотентно). Заодно null-guard'ы для опциональных
+   worker-целей (`canGather` без `canBuild` и т.п.).
+5. **`inherits` игнорировался для роли/целей** (`a15532f8`). `ron$role()` и `initialiseGoals()` читали
+   определение из реестра напрямую, а не через `UnitDefinitions.resolve`, поэтому `skeleton_marksman`
+   (наследует ranged-роль у `skeleton_unit`) становился melee с melee-целями.
+6. **Произведённые юниты были бесплатны и мгновенны** (`f30d926f`). `JsonProductionItem` использовал
+   стоимость здания (у демо-зданий её нет → 0), а не юнита; теперь берёт `cost`/`population` из
+   `UnitDefinition`. `isTypeOf` у JSON-зданий сравнивает по `definitionId` (апгрейд больше не ломает
+   проверки «есть готовое такое здание»). Убраны полоски здоровья над юнитами (по плану).
+
+7. **У юнитов не было способностей на клиенте** (`66d22e2d`). Сервер синкает только кулдауны/заряды «по индексу», а клиент abilities не строил → кнопки способностей у JSON-юнитов не появлялись.
+   Теперь `UnitClientEvents.onEntityJoin` строит их из синхронизированного определения (если список ещё пуст).
+
+### 9.2 Новые возможности каркаса
+
+- **`costOverride`** (`cb00550d`): `production: [ "id", { "unit": "id", "costOverride": { … } } ]`
+  (`ProductionSpec`, either-кодек как у `AbilityParam`).
+- **`reignofnether:resource_generator`** (`f30d926f`, план H.9): аддон здания
+  `{ "resource": "wood", "amount": 5, "interval": 100, "capacity": 500 }`. `AddonSpec.params`
+  стали типизированными (число или строка), как у способностей.
+- **`type: equip` у исследований** (`725e89f7`): `equip: [ { "item": "…", "slot": "mainhand", "unit": "…" } ]`
+  выдаёт снаряжение юнитам владельца (`ResearchEquipApplier`). Фильтры исследований (`attributes`/`equip`)
+  теперь матчатся и по id определения юнита, а не только по телу.
+- **namespace структур** (`c24ece5f`): JSON-здание грузит `.nbt` по полному id (`<ns>:structures/<path>.nbt`),
+  а не только из `reignofnether`; отсутствующий файл — лог + пустой список вместо NPE.
+
+### 9.3 Что осталось (после этой сессии)
+
+1. **`runClient` — по-прежнему НИ РАЗУ не запускался.** Обязательна ручная проверка владельцем; все
+   правки выше проверены только компиляцией/`runData`. Особенно: постановка JSON-здания (не исчезает),
+   добыча воркером, население/производство, апгрейд «Barracks II», `resource_generator`, `equip`.
+2. **Кодек `ProductionSpec`** (either-кодек `production`) не проверялся рантаймом: при старте сервера
+   он парсит `barracks.json`/`town_centre.json`. Паттерн тот же, что у `AbilityParam` (работает), но
+   подтвердить в игре нужно.
+3. ✅ **K4 (данные воркера)** — блок `worker` (`gatherable`/`buildSpeed`/`carryCapacity`), см. §10.
+4. ✅ **K5 (прокачка героя)** — `hero: { maxLevel, expReqMultiplier }` (`2160358c`).
+5. ✅ **K6 (submenu-раскладка `row`/`col`)** — тип `reignofnether:menu`, см. §10.
+6. lang-дочистка `entity.reignofnether.villager_unit*`; осиротевшие `.nbt` (~65) в
+   `assets/reignofnether/structures/` — не удалялись (владелец: «не срочно»).
+
+---
+
+## 10. Сессия 2026-10-09 (вторая): K4/K5/K6 + тест-гейт
+
+Гейты: `compileJava` ✅ · `validateMixins` ✅ (49 точек/31 миксин) · `runData` ✅ · **`test` ✅ (новый)**:
+7 тестов. `runClient` по-прежнему не запускался. Коммитов в этой сессии нет (рабочее дерево: правки
+K6 лежали незакоммиченными с прошлого раза + код и данные K4).
+
+### K6 — data-driven меню способностей (`reignofnether:menu`)
+
+* `MenuEntrySpec` — элемент меню: инлайн `ability` (может быть вложенным `menu`) **или** `command`
+  (`attack`/`stop`/`hold`/`build`/`gather`/`garrison`/`ungarrison`), плюс `row`/`col` (0-based).
+* `AbilitySpec` получил `name`/`icon` (кнопка меню) и `submenu`; кодек рекурсивный —
+  `submenu` читается через `Codec.lazyInitialized(() -> MenuEntrySpec.CODEC)` (цикл `AbilitySpec` ↔
+  `MenuEntrySpec`), `MenuEntrySpec.CODEC` ссылается на `AbilitySpec.CODEC`.
+* `DataMenuAbility extends MenuAbility`: строит детей из `submenu`, помнит `row`/`col` на ребёнка,
+  отдаёт их рендеру через `Ability.getSubButtonPosition(Ability)`. Вложенный `menu` даёт меню-в-меню.
+* `HudClientEvents.renderAbilitySubmenu`: параллельный `subPositions` (по кнопкам) — явные `row`/`col`
+  перебивают авто-раскладку (колонка сдвигается на 1: колонка 0 — кнопка «Назад»).
+* Зарегистрировано в `BuiltInAbilities.init()` (`reignofnether:menu`); `abilities.reignofnether.menu`
+  добавлен в `en_us.json`. Демо — `skeleton_unit.json`; гайд — `_GUIDES/04_ability.md`.
+* Элемент меню не несёт собственных `label`/`icon` (кнопку рисует класс способности). Виды элементов:
+  инлайн `ability`, `command`, `building` (кнопка постановки здания — курируемый список для воркера и
+  не только). «Производство» элементом меню **не** является: состав производства перечисляет само здание.
+
+### K4 — воркер данными (блок `worker`)
+
+```json
+"worker": { "gatherable": ["food", "wood", "ore"], "buildSpeed": 1.0, "carryCapacity": 100 }
+```
+
+* `UnitDefinition.WorkerSpec` (`gatherable`: `List<ResourceName>`, `buildSpeed`, `carryCapacity`).
+  `carryCapacity` **перенесён** с верхнего уровня в этот блок (иначе рекорд превышал 16 полей
+  `RecordCodecBuilder.group`). `ResourceName` стал `StringRepresentable`.
+* `Unit.getGatherableResources()`/`getBuildSpeed()` (default = все три/1.0), переопределены в
+  `UnitMobMixin` из resolved-определения.
+* Гард в `GatherResourcesGoal.setTargetResourceName` (нельзя выбрать/добывать ресурс вне списка),
+  цикл `UnitActionItem` (TOGGLE_GATHER_TARGET) идёт по `[NONE, ...gatherable]`.
+* `BuildingPlacement.handleServerTick`: вклад воркеров — сумма `buildSpeed` (было число воркеров);
+  эффект спешки по-прежнему = «+1 воркер». Дефолт 1.0 сохраняет прежнюю формулу.
+* Демо/данные: `villager_unit.json` (тот же `carryCapacity: 100`, теперь в блоке `worker`);
+  гайд `_GUIDES/02_unit.md`.
+
+### Новый гейт `test`
+
+`src/test/java/com/solegendary/reignofnether/DataCodecTest.java` декодирует **все** поставляемые
+`unit`/`building`/`faction` JSON их кодеками (`JsonOps`) и точечно проверяет `worker`-блок и `menu`
+(вложенность/`command`/`row`/`building`). Ловит кодек-/схемные регрессии без клиента/сервера. Запускать
+`test` вместе с остальными гейтами (`compileJava`/`validateMixins`/`runData`).
+
+---
+
+## 11. Сессия 2026-10-09 (третья): ревью меню/гейтов + чек-лист одного `runClient`
+
+Гейты: `compileJava` ✅ · `validateMixins` ✅ (49 точек/31 миксин) · `runData` ✅ · `test` ✅.
+`runClient` по-прежнему не запускался — вместо этого сделан сценарий одного сеанса:
+**`docs/RUNCLIENT_CHECKLIST.md`** (идти сверху вниз, все новые фичи проверяются за один прогон).
+
+**Найдено и исправлено (код-ревью этого шага):**
+
+1. **Меню из одних `building`- или `command`-элементов было невидимым.** `MenuAbility.getButton`
+   передавал в `isHidden` проверку `subAbilities.isEmpty()`, а `DataMenuAbility` кладёт в `subAbilities`
+   только инлайн-способности (`building`/`command` там не появляются) → кнопка меню пряталась навсегда.
+   Введён `MenuAbility.hasNoEntries()` (default — `subAbilities.isEmpty()`), `DataMenuAbility` его
+   переопределяет на `entries.isEmpty()`.
+2. **Общие синглтоны `CommandAbilities` больше не попадают в `subAbilities`.** Раньше каждый элемент
+   `command` добавлялся в `subAbilities` того же меню, то есть в общий плоский список способностей
+   юнита (`Abilities.get()`), где лежат одни и те же статические инстансы для всех меню/юнитов.
+   Теперь в `subAbilities` идут только инлайн-`ability` (им действительно нужен серверный диспатч);
+   `command`-кнопки и так строятся из `entries` и отправляют приказ кликом.
+3. **Research-гейт у элементов меню.** `DataMenuAbility.getSubButtons` теперь навешивает
+   `Abilities.applyResearchGate` на инлайн-способности с `requiredResearch` (метод стал `public`).
+   Ограничение: у **код-меню** (`MenuAbility`/`BuildMenuAbility`) под-кнопки гейтятся только на верхнем
+   уровне (`Abilities.getButtons`), как и раньше.
+
+**Демо/данные:** `barracks.json` использует `costOverride` у `skeleton_marksman` (food 55 / 8 с вместо
+определения 80 / 18 с) — теперь объектная форма `production` проверяема в игре из коробки.
+
+**Документация:** `docs/RUNCLIENT_CHECKLIST.md` (новый), `_GUIDES/04_ability.md` (`building`-элемент и
+гейт), `docs/CONTENT_JSON_PLAN.md` (пример `submenu` приведён к реализации), `docs/STATUS.md`,
+`docs/README.md` (карта документов), `_GUIDES/03_building.md` (`foundationYLayers` в списке флагов),
+`_GUIDES/00_обзор.md`, и `.agents/skills/*` (гейт `test`, чек-лист вместо `runServer`).
+
+**Известные ограничения (не баги, зафиксировано):**
+
+* Неизвестные поля JSON теперь **не игнорируются молча** (см. §12): `ContentValidator` +
+  `ContentValidationReloadListener` дают `[content-validation] <файл> '<путь>': unknown field 'x' (accepted: …)`
+  в логе при загрузке мира и на `/reload`; `ContentValidationTest` ловит это в гейте `test`. Старый
+  верхнеуровневый `carryCapacity` теперь диагностируется явно — писать `worker.carryCapacity`.
+* `worker.buildSpeed` учитывается при **строительстве** (`BuildingPlacement.handleServerTick`), но не при
+  ремонте (`BuildRepairGoal` использует свой темп).
+* `gatherable` не может включить `EMERALD` (исключён из цикла как специальный ресурс).
+* Под-кнопки **код**-меню не гейтятся по research (у data-меню — гейтятся).
+
+---
+
+## 12. Сессия 2026-10-09 (четвёртая): строгая валидация определений
+
+Проблема: кодеки `RecordCodecBuilder` у `UnitDefinition`/`BuildingDefinition`/`Faction` **молча
+отбрасывают** неизвестные поля — опечатка (`"carryCapcity"`) или поле из старой схемы
+(верхнеуровневый `carryCapacity`) не давали ни ошибки, ни предупреждения, а контент просто работал
+не так, как ожидал автор.
+
+**Что сделано:**
+
+| Класс | Роль |
+|---|---|
+| `data/ContentValidator` | обход JSON по **записи-получателю** (`UnitDefinition`/`BuildingDefinition`/`Faction` и все вложенные record'ы). Имена полей берутся из компонентов записи, поэтому новое поле в записи автоматически становится разрешённым. Возвращает по одному сообщению на проблему с путём внутри файла. |
+| `data/ContentValidationReloadListener` | `ResourceManagerReloadListener`, зарегистрирован рядом с `ResearchJsonLoader` в `ReignOfNether#reloadListener`. Проходит `unit`/`building`/`faction` во всех датапаках и пишет ошибки в лог с именем файла. |
+| `test/ContentValidationTest` | 9 тестов: поставляемые файлы чисты; опечатка на корне/во вложенном объекте/в элементе списка/в меню — репортится; свободные map (`attributes`/`params`/`name`) — нет; имена полей `faction` (`food`/`starting_units`) — ок; обе формы `production` — ок; скаляр вместо объекта/массива — репортится. |
+
+**Правила схемы:** только **имена** полей; значения/диапазоны/обязательность — по-прежнему на кодеке.
+Свободные `Map` (`attributes`, `params`, локализованный `name`) принимают любые ключи.
+`JSON_FIELD_NAMES` покрывает немногочисленные расхождения «компонент ≠ JSON-имя»:
+`Faction` (`nameKey`→`name`, `startingUnits`→`starting_units`, `startingFood/Wood/Ore/Emerald`→`food/wood/ore/emerald`),
+`StartingUnit` (`entityType`→`unit`), `ResearchCondition` (`researchId`→`research`). Ренейм поля **в кодеке**
+(а не в записи) надо дублировать в эту таблицу — это единственное место, которое нельзя вывести из кода.
+
+**Порядок загрузки:** датапак-реестры читает Minecraft, и только потом идут reload-листенеры, а кодеки
+ленивы к лишним ключам — поэтому «пропустить» невалидный файл нельзя, и валидация **сообщает**, а не
+блокирует. Жёсткий гейт — `ContentValidationTest` (файл с опечаткой валит `test`).
+
+**Проверено:** временно добавили `"carryCapcity": 100` в `villager_unit.json` → `test` упал с
+`unit/villager_unit.json 'worker': unknown field 'carryCapcity' (accepted: buildSpeed, carryCapacity, gatherable)`;
+файл восстановлен, гейты снова зелёные.
+
+**Не покрыто:** JSON исследований (`data/<ns>/research/*.json` разбирает вручную `ResearchJsonLoader`,
+не кодек) — там лишние поля по-прежнему игнорируются. Кандидат на такую же проверку со своей таблицей.

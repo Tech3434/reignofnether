@@ -3,7 +3,7 @@
 > **Состояние на 2026-10-09.** Гайды приведены к текущему data-driven каркасу. Переписаны/обновлены:
 > `00_обзор.md` (карта, реестры, data-driven), `01_faction.md`, `02_unit.md` (JSON-юнит + ranged),
 > `03_building.md` (JSON-здание, производство/исследования/аддоны/апгрейды/флаги), `04_ability.md`
-> (код-класс + `AbilitySpec`), `05_hero.md`, `06_production.md` (JSON-предметы), `07_research.md`,
+> (код-класс + `AbilitySpec` + data-driven меню), `05_hero.md`, `06_production.md` (JSON-предметы), `07_research.md`,
 > `08_commands.md`, `09_assets.md` (data-driven ассеты), `10_custom_buttons.md` (`rts_buttons`). Сверяйте с
 > кодом при расхождении.
 > Актуальное состояние/изменения ванили — `docs/STATUS.md`, `docs/HANDOFF.md`, `docs/VANILLA_CHANGES.md`.
@@ -17,7 +17,7 @@
 | [`01_faction.md`](01_faction.md) | фракция целиком: константа, роли, старт, цвета, союзы |
 | [`02_unit.md`](02_unit.md) | новый юнит: JSON-определение (base/role/flags/атрибуты/equipment/projectile), goals |
 | [`03_building.md`](03_building.md) | новое здание: JSON-определение, NBT-структура, производство/исследования/аддоны/апгрейды/флаги |
-| [`04_ability.md`](04_ability.md) | новая способность: класс, кнопка, `UnitAction`, цель |
+| [`04_ability.md`](04_ability.md) | новая способность: класс, кнопка, `UnitAction`, цель; data-driven меню (`reignofnether:menu`) |
 | [`05_hero.md`](05_hero.md) | герой: уровни, мана, ранги, воскрешение |
 | [`06_production.md`](06_production.md) | производство и стоимости, `ProductionItem`, ресурсы |
 | [`07_research.md`](07_research.md) | исследования и гейтирование способностей |
@@ -46,8 +46,12 @@
 | JSON-здание без `flags.canAcceptResources` | рабочие не сдадут ресурсы (нужно столице) |
 | JSON-здание без `production`/`researches` | очередь пуста, кнопок нет |
 | JSON-юнит `role: ranged` без `equipment` | лучник не удержит лук, цель не активируется |
-| Способности из JSON (`abilities`) | `AbilityTypes.register(...)` пуст — тип нужно зарегистрировать |
+| Способности из JSON (`abilities`) | тип должен быть в `AbilityTypes` (движковые: `heal`, `regeneration`, `summon`, `menu` из `BuiltInAbilities.init`) |
 | Аддоны из JSON (`addons`) | тип должен быть в `AddonTypes` (движковые — в `Addons.init`) |
+| Элемент меню `building` | здание должно существовать (JSON-здание или код-реестр `BUILDING`) |
+| Опечатка в имени поля JSON | определяется явно: гейт `test` + лог `[content-validation]` (см. «Строгая проверка полей» в `01/02/03`) |
+
+Проверка всего этого в игре за один заход — `docs/RUNCLIENT_CHECKLIST.md`.
 
 ## Ссылка на удалённый контент
 

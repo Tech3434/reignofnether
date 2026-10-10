@@ -2,7 +2,8 @@
   "structure": "reignofnether:barracks",
   "maxHealth": 150,
   "populationSupply": 0,
-  "production": [ "reignofnether:vindicator_unit", "reignofnether:skeleton_unit", "reignofnether:skeleton_marksman" ],
+  "production": [ "reignofnether:vindicator_unit", "reignofnether:skeleton_unit",
+    { "unit": "reignofnether:skeleton_marksman", "costOverride": { "food": 55, "seconds": 8 } } ],
   "researches": [ "reignofnether:example_research" ],
   "addons": [ { "type": "reignofnether:garrison", "params": { "capacity": 3, "attackRange": 20 } } ],
   "upgrades": [
