@@ -68,14 +68,6 @@ public abstract class UnitInventoryMobMixin extends LivingEntity implements Unit
         return true;
     }
 
-    // 1.21.1 dropped Container#isFull, so this is the mod's own check now.
-    public boolean isFull() {
-        for (ItemStack itemStack : getAllItems())
-            if (itemStack == ItemStack.EMPTY || itemStack.isEmpty())
-                return false;
-        return true;
-    }
-
     @Override
     public ItemStack get(int index) {
         return this.unitItems.get(index);

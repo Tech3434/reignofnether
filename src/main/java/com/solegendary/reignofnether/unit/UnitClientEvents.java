@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.alliance.AlliancesClient;
+import com.solegendary.reignofnether.blocks.RangeIndicator;
 import com.solegendary.reignofnether.building.BuildingClientEvents;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingUtils;
@@ -1662,6 +1663,8 @@ public class UnitClientEvents {
                     .computeIfAbsent(entity.getId(), id -> new HashMap<>())
                     .put(MobEffectHelpers.holder(mei.getEffect()), MobEffectIcons.getIcon(mei));
         }
+        if (entity instanceof RangeIndicator ri)
+            ri.updateHighlightBps(entity.level());
     }
 
     @SubscribeEvent
@@ -1671,6 +1674,8 @@ public class UnitClientEvents {
             return;
 
         removeMobEffectIcon(entity.getId(), MobEffectHelpers.holder(evt.getEffect()));
+        if (entity instanceof RangeIndicator ri)
+            ri.updateHighlightBps(entity.level());
     }
 
     // Without this, icons stay behind when an effect simply runs out
@@ -1682,6 +1687,8 @@ public class UnitClientEvents {
             return;
 
         removeMobEffectIcon(entity.getId(), mei.getEffect());
+        if (entity instanceof RangeIndicator ri)
+            ri.updateHighlightBps(entity.level());
     }
 
     private static void removeMobEffectIcon(int entityId, Holder<MobEffect> effect) {

@@ -42,9 +42,13 @@ import javax.annotation.Nullable;
 
 public class WraithSnowLayerBlock extends BaseEntityBlock {
 
-    private static final int MOVEMENT_SLOWDOWN_AMP_PER_LAYER = 2;
+    // Upstream 1.5.0 applies COLD per layer instead of the old movement-slowdown +
+    // attack-slowdown pair, and 1.21.1 scales a mob effect's attribute modifiers by
+    // (amplifier + 1), so COLD's -0.1 movement and attack speed become -10% per layer - the same
+    // penalty the pair produced (amp 2 per layer of two -0.05 effects). One effect instead of
+    // three: the HUD shows Cold + Damage Taken Increase.
+    private static final int COLD_AMP_PER_LAYER = 1;
     private static final int DMG_TAKEN_INCREASE_AMP_PER_LAYER = 2;
-    private static final int ATTACK_SLOWDOWN_AMP_PER_LAYER = 2;
 
     public static final MapCodec<WraithSnowLayerBlock> CODEC = simpleCodec(WraithSnowLayerBlock::new);
 
@@ -99,9 +103,8 @@ public class WraithSnowLayerBlock extends BaseEntityBlock {
     @Override
     public void entityInside(@NotNull BlockState pState, Level pLevel, BlockPos pPos, Entity pEntity) {
         BlockEntity be = pLevel.getBlockEntity(pPos);
-        int movementSlowdownAmp = (pState.getValue(LAYERS) * MOVEMENT_SLOWDOWN_AMP_PER_LAYER) - 1;
+        int coldAmp = (pState.getValue(LAYERS) * COLD_AMP_PER_LAYER) - 1;
         int dmgIncreaseAmp = (pState.getValue(LAYERS) * DMG_TAKEN_INCREASE_AMP_PER_LAYER) - 1;
-        int attackSlowdownAmp = (pState.getValue(LAYERS) * ATTACK_SLOWDOWN_AMP_PER_LAYER) - 1;
         if (pEntity instanceof LivingEntity livingEntity && pEntity.tickCount % 5 == 0 &&
                 !pLevel.isClientSide() &&
                 be instanceof WraithSnowBlockEntity snowBe) {
@@ -111,17 +114,13 @@ public class WraithSnowLayerBlock extends BaseEntityBlock {
                 rs = UnitServerEvents.getUnitToEntityRelationship(unit, pLevel, snowBe.getOwnerId());
             }
             if (rs != Relationship.FRIENDLY && rs != Relationship.OWNED) {
-                MobEffectInstance existingMovementSlowdown = livingEntity.getEffect(MobEffectHelpers.holder(MobEffectRegistrar.MINOR_MOVEMENT_SLOWDOWN.get()));
-                if (existingMovementSlowdown == null || existingMovementSlowdown.getAmplifier() < movementSlowdownAmp) {
-                    livingEntity.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.MINOR_MOVEMENT_SLOWDOWN.get(), 10, movementSlowdownAmp, true, false));
+                MobEffectInstance existingCold = livingEntity.getEffect(MobEffectHelpers.holder(MobEffectRegistrar.COLD.get()));
+                if (existingCold == null || existingCold.getAmplifier() < coldAmp) {
+                    livingEntity.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.COLD.get(), 10, coldAmp, true, false));
                 }
                 MobEffectInstance existingDamageIncrease = livingEntity.getEffect(MobEffectHelpers.holder(MobEffectRegistrar.DAMAGE_TAKEN_INCREASE.get()));
                 if (existingDamageIncrease == null || existingDamageIncrease.getAmplifier() < dmgIncreaseAmp) {
                     livingEntity.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.DAMAGE_TAKEN_INCREASE.get(), 10, dmgIncreaseAmp, true, false));
-                }
-                MobEffectInstance existingAttackSlowdown = livingEntity.getEffect(MobEffectHelpers.holder(MobEffectRegistrar.ATTACK_SLOWDOWN.get()));
-                if (existingAttackSlowdown == null || existingAttackSlowdown.getAmplifier() < attackSlowdownAmp) {
-                    livingEntity.addEffect(MobEffectHelpers.instance(MobEffectRegistrar.ATTACK_SLOWDOWN.get(), 10, attackSlowdownAmp, true, false));
                 }
             }
         }

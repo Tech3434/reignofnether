@@ -860,7 +860,7 @@ public class UnitServerEvents {
     @SubscribeEvent
     public static void onMobEffectApplicable(MobEffectEvent.Applicable evt) {
         // allow undead to be poisoned
-        if (MobCategoryCompat.isMonster(evt.getEntity()) &&
+        if (MobCategoryCompat.isUndead(evt.getEntity()) &&
             Unit.isUnit(evt.getEntity()) &&
             evt.getEffectInstance().getEffect().value() == MobEffects.POISON.value()) {
             evt.setResult(MobEffectEvent.Applicable.Result.APPLY);

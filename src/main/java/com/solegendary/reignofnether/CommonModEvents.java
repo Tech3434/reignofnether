@@ -9,7 +9,7 @@ import com.solegendary.reignofnether.registrars.PacketHandler;
 import com.solegendary.reignofnether.unit.units.villagers.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import com.solegendary.reignofnether.registrars.EnchantmentRegistrar;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -31,9 +31,15 @@ public class CommonModEvents {
      * field and {@code ModifyRegistriesEvent} fires before the registry object even exists.
      * The first point where it does is the server's own {@code RegistryAccess}, which is also
      * what the holders are looked up from on demand.
+     *
+     * <p>It has to be bound on {@code ServerAboutToStartEvent}, not {@code ServerStartingEvent}:
+     * NeoForge fires about-to-start before {@code DedicatedServer#loadLevel} and starting after it,
+     * and loading a level deserialises entities - an entity whose items are read there would go
+     * through {@link EnchantmentRegistrar#holder} while the registry was still unbound and be
+     * dropped with "Enchantment ... was requested before the enchantment registry was bound".
      */
     @SubscribeEvent
-    public static void bindEnchantmentRegistryOnServer(ServerStartingEvent event) {
+    public static void bindEnchantmentRegistryOnServer(ServerAboutToStartEvent event) {
         EnchantmentRegistrar.bind(event.getServer().registryAccess());
     }
 

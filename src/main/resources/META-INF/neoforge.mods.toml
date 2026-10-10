@@ -4,7 +4,7 @@ license="GNU GPLv3"
 
 [[mods]]
 modId="reignofnether"
-# Literal, not ${mod_version}: nothing expands placeholders in a dev run (the mod is loaded from
+# Literal, not a gradle placeholder: nothing expands it in a dev run (the mod is loaded from
 # build/classes/java/main, which has no manifest), and FML then falls back to the source set name
 # and refuses to start with "Illegal version number specified mod_version (main)".
 # Keep in sync with mod_version in gradle.properties.
